@@ -10,7 +10,6 @@ import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.base.util.Utils;
@@ -22,6 +21,7 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 
+/** Form for creating a new player profile. */
 public final class NewProfileForm extends Form {
     private static final int BUTTON_WIDTH = 100;
     private static final int BUTTON_WIDTH_LONG = 150;
@@ -38,18 +38,19 @@ public final class NewProfileForm extends Form {
     private final GUIRoot gui_root;
 
     public NewProfileForm(Menu main_menu, ProfilesForm profiles_form) {
+        super(main_menu.getGUIRoot());
         this.main_menu = main_menu;
         this.gui_root = main_menu.getGUIRoot();
         this.profiles_form = profiles_form;
 
 
         // headline
-        Label label_headline = new Label(i18n("create_profile_caption"), Skin.getSkin().getHeadlineFont());
+        Label label_headline = new Label(i18n("create_profile_caption"), getSkin().getHeadlineFont());
         addChild(label_headline);
 
         // login
-        Label label_nick = new Label(i18n("nick"), Skin.getSkin().getEditFont());
-        editline_nick = new EditLine(EDITLINE_WIDTH, 255);
+        Label label_nick = new Label(i18n("nick"), getSkin().getEditFont());
+        editline_nick = new EditLine(gui_root, EDITLINE_WIDTH, 255);
         editline_nick.addEnterListener(new CreateProfileListener());
         addChild(label_nick);
         addChild(editline_nick);
@@ -58,10 +59,10 @@ public final class NewProfileForm extends Form {
         label_nick.place(label_headline, BOTTOM_LEFT);
         editline_nick.place(label_nick, RIGHT_MID);
 
-        Group group_buttons = new Group();
-        ButtonObject button_create = new HorizButton(i18n("create_profile"), BUTTON_WIDTH_LONG);
+        Group group_buttons = new Group(gui_root);
+        ButtonObject button_create = new HorizButton(gui_root, i18n("create_profile"), BUTTON_WIDTH_LONG);
         button_create.addMouseClickListener(new CreateProfileListener());
-        ButtonObject button_cancel = new CancelButton(BUTTON_WIDTH);
+        ButtonObject button_cancel = new CancelButton(gui_root, BUTTON_WIDTH);
         button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
 
         group_buttons.addChild(button_create);

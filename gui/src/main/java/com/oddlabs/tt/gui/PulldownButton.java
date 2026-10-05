@@ -6,21 +6,23 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
 
 /**
- * A button representing a dropdown selection that opens a PulldownMenu.
+ * Dropdown selection button managing opening and positioning of a {@link PulldownMenu}.
  */
 public final class PulldownButton<T> extends GUIObject {
     private final PulldownMenu<T> menu;
     private final Label label;
     private final GUIRoot gui_root;
+    private final Skin skin;
 
     public PulldownButton(GUIRoot gui_root, PulldownMenu<T> menu, int width) {
         this.menu = menu;
         this.gui_root = gui_root;
+        this.skin = gui_root.getSkin();
         setCanFocus(true);
         menu.addItemChosenListener(this::itemChosen);
-        label = new Label("", Skin.getSkin().getEditFont(), 0, Origin.AT_START);
+        label = new Label("", skin.getEditFont(), 0, Origin.AT_START);
         addChild(label);
-        setDim(width, Skin.getSkin().getPulldownData().pulldownButton().getHeight());
+        setDim(width, skin.getPulldownData().pulldownButton().getHeight());
     }
 
     public PulldownButton(GUIRoot gui_root, PulldownMenu<T> menu, int item_index, int width) {
@@ -29,9 +31,14 @@ public final class PulldownButton<T> extends GUIObject {
     }
 
     @Override
+    protected Skin getSkin() {
+        return skin;
+    }
+
+    @Override
     public PulldownButton<T> setDim(int width, int height) {
         super.setDim(width, height);
-        PulldownData data = Skin.getSkin().getPulldownData();
+        PulldownData data = skin.getPulldownData();
         label.setDim(getWidth() - data.textOffsetLeft() - data.arrowOffsetRight() - data.arrow().quad(
                 ModeIconQuads.Mode.NORMAL).getWidth(), label.getHeight());
         label.setPos(data.textOffsetLeft(), (getHeight() - label.getHeight()) / 2);
@@ -42,7 +49,7 @@ public final class PulldownButton<T> extends GUIObject {
 
     @Override
     protected void renderGeometry(GUIRenderer renderer) {
-        PulldownData data = Skin.getSkin().getPulldownData();
+        PulldownData data = skin.getPulldownData();
         Horizontal pulldownButton = data.pulldownButton();
 
         ModeIconQuads.Mode skinMode = isDisabled()

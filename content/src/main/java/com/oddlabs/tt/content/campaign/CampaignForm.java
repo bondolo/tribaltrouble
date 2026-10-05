@@ -13,7 +13,6 @@ import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.model.Race;
@@ -50,23 +49,24 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
     private final Menu main_menu;
 
     public CampaignForm(Menu main_menu) {
+        super(main_menu.getGUIRoot());
         this.main_menu = main_menu;
         this.gui_root = main_menu.getGUIRoot();
-        Label headline = new Label(i18n("campaign"), Skin.getSkin().getHeadlineFont());
+        Label headline = new Label(i18n("campaign"), getSkin().getHeadlineFont());
         addChild(headline);
 
-        button_delete = new HorizButton(i18n("delete"), 120);
+        button_delete = new HorizButton(gui_root, i18n("delete"), 120);
         button_delete.addMouseClickListener(this::mouseClickedDelete);
         button_delete.setDisabled(true);
 
-        button_vikings = new HorizButton(i18n("new"), 120);
+        button_vikings = new HorizButton(gui_root, i18n("new"), 120);
         button_vikings.addMouseClickListener((_, _, _, _) -> main_menu.setMenu(new NewCampaignForm(
                 main_menu, CampaignForm.this)));
 
-        button_load = new HorizButton(i18n("load"), 120);
+        button_load = new HorizButton(gui_root, i18n("load"), 120);
         button_load.setDisabled(true);
 
-        HorizButton button_cancel = new CancelButton(120);
+        HorizButton button_cancel = new CancelButton(gui_root, 120);
         button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
 
         // Combo box
@@ -160,7 +160,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
         } else {
             logger.log(Level.SEVERE, "Load failed", e);
             String failed_message = i18n("failed_message", LoadCampaignBox.SAVEGAMES_FILE_NAME, e.getMessage());
-            gui_root.addModalForm(new MessageForm(failed_message));
+            gui_root.addModalForm(new MessageForm(gui_root, failed_message));
         }
     }
 
@@ -168,7 +168,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
         CampaignState state = load_campaign_box.getSelected();
         if (state != null) {
             String confirm_str = i18n("confirm_delete", state.getName());
-            gui_root.addModalForm(new QuestionForm(confirm_str, (_, _, _, _) -> LoadCampaignBox.loadSavegames(
+            gui_root.addModalForm(new QuestionForm(gui_root, confirm_str, (_, _, _, _) -> LoadCampaignBox.loadSavegames(
                     main_menu.getEngine(), CampaignForm.this)));
         }
     }

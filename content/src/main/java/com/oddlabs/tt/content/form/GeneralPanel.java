@@ -10,7 +10,6 @@ import com.oddlabs.tt.gui.Panel;
 import com.oddlabs.tt.gui.PulldownButton;
 import com.oddlabs.tt.gui.PulldownItem;
 import com.oddlabs.tt.gui.PulldownMenu;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.Slider;
 import com.oddlabs.tt.client.GameplaySettings;
 import com.oddlabs.tt.client.camera.CameraSettings;
@@ -30,10 +29,12 @@ public class GeneralPanel extends Panel {
     private static final int SLIDER_WIDTH = 270;
     private static final int MAX_VALUE = 20;
 
-    private final PulldownMenu<Gamespeed> pm_gamespeed = new PulldownMenu<>();
+    private final PulldownMenu<Gamespeed> pm_gamespeed;
 
     public GeneralPanel(GUIRoot gui_root, IntConsumer onGamespeedChange) {
-        super(AbstractOptionsMenu.i18n("general_settings_caption"));
+        super(gui_root, AbstractOptionsMenu.i18n("general_settings_caption"));
+        this.pm_gamespeed = new PulldownMenu<>(gui_root);
+        var font = skin.getEditFont();
         Settings settings = gui_root.getGUI().getSettings();
 
         CameraSettings camera = CameraSettings.from(settings);
@@ -41,9 +42,9 @@ public class GeneralPanel extends Panel {
         GUISettings guiSettings = GUISettings.from(settings);
 
         // Invert camera
-        Group group_invert_camera = new Group();
+        Group group_invert_camera = new Group(gui_root);
         addChild(group_invert_camera);
-        CheckBox cb_invert_camera = new CheckBox(camera.invert_camera_pitch,
+        CheckBox cb_invert_camera = new CheckBox(gui_root, camera.invert_camera_pitch,
                 AbstractOptionsMenu.i18n("invert_camera"), AbstractOptionsMenu.i18n("invert_camera_tip"));
         cb_invert_camera.addCheckBoxListener(marked -> camera.invert_camera_pitch = marked);
         group_invert_camera.addChild(cb_invert_camera);
@@ -51,9 +52,9 @@ public class GeneralPanel extends Panel {
         group_invert_camera.compileCanvas();
 
         // Aggressive units
-        Group group_aggressive_units = new Group();
+        Group group_aggressive_units = new Group(gui_root);
         addChild(group_aggressive_units);
-        CheckBox cb_aggressive_units = new CheckBox(gameplay.aggressive_units,
+        CheckBox cb_aggressive_units = new CheckBox(gui_root, gameplay.aggressive_units,
                 AbstractOptionsMenu.i18n("aggressive_units"), AbstractOptionsMenu.i18n("aggressive_units_tip",
                         "Ctrl-A"));
         cb_aggressive_units.addCheckBoxListener(marked -> gameplay.aggressive_units = marked);
@@ -62,16 +63,15 @@ public class GeneralPanel extends Panel {
         group_aggressive_units.compileCanvas();
 
         // Mapmode delay
-        Group group_mapmode = new Group();
+        Group group_mapmode = new Group(gui_root);
         addChild(group_mapmode);
-        Label label_mapmode_headline = new Label(AbstractOptionsMenu.i18n("map_mode_delay"), Skin.getSkin()
-                .getEditFont());
+        Label label_mapmode_headline = new Label(AbstractOptionsMenu.i18n("map_mode_delay"), font);
         group_mapmode.addChild(label_mapmode_headline);
-        Label label_mapmode_none = new Label(AbstractOptionsMenu.i18n("delay_none"), Skin.getSkin().getEditFont());
+        Label label_mapmode_none = new Label(AbstractOptionsMenu.i18n("delay_none"), font);
         group_mapmode.addChild(label_mapmode_none);
-        Label label_mapmode_high = new Label(AbstractOptionsMenu.i18n("delay_high"), Skin.getSkin().getEditFont());
+        Label label_mapmode_high = new Label(AbstractOptionsMenu.i18n("delay_high"), font);
         group_mapmode.addChild(label_mapmode_high);
-        Slider slider_mapmode = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (camera.mapmode_delay
+        Slider slider_mapmode = new Slider(gui_root, SLIDER_WIDTH, 0, MAX_VALUE, (int) (camera.mapmode_delay
                 * MAX_VALUE));
         group_mapmode.addChild(slider_mapmode);
         slider_mapmode.addValueListener(value -> camera.mapmode_delay = (float) value / (MAX_VALUE));
@@ -82,16 +82,15 @@ public class GeneralPanel extends Panel {
         group_mapmode.compileCanvas();
 
         // Tooltip delay
-        Group group_tooltip = new Group();
+        Group group_tooltip = new Group(gui_root);
         addChild(group_tooltip);
-        Label label_tooltip_headline = new Label(AbstractOptionsMenu.i18n("tool_tip_delay"), Skin.getSkin()
-                .getEditFont());
+        Label label_tooltip_headline = new Label(AbstractOptionsMenu.i18n("tool_tip_delay"), font);
         group_tooltip.addChild(label_tooltip_headline);
-        Label label_tooltip_none = new Label(AbstractOptionsMenu.i18n("delay_none"), Skin.getSkin().getEditFont());
+        Label label_tooltip_none = new Label(AbstractOptionsMenu.i18n("delay_none"), font);
         group_tooltip.addChild(label_tooltip_none);
-        Label label_tooltip_high = new Label(AbstractOptionsMenu.i18n("delay_high"), Skin.getSkin().getEditFont());
+        Label label_tooltip_high = new Label(AbstractOptionsMenu.i18n("delay_high"), font);
         group_tooltip.addChild(label_tooltip_high);
-        Slider slider_tooltip = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (guiSettings.tooltip_delay
+        Slider slider_tooltip = new Slider(gui_root, SLIDER_WIDTH, 0, MAX_VALUE, (int) (guiSettings.tooltip_delay
                 * MAX_VALUE));
         group_tooltip.addChild(slider_tooltip);
         slider_tooltip.addValueListener(value -> {
@@ -105,20 +104,22 @@ public class GeneralPanel extends Panel {
         group_tooltip.compileCanvas();
 
         // Gamespeed
-        Group group_gamespeed = new Group();
+        Group group_gamespeed = new Group(gui_root);
         addChild(group_gamespeed);
-        Label label_gamespeed = new Label(AbstractOptionsMenu.i18n("gamespeed"), Skin.getSkin().getEditFont());
+        Label label_gamespeed = new Label(AbstractOptionsMenu.i18n("gamespeed"), font);
         group_gamespeed.addChild(label_gamespeed);
 
-        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_PAUSE),
+        pm_gamespeed.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getGamespeedString(Game.GAMESPEED_PAUSE),
                 Gamespeed.PAUSE));
-        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_SLOW),
+        pm_gamespeed.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getGamespeedString(Game.GAMESPEED_SLOW),
                 Gamespeed.SLOW));
-        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_NORMAL),
+        pm_gamespeed.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getGamespeedString(
+                Game.GAMESPEED_NORMAL),
                 Gamespeed.NORMAL));
-        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_FAST),
+        pm_gamespeed.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getGamespeedString(Game.GAMESPEED_FAST),
                 Gamespeed.FAST));
-        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_LUDICROUS),
+        pm_gamespeed.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getGamespeedString(
+                Game.GAMESPEED_LUDICROUS),
                 Gamespeed.LUDICROUS));
 
         PulldownButton<Gamespeed> pb_gamespeed = new PulldownButton<>(gui_root, pm_gamespeed, 150);

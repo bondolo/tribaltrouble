@@ -4,14 +4,15 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 
 /**
- * A GUI group with a bordered background and a title label embedded in the top border.
+ * Group container framed with bordered background quads and a title label embedded in the top border.
  */
 public final class TitledBorderGroup extends Group {
     private final Label label;
     private int fixedWidth = -1;
 
-    public TitledBorderGroup(String caption) {
-        GroupData data = Skin.getSkin().getGroupData();
+    public TitledBorderGroup(GUIRoot guiRoot, String caption) {
+        super(guiRoot);
+        GroupData data = skin.getGroupData();
         label = new Label(caption, data.captionFont());
         // We don't add the label as a child because we'll render it manually
         // and we don't want it to affect the compileCanvas layout logic.
@@ -23,7 +24,7 @@ public final class TitledBorderGroup extends Group {
 
     @Override
     public void compileCanvas() {
-        GroupData data = Skin.getSkin().getGroupData();
+        GroupData data = skin.getGroupData();
         Box group = data.group();
 
         // Interior layout offsets - removed all extra padding
@@ -47,7 +48,7 @@ public final class TitledBorderGroup extends Group {
 
     @Override
     protected void renderGeometry(GUIRenderer renderer) {
-        GroupData groupData = Skin.getSkin().getGroupData();
+        GroupData groupData = skin.getGroupData();
         Box box = groupData.group();
         ModeIconQuads.Mode skinMode = ModeIconQuads.Mode.NORMAL;
 

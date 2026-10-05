@@ -1,9 +1,7 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
+import com.oddlabs.tt.gui.EditLine;
+import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.event.TabListener;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
@@ -11,14 +9,15 @@ import com.oddlabs.tt.input.InputPhase;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Text input line supporting tab completion for chat. */
 public final class ChatLine extends EditLine {
     private final List<TabListener> tab_listeners = new ArrayList<>();
     private final boolean catch_tab;
 
     private String[] tab_complete_list;
 
-    public ChatLine(int width, int max_codepoints, boolean catch_tab) {
-        super(width, max_codepoints);
+    public ChatLine(GUIRoot guiRoot, int width, int max_codepoints, boolean catch_tab) {
+        super(guiRoot, width, max_codepoints);
         this.catch_tab = catch_tab;
         this.tab_complete_list = new String[0];
     }
@@ -75,20 +74,7 @@ public final class ChatLine extends EditLine {
         }
     }
 
-    /*	private final void saveHistory() {
-            if (current != start)
-               history[start] = history[current].copy();
-        }
-        protected final void newLine() {
-            if (running_cmd) {
-                super.newLine();
-                return;
-            }
-            saveHistory();
-            String command = extractCommand(start);
-            runCommand(command);
-        }
-    */
+
     private void tabPressedAll(String[] words) {
         tabPressed(words);
         for (TabListener listener : tab_listeners) {

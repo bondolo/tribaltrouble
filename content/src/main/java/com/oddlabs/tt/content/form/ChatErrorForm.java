@@ -2,10 +2,12 @@ package com.oddlabs.tt.content.form;
 
 import com.oddlabs.matchmaking.MatchmakingClientInterface;
 import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MessageForm;
 
 import java.util.ResourceBundle;
 
+/** Error dialog for matchmaking chat failures. */
 public final class ChatErrorForm extends MessageForm {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ChatErrorForm.class.getName());
 
@@ -22,7 +24,7 @@ public final class ChatErrorForm extends MessageForm {
         });
     }
 
-    public ChatErrorForm(int error_code) {
-        super(getErrorFromCode(error_code));
+    public ChatErrorForm(GUIRoot guiRoot, int error_code) {
+        super(guiRoot, getErrorFromCode(error_code));
     }
 }

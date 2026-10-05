@@ -319,9 +319,12 @@ public final class Player implements PlayerInterface {
         return findNearestEnemy(start_x, start_y, null, Building.class);
     }
 
-    public @Nullable RaceInfo getRaceInfo() {
+    public RaceInfo getRaceInfo() {
         var res = getWorld().getRaceData();
-        return res != null ? res.getRaceInfo(player_info.race()) : null;
+        if (null == res) {
+            throw new NullPointerException("Race data not initialized");
+        }
+        return res.getRaceInfo(player_info.race());
     }
 
     public SupplyContainer getUnitCountContainer() {

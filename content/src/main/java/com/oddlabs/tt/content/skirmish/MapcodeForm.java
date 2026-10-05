@@ -6,11 +6,11 @@ import com.oddlabs.tt.gui.EditLine;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.OKButton;
 import com.oddlabs.tt.gui.FocusDirection;
+import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.base.util.Utils;
 
@@ -22,6 +22,7 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_RIGHT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 
+/** Form dialog allowing the user to view, enter, or randomize a procedural map code. */
 public final class MapcodeForm extends Form {
     private static final int BUTTON_WIDTH = 100;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(MapcodeForm.class.getName());
@@ -31,13 +32,15 @@ public final class MapcodeForm extends Form {
     }
 
     private final TerrainMenu menu;
-
+    private final GUIRoot gui_root;
     private final EditLine editline_seed;
 
-    public MapcodeForm(TerrainMenu menu) {
+    public MapcodeForm(GUIRoot gui_root, TerrainMenu menu) {
+        super(gui_root);
+        this.gui_root = gui_root;
         this.menu = menu;
-        Label label_seed = new Label(i18n("map_code"), Skin.getSkin().getEditFont());
-        editline_seed = new EditLine(200, 12, MapCode.CHAR_TO_WORD + MapCode.LOWER_CASE_CHARS,
+        Label label_seed = new Label(i18n("map_code"), getSkin().getEditFont());
+        editline_seed = new EditLine(gui_root, 200, 12, MapCode.CHAR_TO_WORD + MapCode.LOWER_CASE_CHARS,
                 Origin.AT_START) {
             @Override
             protected boolean insert(int index, int codepoint) {
@@ -52,11 +55,11 @@ public final class MapcodeForm extends Form {
         };
         editline_seed.addEnterListener(_ -> done());
 
-        HorizButton button_ok = new OKButton(BUTTON_WIDTH);
+        HorizButton button_ok = new OKButton(gui_root, BUTTON_WIDTH);
         button_ok.addMouseClickListener((_, _, _, _) -> done());
-        HorizButton button_cancel = new CancelButton(BUTTON_WIDTH);
+        HorizButton button_cancel = new CancelButton(gui_root, BUTTON_WIDTH);
         button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
-        HorizButton button_rand = new HorizButton(i18n("randomize"), BUTTON_WIDTH);
+        HorizButton button_rand = new HorizButton(gui_root, i18n("randomize"), BUTTON_WIDTH);
         button_rand.addMouseClickListener(new RandButtonListener());
 
         addChild(label_seed);

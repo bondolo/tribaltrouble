@@ -4,13 +4,38 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 
+import java.util.Objects;
+
+/**
+ * Composite container for grouping and laying out {@link GUIObject} elements.
+ */
 public class Group extends GUIObject {
-    public Group() {
-        this(true);
+    private final GUIRoot guiRoot;
+    protected final Skin skin;
+
+    public Group(GUIRoot guiRoot) {
+        this(guiRoot, true);
     }
 
-    public Group(boolean can_focus) {
+    public Group(GUIRoot guiRoot, boolean can_focus) {
+        this.guiRoot = Objects.requireNonNull(guiRoot, "guiRoot cannot be null");
+        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "skin cannot be null");
         setCanFocus(can_focus);
+    }
+
+    public final GUIRoot getGUIRoot() {
+        return guiRoot;
+    }
+
+    @Override
+    public final GUIRoot getParentGUIRoot() {
+        GUIRoot root = super.getParentGUIRoot();
+        return root != null ? root : guiRoot;
+    }
+
+    @Override
+    protected Skin getSkin() {
+        return skin;
     }
 
     public void compileCanvas() {
@@ -71,7 +96,7 @@ public class Group extends GUIObject {
         int width = Math.max(top_left_width, bottom_right_width);
         int height = (max_y_tl - min_y_tl) + (max_y_br - min_y_br) + top_offset + bottom_offset;
         if (origin_top_left && origin_bottom_right)
-            height += Skin.getSkin().getFormData().sectionSpacing();
+            height += skin.getFormData().sectionSpacing();
         setDim(width, height);
 
         // correct the objects positions.

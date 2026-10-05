@@ -48,7 +48,8 @@ public final class GUIRoot extends GUIObject {
     private final TimerAnimation tool_tip_timer;
 
     private final GUI gui;
-    private final ToolTipBox tool_tip = new ToolTipBox();
+    private final Skin skin;
+    private final ToolTipBox tool_tip;
     private final InfoPrinter info_printer;
     private final Status status;
     private final InputState input_state;
@@ -63,10 +64,12 @@ public final class GUIRoot extends GUIObject {
 
     private float effective_scale = 1.0f;
 
-    GUIRoot(GUI gui) {
+    GUIRoot(GUI gui, Skin skin) {
         this.gui = gui;
-        this.info_printer = new InfoPrinter(this, 4, Skin.getSkin().getEditFont());
-        this.status = new Status(gui.getSettings(), gui.getFpsSupplier());
+        this.skin = Objects.requireNonNull(skin, "Skin cannot be null");
+        this.tool_tip = new ToolTipBox(this);
+        this.info_printer = new InfoPrinter(this, 4, skin.getEditFont());
+        this.status = new Status(gui.getSettings(), gui.getFpsSupplier(), skin.getEditFont());
         this.tool_tip_timer = new TimerAnimation(gui.getAnimationManager(), this::timerUpdate, 0);
         this.input_state = new InputState(this);
         setPos(0, 0);
@@ -153,6 +156,11 @@ public final class GUIRoot extends GUIObject {
     @Override
     public GUIRoot getParentGUIRoot() {
         return self();
+    }
+
+    @Override
+    public Skin getSkin() {
+        return skin;
     }
 
     public GUI getGUI() {

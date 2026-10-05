@@ -5,21 +5,35 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.util.Color;
 
-public class PanelTab extends GUIObject {
+import java.util.Objects;
+
+/**
+ * Interactive tab header button representing a panel within a panel group.
+ */
+public final class PanelTab extends GUIObject {
     private static final Color.Linear HIGHLIGHT_COLOR = Color.Linear.GREEN;
+    private final Skin skin;
+    private final PanelData panelData;
     private boolean selected;
     private final Label label;
 
-    public PanelTab(CharSequence caption) {
-        PanelData data = Skin.getSkin().getPanelData();
-        Font font = Skin.getSkin().getButtonFont();
+    PanelTab(GUIRoot guiRoot, CharSequence caption) {
+        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.panelData = skin.getPanelData();
+        Font font = skin.getButtonFont();
         label = new Label(caption, font);
-        label.setPos(data.leftCaptionOffset(), (data.tab().getHeight() - font.getHeight()) / 2 + data
+        label.setPos(panelData.leftCaptionOffset(), (panelData.tab().getHeight() - font.getHeight()) / 2 + panelData
                 .bottomCaptionOffset());
         addChild(label);
-        setDim(data.leftCaptionOffset() + label.getWidth() + data.rightCaptionOffset(), data.tab().getHeight());
+        setDim(panelData.leftCaptionOffset() + label.getWidth() + panelData.rightCaptionOffset(), panelData.tab()
+                .getHeight());
         setCanFocus(true);
         setTabStop(false); // control-tab is used for cycling panels, they aren't in the standard tab order.
+    }
+
+    @Override
+    protected Skin getSkin() {
+        return skin;
     }
 
     public final void select(boolean selected) {
@@ -39,7 +53,7 @@ public class PanelTab extends GUIObject {
 
     @Override
     protected final void renderGeometry(GUIRenderer renderer) {
-        Skin.getSkin().getPanelData().tab()
+        panelData.tab()
                 .render(renderer, 0, 0, getWidth(), getRenderState());
     }
 

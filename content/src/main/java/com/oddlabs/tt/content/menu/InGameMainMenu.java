@@ -40,7 +40,7 @@ public final class InGameMainMenu extends Menu {
     }
 
     public void addAbortButton(String abort_text) {
-        MenuButton abort = new MenuButton(abort_text, COLOR_NORMAL, COLOR_ACTIVE);
+        MenuButton abort = new MenuButton(getGUIRoot(), abort_text, COLOR_NORMAL, COLOR_ACTIVE);
         addChild(abort);
         abort.addMouseClickListener(new AbortListener());
     }
@@ -51,7 +51,7 @@ public final class InGameMainMenu extends Menu {
 
         addOptionsButton(() -> new InGameOptionsMenu(viewer));
 
-        game_infos = new Group(false);
+        game_infos = new Group(getGUIRoot(), false);
         if (viewer.getInGameInfo() instanceof InGameMenuHook hook) {
             hook.addGUI(viewer, this, game_infos);
         }
@@ -88,7 +88,7 @@ public final class InGameMainMenu extends Menu {
     private final class AbortListener implements MouseClickListener {
         @Override
         public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            setMenuCentered(new QuestionForm(Menu.i18n("end_game_confirm"), new ActionAbortListener()));
+            setMenuCentered(new QuestionForm(getGUIRoot(), Menu.i18n("end_game_confirm"), new ActionAbortListener()));
         }
     }
 

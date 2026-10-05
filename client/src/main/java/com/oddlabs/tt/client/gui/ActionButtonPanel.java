@@ -8,7 +8,6 @@ import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.NonFocusGroup;
 import com.oddlabs.tt.gui.NonFocusIconButton;
 import com.oddlabs.tt.gui.Placement;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.simulation.model.BuildingType;
 
 import com.oddlabs.tt.base.animation.Animated;
@@ -65,18 +64,18 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ActionButtonPanel.class.getName());
     private final ActionControllerStack controllerStack = new ActionControllerStack();
-    private final Group unit_group = new NonFocusGroup();
-    private final Group peon_group = new NonFocusGroup();
-    private final Group chieftain_group = new NonFocusGroup();
-    private final Group tower_group = new NonFocusGroup();
-    private final Group quarters_status_group = new NonFocusGroup();
-    private final Group quarters_group = new NonFocusGroup();
-    private final Group status_group = new NonFocusGroup();
-    private final Group armory_group = new NonFocusGroup();
-    private final Group harvest_group = new NonFocusGroup();
-    private final Group build_group = new NonFocusGroup();
-    private final Group army_group = new NonFocusGroup();
-    private final Group transport_group = new NonFocusGroup();
+    private final Group unit_group;
+    private final Group peon_group;
+    private final Group chieftain_group;
+    private final Group tower_group;
+    private final Group quarters_status_group;
+    private final Group quarters_group;
+    private final Group status_group;
+    private final Group armory_group;
+    private final Group harvest_group;
+    private final Group build_group;
+    private final Group army_group;
+    private final Group transport_group;
     private final NonFocusIconButton tower_attack_button;
     private final NonFocusIconButton tower_exit_button;
     //	private boolean tower_exit_button_disabled;
@@ -147,12 +146,27 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
             case Race.VIKINGS -> icons.getVikingIcons();
             case Race.NATIVES -> icons.getNativeIcons();
         };
-        Skin skin = Skin.getSkin();
-        String widest_char = new String(Character.toChars(skin.getEditFont().getWidestCodepoint("0123456789")));
-        int label_width = skin.getEditFont().getWidth(widest_char + widest_char + widest_char);
+        GUIRoot guiRoot = viewer.getGUIRoot();
+        this.unit_group = new NonFocusGroup(guiRoot);
+        this.peon_group = new NonFocusGroup(guiRoot);
+        this.chieftain_group = new NonFocusGroup(guiRoot);
+        this.tower_group = new NonFocusGroup(guiRoot);
+        this.quarters_status_group = new NonFocusGroup(guiRoot);
+        this.quarters_group = new NonFocusGroup(guiRoot);
+        this.status_group = new NonFocusGroup(guiRoot);
+        this.armory_group = new NonFocusGroup(guiRoot);
+        this.harvest_group = new NonFocusGroup(guiRoot);
+        this.build_group = new NonFocusGroup(guiRoot);
+        this.army_group = new NonFocusGroup(guiRoot);
+        this.transport_group = new NonFocusGroup(guiRoot);
+        var skin = guiRoot.getSkin();
+        var font = skin.getEditFont();
+        var backButton = skin.getBackButton();
+        String widest_char = new String(Character.toChars(font.getWidestCodepoint("0123456789")));
+        int label_width = font.getWidth(widest_char + widest_char + widest_char);
 
         move_button = new NonFocusIconButton(
-                race_icons.moveIcon(), GameAction.UNIT_MOVE,
+                guiRoot, race_icons.moveIcon(), GameAction.UNIT_MOVE,
                 () -> i18n("move_tip", getBinding(GameAction.UNIT_MOVE))
         );
         move_button.setIconDisabler(() -> !viewer.getLocalPlayer().canMove());
@@ -160,7 +174,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         unit_group.addChild(move_button);
 
         attack_button = new NonFocusIconButton(
-                race_icons.attackIcon(), GameAction.UNIT_ATTACK,
+                guiRoot, race_icons.attackIcon(), GameAction.UNIT_ATTACK,
                 () -> i18n("attack_tip", getBinding(GameAction.UNIT_ATTACK))
         );
         attack_button.setIconDisabler(() -> !viewer.getLocalPlayer().canAttack());
@@ -172,28 +186,28 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         unit_group.compileCanvas(GROUP_LEFT_OFFSET, 0, GROUP_RIGHT_OFFSET, GROUP_BOTTOM_OFFSET);
 
         gather_repair_button = new NonFocusIconButton(
-                race_icons.gatherRepairIcon(), GameAction.UNIT_GATHER,
+                guiRoot, race_icons.gatherRepairIcon(), GameAction.UNIT_GATHER,
                 () -> i18n("gather_repair_tip", getBinding(GameAction.UNIT_GATHER))
         );
         peon_group.addChild(gather_repair_button);
         bindAction(gather_repair_button, UnitActionController.class, UnitActionController::executeGatherRepair);
         gather_repair_button.setIconDisabler(() -> !viewer.getLocalPlayer().canRepair());
         quarters_button = new NonFocusIconButton(
-                race_icons.quartersIcon(), GameAction.UNIT_BUILD_QUARTERS,
+                guiRoot, race_icons.quartersIcon(), GameAction.UNIT_BUILD_QUARTERS,
                 () -> i18n("quarters_tip", getBinding(GameAction.UNIT_BUILD_QUARTERS))
         );
         peon_group.addChild(quarters_button);
         bindAction(quarters_button, UnitActionController.class, u -> u.executeBuild(BuildingType.QUARTERS));
         quarters_button.setIconDisabler(() -> !viewer.getLocalPlayer().canBuild(BuildingType.QUARTERS));
         armory_button = new NonFocusIconButton(
-                race_icons.armoryIcon(), GameAction.UNIT_BUILD_ARMORY,
+                guiRoot, race_icons.armoryIcon(), GameAction.UNIT_BUILD_ARMORY,
                 () -> i18n("armory_tip", getBinding(GameAction.UNIT_BUILD_ARMORY))
         );
         peon_group.addChild(armory_button);
         bindAction(armory_button, UnitActionController.class, u -> u.executeBuild(BuildingType.ARMORY));
         armory_button.setIconDisabler(() -> !viewer.getLocalPlayer().canBuild(BuildingType.ARMORY));
         tower_button = new NonFocusIconButton(
-                race_icons.towerIcon(), GameAction.UNIT_BUILD_TOWER,
+                guiRoot, race_icons.towerIcon(), GameAction.UNIT_BUILD_TOWER,
                 () -> i18n("tower_tip", getBinding(GameAction.UNIT_BUILD_TOWER))
         );
         peon_group.addChild(tower_button);
@@ -208,14 +222,14 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         PlayerInterface player_interface = viewer.getPeerHub().getPlayerInterface();
         MagicType magic1Type = viewer.getLocalPlayer().getRaceInfo().getMagicType(0);
         magic1_button = new RechargeButton(
-                player_interface, race_icons.magic1Icon(), GameAction.MAGIC_1,
+                guiRoot, player_interface, race_icons.magic1Icon(), GameAction.MAGIC_1,
                 () -> getMagicTooltip(magic1Type), magic1Type
         );
         chieftain_group.addChild(magic1_button);
         bindAction(magic1_button, UnitActionController.class, u -> u.executeMagic(0));
         MagicType magic2Type = viewer.getLocalPlayer().getRaceInfo().getMagicType(1);
         magic2_button = new RechargeButton(
-                player_interface, race_icons.magic2Icon(), GameAction.MAGIC_2,
+                guiRoot, player_interface, race_icons.magic2Icon(), GameAction.MAGIC_2,
                 () -> getMagicTooltip(magic2Type), magic2Type
         );
         chieftain_group.addChild(magic2_button);
@@ -225,13 +239,13 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         chieftain_group.compileCanvas(GROUP_LEFT_OFFSET, GROUP_BOTTOM_OFFSET, GROUP_RIGHT_OFFSET, 0);
 
         tower_attack_button = new NonFocusIconButton(
-                race_icons.attackIcon(),
+                guiRoot, race_icons.attackIcon(),
                 GameAction.UNIT_ATTACK, () -> i18n("attack_tip", getBinding(GameAction.UNIT_ATTACK))
         );
         tower_group.addChild(tower_attack_button);
         bindAction(tower_attack_button, TowerActionController.class, TowerActionController::executeTowerAttack);
         tower_exit_button = new NonFocusIconButton(
-                race_icons.towerExitIcon(), GameAction.UNIT_EXIT_TOWER,
+                guiRoot, race_icons.towerExitIcon(), GameAction.UNIT_EXIT_TOWER,
                 () -> i18n("exit_tip", getBinding(GameAction.UNIT_EXIT_TOWER))
         );
         tower_group.addChild(tower_exit_button);
@@ -240,24 +254,30 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         tower_exit_button.place(tower_attack_button, Placement.BOTTOM_MID);
         tower_group.compileCanvas();
 
-        unit_status = new StatusIcon(label_width, race_icons.unitStatusIcon(), i18n("units_tip"));
+        unit_status = new StatusIcon(font, label_width, race_icons.unitStatusIcon(), i18n("units_tip"));
         status_group.addChild(unit_status);
-        weapon_rock_status = new StatusIcon(label_width, race_icons.weaponRockStatusIcon(), i18n("rock_weapons_tip"));
+        weapon_rock_status = new StatusIcon(font, label_width, race_icons.weaponRockStatusIcon(), i18n(
+                "rock_weapons_tip"));
         status_group.addChild(weapon_rock_status);
-        weapon_iron_status = new StatusIcon(label_width, race_icons.weaponIronStatusIcon(), i18n("iron_weapons_tip"));
+        weapon_iron_status = new StatusIcon(font, label_width, race_icons.weaponIronStatusIcon(), i18n(
+                "iron_weapons_tip"));
         status_group.addChild(weapon_iron_status);
         weapon_rubber_status = new StatusIcon(
-                label_width, race_icons.weaponRubberStatusIcon(), i18n(
+                font, label_width, race_icons.weaponRubberStatusIcon(), i18n(
                         "chicken_weapons_tip")
         );
         status_group.addChild(weapon_rubber_status);
-        tree_status = new StatusIcon(label_width, icons.getTreeStatusIcon(), i18n("tree_resources_tip"));
+        tree_status = new StatusIcon(font, label_width, icons.getTreeStatusIcon(), i18n(
+                "tree_resources_tip"));
         status_group.addChild(tree_status);
-        rock_status = new StatusIcon(label_width, icons.getRockStatusIcon(), i18n("rock_resources_tip"));
+        rock_status = new StatusIcon(font, label_width, icons.getRockStatusIcon(), i18n(
+                "rock_resources_tip"));
         status_group.addChild(rock_status);
-        iron_status = new StatusIcon(label_width, icons.getIronStatusIcon(), i18n("iron_resources_tip"));
+        iron_status = new StatusIcon(font, label_width, icons.getIronStatusIcon(), i18n(
+                "iron_resources_tip"));
         status_group.addChild(iron_status);
-        rubber_status = new StatusIcon(label_width, icons.getRubberStatusIcon(), i18n("chicken_resources_tip"));
+        rubber_status = new StatusIcon(font, label_width, icons.getRubberStatusIcon(), i18n(
+                "chicken_resources_tip"));
         status_group.addChild(rubber_status);
         unit_status.place();
         weapon_rock_status.place(unit_status, Placement.BOTTOM_MID);
@@ -269,7 +289,8 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         rubber_status.place(iron_status, Placement.BOTTOM_MID);
         status_group.compileCanvas(5, 5, 5, 5);
 
-        quarters_unit_status = new WatchStatusIcon(label_width, race_icons.unitStatusIcon(), i18n("units_tip"));
+        quarters_unit_status = new WatchStatusIcon(font, label_width, race_icons.unitStatusIcon(), i18n(
+                "units_tip"));
         quarters_status_group.addChild(quarters_unit_status);
         quarters_unit_status.place();
         quarters_status_group.compileCanvas(5, 5, 5, 5);
@@ -285,6 +306,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         bindAction(quarters_chieftain_button, QuartersActionController.class,
                 QuartersActionController::executeTrainChieftain);
         var quarters_rally_point_button = new NonFocusIconButton(
+                guiRoot,
                 race_icons.rallyPointIcon(),
                 GameAction.UNIT_SET_RALLY, () -> i18n("rally_point_tip", getBinding(GameAction.UNIT_SET_RALLY))
         );
@@ -297,6 +319,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         quarters_group.compileCanvas(GROUP_LEFT_OFFSET, GROUP_BOTTOM_OFFSET, GROUP_RIGHT_OFFSET, GROUP_TOP_OFFSET);
 
         harvest_button = new NonFocusIconButton(
+                guiRoot,
                 icons.getHarvestIcon(), GameAction.PROD_HARVEST,
                 () -> i18n("gather_resources_tip", getBinding(GameAction.PROD_HARVEST))
         );
@@ -304,6 +327,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         armory_group.addChild(harvest_button);
         bindAction(harvest_button, ArmoryActionController.class, a -> a.openSubmenu(SubmenuType.HARVEST));
         build_button = new NonFocusIconButton(
+                guiRoot,
                 race_icons.buildWeaponsIcon(), GameAction.PROD_WEAPONS,
                 () -> i18n("produce_weapons_tip", getBinding(GameAction.PROD_WEAPONS))
         );
@@ -311,6 +335,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         armory_group.addChild(build_button);
         bindAction(build_button, ArmoryActionController.class, a -> a.openSubmenu(SubmenuType.WEAPONS));
         army_button = new NonFocusIconButton(
+                guiRoot,
                 race_icons.armyIcon(), GameAction.PROD_ARMY,
                 () -> i18n("deploy_army_tip", getBinding(GameAction.PROD_ARMY))
         );
@@ -318,12 +343,14 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         armory_group.addChild(army_button);
         bindAction(army_button, ArmoryActionController.class, a -> a.openSubmenu(SubmenuType.ARMY));
         transport_button = new NonFocusIconButton(
+                guiRoot,
                 race_icons.transportIcon(), GameAction.PROD_TRANSPORT,
                 () -> i18n("transport_resources_tip", getBinding(GameAction.PROD_TRANSPORT))
         );
         armory_group.addChild(transport_button);
         bindAction(transport_button, ArmoryActionController.class, a -> a.openSubmenu(SubmenuType.TRANSPORT));
         var rally_point_button = new NonFocusIconButton(
+                guiRoot,
                 race_icons.rallyPointIcon(), GameAction.UNIT_SET_RALLY,
                 () -> i18n("rally_point_tip", getBinding(GameAction.UNIT_SET_RALLY))
         );
@@ -362,7 +389,8 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         );
         harvest_group.addChild(harvest_rubber_button);
         var harvest_back_button = new NonFocusIconButton(
-                skin.getBackButton(), GameAction.GAMEPLAY_BACK,
+                guiRoot,
+                backButton, GameAction.GAMEPLAY_BACK,
                 () -> i18n("back_tip", getBinding(GameAction.GAMEPLAY_BACK))
         );
         bindAction(harvest_back_button, controllerStack::pop);
@@ -393,7 +421,8 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         );
         build_group.addChild(build_weapon_rubber_button);
         var build_back_button = new NonFocusIconButton(
-                skin.getBackButton(), GameAction.GAMEPLAY_BACK,
+                guiRoot,
+                backButton, GameAction.GAMEPLAY_BACK,
                 () -> i18n("back_tip", getBinding(GameAction.GAMEPLAY_BACK))
         );
         bindAction(build_back_button, controllerStack::pop);
@@ -432,7 +461,8 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         army_group.addChild(army_warrior_rubber_button);
 
         var army_back_button = new NonFocusIconButton(
-                skin.getBackButton(), GameAction.GAMEPLAY_BACK,
+                guiRoot,
+                backButton, GameAction.GAMEPLAY_BACK,
                 () -> i18n("back_tip", getBinding(GameAction.GAMEPLAY_BACK))
         );
         bindAction(army_back_button, controllerStack::pop);
@@ -469,7 +499,8 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         );
         transport_group.addChild(transport_rubber_button);
         var transport_back_button = new NonFocusIconButton(
-                skin.getBackButton(), GameAction.GAMEPLAY_BACK,
+                guiRoot,
+                backButton, GameAction.GAMEPLAY_BACK,
                 () -> i18n("back_tip", getBinding(GameAction.GAMEPLAY_BACK))
         );
         bindAction(transport_back_button, controllerStack::pop);
@@ -552,11 +583,11 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
 
             if (current_unit) {
                 controllerStack.setRoot(new UnitActionController(this, current_peon, current_chieftain));
-            } else if (current_tower && current_building != null) {
+            } else if (current_tower) {
                 controllerStack.setRoot(new TowerActionController(this, current_building));
-            } else if (current_quarters && current_building != null) {
+            } else if (current_quarters) {
                 controllerStack.setRoot(new QuartersActionController(this, current_building));
-            } else if (current_armory && current_building != null) {
+            } else if (current_armory) {
                 controllerStack.setRoot(new ArmoryActionController(this, current_building, controllerStack));
             } else {
                 controllerStack.clear();

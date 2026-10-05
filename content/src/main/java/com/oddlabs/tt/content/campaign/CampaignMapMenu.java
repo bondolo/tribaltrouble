@@ -24,7 +24,6 @@ import org.jspecify.annotations.Nullable;
  */
 final class CampaignMapMenu extends Form {
     private static final Color.Linear DARK_GLASS = Color.Linear.BLACK.alpha(0.345f);
-    private final GUIRoot gui_root;
     private final Peer engine;
     private final GUIImage overlay;
     private final GUIImage logo;
@@ -33,7 +32,7 @@ final class CampaignMapMenu extends Form {
     private @Nullable Form current_menu;
 
     CampaignMapMenu(GUIRoot gui_root, Peer engine) {
-        this.gui_root = gui_root;
+        super(gui_root);
         this.engine = engine;
 
         int width = gui_root.getWidth();
@@ -52,7 +51,7 @@ final class CampaignMapMenu extends Form {
         logo.setPos(0, height - logoHeight);
         addChild(logo);
 
-        resumeButton = new MenuButton(Menu.i18n("resume"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
+        resumeButton = new MenuButton(gui_root, Menu.i18n("resume"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(resumeButton);
         resumeButton.addMouseClickListener((_, _, _, _) -> cancel());
 
@@ -112,32 +111,33 @@ final class CampaignMapMenu extends Form {
     }
 
     private void addOptionsButton() {
-        MenuButton options = new MenuButton(Menu.i18n("options"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
+        MenuButton options = new MenuButton(getGUIRoot(), Menu.i18n("options"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(options);
         options.addMouseClickListener((_, _, _, _) -> setMenuCentered(
-                new OptionsMenu(gui_root, engine))
+                new OptionsMenu(getGUIRoot(), engine))
         );
     }
 
     private void addAbortButton() {
         String abort_text = Menu.i18n("end_campaign");
-        MenuButton abort = new MenuButton(abort_text, Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
+        MenuButton abort = new MenuButton(getGUIRoot(), abort_text, Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(abort);
-        abort.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuestionForm(Menu.i18n("end_game_confirm"),
-                (_, _, _, _) -> CampaignMapForm.closeCampaign(engine, gui_root.getGUI())))
+        abort.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuestionForm(getGUIRoot(), Menu.i18n(
+                "end_game_confirm"),
+                (_, _, _, _) -> CampaignMapForm.closeCampaign(engine, getGUIRoot().getGUI())))
         );
     }
 
     private void addExitButton() {
-        MenuButton exit = new MenuButton(Menu.i18n("quit"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
+        MenuButton exit = new MenuButton(getGUIRoot(), Menu.i18n("quit"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(exit);
-        exit.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuitForm(gui_root.getGUI()
+        exit.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuitForm(getGUIRoot(), getGUIRoot().getGUI()
                 .getShutdownHandler())));
     }
 
     private void layoutButtons() {
-        int width = gui_root.getWidth();
-        int height = gui_root.getHeight();
+        int width = getGUIRoot().getWidth();
+        int height = getGUIRoot().getHeight();
         setDim(width, height);
 
         overlay.setDim(width, height);

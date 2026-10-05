@@ -115,14 +115,6 @@ public final class GUI implements Animated, AutoCloseable {
         return skin;
     }
 
-    public void runWithSkin(Runnable operation) {
-        Skin.run(skin, operation);
-    }
-
-    public <V, X extends Throwable> V callWithSkin(ScopedValue.CallableOp<V, X> operation) throws X {
-        return Skin.call(skin, operation);
-    }
-
     public LocalInput getLocalInput() {
         return localInput;
     }
@@ -132,17 +124,15 @@ public final class GUI implements Animated, AutoCloseable {
     }
 
     public void tick() {
-        ScopedValue.where(Skin.CURRENT, skin).run(() -> localInput.poll(getGUIRoot()));
+        localInput.poll(getGUIRoot());
     }
 
     public void onCloseRequested() {
-        ScopedValue.where(Skin.CURRENT, skin).run(() -> {
-            if (closeHandler != null) {
-                closeHandler.run();
-            } else {
-                shutdownHandler.run();
-            }
-        });
+        if (closeHandler != null) {
+            closeHandler.run();
+        } else {
+            shutdownHandler.run();
+        }
     }
 
     public void updateProgress() {
@@ -169,18 +159,16 @@ public final class GUI implements Animated, AutoCloseable {
     }
 
     public GUIRoot createRoot() {
-        return ScopedValue.where(Skin.CURRENT, skin).call(() -> {
-            GUIRoot gui_root = new GUIRoot(this);
-            // This happens early before the viewport is fully initialized
-            gui_root.displayChanged(window.getWidth(), window.getHeight());
-            return gui_root;
-        });
+        GUIRoot gui_root = new GUIRoot(this, skin);
+        // This happens early before the viewport is fully initialized
+        gui_root.displayChanged(window.getWidth(), window.getHeight());
+        return gui_root;
     }
 
     @Override
     public void animate(float dt) {
         if (fade != null) {
-            ScopedValue.where(Skin.CURRENT, skin).run(() -> fade.animate(this, dt));
+            fade.animate(this, dt);
         }
     }
 
@@ -274,12 +262,10 @@ public final class GUI implements Animated, AutoCloseable {
         try (var _ = (renderer == null || renderer.isClosed()) ? context.withBlendMode(BlendMode.PREMULTIPLIED)
                 : (ScopedState) () -> {
                 }) {
-            ScopedValue.where(Skin.CURRENT, skin).run(() -> {
-                guiRenderer.renderFrame(context, guiRoot.getWidth(), guiRoot.getHeight(), () -> {
-                    guiRoot.render(guiRenderer);
-                    guiRoot.renderTopmost(guiRenderer, renderer != null ? renderer.getToolTip() : null, renderer != null
-                            && renderer.isCheater());
-                });
+            guiRenderer.renderFrame(context, guiRoot.getWidth(), guiRoot.getHeight(), () -> {
+                guiRoot.render(guiRenderer);
+                guiRoot.renderTopmost(guiRenderer, renderer != null ? renderer.getToolTip() : null, renderer != null
+                        && renderer.isCheater());
             });
         }
     }

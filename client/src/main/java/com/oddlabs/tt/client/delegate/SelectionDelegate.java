@@ -8,7 +8,6 @@ import com.oddlabs.tt.client.gui.ActionButtonPanel;
 import com.oddlabs.tt.gui.CursorType;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
@@ -83,13 +82,14 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
         super(viewer, camera);
         String observer_mode = Utils.getBundleString(ResourceBundle.getBundle(SelectionDelegate.class.getName()),
                 "observer_mode");
-        this.observer_label = new Label(observer_mode, Skin.getSkin().getHeadlineFont());
+        this.observer_label = new Label(observer_mode, getGUIRoot().getSkin().getHeadlineFont());
         this.game_camera = (GameCamera) getCamera();
         displayChangedNotify(getGUIRoot().getWidth(), getGUIRoot().getHeight());
         addChild(getViewer().getPanel());
         var network = viewer.getEngine().getNetwork();
-        this.chat_form = new InGameChatForm(network.getChatHub(), viewer.getInGameChatHistory(), viewer
-                .getChatSender());
+        this.chat_form = new InGameChatForm(viewer.getGUIRoot(), network.getChatHub(), viewer.getInGameChatHistory(),
+                viewer
+                        .getChatSender());
         chat_form.addCloseListener(() -> {
             if (getViewer().getInputManager().isActive(GameAction.GLOBAL_CHAT)) {
                 close_chat_override = true;

@@ -25,7 +25,7 @@ import java.util.stream.IntStream;
 /**
  * Fast lookups for common UI icons used throughout the game's interface.
  */
-public class GUIIcons {
+public final class GUIIcons {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(Icons.class.getName());
 
     private String i18n(String key, Object... args) {

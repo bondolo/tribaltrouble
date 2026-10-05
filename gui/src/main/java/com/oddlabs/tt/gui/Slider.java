@@ -17,6 +17,8 @@ public final class Slider extends GUIObject {
     private final Set<Runnable> release_listeners = new CopyOnWriteArraySet<>();
     private final DragListener drag_listener = new DragListener();
 
+    private final Skin skin;
+    private final SliderData sliderData;
     private final SliderButton button;
     private final int left_offset;
     private final int cardinality;
@@ -24,23 +26,30 @@ public final class Slider extends GUIObject {
     private final int min;
     private int value;
 
-    public Slider(int width, int min, int max, int init_value) {
+    public Slider(GUIRoot guiRoot, int width, int min, int max, int init_value) {
+        this.skin = java.util.Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.sliderData = skin.getSliderData();
         cardinality = max - min + 1;
         assert cardinality > 0 && max >= init_value && init_value >= min : "Invalid values. cardinality = "
                 + cardinality + " | max = " + max + " | min = " + min + " | init_value = " + init_value;
         this.min = min;
-        left_offset = Skin.getSkin().getSliderData().leftOffset();
-        int right_offset = Skin.getSkin().getSliderData().rightOffset();
-        setDim(width, Skin.getSkin().getSliderData().slider().getHeight());
+        left_offset = sliderData.leftOffset();
+        int right_offset = sliderData.rightOffset();
+        setDim(width, sliderData.slider().getHeight());
         setCanFocus(true);
 
-        button = new SliderButton(this, Skin.getSkin().getSliderData().button());
+        button = new SliderButton(this, sliderData.button());
         step = (getWidth() - left_offset - right_offset - button.getWidth()) / (float) (cardinality - 1);
         setValue(init_value);
         addChild(button);
 
         button.addMouseMotionListener(drag_listener);
         button.addMouseButtonListener(drag_listener);
+    }
+
+    @Override
+    protected Skin getSkin() {
+        return skin;
     }
 
     public void addReleaseListener(Runnable listener) {
@@ -55,7 +64,7 @@ public final class Slider extends GUIObject {
 
     @Override
     protected void renderGeometry(GUIRenderer renderer) {
-        Skin.getSkin().getSliderData().slider()
+        sliderData.slider()
                 .render(renderer, 0, 0, getWidth(), isDisabled() ? ModeIconQuads.Mode.DISABLED
                         : ModeIconQuads.Mode.NORMAL);
     }
@@ -171,7 +180,6 @@ public final class Slider extends GUIObject {
     }
 
     private final class DragListener implements MouseMotionListener, MouseButtonListener {
-        final SliderData data = Skin.getSkin().getSliderData();
         float start_offset;
         int grab_offset_x;
         int grab_offset_y;

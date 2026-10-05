@@ -12,7 +12,6 @@ import com.oddlabs.tt.gui.Panel;
 import com.oddlabs.tt.gui.PulldownButton;
 import com.oddlabs.tt.gui.PulldownItem;
 import com.oddlabs.tt.gui.PulldownMenu;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.Slider;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
@@ -37,23 +36,25 @@ public class SoundPanel extends Panel {
             AccessibilitySettings accessibilitySettings, AudioManager audioManager,
             Deterministic deterministic
     ) {
-        super(AbstractOptionsMenu.i18n("sound_caption"));
+        super(gui_root, AbstractOptionsMenu.i18n("sound_caption"));
+        var editFont = getSkin().getEditFont();
 
         boolean audioCreated = deterministic.log(audioManager != null);
 
         // Sound
-        Group group_music = new Group();
+        Group group_music = new Group(gui_root);
         addChild(group_music);
-        Label label_music_low = new Label(AbstractOptionsMenu.i18n("low"), Skin.getSkin().getEditFont());
+        Label label_music_low = new Label(AbstractOptionsMenu.i18n("low"), editFont);
         group_music.addChild(label_music_low);
-        Label label_music_high = new Label(AbstractOptionsMenu.i18n("high"), Skin.getSkin().getEditFont());
+        Label label_music_high = new Label(AbstractOptionsMenu.i18n("high"), editFont);
         group_music.addChild(label_music_high);
-        CheckBox cb_music = new CheckBox(audioSettings.play_music, AbstractOptionsMenu.i18n("music"));
+        CheckBox cb_music = new CheckBox(gui_root, audioSettings.play_music, AbstractOptionsMenu.i18n("music"));
         group_music.addChild(cb_music);
-        Label label_music = new Label(AbstractOptionsMenu.i18n("music_volume"), Skin.getSkin().getEditFont());
+        Label label_music = new Label(AbstractOptionsMenu.i18n("music_volume"), editFont);
         group_music.addChild(label_music);
 
-        Slider slider_music = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (audioSettings.music_gain * MAX_VALUE));
+        Slider slider_music = new Slider(gui_root, SLIDER_WIDTH, 0, MAX_VALUE, (int) (audioSettings.music_gain
+                * MAX_VALUE));
         slider_music.setDisabled(TEMPORARILY_DISABLE_MUSIC_CONTROLS || !cb_music.isChecked());
         group_music.addChild(slider_music);
 
@@ -76,18 +77,19 @@ public class SoundPanel extends Panel {
         group_music.compileCanvas();
         group_music.setDisabled(TEMPORARILY_DISABLE_MUSIC_CONTROLS || !audioCreated);
 
-        Group group_sound = new Group();
+        Group group_sound = new Group(gui_root);
         addChild(group_sound);
-        Label label_sound_low = new Label(AbstractOptionsMenu.i18n("low"), Skin.getSkin().getEditFont());
+        Label label_sound_low = new Label(AbstractOptionsMenu.i18n("low"), editFont);
         group_sound.addChild(label_sound_low);
-        Label label_sound_high = new Label(AbstractOptionsMenu.i18n("high"), Skin.getSkin().getEditFont());
+        Label label_sound_high = new Label(AbstractOptionsMenu.i18n("high"), editFont);
         group_sound.addChild(label_sound_high);
-        CheckBox cb_sound = new CheckBox(audioSettings.play_sfx, AbstractOptionsMenu.i18n("sound_effects"));
+        CheckBox cb_sound = new CheckBox(gui_root, audioSettings.play_sfx, AbstractOptionsMenu.i18n("sound_effects"));
         group_sound.addChild(cb_sound);
-        Label label_sound = new Label(AbstractOptionsMenu.i18n("sound_effects_volume"), Skin.getSkin().getEditFont());
+        Label label_sound = new Label(AbstractOptionsMenu.i18n("sound_effects_volume"), editFont);
         group_sound.addChild(label_sound);
 
-        Slider slider_sound = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (audioSettings.sound_gain * MAX_VALUE));
+        Slider slider_sound = new Slider(gui_root, SLIDER_WIDTH, 0, MAX_VALUE, (int) (audioSettings.sound_gain
+                * MAX_VALUE));
         slider_sound.setDisabled(!cb_sound.isChecked());
         group_sound.addChild(slider_sound);
 
@@ -111,20 +113,22 @@ public class SoundPanel extends Panel {
         group_sound.setDisabled(!audioCreated);
 
         // Audio Output
-        Group group_output = new Group();
+        Group group_output = new Group(gui_root);
         addChild(group_output);
-        Label label_output = new Label(AbstractOptionsMenu.i18n("audio_output"), Skin.getSkin().getEditFont());
+        Label label_output = new Label(AbstractOptionsMenu.i18n("audio_output"), editFont);
         group_output.addChild(label_output);
 
-        PulldownMenu<Boolean> pm_output = new PulldownMenu<>();
-        pm_output.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("audio_output_speakers"), Boolean.FALSE));
-        pm_output.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("audio_output_headphones"), Boolean.TRUE));
+        PulldownMenu<Boolean> pm_output = new PulldownMenu<>(gui_root);
+        pm_output.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("audio_output_speakers"),
+                Boolean.FALSE));
+        pm_output.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("audio_output_headphones"),
+                Boolean.TRUE));
 
         int initialOutput = audioSettings.headphone_mode ? 1 : 0;
         PulldownButton<Boolean> pb_output = new PulldownButton<>(gui_root, pm_output, initialOutput, 150);
         group_output.addChild(pb_output);
 
-        CheckBox cb_visual_alerts = new CheckBox(accessibilitySettings.sound_emojis,
+        CheckBox cb_visual_alerts = new CheckBox(gui_root, accessibilitySettings.sound_emojis,
                 AbstractOptionsMenu.i18n("sound_emojis"),
                 AbstractOptionsMenu.i18n("sound_emojis_tip"));
         group_output.addChild(cb_visual_alerts);

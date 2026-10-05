@@ -3,14 +3,27 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
+import java.util.Objects;
+
+/**
+ * Push button rendered with horizontal cap and fill quads.
+ */
 public class HorizButton extends ButtonObject {
-    public HorizButton(String caption, int width) {
-        super(Skin.getSkin().getButtonFont());
-        setDim(width, Skin.getSkin().getHorizButtonPressed().getHeight());
+    private final Skin skin;
+
+    public HorizButton(GUIRoot guiRoot, String caption, int width) {
+        super(guiRoot.getSkin().getButtonFont());
+        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        setDim(width, skin.getHorizButtonPressed().getHeight());
         Label label = new Label(caption, getFont());
         label.setPos((width - label.getWidth()) / 2,
-                (Skin.getSkin().getHorizButtonPressed().getHeight() - getFont().getHeight()) / 2);
+                (skin.getHorizButtonPressed().getHeight() - getFont().getHeight()) / 2);
         addChild(label);
+    }
+
+    @Override
+    protected Skin getSkin() {
+        return skin;
     }
 
     @Override
@@ -23,8 +36,8 @@ public class HorizButton extends ButtonObject {
                         ? ModeIconQuads.Mode.ACTIVE : ModeIconQuads.Mode.NORMAL;
 
         var horizButton = skinMode == ModeIconQuads.Mode.ACTIVE && isPressed() && isHovered()
-                ? Skin.getSkin().getHorizButtonPressed()
-                : Skin.getSkin().getHorizButtonUnpressed();
+                ? skin.getHorizButtonPressed()
+                : skin.getHorizButtonUnpressed();
 
         horizButton.render(renderer, 0, 0, getWidth(), skinMode);
     }

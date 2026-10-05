@@ -19,7 +19,8 @@ public final class MultiplayerInGameInfo extends DefaultInGameInfo {
     @Override
     public void addGUI(WorldViewer viewer, InGameMainMenu menu, Group game_infos) {
         super.addGUI(viewer, menu, game_infos);
-        FreeQuitLabel free_quit_label = new FreeQuitLabel(viewer.getWorld(), viewer.getAnimationManagerLocal());
+        FreeQuitLabel free_quit_label = new FreeQuitLabel(viewer.getGUIRoot(), viewer.getWorld(), viewer
+                .getAnimationManagerLocal());
         menu.addChild(free_quit_label);
         free_quit_label.setPos(0, 0);
     }

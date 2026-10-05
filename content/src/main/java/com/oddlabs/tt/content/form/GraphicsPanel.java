@@ -17,7 +17,6 @@ import com.oddlabs.tt.gui.PulldownButton;
 import com.oddlabs.tt.gui.PulldownItem;
 import com.oddlabs.tt.gui.PulldownMenu;
 import com.oddlabs.tt.gui.Row;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.Slider;
 import com.oddlabs.tt.gui.SortedLabel;
 import com.oddlabs.tt.gui.event.RowListener;
@@ -39,35 +38,37 @@ import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
 public final class GraphicsPanel extends Panel {
     private final Label label_pct;
     private final Peer engine;
+    private final GUIRoot gui_root;
 
     public GraphicsPanel(GUIRoot gui_root, Form options, Peer engine) {
-        super(AbstractOptionsMenu.i18n("graphics_caption"));
+        super(gui_root, AbstractOptionsMenu.i18n("graphics_caption"));
+        this.gui_root = gui_root;
         this.engine = engine;
-        var labelFont = Skin.getSkin().getEditFont();
+        var labelFont = getSkin().getEditFont();
 
         // Display mode
-        Group mode_group = new Group();
+        Group mode_group = new Group(gui_root);
         addChild(mode_group);
 
         Label mode_label = new Label(AbstractOptionsMenu.i18n("display_mode"), labelFont);
         mode_group.addChild(mode_label);
 
-        ColumnInfo[] mode_infos = new ColumnInfo[]{new ColumnInfo("", 150)};
-        MultiColumnComboBox<SerializableDisplayMode> mode_list_box = new MultiColumnComboBox<>(gui_root, mode_infos,
-                200, false);
+        MultiColumnComboBox<SerializableDisplayMode> mode_list_box = new MultiColumnComboBox<>(gui_root, 200,
+                false, new ColumnInfo("", 150));
 
         WindowSettings windowSettings = WindowSettings.from(engine.getSettings());
         GUISettings guiSettings = GUISettings.from(engine.getSettings());
         GraphicsSettings graphicsSettings = GraphicsSettings.from(engine.getSettings());
 
         // Fullscreen
-        Group group_fullscreen = new Group();
+        Group group_fullscreen = new Group(gui_root);
         addChild(group_fullscreen);
-        CheckBox cb_fullscreen = new CheckBox(windowSettings.fullscreen,
+        CheckBox cb_fullscreen = new CheckBox(gui_root, windowSettings.fullscreen,
                 AbstractOptionsMenu.i18n(
                         "fullscreen"), AbstractOptionsMenu.i18n("fullscreen_tip"));
         cb_fullscreen.addCheckBoxListener(marked -> {
             DisplayChangeForm display_change_form = new DisplayChangeForm(
+                    gui_root,
                     switch_now -> {
                         if (switch_now) {
                             engine.toggleFullscreen();
@@ -85,7 +86,7 @@ public final class GraphicsPanel extends Panel {
         group_fullscreen.compileCanvas();
 
         // UI Scale
-        Group group_ui_scale = new Group();
+        Group group_ui_scale = new Group(gui_root);
         addChild(group_ui_scale);
         Label label_ui_scale = new Label(AbstractOptionsMenu.i18n("ui_scale"), labelFont);
         group_ui_scale.addChild(label_ui_scale);
@@ -95,7 +96,7 @@ public final class GraphicsPanel extends Panel {
 
         int initialValue = Math.clamp((long) (guiSettings.ui_scale * 1000), 0, 1000);
 
-        Slider slider_ui_scale = new Slider(150, 0, 1000, initialValue);
+        Slider slider_ui_scale = new Slider(gui_root, 150, 0, 1000, initialValue);
         group_ui_scale.addChild(slider_ui_scale);
 
         slider_ui_scale.addValueListener(value -> {
@@ -122,17 +123,17 @@ public final class GraphicsPanel extends Panel {
         group_ui_scale.compileCanvas();
 
         // Detail
-        Group group_detail = new Group();
+        Group group_detail = new Group(gui_root);
         addChild(group_detail);
 
         Label label_detail = new Label(AbstractOptionsMenu.i18n("graphical_detail"), labelFont);
         group_detail.addChild(label_detail);
 
         int initial_detail_value = graphicsSettings.graphic_detail;
-        PulldownMenu<Integer> pm_detail = new PulldownMenu<>();
-        pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("low"), 0));
-        pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("medium"), 1));
-        pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("high"), 2));
+        PulldownMenu<Integer> pm_detail = new PulldownMenu<>(gui_root);
+        pm_detail.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("low"), 0));
+        pm_detail.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("medium"), 1));
+        pm_detail.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("high"), 2));
         PulldownButton<Integer> pb_detail = new PulldownButton<>(gui_root, pm_detail, initial_detail_value, 150);
 
         group_detail.addChild(pb_detail);
@@ -141,7 +142,7 @@ public final class GraphicsPanel extends Panel {
             if (initial_detail_value != slider_value) {
                 graphicsSettings.graphic_detail = slider_value;
                 World.updatePlantsDetail(RenderConfig.INSERT_PLANTS[slider_value]);
-                gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("change_next_run")));
+                gui_root.addModalForm(new MessageForm(gui_root, AbstractOptionsMenu.i18n("change_next_run")));
             }
         });
         label_detail.place();
@@ -159,7 +160,7 @@ public final class GraphicsPanel extends Panel {
                 boolean targetIsExclusive = targetFullscreen && window.isExclusiveFullscreenMode(mode);
 
                 if (currentIsExclusive || targetIsExclusive) {
-                    gui_root.addModalForm(new DisplayChangeForm(switch_now -> {
+                    gui_root.addModalForm(new DisplayChangeForm(gui_root, switch_now -> {
                         engine.switchMode(mode, switch_now);
                         if (switch_now) {
                             gui_root.displayChanged(mode.getWidth(), mode.getHeight());
@@ -197,8 +198,8 @@ public final class GraphicsPanel extends Panel {
         for (int i = 0; i < modes.size(); i++) {
             var m = modes.get(i);
             String mode_string = AbstractOptionsMenu.i18n("mode", m.getWidth(), m.getHeight(), m.getFrequency());
-            Label label = new SortedLabel(mode_string, i, Skin.getSkin().getMultiColumnComboBoxData().font());
-            var row = new Row<>(List.of(label), m);
+            Label label = new SortedLabel(mode_string, i, getSkin().getMultiColumnComboBoxData().font());
+            var row = new Row<>(gui_root, List.of(label), m);
             list_box.addRow(row);
             if (m.isEquivalent(currentMode)) {
                 currentRowToSelect = row;

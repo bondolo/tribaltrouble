@@ -10,7 +10,6 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MessageForm;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.render.UIRenderer;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.ConfigurationListener;
@@ -41,14 +40,15 @@ public final class ConnectingForm extends Form implements ConfigurationListener<
 
     public ConnectingForm(GameNetwork<GUIRoot, UIRenderer> game_network, GUIRoot gui_root, MultiplayerLobby owner,
             AudioManager audioManager) {
+        super(gui_root, "");
         this.game_network = game_network;
         this.gui_root = gui_root;
         this.owner = owner;
         this.audioManager = audioManager;
 
-        Label info_label = new Label(i18n("connecting"), Skin.getSkin().getHeadlineFont());
+        Label info_label = new Label(i18n("connecting"), getSkin().getHeadlineFont());
         addChild(info_label);
-        HorizButton cancel_button = new CancelButton(120);
+        HorizButton cancel_button = new CancelButton(gui_root, 120);
         addChild(cancel_button);
         cancel_button.addMouseClickListener((_, _, _, _) -> this.cancel());
 
@@ -84,7 +84,7 @@ public final class ConnectingForm extends Form implements ConfigurationListener<
     @Override
     public void connectionLost() {
         remove();
-        gui_root.addModalForm(new MessageForm(i18n("connection_lost")));
+        gui_root.addModalForm(new MessageForm(gui_root, i18n("connection_lost")));
     }
 
     @Override

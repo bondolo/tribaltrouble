@@ -21,17 +21,18 @@ public final class DisplayChangeForm extends Form {
     private final Consumer<Boolean> changeHandler;
     private final HorizButton later_button;
 
-    public DisplayChangeForm(Consumer<Boolean> changeHandler) {
+    public DisplayChangeForm(GUIRoot guiRoot, Consumer<Boolean> changeHandler) {
+        super(guiRoot);
         this.changeHandler = changeHandler;
-        LabelBox info_label = new LabelBox(i18n("warning_message"), Skin.getSkin().getEditFont(), 500);
+        LabelBox info_label = new LabelBox(i18n("warning_message"), skin.getEditFont(), 500);
         addChild(info_label);
-        HorizButton now_button = new HorizButton(i18n("now"), 120);
+        HorizButton now_button = new HorizButton(guiRoot, i18n("now"), 120);
         addChild(now_button);
         now_button.addMouseClickListener((_, _, _, _) -> {
             remove();
             changeHandler.accept(true);
         });
-        later_button = new HorizButton(i18n("later"), 120);
+        later_button = new HorizButton(guiRoot, i18n("later"), 120);
         addChild(later_button);
         later_button.addMouseClickListener((_, _, _, _) -> this.cancel());
 
@@ -43,6 +44,7 @@ public final class DisplayChangeForm extends Form {
         compileCanvas();
         centerPos();
     }
+
 
     @Override
     public void setFocus(FocusDirection direction) {

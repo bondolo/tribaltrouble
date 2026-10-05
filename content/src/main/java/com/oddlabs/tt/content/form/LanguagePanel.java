@@ -11,7 +11,6 @@ import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.MultiColumnComboBox;
 import com.oddlabs.tt.gui.Panel;
 import com.oddlabs.tt.gui.Row;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.gui.LocaleSettings;
 import com.oddlabs.tt.client.Peer;
@@ -26,20 +25,21 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
  */
 public class LanguagePanel extends Panel {
     public LanguagePanel(GUIRoot gui_root) {
-        super(AbstractOptionsMenu.i18n("language_caption"));
+        super(gui_root, AbstractOptionsMenu.i18n("language_caption"));
+        var comboFont = skin.getMultiColumnComboBoxData().font();
         Settings settings = gui_root.getGUI().getSettings();
         LocaleSettings localeSettings = LocaleSettings.from(settings);
         Locale defaultLocale = Peer.getDefaultLocale();
 
         // Language
-        Group language_group = new Group();
+        Group language_group = new Group(gui_root);
         addChild(language_group);
 
-        Label language_label = new Label(AbstractOptionsMenu.i18n("language_label"), Skin.getSkin().getEditFont());
+        Label language_label = new Label(AbstractOptionsMenu.i18n("language_label"), skin.getEditFont());
         language_group.addChild(language_label);
 
-        ColumnInfo[] language_infos = new ColumnInfo[]{new ColumnInfo("", 300)};
-        var language_list_box = new MultiColumnComboBox<Locale>(gui_root, language_infos, 200, false);
+        var language_list_box = new MultiColumnComboBox<Locale>(gui_root, 200, false,
+                new ColumnInfo("", 300));
 
         // Check language logic
         String currentLanguage = localeSettings.language;
@@ -50,11 +50,10 @@ public class LanguagePanel extends Panel {
         // Supported Language list
         Row<Locale, IconLabel> selectedLanguage = null;
         for (var langauge : Languages.getLanguages()) {
-            var label = new Label(langauge.getDisplayName(langauge), Skin.getSkin().getMultiColumnComboBoxData()
-                    .font());
-            var flag = Skin.getSkin().getFlag(langauge.getLanguage());
+            var label = new Label(langauge.getDisplayName(langauge), comboFont);
+            var flag = skin.getFlag(langauge.getLanguage());
             var iconLabel = new IconLabel(flag, label);
-            Row<Locale, IconLabel> row = new Row<>(List.of(iconLabel), langauge);
+            Row<Locale, IconLabel> row = new Row<>(gui_root, List.of(iconLabel), langauge);
             language_list_box.addRow(row);
             if (langauge.getLanguage().equals(localeSettings.language)) {
                 selectedLanguage = row;
@@ -62,10 +61,9 @@ public class LanguagePanel extends Panel {
         }
 
         // System default last
-        var label = new Label(AbstractOptionsMenu.i18n("system_default"), Skin.getSkin().getMultiColumnComboBoxData()
-                .font());
-        var iconLabel = new IconLabel(Skin.getSkin().getFlagDefault(), label);
-        Row<Locale, IconLabel> row = new Row<>(List.of(iconLabel), defaultLocale);
+        var label = new Label(AbstractOptionsMenu.i18n("system_default"), comboFont);
+        var iconLabel = new IconLabel(skin.getFlagDefault(), label);
+        Row<Locale, IconLabel> row = new Row<>(gui_root, List.of(iconLabel), defaultLocale);
         language_list_box.addRow(row);
         if (null == selectedLanguage || localeSettings.language.equals("default")) {
             selectedLanguage = row;
@@ -78,7 +76,7 @@ public class LanguagePanel extends Panel {
                 localeSettings.language = locale.getVariant().equals("default")
                         ? "default" : locale.toLanguageTag();
                 IO.println("set language:" + localeSettings.language);
-                gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("language_change_next_run")));
+                gui_root.addModalForm(new MessageForm(gui_root, AbstractOptionsMenu.i18n("language_change_next_run")));
             }
         });
 

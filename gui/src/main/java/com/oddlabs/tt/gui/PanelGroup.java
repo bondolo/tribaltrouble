@@ -3,18 +3,28 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.gui.event.MouseButtonListener;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
+import java.util.Objects;
+
+/**
+ * Container coordinating multiple tabbed panels with switching and focus management.
+ */
 public final class PanelGroup extends GUIObject {
-    private final Group focus_group = new Group();
+    private final Skin skin;
+    private final PanelData panelData;
+    private final Group focus_group;
     private final PanelBox box;
     private final Panel[] panels;
 
     private int selected;
 
-    public PanelGroup(Panel... panels) {
-        this(0, panels);
+    public PanelGroup(GUIRoot guiRoot, Panel... panels) {
+        this(guiRoot, 0, panels);
     }
 
-    public PanelGroup(int selected, Panel... panels) {
+    public PanelGroup(GUIRoot guiRoot, int selected, Panel... panels) {
+        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.panelData = skin.getPanelData();
+        this.focus_group = new Group(guiRoot);
         assert selected < panels.length && panels.length > 0 : "Invalid index selected.";
         this.panels = panels;
 
@@ -31,16 +41,16 @@ public final class PanelGroup extends GUIObject {
         }
         int total_height = height + tab_height;
         setDim(width, total_height);
-        int x = Skin.getSkin().getPanelData().leftTabOffset();
+        int x = panelData.leftTabOffset();
         int y = height;
         for (int i = 0; i < panels.length; i++) {
-            panels[i].setPos((width - panels[i].getWidth()) / 2, Skin.getSkin().getPanelData().bottomTabOffset()
+            panels[i].setPos((width - panels[i].getWidth()) / 2, panelData.bottomTabOffset()
                     + (height - panels[i].getHeight()) / 2);
             panels[i].getTab().setPos(x, y);
             x += panels[i].getTab().getWidth();
             panels[i].getTab().addMouseButtonListener(new TabListener(i));
         }
-        box = new PanelBox(width, total_height - panels[0].getTab().getHeight() + Skin.getSkin().getPanelData()
+        box = new PanelBox(width, total_height - panels[0].getTab().getHeight() + panelData
                 .bottomTabOffset());
 
         focus_group.setDim(width, total_height);
@@ -48,6 +58,11 @@ public final class PanelGroup extends GUIObject {
         addChild(focus_group);
         setCanFocus(true);
         selectPanel(selected);
+    }
+
+    @Override
+    protected Skin getSkin() {
+        return skin;
     }
 
     @Override
@@ -85,7 +100,7 @@ public final class PanelGroup extends GUIObject {
 
         @Override
         protected void renderGeometry(GUIRenderer renderer) {
-            Box panelBox = Skin.getSkin().getPanelData().box();
+            Box panelBox = panelData.box();
             panelBox.render(renderer, 0f, 0f, getWidth(), getHeight(), panels[selected].getTab().getRenderState());
         }
     }

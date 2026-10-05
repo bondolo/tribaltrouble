@@ -9,8 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Manages the collection of rows in a MultiColumnComboBox.
- * Handles row sorting, rendering layout, selection state, and scroll visibility.
+ * Collection of rows in a {@link MultiColumnComboBox} managing sorting, layout, and selection.
  */
 final class RowCollection<T> extends GUIObject implements Clipped {
     private final List<Row<T, ?>> rows = new ArrayList<>();
@@ -25,6 +24,11 @@ final class RowCollection<T> extends GUIObject implements Clipped {
         this.sorted_descending = sorted_descending;
         setCanFocus(true);
         setTabStop(true);
+    }
+
+    @Override
+    protected Skin getSkin() {
+        return multi_box.getSkin();
     }
 
     @Override
@@ -74,12 +78,12 @@ final class RowCollection<T> extends GUIObject implements Clipped {
 
     void selectFirst() {
         if (rows.isEmpty()) return;
-        ensureVisible(selectRow(sorted_descending ? rows.getFirst() : rows.getLast()));
+        selectRow(sorted_descending ? rows.getFirst() : rows.getLast());
     }
 
     void selectLast() {
         if (rows.isEmpty()) return;
-        ensureVisible(selectRow(sorted_descending ? rows.getLast() : rows.getFirst()));
+        selectRow(sorted_descending ? rows.getLast() : rows.getFirst());
     }
 
     private void ensureVisible(Row<T, ?> row) {
@@ -140,6 +144,7 @@ final class RowCollection<T> extends GUIObject implements Clipped {
 
     void replaceRows() {
         int y = getHeight() + multi_box.getOffsetY();
+        var data = multi_box.getSkin().getMultiColumnComboBoxData();
         for (int i = 0; i < rows.size(); i++) {
             Row<T, ?> row;
             if (sorted_descending)
@@ -148,7 +153,6 @@ final class RowCollection<T> extends GUIObject implements Clipped {
                 row = rows.get(rows.size() - i - 1);
             y -= row.getHeight();
             row.setPos(0, y);
-            var data = Skin.getSkin().getMultiColumnComboBoxData();
             row.setColor(i % 2 == 0 ? data.color1() : data.color2());
         }
     }
@@ -161,13 +165,16 @@ final class RowCollection<T> extends GUIObject implements Clipped {
         return selected_row != null ? selected_row.getContentObject() : null;
     }
 
-    Row<T, ?> selectRow(Row<T, ?> row) {
-        assert rows.contains(row);
+    @Nullable
+    Row<T, ?> selectRow(@Nullable Row<T, ?> row) {
         if (selected_row != null)
             selected_row.mark(false);
         selected_row = row;
-        selected_row.mark(true);
-        ensureVisible(selected_row);
+        if (selected_row != null) {
+            assert rows.contains(selected_row);
+            selected_row.mark(true);
+            ensureVisible(selected_row);
+        }
         return selected_row;
     }
 }

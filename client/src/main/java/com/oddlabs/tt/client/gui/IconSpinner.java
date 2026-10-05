@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.gui;
 
+import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.IconButton;
 import com.oddlabs.tt.gui.IconDisabler;
@@ -56,30 +57,31 @@ public abstract class IconSpinner extends GUIObject {
         setDim(icon_quad.quad(ModeIconQuads.Mode.NORMAL).getWidth(), icon_quad.quad(ModeIconQuads.Mode.NORMAL)
                 .getHeight());
 
-        button_plus = new IconSpinnerButton(Skin.getSkin().getPlusButton(), action,
+        Skin skin = viewer.getGUIRoot().getSkin();
+        button_plus = new IconSpinnerButton(viewer.getGUIRoot(), skin.getPlusButton(), action,
                 () -> i18n("increase", viewer.getInputManager().getBindingString(action)),
                 this);
         button_plus.setPos(0, 0);
         button_plus.addMouseButtonListener(new IncreaseListener());
         addChild(button_plus);
 
-        button_minus = new IconSpinnerButton(Skin.getSkin().getMinusButton(), dec_action,
+        button_minus = new IconSpinnerButton(viewer.getGUIRoot(), skin.getMinusButton(), dec_action,
                 () -> i18n("decrease", viewer.getInputManager().getBindingString(dec_action)),
                 this);
         button_minus.setPos(button_plus.getWidth(), 0);
         button_minus.addMouseButtonListener(new DecreaseListener());
         addChild(button_minus);
 
-        label = new Label("", Skin.getSkin().getHeadlineFont(), icon_quad.quad(ModeIconQuads.Mode.NORMAL).getWidth(),
+        label = new Label("", skin.getHeadlineFont(), icon_quad.quad(ModeIconQuads.Mode.NORMAL).getWidth(),
                 Origin.AT_MIDDLE);
         label.setPos(0, (getHeight() - label.getHeight()) / 2);
         addChild(label);
     }
 
     @Override
-    public final void setFocus() {
+    public final void setFocus(FocusDirection direction) {
         if (viewer.getGUIRoot().getDelegate() instanceof GUIObject obj) {
-            obj.setFocus();
+            obj.setFocus(direction);
         }
     }
 

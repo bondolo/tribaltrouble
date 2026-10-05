@@ -25,7 +25,6 @@ import com.oddlabs.tt.gui.Panel;
 import com.oddlabs.tt.gui.PulldownButton;
 import com.oddlabs.tt.gui.PulldownItem;
 import com.oddlabs.tt.gui.PulldownMenu;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.TextBox;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
@@ -130,7 +129,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
             SelectGameMenu owner,
             Game game, WorldGenerator<?> generator, int player_slot, int compare_width, int compare_height,
             int button_width) {
-        super(i18n("game"));
+        super(owner.getGUIRoot(), i18n("game"));
         this.owner = owner;
         this.gui_root = owner.getGUIRoot();
         this.engine = owner.getMainMenu().getEngine();
@@ -141,14 +140,14 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
         this.game = game;
 
         String tag = rated ? i18n("rated") + " " : "";
-        Label game_name_label = new Label(i18n("game") + " " + tag + game.getName(), Skin.getSkin().getHeadlineFont());
+        Label game_name_label = new Label(i18n("game") + " " + tag + game.getName(), skin.getHeadlineFont());
 
         slot_buttons = (PulldownButton<SlotOption>[]) new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
         race_buttons = (PulldownButton<Race>[]) new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
         team_buttons = (PulldownButton<Integer>[]) new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
         ready_marks = new Diode[MatchmakingServerInterface.MAX_PLAYERS];
         ratings = new Label[MatchmakingServerInterface.MAX_PLAYERS];
-        Group player_group = new Group();
+        Group player_group = new Group(gui_root);
         GUIObject previous = null;
         for (int i = 0; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
             previous = createPlayerPulldown(gui_root, player_group, previous, slot_buttons, race_buttons, team_buttons,
@@ -157,14 +156,15 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
         player_group.compileCanvas();
         addChild(player_group);
 
-        Box pdata = Skin.getSkin().getPanelData().box();
-        FormData fdata = Skin.getSkin().getFormData();
+        var editFont = skin.getEditFont();
+        Box pdata = skin.getPanelData().box();
+        FormData fdata = skin.getFormData();
 
         int width = compare_width - pdata.getLeftOffset() - pdata.getRightOffset();
-        chat_info = new Label(i18n("chat"), Skin.getSkin().getEditFont(), width);
-        Group chat_line_group = new Group();
-        chat_line = new EditLine(width - SEND_BUTTON_WIDTH - fdata.objectSpacing(), 100);
-        var send_button = new HorizButton(i18n("send"), SEND_BUTTON_WIDTH);
+        chat_info = new Label(i18n("chat"), editFont, width);
+        Group chat_line_group = new Group(gui_root);
+        chat_line = new EditLine(gui_root, width - SEND_BUTTON_WIDTH - fdata.objectSpacing(), 100);
+        var send_button = new HorizButton(gui_root, i18n("send"), SEND_BUTTON_WIDTH);
         send_button.addMouseClickListener(new SendListener());
         chat_line_group.addChild(chat_line);
         chat_line.place();
@@ -177,7 +177,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
         addChild(game_name_label);
         addChild(chat_info);
 
-        start_button = new HorizButton(i18n("start"), button_width);
+        start_button = new HorizButton(gui_root, i18n("start"), button_width);
         if (local_player_slot == 0) {
             addChild(start_button);
             start_button.addMouseClickListener(new StartListener());
@@ -185,15 +185,15 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
         int height = compare_height - pdata.getTopOffset() - pdata.getBottomOffset() - chat_info.getHeight()
                 - chat_line.getHeight() - game_name_label.getHeight() - player_group.getHeight() - start_button
                         .getHeight() - 5 * fdata.objectSpacing();
-        chat_box = new TextBox(width, height, Skin.getSkin().getEditFont(), Integer.MAX_VALUE);
+        chat_box = new TextBox(gui_root, width, height, editFont, Integer.MAX_VALUE);
         addChild(chat_box);
-        ready_button = new HorizButton(i18n("ready"), button_width);
+        ready_button = new HorizButton(gui_root, i18n("ready"), button_width);
         addChild(ready_button);
         ready_button.addMouseClickListener(new ReadyListener());
-        HorizButton cancel_button = new HorizButton(i18n("cancel"), button_width);
+        HorizButton cancel_button = new HorizButton(gui_root, i18n("cancel"), button_width);
         addChild(cancel_button);
         cancel_button.addMouseClickListener(new CancelButtonListener());
-        HorizButton info_button = new HorizButton(i18n("info"), button_width);
+        HorizButton info_button = new HorizButton(gui_root, i18n("info"), button_width);
         addChild(info_button);
         info_button.addMouseClickListener(new InfoButtonListener());
 
@@ -207,9 +207,8 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
         ready_button.place(cancel_button, LEFT_MID);
         if (local_player_slot == 0)
             start_button.place(ready_button, LEFT_MID);
-        Font font = Skin.getSkin().getEditFont();
         if (rated) {
-            Label rating = new Label(i18n("rating"), font, RATING_WIDTH, Origin.AT_END);
+            Label rating = new Label(i18n("rating"), editFont, RATING_WIDTH, Origin.AT_END);
             addChild(rating);
             rating.place(player_group, TOP_RIGHT);
         }
@@ -403,13 +402,15 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
             Label[] ratings,
             int index,
             int num_players) {
-        PulldownMenu<SlotOption> pulldown_menu = new PulldownMenu<>();
-        PulldownItem<SlotOption> open_item = new PulldownItem<>(i18n("open"), SlotOption.OPEN);
-        PulldownItem<SlotOption> closed_item = new PulldownItem<>(i18n("closed"), SlotOption.CLOSED);
-        PulldownItem<SlotOption> computer_easy_item = new PulldownItem<>(i18n("easy_ai"), SlotOption.COMPUTER_EASY);
-        PulldownItem<SlotOption> computer_normal_item = new PulldownItem<>(i18n("normal_ai"),
+        PulldownMenu<SlotOption> pulldown_menu = new PulldownMenu<>(gui_root);
+        PulldownItem<SlotOption> open_item = new PulldownItem<>(gui_root, i18n("open"), SlotOption.OPEN);
+        PulldownItem<SlotOption> closed_item = new PulldownItem<>(gui_root, i18n("closed"), SlotOption.CLOSED);
+        PulldownItem<SlotOption> computer_easy_item = new PulldownItem<>(gui_root, i18n("easy_ai"),
+                SlotOption.COMPUTER_EASY);
+        PulldownItem<SlotOption> computer_normal_item = new PulldownItem<>(gui_root, i18n("normal_ai"),
                 SlotOption.COMPUTER_NORMAL);
-        PulldownItem<SlotOption> computer_hard_item = new PulldownItem<>(i18n("hard_ai"), SlotOption.COMPUTER_HARD);
+        PulldownItem<SlotOption> computer_hard_item = new PulldownItem<>(gui_root, i18n("hard_ai"),
+                SlotOption.COMPUTER_HARD);
         pulldown_menu.addItem(open_item);
         pulldown_menu.addItem(closed_item);
         if (!rated) {
@@ -432,19 +433,19 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
         });
         pulldown_button.setDisabled(local_player_slot != 0 || index == local_player_slot);
 
-        PulldownMenu<Race> race_pulldown_menu = new PulldownMenu<>();
+        PulldownMenu<Race> race_pulldown_menu = new PulldownMenu<>(gui_root);
         for (Race race : Race.values()) {
             PulldownItem<Race> race_item = new PulldownItem<>(
-                    RaceData.getRaceName(race), race);
+                    gui_root, RaceData.getRaceName(race), race);
             race_pulldown_menu.addItem(race_item);
         }
-        PulldownMenu<Integer> team_pulldown_menu = new PulldownMenu<>();
+        PulldownMenu<Integer> team_pulldown_menu = new PulldownMenu<>(gui_root);
         int num_teams = num_players;
         if (rated)
             num_teams = 2;
         for (int i = 0; i < num_teams; i++) {
             String team_str = i18n("team", Integer.toString(i + 1));
-            PulldownItem<Integer> team_item = new PulldownItem<>(team_str, i);
+            PulldownItem<Integer> team_item = new PulldownItem<>(gui_root, team_str, i);
             team_pulldown_menu.addItem(team_item);
         }
         PulldownButton<Race> race_pulldown_button = new PulldownButton<>(gui_root, race_pulldown_menu, 0, 115);
@@ -468,11 +469,11 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
         race_pulldown_button.setDisabled(!canControlSlot(index));
         team_pulldown_button.setDisabled(!canControlSlot(index));
 
-        Diode ready_mark = new Diode();
+        Diode ready_mark = new Diode(gui_root);
         ready_marks[index] = ready_mark;
         group.addChild(ready_mark);
         ready_mark.place(team_pulldown_button, RIGHT_MID);
-        Font font = Skin.getSkin().getEditFont();
+        Font font = skin.getEditFont();
         ratings[index] = new Label("", font, RATING_WIDTH, Origin.AT_END);
         if (rated) {
             group.addChild(ratings[index]);
@@ -480,7 +481,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
         }
         String player_str = i18n("player", Integer.toString(index + 1));
         var color = AccessibilitySettings.from(engine.getSettings()).linear_player_colours[index];
-        Label label = new Label(player_str, Skin.getSkin().getEditFont()).setColor(color);
+        Label label = new Label(player_str, font).setColor(color);
         group.addChild(label);
         label.place(pulldown_button, LEFT_MID);
 
@@ -503,7 +504,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
     public void connectionLost() {
         remove();
         owner.removeGameMenu();
-        gui_root.addModalForm(new MessageForm(i18n("connection_lost")));
+        gui_root.addModalForm(new MessageForm(gui_root, i18n("connection_lost")));
     }
 
     @Override
@@ -571,7 +572,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
     private final class InfoButtonListener implements MouseClickListener {
         @Override
         public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            gui_root.addModalForm(new GameInfoForm(game));
+            gui_root.addModalForm(new GameInfoForm(gui_root, game));
         }
     }
 
@@ -611,7 +612,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
             int num_teams = getNumTeams(players);
             if (num_teams < MIN_TEAMS) {
                 String err_msg = i18n("min_teams", Integer.toString(MIN_TEAMS));
-                gui_root.addModalForm(new MessageForm(err_msg));
+                gui_root.addModalForm(new MessageForm(gui_root, err_msg));
             } else {
                 game_network.getClient().getServerInterface().startServer();
             }

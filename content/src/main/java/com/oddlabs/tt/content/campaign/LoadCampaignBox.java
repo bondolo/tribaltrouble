@@ -10,7 +10,6 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MultiColumnComboBox;
 import com.oddlabs.tt.gui.Row;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.Peer;
@@ -37,6 +36,12 @@ import java.util.logging.Logger;
 final class LoadCampaignBox extends GUIObject implements DeterministicSerializerLoopbackInterface<
         CampaignState[]> {
     private static final Logger logger = Logger.getLogger(LoadCampaignBox.class.getSimpleName());
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(LoadCampaignBox.class.getName());
+
+    private static String i18n(String key, Object... args) {
+        return Utils.getBundleString(bundle, key, args);
+    }
+
     static final Path SAVEGAMES_FILE_NAME = Path.of("savegames");
     private static final Map<String, String> CLASS_ALIASES = Map.of(
             "com.oddlabs.tt.player.campaign.CampaignState", CampaignState.class.getName(),
@@ -51,21 +56,17 @@ final class LoadCampaignBox extends GUIObject implements DeterministicSerializer
     private final MultiColumnComboBox<CampaignState> list_box;
     private final GUIRoot gui_root;
     private final Peer engine;
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(LoadCampaignBox.class.getName());
-
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
-    }
 
     LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener, Peer engine) {
         this.engine = engine;
         this.gui_root = gui_root;
-        ColumnInfo[] infos = {
+        list_box = new MultiColumnComboBox<>(
+                gui_root,
+                262,
                 new ColumnInfo(i18n("name"), WIDTH_NAME),
                 new ColumnInfo(i18n("race"), WIDTH_RACE),
                 new ColumnInfo(i18n("difficulty"), WIDTH_DIFFICULTY),
-                new ColumnInfo(i18n("date"), WIDTH_DATE)};
-        list_box = new MultiColumnComboBox<>(gui_root, infos, 262);
+                new ColumnInfo(i18n("date"), WIDTH_DATE));
         list_box.addRowListener(listener);
         addChild(list_box);
         setCanFocus(true);
@@ -110,7 +111,9 @@ final class LoadCampaignBox extends GUIObject implements DeterministicSerializer
     }
 
     private void fillSlots(CampaignState[] campaign_states) {
-        Box box = Skin.getSkin().getMultiColumnComboBoxData().box();
+        var comboData = gui_root.getSkin().getMultiColumnComboBoxData();
+        Box box = comboData.box();
+        var font = comboData.font();
         for (CampaignState campaign_state : campaign_states) {
             String race = switch (campaign_state.getRace()) {
                 case Race.VIKINGS -> i18n("vikings");
@@ -124,12 +127,13 @@ final class LoadCampaignBox extends GUIObject implements DeterministicSerializer
                 default -> throw new IllegalArgumentException("invalid difficulty");
             };
             Row<CampaignState, Label> row = new Row<>(
+                    gui_root,
                     List.of(
-                            new Label(campaign_state.getName(), Skin.getSkin().getMultiColumnComboBoxData().font(),
+                            new Label(campaign_state.getName(), font,
                                     WIDTH_NAME - box.getLeftOffset() - 1),
-                            new Label(race, Skin.getSkin().getMultiColumnComboBoxData().font(), WIDTH_RACE),
-                            new Label(difficulty, Skin.getSkin().getMultiColumnComboBoxData().font(), WIDTH_DIFFICULTY),
-                            new DateLabel(campaign_state.getDate(), Skin.getSkin().getMultiColumnComboBoxData().font(),
+                            new Label(race, font, WIDTH_RACE),
+                            new Label(difficulty, font, WIDTH_DIFFICULTY),
+                            new DateLabel(campaign_state.getDate(), font,
                                     WIDTH_DATE - box.getRightOffset() + 1)
                     ), campaign_state);
             list_box.addRow(row);
@@ -150,10 +154,10 @@ final class LoadCampaignBox extends GUIObject implements DeterministicSerializer
         if (e instanceof FileNotFoundException || e instanceof NoSuchFileException) {
         } else if (e instanceof InvalidClassException || e instanceof ClassNotFoundException) {
             String invalid_message = i18n("invalid_message", SAVEGAMES_FILE_NAME);
-            gui_root.addModalForm(new MessageForm(invalid_message));
+            gui_root.addModalForm(new MessageForm(gui_root, invalid_message));
         } else {
             String failed_message = i18n("failed_message", SAVEGAMES_FILE_NAME, e.getMessage());
-            gui_root.addModalForm(new MessageForm(failed_message));
+            gui_root.addModalForm(new MessageForm(gui_root, failed_message));
         }
     }
 }

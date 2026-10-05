@@ -7,10 +7,11 @@ import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.util.Color;
 
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 /**
- * UI progress bar component rendering normalized progress from 0.0 to 1.0.
+ * Progress bar component rendering normalized progress from 0.0 to 1.0.
  */
 public final class ProgressBar extends GUIObject {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ProgressBar.class.getName());
@@ -19,17 +20,19 @@ public final class ProgressBar extends GUIObject {
         return Utils.getBundleString(bundle, key, args);
     }
 
+    private final Skin skin;
     private final boolean text_only;
     private int left_margin;
     private int right_margin;
     private float progress;
 
-    public ProgressBar(int width, boolean text_only) {
+    public ProgressBar(GUIRoot guiRoot, int width, boolean text_only) {
+        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
         this.text_only = text_only;
         if (text_only) {
-            setDim(width, Skin.getSkin().getHeadlineFont().getHeight());
+            setDim(width, skin.getHeadlineFont().getHeight());
         } else {
-            ProgressBarData data = Skin.getSkin().getProgressBarData();
+            ProgressBarData data = skin.getProgressBarData();
             left_margin = data.leftFill().quad(ModeIconQuads.Mode.NORMAL).getWidth();
             right_margin = data.rightFill().quad(ModeIconQuads.Mode.NORMAL).getWidth();
 
@@ -37,6 +40,11 @@ public final class ProgressBar extends GUIObject {
             setDim(width, data.progressBar().getHeight());
         }
         setCanFocus(false);
+    }
+
+    @Override
+    protected Skin getSkin() {
+        return skin;
     }
 
     public void setProgress(float fraction) {
@@ -50,7 +58,7 @@ public final class ProgressBar extends GUIObject {
     private void renderText(GUIRenderer renderer) {
         int percentage = (int) (progress * 100);
         String string = i18n("loading", percentage);
-        TextLineRenderer.render(renderer, Skin.getSkin().getHeadlineFont(), string, 0, 0, Float.NEGATIVE_INFINITY,
+        TextLineRenderer.render(renderer, skin.getHeadlineFont(), string, 0, 0, Float.NEGATIVE_INFINITY,
                 Float.POSITIVE_INFINITY, Color.Linear.WHITE);
     }
 
@@ -59,14 +67,14 @@ public final class ProgressBar extends GUIObject {
         if (text_only) {
             renderText(renderer);
         } else {
-            Skin.getSkin().getProgressBarData().progressBar()
+            skin.getProgressBarData().progressBar()
                     .render(renderer, 0, 0, getWidth(), ModeIconQuads.Mode.NORMAL);
             renderFill(renderer, 0);
         }
     }
 
     private void renderFill(GUIRenderer renderer, int y) {
-        ProgressBarData data = Skin.getSkin().getProgressBarData();
+        ProgressBarData data = skin.getProgressBarData();
         ModeIconQuads left = data.leftFill();
         ModeIconQuads center = data.centerFill();
         ModeIconQuads right = data.rightFill();

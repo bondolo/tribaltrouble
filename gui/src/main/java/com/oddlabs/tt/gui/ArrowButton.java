@@ -1,18 +1,26 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.engine.font.Font;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.engine.render.GUIRenderer;
 
+/**
+ * Directional stepper button used for scrollbar and slider increment controls.
+ */
 public final class ArrowButton extends ButtonObject {
     private final ModeIconQuads pressed;
     private final ModeIconQuads unpressed;
     private final ModeIconQuads arrow;
 
-    public ArrowButton(ModeIconQuads pressed, ModeIconQuads unpressed, ModeIconQuads arrow) {
-        super(Skin.getSkin().getEditFont());
+    public ArrowButton(GUIRoot guiRoot, ModeIconQuads pressed, ModeIconQuads unpressed, ModeIconQuads arrow) {
+        this(guiRoot.getSkin().getEditFont(), pressed, unpressed, arrow);
+    }
+
+    public ArrowButton(Font font, ModeIconQuads pressed, ModeIconQuads unpressed, ModeIconQuads arrow) {
+        super(font);
         setDim(pressed.quad(ModeIconQuads.Mode.NORMAL).getWidth(), pressed.quad(ModeIconQuads.Mode.NORMAL).getHeight());
         this.pressed = pressed;
         this.unpressed = unpressed;

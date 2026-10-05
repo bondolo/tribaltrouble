@@ -4,18 +4,30 @@ import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
+import java.util.Objects;
+
+/**
+ * Radio button control belonging to a mutually exclusive group.
+ */
 public final class RadioButton extends RadioButtonGroupElement {
+    private final Skin skin;
     private boolean pressed = false;
 
-    public RadioButton(boolean marked, RadioButtonGroup group, String text) {
+    public RadioButton(GUIRoot guiRoot, boolean marked, RadioButtonGroup group, String text) {
         super(marked, group);
-        Label label = new Label(text, Skin.getSkin().getEditFont());
-        label.setPos(Skin.getSkin().getRadioButtonMarked().get(ModeIconQuads.Mode.NORMAL).getWidth(), (Skin.getSkin()
+        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        Label label = new Label(text, skin.getEditFont());
+        label.setPos(skin.getRadioButtonMarked().get(ModeIconQuads.Mode.NORMAL).getWidth(), (skin
                 .getRadioButtonMarked().get(ModeIconQuads.Mode.NORMAL).getHeight() - label.getHeight()) / 2);
         addChild(label);
-        setDim(Skin.getSkin().getRadioButtonMarked().get(ModeIconQuads.Mode.NORMAL).getWidth() + label.getWidth(), Skin
-                .getSkin().getRadioButtonMarked().get(ModeIconQuads.Mode.NORMAL).getHeight());
+        setDim(skin.getRadioButtonMarked().get(ModeIconQuads.Mode.NORMAL).getWidth() + label.getWidth(), skin
+                .getRadioButtonMarked().get(ModeIconQuads.Mode.NORMAL).getHeight());
         setCanFocus(true);
+    }
+
+    @Override
+    protected Skin getSkin() {
+        return skin;
     }
 
     @Override
@@ -38,10 +50,10 @@ public final class RadioButton extends RadioButtonGroupElement {
 
         // When unpressed, active, pressed, and hovered, it should show the marked state
         IconQuad quad_to_render = isMarked()
-                ? Skin.getSkin().getRadioButtonMarked().quad(skinMode)
+                ? skin.getRadioButtonMarked().quad(skinMode)
                 : skinMode == ModeIconQuads.Mode.ACTIVE && pressed && isHovered()
-                        ? Skin.getSkin().getRadioButtonMarked().quad(skinMode)
-                : Skin.getSkin().getRadioButtonUnmarked().quad(skinMode);
+                        ? skin.getRadioButtonMarked().quad(skinMode)
+                : skin.getRadioButtonUnmarked().quad(skinMode);
 
         renderer.drawIcon(quad_to_render, 0, 0);
     }

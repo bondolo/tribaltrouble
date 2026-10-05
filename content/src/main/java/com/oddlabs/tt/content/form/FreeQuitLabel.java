@@ -1,14 +1,12 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
-import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.net.PeerHub;
+import com.oddlabs.tt.simulation.landscape.World;
 
 import java.util.ResourceBundle;
 
@@ -23,8 +21,8 @@ public final class FreeQuitLabel extends Label implements Animated {
     private final World world;
     private final AnimationManager manager;
 
-    public FreeQuitLabel(World world, AnimationManager manager) {
-        super("", Skin.getSkin().getEditFont(), 300);
+    public FreeQuitLabel(GUIRoot guiRoot, World world, AnimationManager manager) {
+        super("", guiRoot.getSkin().getEditFont(), 300);
         this.world = world;
         this.manager = manager;
     }

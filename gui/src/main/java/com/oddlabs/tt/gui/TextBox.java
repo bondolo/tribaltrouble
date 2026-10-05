@@ -7,29 +7,42 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.util.Color;
 
+import java.util.Objects;
+
+/**
+ * Multi-line scrollable text display and container.
+ */
 public class TextBox extends TextField implements Scrollable, Clipped {
+    final Skin skin;
+    final Box editBox;
     private TextLayout textLayout;
     private final ScrollBar scroll_bar;
 
     private int offset_y;
 
-    public TextBox(int width, int height, Font font, int max_codepoints) {
+    public TextBox(GUIRoot guiRoot, int width, int height, Font font, int max_codepoints) {
         super(font, max_codepoints);
+        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.editBox = skin.getEditBox();
         setDim(width, height);
         setCanFocus(true);
         offset_y = 0;
         textLayout = new TextLayout(font, getText(), width);
 
-        scroll_bar = new ScrollBar(height, this);
+        scroll_bar = new ScrollBar(guiRoot, height, this);
 
         updateLayout();
         scroll_bar.setPos(width - scroll_bar.getWidth(), 0);
         addChild(scroll_bar);
     }
 
+    @Override
+    protected Skin getSkin() {
+        return skin;
+    }
+
     private void updateLayout() {
-        Box edit_box = Skin.getSkin().getEditBox();
-        int wrapWidth = getWidth() - edit_box.getLeftOffset() - edit_box.getRightOffset() - scroll_bar.getWidth();
+        int wrapWidth = getWidth() - editBox.getLeftOffset() - editBox.getRightOffset() - scroll_bar.getWidth();
         textLayout = new TextLayout(getFont(), getText(), wrapWidth);
         scroll_bar.update();
     }
@@ -55,16 +68,14 @@ public class TextBox extends TextField implements Scrollable, Clipped {
     }
 
     protected final void renderBox(GUIRenderer renderer, ModeIconQuads.Mode skinMode) {
-        Box edit_box = Skin.getSkin().getEditBox();
-        edit_box.render(renderer, 0f, 0f, getWidth() - scroll_bar.getWidth(), getHeight(), skinMode);
+        editBox.render(renderer, 0f, 0f, getWidth() - scroll_bar.getWidth(), getHeight(), skinMode);
     }
 
     @Override
     protected void renderGeometry(GUIRenderer renderer) {
-        Box edit_box = Skin.getSkin().getEditBox();
         renderBox(renderer, ModeIconQuads.Mode.NORMAL);
-        TextLineRenderer.render(renderer, textLayout, edit_box.getLeftOffset(), getHeight() - edit_box.getBottomOffset()
-                - getFont().getHeight() + offset_y, edit_box.getLeftOffset(), getWidth() - edit_box.getRightOffset(),
+        TextLineRenderer.render(renderer, textLayout, editBox.getLeftOffset(), getHeight() - editBox.getBottomOffset()
+                - getFont().getHeight() + offset_y, editBox.getLeftOffset(), getWidth() - editBox.getRightOffset(),
                 Color.Standard.WHITE);
     }
 
@@ -77,7 +88,7 @@ public class TextBox extends TextField implements Scrollable, Clipped {
     public final void setOffsetY(int new_offset) {
         offset_y = Math.max(new_offset, 0);
 
-        Box edit_box = Skin.getSkin().getEditBox();
+        Box edit_box = skin.getEditBox();
         int max_offset_y = Math.max(0, textLayout.getTextHeight() - (getHeight() - edit_box.getBottomOffset() - edit_box
                 .getTopOffset()));
         offset_y = Math.min(offset_y, max_offset_y);
@@ -96,7 +107,7 @@ public class TextBox extends TextField implements Scrollable, Clipped {
 
     @Override
     public final void jumpPage(boolean up) {
-        Box edit_box = Skin.getSkin().getEditBox();
+        Box edit_box = skin.getEditBox();
         int inner_height = getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset();
         setOffsetY(offset_y + (up ? -inner_height : inner_height));
     }
@@ -104,7 +115,7 @@ public class TextBox extends TextField implements Scrollable, Clipped {
     @Override
     public final float getScrollBarRatio() {
         int text_height = textLayout.getTextHeight();
-        Box edit_box = Skin.getSkin().getEditBox();
+        Box edit_box = skin.getEditBox();
         int inner_height = getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset();
         if (text_height <= inner_height) {
             return 1.0f;
@@ -115,7 +126,7 @@ public class TextBox extends TextField implements Scrollable, Clipped {
     @Override
     public final float getScrollBarOffset() {
         int text_height = textLayout.getTextHeight();
-        Box edit_box = Skin.getSkin().getEditBox();
+        Box edit_box = skin.getEditBox();
         int inner_height = getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset();
         int max_offset = text_height - inner_height;
         return max_offset <= 0 ? 0 : (float) offset_y / max_offset;
@@ -124,7 +135,7 @@ public class TextBox extends TextField implements Scrollable, Clipped {
     @Override
     public final void setScrollBarOffset(float offset) {
         int text_height = textLayout.getTextHeight();
-        Box edit_box = Skin.getSkin().getEditBox();
+        Box edit_box = skin.getEditBox();
         int inner_height = getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset();
         int max_offset = text_height - inner_height;
         if (max_offset <= 0) return;

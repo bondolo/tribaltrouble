@@ -6,6 +6,9 @@ import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.util.Color;
 
 
+/**
+ * Text-based interactive menu button with sinusoidal hover animation.
+ */
 public final class MenuButton extends ButtonObject {
     private static final float SECONDS_PER_HOVER_CYCLE = 1.5f;
     private static final float HOVER_SCALE_FACTOR = 0.06f;
@@ -16,8 +19,12 @@ public final class MenuButton extends ButtonObject {
 
     private float start_hover_time;
 
-    public MenuButton(String caption, Color color_normal, Color color_active) {
-        this(caption, Skin.getSkin().getHeadlineFont(), color_normal, color_active);
+    public MenuButton(GUIRoot guiRoot, String caption, Color color_normal, Color color_active) {
+        this(caption, guiRoot.getSkin().getHeadlineFont(), color_normal, color_active);
+    }
+
+    public MenuButton(Font font, String caption, Color color_normal, Color color_active) {
+        this(caption, font, color_normal, color_active);
     }
 
     private MenuButton(CharSequence text, Font font, Color color_normal,

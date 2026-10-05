@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.gui;
 
+import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.NonFocusIconButton;
 import com.oddlabs.tt.engine.render.IconQuad;
@@ -14,16 +15,16 @@ import org.jspecify.annotations.Nullable;
 import java.util.function.Supplier;
 
 /**
- * A button representing a magical ability that charges over time and allows triggering magic.
+ * Button representing a magical ability that charges over time and allows triggering magic.
  */
-public class RechargeButton extends NonFocusIconButton {
+public final class RechargeButton extends NonFocusIconButton {
     private final PlayerInterface player_interface;
     private final MagicType magic_type;
     private Unit unit;
 
-    public RechargeButton(PlayerInterface player_interface, ModeIconQuads icon,
+    public RechargeButton(GUIRoot guiRoot, PlayerInterface player_interface, ModeIconQuads icon,
             @Nullable GameAction action, Supplier<String> tool_tip, MagicType magic_type) {
-        super(icon, action, tool_tip);
+        super(guiRoot, icon, action, tool_tip);
         this.player_interface = player_interface;
         this.magic_type = magic_type;
         setCanFocus(true);

@@ -68,7 +68,7 @@ public final class VikingCampaign extends Campaign {
 
     @Override
     public void islandChosen(GUIRoot gui_root, int number) {
-        Form dialog = new CampaignDialogForm(islands[number].getHeader(),
+        Form dialog = new CampaignDialogForm(gui_root, islands[number].getHeader(),
                 islands[number].getDescription(),
                 null,
                 Origin.AT_START,

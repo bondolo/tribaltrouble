@@ -5,27 +5,38 @@ import com.oddlabs.tt.gui.event.CheckBoxListener;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
 import java.util.List;
+import java.util.Objects;
 
+/**
+ * Toggle button presenting a binary checked or unchecked state with an adjacent label.
+ */
 public final class CheckBox extends GUIObject {
     private final List<CheckBoxListener> event_listeners = new java.util.ArrayList<>();
+    private final Skin skin;
 
     private boolean checked;
     private boolean pressed = false;
 
-    public CheckBox(boolean checked, String text) {
-        this(checked, text, "");
+    public CheckBox(GUIRoot guiRoot, boolean checked, String text, String tool_tip) {
+        super(!tool_tip.isEmpty() ? () -> tool_tip : null);
+        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.checked = checked;
+        Label label = new Label(text, skin.getEditFont());
+        addChild(label);
+        label.setPos(skin.getCheckBoxChecked().quad(ModeIconQuads.Mode.NORMAL).getWidth(), (skin
+                .getCheckBoxChecked().quad(ModeIconQuads.Mode.NORMAL).getHeight() - label.getHeight()) / 2);
+        setDim(skin.getCheckBoxChecked().quad(ModeIconQuads.Mode.NORMAL).getWidth() + label.getWidth(), skin
+                .getCheckBoxChecked().quad(ModeIconQuads.Mode.NORMAL).getHeight());
+        setCanFocus(true);
     }
 
-    public CheckBox(boolean checked, String text, String tool_tip) {
-        super(!tool_tip.isEmpty() ? () -> tool_tip : null);
-        this.checked = checked;
-        Label label = new Label(text, Skin.getSkin().getEditFont());
-        addChild(label);
-        label.setPos(Skin.getSkin().getCheckBoxChecked().quad(ModeIconQuads.Mode.NORMAL).getWidth(), (Skin.getSkin()
-                .getCheckBoxChecked().quad(ModeIconQuads.Mode.NORMAL).getHeight() - label.getHeight()) / 2);
-        setDim(Skin.getSkin().getCheckBoxChecked().quad(ModeIconQuads.Mode.NORMAL).getWidth() + label.getWidth(), Skin
-                .getSkin().getCheckBoxChecked().quad(ModeIconQuads.Mode.NORMAL).getHeight());
-        setCanFocus(true);
+    public CheckBox(GUIRoot guiRoot, boolean checked, String text) {
+        this(guiRoot, checked, text, "");
+    }
+
+    @Override
+    protected Skin getSkin() {
+        return skin;
     }
 
     public boolean isChecked() {
@@ -71,11 +82,11 @@ public final class CheckBox extends GUIObject {
         // When unchecked, active, pressed, and hovered, it should show the checked state
         ModeIconQuads quad_to_render = isChecked()
                 ? (skinMode == ModeIconQuads.Mode.ACTIVE && pressed && isHovered()
-                        ? Skin.getSkin().getCheckBoxUnchecked()
-                        : Skin.getSkin().getCheckBoxChecked())
+                        ? skin.getCheckBoxUnchecked()
+                        : skin.getCheckBoxChecked())
                 : (skinMode == ModeIconQuads.Mode.ACTIVE && pressed && isHovered()
-                        ? Skin.getSkin().getCheckBoxChecked()
-                        : Skin.getSkin().getCheckBoxUnchecked());
+                        ? skin.getCheckBoxChecked()
+                        : skin.getCheckBoxUnchecked());
 
         renderer.drawModeIcon(quad_to_render, skinMode, 0, 0);
     }

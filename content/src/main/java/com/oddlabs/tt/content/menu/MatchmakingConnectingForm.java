@@ -12,7 +12,6 @@ import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.net.MatchmakingListener;
 import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.Nullable;
@@ -21,6 +20,7 @@ import java.util.ResourceBundle;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
 
+/** Form indicating matchmaking connection progress with a cancel option. */
 public final class MatchmakingConnectingForm extends Form implements MatchmakingListener {
     private final Form parent_form;
     private final Menu main_menu;
@@ -34,13 +34,14 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
 
     public MatchmakingConnectingForm(@Nullable Form parent_form, Menu main_menu, @Nullable Login login,
             @Nullable LoginDetails login_details) {
+        super(main_menu.getGUIRoot());
         this.parent_form = parent_form;
         this.main_menu = main_menu;
         this.gui_root = main_menu.getGUIRoot();
         NetworkSelector network = main_menu.getEngine().getNetwork().getSelector();
-        Label info_label = new Label(i18n("connecting"), Skin.getSkin().getHeadlineFont());
+        Label info_label = new Label(i18n("connecting"), getSkin().getHeadlineFont());
         addChild(info_label);
-        HorizButton cancel_button = new CancelButton(120);
+        HorizButton cancel_button = new CancelButton(gui_root, 120);
         addChild(cancel_button);
         cancel_button.addMouseClickListener((_, _, _, _) -> this.cancel());
 
@@ -89,7 +90,7 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
     @Override
     public void connectionLost() {
         remove();
-        gui_root.addModalForm(new MessageForm(i18n("connection_failed")));
+        gui_root.addModalForm(new MessageForm(gui_root, i18n("connection_failed")));
     }
 
     @Override
@@ -107,7 +108,7 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
             case MatchmakingClientInterface.USERNAME_ERROR_TOO_SHORT -> i18n("username_error_too_short");
             default -> throw new IllegalArgumentException("Unknown error code: " + error_code);
         };
-        gui_root.addModalForm(new MessageForm(error_message));
+        gui_root.addModalForm(new MessageForm(gui_root, error_message));
     }
 
     @Override

@@ -18,7 +18,6 @@ import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.PulldownButton;
 import com.oddlabs.tt.gui.PulldownItem;
 import com.oddlabs.tt.gui.PulldownMenu;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.base.util.Utils;
@@ -55,36 +54,43 @@ final class NewCampaignForm extends Form implements DeterministicSerializerLoopb
     private final GUIRoot gui_root;
     private final Menu main_menu;
     private final CampaignForm campaign_form;
-    private final EditLine editline_name = new EditLine(EDITLINE_WIDTH, 200);
-    private final PulldownMenu<Race> race_pulldown = new PulldownMenu<>();
-    private final PulldownMenu<Difficulty> difficulty_pulldown = new PulldownMenu<>();
+    private final EditLine editline_name;
+    private final PulldownMenu<Race> race_pulldown;
+    private final PulldownMenu<Difficulty> difficulty_pulldown;
     private CampaignState @Nullable [] campaign_states;
 
     NewCampaignForm(Menu main_menu,
             CampaignForm campaign_form) {
+        super(main_menu.getGUIRoot());
         this.main_menu = main_menu;
         this.gui_root = main_menu.getGUIRoot();
         this.campaign_form = campaign_form;
+        this.editline_name = new EditLine(gui_root, EDITLINE_WIDTH, 200);
+        this.race_pulldown = new PulldownMenu<>(gui_root);
+        this.difficulty_pulldown = new PulldownMenu<>(gui_root);
+
         // headline
-        Label label_headline = new Label(i18n("caption"), Skin.getSkin().getHeadlineFont());
+        Label label_headline = new Label(i18n("caption"), skin.getHeadlineFont());
         addChild(label_headline);
 
+        var font = skin.getEditFont();
+
         // name
-        Group group = new Group();
-        Label name_label = new Label(i18n("name"), Skin.getSkin().getEditFont());
+        Group group = new Group(gui_root);
+        Label name_label = new Label(i18n("name"), font);
         editline_name.addEnterListener(new NameListener());
         group.addChild(name_label);
         group.addChild(editline_name);
 
         // race
-        Label race_label = new Label(i18n("race"), Skin.getSkin().getEditFont());
-        race_pulldown.addItem(new PulldownItem<>(i18n("vikings"), Race.VIKINGS));
-        race_pulldown.addItem(new PulldownItem<>(i18n("natives"), Race.NATIVES));
+        Label race_label = new Label(i18n("race"), font);
+        race_pulldown.addItem(new PulldownItem<>(gui_root, i18n("vikings"), Race.VIKINGS));
+        race_pulldown.addItem(new PulldownItem<>(gui_root, i18n("natives"), Race.NATIVES));
         race_pulldown.addItemChosenListener((PulldownMenu<Race> menu, int item_index) -> {
             if (menu.getChosenItem().map(PulldownItem::getAttachment).orElse(Race.VIKINGS) == Race.NATIVES
                     && (!gui_root.getGUI().getSettings().hasNativeCampaign())) {
                 menu.chooseItem(INDEX_VIKINGS);
-                gui_root.addModalForm(new MessageForm(i18n("native_unavailable")));
+                gui_root.addModalForm(new MessageForm(gui_root, i18n("native_unavailable")));
             }
         });
         PulldownButton<Race> race_pb = new PulldownButton<>(gui_root, race_pulldown, INDEX_VIKINGS, 100);
@@ -92,10 +98,10 @@ final class NewCampaignForm extends Form implements DeterministicSerializerLoopb
         group.addChild(race_pb);
 
         // difficulty
-        Label difficulty_label = new Label(i18n("difficulty"), Skin.getSkin().getEditFont());
-        difficulty_pulldown.addItem(new PulldownItem<>(i18n("easy"), Difficulty.EASY));
-        difficulty_pulldown.addItem(new PulldownItem<>(i18n("normal"), Difficulty.NORMAL));
-        difficulty_pulldown.addItem(new PulldownItem<>(i18n("hard"), Difficulty.HARD));
+        Label difficulty_label = new Label(i18n("difficulty"), font);
+        difficulty_pulldown.addItem(new PulldownItem<>(gui_root, i18n("easy"), Difficulty.EASY));
+        difficulty_pulldown.addItem(new PulldownItem<>(gui_root, i18n("normal"), Difficulty.NORMAL));
+        difficulty_pulldown.addItem(new PulldownItem<>(gui_root, i18n("hard"), Difficulty.HARD));
         PulldownButton<Difficulty> difficulty_pb = new PulldownButton<>(gui_root, difficulty_pulldown, 1, 100);
         group.addChild(difficulty_label);
         group.addChild(difficulty_pb);
@@ -112,10 +118,10 @@ final class NewCampaignForm extends Form implements DeterministicSerializerLoopb
         addChild(group);
 
         // buttons
-        ButtonObject button_ok = new OKButton(BUTTON_WIDTH);
+        ButtonObject button_ok = new OKButton(gui_root, BUTTON_WIDTH);
         button_ok.addMouseClickListener(new NameListener());
         addChild(button_ok);
-        ButtonObject button_cancel = new CancelButton(BUTTON_WIDTH);
+        ButtonObject button_cancel = new CancelButton(gui_root, BUTTON_WIDTH);
         button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
         addChild(button_cancel);
 
@@ -154,11 +160,11 @@ final class NewCampaignForm extends Form implements DeterministicSerializerLoopb
     private void save() {
         String name = editline_name.getContents().trim();
         if (name.isEmpty()) {
-            gui_root.addModalForm(new MessageForm(i18n("invalid")));
+            gui_root.addModalForm(new MessageForm(gui_root, i18n("invalid")));
             return;
         }
         if (!nameIsUnique(name)) {
-            gui_root.addModalForm(new MessageForm(i18n("exists")));
+            gui_root.addModalForm(new MessageForm(gui_root, i18n("exists")));
             return;
         }
 
@@ -200,7 +206,7 @@ final class NewCampaignForm extends Form implements DeterministicSerializerLoopb
         } else if (e instanceof InvalidClassException || e instanceof ClassNotFoundException) {
         } else {
             String failed_message = i18n("failed_message", LoadCampaignBox.SAVEGAMES_FILE_NAME, e.getMessage());
-            gui_root.addModalForm(new MessageForm(failed_message));
+            gui_root.addModalForm(new MessageForm(gui_root, failed_message));
         }
     }
 

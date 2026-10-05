@@ -151,14 +151,14 @@ public abstract class Menu extends CameraDelegate<Camera> {
     }
 
     final void addOptionsButton(FormFactory<?> factory) {
-        MenuButton options = new MenuButton(i18n("options"), COLOR_NORMAL, COLOR_ACTIVE);
+        MenuButton options = new MenuButton(getGUIRoot(), i18n("options"), COLOR_NORMAL, COLOR_ACTIVE);
         options.addMouseClickListener((_, _, _, _) -> setMenuCentered(factory.create()));
         addChild(options);
     }
 
     protected final void addExitButton() {
-        MenuButton exit = new MenuButton(i18n("quit"), COLOR_NORMAL, COLOR_ACTIVE);
-        exit.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuitForm(engine::shutdown)));
+        MenuButton exit = new MenuButton(getGUIRoot(), i18n("quit"), COLOR_NORMAL, COLOR_ACTIVE);
+        exit.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuitForm(getGUIRoot(), engine::shutdown)));
         addChild(exit);
     }
 
@@ -215,11 +215,27 @@ public abstract class Menu extends CameraDelegate<Camera> {
         if (current_menu != null) {
             current_menu.remove();
         }
+        disableButtons(true);
+        form.addCloseListener(() -> {
+            disableButtons(false);
+            current_menu = null;
+            setFocus();
+        });
         current_menu = form;
         current_menu_centered = centered;
         getGUIRoot().addChild(form);
         positionMenu();
         form.setFocus();
+    }
+
+    private void disableButtons(boolean disabled) {
+        GUIObject child = getLastChild();
+        while (child != null) {
+            if (child instanceof MenuButton button) {
+                button.setDisabled(disabled);
+            }
+            child = child.getPrior();
+        }
     }
 
     private void positionMenu() {
@@ -269,19 +285,19 @@ public abstract class Menu extends CameraDelegate<Camera> {
     }
 
     @Override
-    public final void setFocus() {
+    public void setFocus(FocusDirection direction) {
         if (current_menu != null) {
-            current_menu.setFocus();
+            current_menu.setFocus(direction);
         } else {
             GUIObject child = getLastChild();
             while (child != null) {
-                if (child instanceof MenuButton button) {
-                    button.setFocus();
+                if (child instanceof MenuButton button && !button.isDisabled()) {
+                    button.setFocus(direction);
                     break;
                 }
                 child = child.getPrior();
             }
-            super.setFocus();
+            super.setFocus(direction);
             focusNext();
         }
     }
@@ -291,7 +307,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
     }
 
     protected final void addResumeButton() {
-        MenuButton resume = new MenuButton(i18n("resume"), COLOR_NORMAL, COLOR_ACTIVE);
+        MenuButton resume = new MenuButton(getGUIRoot(), i18n("resume"), COLOR_NORMAL, COLOR_ACTIVE);
         addChild(resume);
         resume.addMouseClickListener((_, _, _, _) -> pop());
     }
@@ -338,8 +354,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
 
     public static GameNetwork<GUIRoot, UIRenderer> startNewGame(
             Peer engine, GUIRoot gui_root,
-            MultiplayerLobby owner, WorldParameters world_params, InGameInfo ingame_info,
-            WorldInitAction init_action, Game game, IslandConfig islandConfig, String[] ai_names) {
+            @Nullable MultiplayerLobby owner, WorldParameters world_params, InGameInfo ingame_info,
+            WorldInitAction init_action, @Nullable Game game, IslandConfig islandConfig, String[] ai_names) {
         boolean multiplayer = ingame_info.isMultiplayer();
         WorldGenerator<GeneratedLandscapeData> generator = new IslandGenerator(islandConfig);
         InetAddress address = multiplayer ? null : com.oddlabs.util.Utils.getLoopbackAddress();
@@ -377,7 +393,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
 
                 @Override
                 public void connectionLost() {
-                    gui_root.addModalForm(new MessageForm(ConnectingForm.i18n("connection_lost")));
+                    gui_root.addModalForm(new MessageForm(gui_root, ConnectingForm.i18n("connection_lost")));
                 }
 
                 @Override
@@ -451,12 +467,12 @@ public abstract class Menu extends CameraDelegate<Camera> {
         AudioSettings audioSettings = AudioSettings.from(engine.getSettings());
         if (first_progress && audioSettings.warning_no_sound
                 && !engine.getEventQueue().getDeterministic().log(engine.getAudioManager() != null)) {
-            gui_root.addModalForm(new WarningForm(i18n("sound_not_available_caption"), i18n(
+            gui_root.addModalForm(new WarningForm(gui_root, i18n("sound_not_available_caption"), i18n(
                     "sound_not_available_message"),
                     doNotShowAgain -> audioSettings.warning_no_sound = !doNotShowAgain));
         }
         if (!initNetwork(engine)) {
-            gui_root.addModalForm(new MessageForm(i18n("network_not_available_caption"),
+            gui_root.addModalForm(new MessageForm(gui_root, i18n("network_not_available_caption"),
                     i18n("network_not_available_message"),
                     i18n("quit"), (_, _, _, _) -> engine.shutdown()));
         }

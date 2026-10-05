@@ -5,24 +5,35 @@ import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
- * Selectable item element in a {@link PulldownMenu}.
+ * Selectable item in a {@link PulldownMenu}.
  */
-public class PulldownItem<T> extends ButtonObject {
+public final class PulldownItem<T> extends ButtonObject {
+    private final Skin skin;
+    private final Box itemBox;
     private final Label label;
     private final @Nullable T attachment;
     private @Nullable PulldownMenu<T> menu;
 
-    public PulldownItem(String label_str) {
-        this(label_str, null);
+    public PulldownItem(GUIRoot guiRoot, String label_str) {
+        this(guiRoot, label_str, null);
     }
 
-    public PulldownItem(String label_str, @Nullable T attachment) {
-        super(Skin.getSkin().getPulldownData().font());
+    public PulldownItem(GUIRoot guiRoot, String label_str, @Nullable T attachment) {
+        super(guiRoot.getSkin().getPulldownData().font());
+        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.itemBox = skin.getPulldownData().pulldownItem();
         this.attachment = attachment;
         label = new Label(label_str, getFont(), 0, Origin.AT_START);
         addChild(label);
         setDim(0, label.getHeight());
+    }
+
+    @Override
+    protected Skin getSkin() {
+        return skin;
     }
 
     public @Nullable T getAttachment() {
@@ -34,28 +45,25 @@ public class PulldownItem<T> extends ButtonObject {
     }
 
     public int getTextWidth() {
-//		return label.getWidth();
         return label.getTextWidth();
     }
 
     @Override
     public PulldownItem<T> setDim(int width, int height) {
         super.setDim(width, height);
-        Box item = Skin.getSkin().getPulldownData().pulldownItem();
-        label.setDim(getWidth() - item.getLeftOffset() - item.getRightOffset(), label.getHeight());
-        label.setPos(item.getLeftOffset(), (getHeight() - label.getHeight()) / 2);
+        label.setDim(getWidth() - itemBox.getLeftOffset() - itemBox.getRightOffset(), label.getHeight());
+        label.setPos(itemBox.getLeftOffset(), (getHeight() - label.getHeight()) / 2);
         return this;
     }
 
     @Override
     protected void renderGeometry(GUIRenderer renderer) {
-        Box item = Skin.getSkin().getPulldownData().pulldownItem();
         ModeIconQuads.Mode skinMode = isDisabled()
                 ? ModeIconQuads.Mode.NORMAL
                 : isActive() || isHovered()
                         ? ModeIconQuads.Mode.ACTIVE
                 : ModeIconQuads.Mode.NORMAL;
-        item.render(renderer, 0f, 0f, getWidth(), getHeight(), skinMode);
+        itemBox.render(renderer, 0f, 0f, getWidth(), getHeight(), skinMode);
     }
 
     public void setLabelString(CharSequence label_str) {

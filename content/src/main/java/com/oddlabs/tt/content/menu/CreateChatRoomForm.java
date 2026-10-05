@@ -10,7 +10,6 @@ import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.OKButton;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.net.MatchmakingClient;
@@ -21,6 +20,7 @@ import java.util.ResourceBundle;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 
+/** Dialog form for creating a new matchmaking chat room. */
 public final class CreateChatRoomForm extends Form {
     private static final int BUTTON_WIDTH = 100;
     private static final int EDITLINE_WIDTH = 200;
@@ -35,25 +35,26 @@ public final class CreateChatRoomForm extends Form {
     private final EditLine editline_room_name;
 
     public CreateChatRoomForm(SelectGameMenu menu) {
+        super(menu.getGUIRoot());
         this.client = menu.getMainMenu().getEngine().getNetwork().getMatchmakingClient();
 
         // headline
-        Label label_headline = new Label(i18n("caption"), Skin.getSkin().getHeadlineFont());
+        Label label_headline = new Label(i18n("caption"), getSkin().getHeadlineFont());
         addChild(label_headline);
 
         // name
         CreateListener create_listener = new CreateListener();
-        Label name_label = new Label(i18n("room_name"), Skin.getSkin().getEditFont());
-        editline_room_name = new EditLine(EDITLINE_WIDTH, 200);
+        Label name_label = new Label(i18n("room_name"), getSkin().getEditFont());
+        editline_room_name = new EditLine(menu.getGUIRoot(), EDITLINE_WIDTH, 200);
         editline_room_name.addEnterListener(create_listener);
         addChild(name_label);
         addChild(editline_room_name);
 
         // buttons
-        ButtonObject button_ok = new OKButton(BUTTON_WIDTH);
+        ButtonObject button_ok = new OKButton(menu.getGUIRoot(), BUTTON_WIDTH);
         button_ok.addMouseClickListener(create_listener);
         addChild(button_ok);
-        ButtonObject button_cancel = new CancelButton(BUTTON_WIDTH);
+        ButtonObject button_cancel = new CancelButton(menu.getGUIRoot(), BUTTON_WIDTH);
         button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
         addChild(button_cancel);
 

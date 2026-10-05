@@ -4,7 +4,6 @@ import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.LabelBox;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.content.tutorial.trigger.TutorialTrigger;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.WorldViewer;
@@ -68,7 +67,7 @@ public final class Tutorial {
     private void next1(final TutorialTrigger trigger) {
         String text = Utils.getBundleString(ResourceBundle.getBundle(TutorialTrigger.class.getName()), trigger
                 .getTextKey(), trigger.getFormatArgs());
-        info = new LabelBox(text, Skin.getSkin().getEditFont(), 400);
+        info = new LabelBox(text, viewer.getGUIRoot().getSkin().getEditFont(), 400);
         info.setPos(BORDER_OFFSET, viewer.getGUIRoot().getHeight() - BORDER_OFFSET - info.getHeight());
         viewer.getGUIRoot().addChild(info);
         var audioManager = viewer.getAudioManager();

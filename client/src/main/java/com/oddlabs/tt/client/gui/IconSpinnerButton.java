@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.gui;
 
+import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.NonFocusIconButton;
 import com.oddlabs.tt.gui.ToolTipBox;
 
@@ -9,13 +10,14 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.function.Supplier;
 
+/** Non-focusable icon button associated with an IconSpinner. */
 public final class IconSpinnerButton extends NonFocusIconButton {
     private final IconSpinner owner;
 
-    public IconSpinnerButton(ModeIconQuads icon_quad, @Nullable GameAction action, Supplier<
+    public IconSpinnerButton(GUIRoot guiRoot, ModeIconQuads icon_quad, @Nullable GameAction action, Supplier<
             String> tool_tip,
             IconSpinner owner) {
-        super(icon_quad, action, tool_tip);
+        super(guiRoot, icon_quad, action, tool_tip);
         this.owner = owner;
     }
 

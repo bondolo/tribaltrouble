@@ -10,14 +10,14 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.Nullable;
 
-/** A non-focusable icon button that trains a chieftain. */
-public class ChieftainButton extends NonFocusIconButton {
+/** Non-focusable icon button that trains a chieftain. */
+public final class ChieftainButton extends NonFocusIconButton {
     private final PlayerInterface player_interface;
     private @Nullable Building current_building;
 
     public ChieftainButton(WorldViewer viewer, PlayerInterface player_interface,
             ModeIconQuads icon) {
-        super(icon, GameAction.TRAIN_CHIEFTAIN, () -> ActionButtonPanel.i18n(
+        super(viewer.getGUIRoot(), icon, GameAction.TRAIN_CHIEFTAIN, () -> ActionButtonPanel.i18n(
                 "train_chieftain_tip", viewer.getInputManager().getBindingString(
                         GameAction.TRAIN_CHIEFTAIN)));
         this.player_interface = player_interface;
@@ -43,7 +43,7 @@ public class ChieftainButton extends NonFocusIconButton {
         }
     }
 
-    protected final float getProgress() {
+    private float getProgress() {
         return current_building.isAlive() ? current_building.getChieftainContainer()
                 .map(c -> c.getBuildProgress()).orElse(0f) : 0;
     }

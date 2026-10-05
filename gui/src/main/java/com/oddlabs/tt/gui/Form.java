@@ -13,49 +13,51 @@ import org.jspecify.annotations.Nullable;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+/** Floating dialog window or panel container with optional caption and close button. */
 public class Form extends Group {
     private final Set<CloseListener> close_listeners = new CopyOnWriteArraySet<>();
 
     private final @Nullable String caption;
-
     private boolean drag = false;
 
-    public Form(@Nullable String caption) {
+    public Form(GUIRoot guiRoot, @Nullable String caption) {
+        super(guiRoot, true);
         this.caption = caption;
         setFocusCycle(true);
     }
 
-    public Form() {
-        this(null);
+    public Form(GUIRoot guiRoot) {
+        this(guiRoot, null);
     }
 
     @Override
     public final void compileCanvas() {
-        int spacing = Skin.getSkin().getFormData().objectSpacing();
+        var formData = skin.getFormData();
+        int spacing = formData.objectSpacing();
         Box form;
 
         if (caption != null) {
-            form = Skin.getSkin().getFormData().form();
+            form = formData.form();
             super.compileCanvas(form.getLeftOffset() + spacing,
                     form.getBottomOffset() + spacing,
                     form.getRightOffset() + spacing,
                     form.getTopOffset() + spacing);
 
-            FormData form_data = Skin.getSkin().getFormData();
-            Font font = form_data.captionFont();
+            Font font = formData.captionFont();
 
             GUIObject label = new Label(caption, font);
-            label.setPos(form_data.captionLeft(), getHeight() - form_data.captionY() - font.getHeight() / 2);
+            label.setPos(formData.captionLeft(), getHeight() - formData.captionY() - font.getHeight() / 2);
             label.addMouseMotionListener(new DragListener(this));
             addChild(label);
 
-            GUIObject close_button = new IconButton(Skin.getSkin().getFormData().formClose(), null);
-            close_button.setPos(getWidth() - close_button.getWidth() - form_data.closeRight(),
-                    getHeight() - close_button.getHeight() - form_data.closeTop());
+            GUIObject close_button = new IconButton(getGUIRoot(), formData.formClose(), null);
+            close_button.setTabStop(false);
+            close_button.setPos(getWidth() - close_button.getWidth() - formData.closeRight(),
+                    getHeight() - close_button.getHeight() - formData.closeTop());
             close_button.addMouseClickListener((_, _, _, _) -> this.cancel());
             addChild(close_button);
         } else {
-            form = Skin.getSkin().getFormData().slimForm();
+            form = formData.slimForm();
             super.compileCanvas(form.getLeftOffset() + spacing,
                     form.getBottomOffset() + spacing,
                     form.getRightOffset() + spacing,
@@ -64,15 +66,13 @@ public class Form extends Group {
     }
 
     public final void centerPos() {
-        GUIRoot root = getParentGUIRoot();
-        if (root != null) {
-            setPos((root.getWidth() - getWidth()) / 2, (root.getHeight() - getHeight()) / 2);
-        }
+        var root = getParentGUIRoot();
+        setPos((root.getWidth() - getWidth()) / 2, (root.getHeight() - getHeight()) / 2);
     }
 
     @Override
     protected void renderGeometry(GUIRenderer renderer) {
-        var data = Skin.getSkin().getFormData();
+        var data = skin.getFormData();
         var form = caption != null
                 ? data.form()
                 : data.slimForm();
@@ -84,7 +84,7 @@ public class Form extends Group {
 
     @Override
     protected final void mousePressed(MouseButton button, int x, int y) {
-        if (caption != null && y >= getHeight() - Skin.getSkin().getFormData().form().getTopOffset())
+        if (caption != null && y >= getHeight() - skin.getFormData().form().getTopOffset())
             drag = true;
     }
 

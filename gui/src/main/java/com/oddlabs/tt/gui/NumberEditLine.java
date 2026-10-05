@@ -5,7 +5,10 @@ import com.oddlabs.tt.gui.event.ValueListener;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class NumberEditLine extends EditLine {
+/**
+ * Single-line text input field restricted to numeric digit entry within defined bounds.
+ */
+public final class NumberEditLine extends EditLine {
     private final Set<ValueListener> value_listeners = new CopyOnWriteArraySet<>();
 
     private final long min_value;
@@ -13,12 +16,13 @@ public class NumberEditLine extends EditLine {
 
     private long value;
 
-    public NumberEditLine(int width, int max_codepoints, int max_value) {
-        this(width, max_codepoints, 0, max_value, 0);
+    public NumberEditLine(GUIRoot guiRoot, int width, int max_codepoints, int max_value) {
+        this(guiRoot, width, max_codepoints, 0, max_value, 0);
     }
 
-    public NumberEditLine(int width, int max_codepoints, int min_value, int max_value, int init_value) {
-        super(width, max_codepoints, "0123456789", Origin.AT_END);
+    public NumberEditLine(GUIRoot guiRoot, int width, int max_codepoints, int min_value, int max_value,
+            int init_value) {
+        super(guiRoot, width, max_codepoints, "0123456789", Origin.AT_END);
         this.min_value = min_value;
         this.max_value = max_value;
         setValue(init_value);

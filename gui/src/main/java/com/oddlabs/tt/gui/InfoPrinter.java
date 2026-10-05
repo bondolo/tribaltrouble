@@ -53,7 +53,7 @@ final class InfoPrinter extends GUIObject implements Animated, com.oddlabs.tt.ba
     @Override
     public void print(String text, Color color) {
         int width = Math.min(font.getWidth(text), getWidth());
-        LabelBox label_box = new BackgroundLabelBox(text, font, width);
+        LabelBox label_box = new BackgroundLabelBox(gui_root, text, font, width);
         if (color.a() > .2f)
             label_box.setColor(color);
         addChild(label_box);

@@ -124,11 +124,11 @@ public final class Main {
                                 if (gui.getGUIRoot().isShowingModalForm(QuitForm.class)) {
                                     clientEngine.shutdown();
                                 } else {
-                                    gui.getGUIRoot().addModalForm(new QuitForm(clientEngine::shutdown));
+                                    gui.getGUIRoot().addModalForm(new QuitForm(gui.getGUIRoot(),
+                                            clientEngine::shutdown));
                                 }
                             });
-                            Runnable loadTask = gui.callWithSkin(
-                                    () -> Menu.setupMainMenu(clientEngine, gui, firstProgress));
+                            Runnable loadTask = Menu.setupMainMenu(clientEngine, gui, firstProgress);
                             return new ClientStartup.Session(gui, loadTask);
                         }, args
                 );

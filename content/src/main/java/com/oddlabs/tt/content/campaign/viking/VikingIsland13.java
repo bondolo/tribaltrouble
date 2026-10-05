@@ -15,10 +15,9 @@ import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.gui.CounterLabel;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.gui.Skin;
+import org.jspecify.annotations.Nullable;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
@@ -38,7 +37,7 @@ final class VikingIsland13 extends Island {
     }
 
     private final int minutes = 15;
-    private final CounterLabel counter = new CounterLabel(minutes * 60f, Skin.getSkin().getHeadlineFont(), true);
+    private @Nullable CounterLabel counter;
 
     private boolean alive;
 
@@ -48,11 +47,12 @@ final class VikingIsland13 extends Island {
 
     @Override
     public void init(GUIRoot gui_root) {
+        counter = new CounterLabel(minutes * 60f, gui_root.getSkin().getHeadlineFont(), true);
         String[] ai_names = IntStream.range(0, 6)
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
         // gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
-        GameNetwork game_network = startNewGame(gui_root, 512, Terrain.NATIVE, 1f, 1f, .8f, 16,
+        var game_network = startNewGame(gui_root, 512, Terrain.NATIVE, 1f, 1f, .8f, 16,
                 13, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
@@ -79,9 +79,11 @@ final class VikingIsland13 extends Island {
     @Override
     protected void start() {
         alive = true;
-        counter.start(getViewer().getWorld().getAnimationManagerGameTime());
-        counter.setPos(0, 0);
-        getViewer().getGUIRoot().addChild(counter);
+        if (counter != null) {
+            counter.start(getViewer().getWorld().getAnimationManagerGameTime());
+            counter.setPos(0, 0);
+            getViewer().getGUIRoot().addChild(counter);
+        }
 
         Runnable runnable;
         final Player local_player = getViewer().getLocalPlayer();
@@ -267,8 +269,10 @@ final class VikingIsland13 extends Island {
 
     public void removeCounter() {
         alive = false;
-        counter.stop();
-        counter.remove();
+        if (counter != null) {
+            counter.stop();
+            counter.remove();
+        }
     }
 
     @Override

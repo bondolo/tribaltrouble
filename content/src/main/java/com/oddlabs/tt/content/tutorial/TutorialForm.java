@@ -9,7 +9,6 @@ import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.content.tutorial.trigger.BuildingChieftainTrigger;
@@ -64,48 +63,51 @@ public final class TutorialForm extends Form {
     }
 
     public TutorialForm(GUIRoot gui_root, Peer engine) {
+        super(gui_root);
         this.gui_root = gui_root;
         this.engine = engine;
-        Label headline = new Label(i18n("tutorial_caption"), Skin.getSkin().getHeadlineFont());
+        Label headline = new Label(i18n("tutorial_caption"), getSkin().getHeadlineFont());
         addChild(headline);
 
-        HorizButton button_tutorial1 = new HorizButton(formatTutorial(TUTORIAL_CAMERA), 120);
+        var font = getSkin().getEditFont();
+
+        HorizButton button_tutorial1 = new HorizButton(gui_root, formatTutorial(TUTORIAL_CAMERA), 120);
         button_tutorial1.addMouseClickListener(new TutorialListener(TUTORIAL_CAMERA));
         addChild(button_tutorial1);
-        Label label_tutorial1 = new Label(i18n("tutorial1_tip"), Skin.getSkin().getEditFont());
+        Label label_tutorial1 = new Label(i18n("tutorial1_tip"), font);
         addChild(label_tutorial1);
 
-        HorizButton button_tutorial2 = new HorizButton(formatTutorial(TUTORIAL_QUARTERS), 120);
+        HorizButton button_tutorial2 = new HorizButton(gui_root, formatTutorial(TUTORIAL_QUARTERS), 120);
         button_tutorial2.addMouseClickListener(new TutorialListener(TUTORIAL_QUARTERS));
         addChild(button_tutorial2);
-        Label label_tutorial2 = new Label(i18n("tutorial2_tip"), Skin.getSkin().getEditFont());
+        Label label_tutorial2 = new Label(i18n("tutorial2_tip"), font);
         addChild(label_tutorial2);
 
-        HorizButton button_tutorial3 = new HorizButton(formatTutorial(TUTORIAL_ARMORY), 120);
+        HorizButton button_tutorial3 = new HorizButton(gui_root, formatTutorial(TUTORIAL_ARMORY), 120);
         button_tutorial3.addMouseClickListener(new TutorialListener(TUTORIAL_ARMORY));
         addChild(button_tutorial3);
-        Label label_tutorial3 = new Label(i18n("tutorial3_tip"), Skin.getSkin().getEditFont());
+        Label label_tutorial3 = new Label(i18n("tutorial3_tip"), font);
         addChild(label_tutorial3);
 
-        HorizButton button_tutorial4 = new HorizButton(formatTutorial(TUTORIAL_TOWER), 120);
+        HorizButton button_tutorial4 = new HorizButton(gui_root, formatTutorial(TUTORIAL_TOWER), 120);
         button_tutorial4.addMouseClickListener(new TutorialListener(TUTORIAL_TOWER));
         addChild(button_tutorial4);
-        Label label_tutorial4 = new Label(i18n("tutorial4_tip"), Skin.getSkin().getEditFont());
+        Label label_tutorial4 = new Label(i18n("tutorial4_tip"), font);
         addChild(label_tutorial4);
 
-        HorizButton button_tutorial5 = new HorizButton(formatTutorial(TUTORIAL_CHIEFTAIN), 120);
+        HorizButton button_tutorial5 = new HorizButton(gui_root, formatTutorial(TUTORIAL_CHIEFTAIN), 120);
         button_tutorial5.addMouseClickListener(new TutorialListener(TUTORIAL_CHIEFTAIN));
         addChild(button_tutorial5);
-        Label label_tutorial5 = new Label(i18n("tutorial5_tip"), Skin.getSkin().getEditFont());
+        Label label_tutorial5 = new Label(i18n("tutorial5_tip"), font);
         addChild(label_tutorial5);
 
-        HorizButton button_tutorial6 = new HorizButton(formatTutorial(TUTORIAL_BATTLE), 120);
+        HorizButton button_tutorial6 = new HorizButton(gui_root, formatTutorial(TUTORIAL_BATTLE), 120);
         button_tutorial6.addMouseClickListener(new TutorialListener(TUTORIAL_BATTLE));
         addChild(button_tutorial6);
-        Label label_tutorial6 = new Label(i18n("tutorial6_tip"), Skin.getSkin().getEditFont());
+        Label label_tutorial6 = new Label(i18n("tutorial6_tip"), font);
         addChild(label_tutorial6);
 
-        HorizButton cancel_button = new CancelButton(120);
+        HorizButton cancel_button = new CancelButton(gui_root, 120);
         addChild(cancel_button);
         cancel_button.addMouseClickListener((_, _, _, _) -> this.cancel());
 

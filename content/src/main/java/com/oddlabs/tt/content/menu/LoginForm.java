@@ -16,7 +16,6 @@ import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.PasswordLine;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.base.util.Utils;
@@ -28,6 +27,7 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_RIGHT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 
+/** Form for authenticating and logging into the matchmaking server. */
 public final class LoginForm extends Form {
     private static final int BUTTON_WIDTH = 100;
     private static final int BUTTON_WIDTH_LONG = 150;
@@ -45,6 +45,7 @@ public final class LoginForm extends Form {
     }
 
     public LoginForm(Menu main_menu) {
+        super(main_menu.getGUIRoot());
         this.main_menu = main_menu;
         this.gui_root = main_menu.getGUIRoot();
         var settings = gui_root.getGUI().getSettings();
@@ -56,24 +57,25 @@ public final class LoginForm extends Form {
         }
 
         // headline
-        Label label_headline = new Label(i18n("login_caption"), Skin.getSkin().getHeadlineFont());
+        Label label_headline = new Label(i18n("login_caption"), skin.getHeadlineFont());
         addChild(label_headline);
 
         // login
         LoginListener login_listener = new LoginListener();
-        Group login_group = new Group();
-        Label label_username = new Label(i18n("username"), Skin.getSkin().getEditFont());
-        editline_username = new EditLine(EDITLINE_WIDTH, 255);
+        Group login_group = new Group(gui_root);
+        var font = skin.getEditFont();
+        Label label_username = new Label(i18n("username"), font);
+        editline_username = new EditLine(gui_root, EDITLINE_WIDTH, 255);
         editline_username.addEnterListener(login_listener);
         editline_username.append(account.username);
-        Label label_password = new Label(i18n("password"), Skin.getSkin().getEditFont());
-        editline_password = new PasswordLine(EDITLINE_WIDTH, 255);
+        Label label_password = new Label(i18n("password"), font);
+        editline_password = new PasswordLine(gui_root, EDITLINE_WIDTH, 255);
         editline_password.addEnterListener(login_listener);
         if (remember) {
             editline_password.append("*************");
             editline_password.setPasswordDigest(account.pw_digest);
         }
-        remember_checkbox = new CheckBox(remember, i18n("remember_login"));
+        remember_checkbox = new CheckBox(gui_root, remember, i18n("remember_login"));
 
         login_group.addChild(label_username);
         login_group.addChild(editline_username);
@@ -90,13 +92,13 @@ public final class LoginForm extends Form {
 
         addChild(login_group);
         // buttons
-        Group group_buttons = new Group();
+        Group group_buttons = new Group(gui_root);
 
-        ButtonObject button_newuser = new HorizButton(i18n("new_account"), BUTTON_WIDTH);
+        ButtonObject button_newuser = new HorizButton(gui_root, i18n("new_account"), BUTTON_WIDTH);
         button_newuser.addMouseClickListener(new NewUserListener());
-        ButtonObject button_ok = new HorizButton(i18n("login"), BUTTON_WIDTH);
+        ButtonObject button_ok = new HorizButton(gui_root, i18n("login"), BUTTON_WIDTH);
         button_ok.addMouseClickListener(login_listener);
-        ButtonObject button_cancel = new CancelButton(BUTTON_WIDTH);
+        ButtonObject button_cancel = new CancelButton(gui_root, BUTTON_WIDTH);
         button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
 
         group_buttons.addChild(button_newuser);
@@ -137,7 +139,7 @@ public final class LoginForm extends Form {
         String password = editline_password.getPasswordDigest();
         Login login = new Login(username, password);
         if (!login.isValid())
-            gui_root.addModalForm(new MessageForm(i18n("invalid_login")));
+            gui_root.addModalForm(new MessageForm(gui_root, i18n("invalid_login")));
         else
             doLogin(username, password, login, remember_checkbox.isChecked());
     }

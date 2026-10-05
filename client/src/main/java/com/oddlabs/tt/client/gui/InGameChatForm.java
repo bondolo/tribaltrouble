@@ -5,10 +5,10 @@ import com.oddlabs.tt.client.delegate.ControllableCameraDelegate;
 import com.oddlabs.tt.gui.EditLine;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.RadioButton;
 import com.oddlabs.tt.gui.RadioButtonGroup;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.TextBox;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.net.ChatHistory;
@@ -45,29 +45,30 @@ public final class InGameChatForm extends Form implements ChatListener {
     private final ChatHistory history;
     private final ChatSender chatSender;
 
-    public InGameChatForm(ChatHub chatHub, ChatHistory history, ChatSender chatSender) {
-        super(i18n("chat"));
+    public InGameChatForm(GUIRoot guiRoot, ChatHub chatHub, ChatHistory history, ChatSender chatSender) {
+        super(guiRoot, i18n("chat"));
         this.chatHub = chatHub;
         this.history = history;
         this.chatSender = chatSender;
 
-        chat_line = new EditLine(CHAT_WIDTH, 256);
+        chat_line = new EditLine(guiRoot, CHAT_WIDTH, 256);
         addChild(chat_line);
         chat_line.addEnterListener(new ChatListener());
 
-        HorizButton button_send = new HorizButton(i18n("send"), BUTTON_WIDTH);
+        HorizButton button_send = new HorizButton(guiRoot, i18n("send"), BUTTON_WIDTH);
         addChild(button_send);
         button_send.addMouseClickListener((_, _, _, _) -> chat_line.enterPressedAll());
 
-        chat_box = new TextBox(CHAT_WIDTH + BUTTON_WIDTH, CHAT_HEIGHT, Skin.getSkin().getEditFont(), Integer.MAX_VALUE);
+        chat_box = new TextBox(guiRoot, CHAT_WIDTH + BUTTON_WIDTH, CHAT_HEIGHT, skin.getEditFont(),
+                Integer.MAX_VALUE);
         addChild(chat_box);
 
         radio_button_group = new RadioButtonGroup();
 
-        radio_all = new RadioButton(true, radio_button_group, i18n("send_to_all"));
+        radio_all = new RadioButton(guiRoot, true, radio_button_group, i18n("send_to_all"));
         addChild(radio_all);
 
-        radio_team = new RadioButton(false, radio_button_group, i18n("send_to_team"));
+        radio_team = new RadioButton(guiRoot, false, radio_button_group, i18n("send_to_team"));
         addChild(radio_team);
 
         chat_line.place();

@@ -21,23 +21,23 @@ public final class WarningForm extends Form {
     }
 
     private final CheckBox show_next_time;
+    private final HorizButton ok_button;
 
-    public WarningForm(String head, String message) {
-        this(head, message, null);
-    }
-
-    public WarningForm(String head, String message, @Nullable Consumer<Boolean> onDismiss) {
-        int head_width = Math.min(MAX_WIDTH, Skin.getSkin().getHeadlineFont().getWidth(head));
-        int message_width = Math.min(MAX_WIDTH, Skin.getSkin().getEditFont().getWidth(message));
+    public WarningForm(GUIRoot guiRoot, String head, String message, @Nullable Consumer<Boolean> onDismiss) {
+        super(guiRoot);
+        var headlineFont = skin.getHeadlineFont();
+        var editFont = skin.getEditFont();
+        int head_width = Math.min(MAX_WIDTH, headlineFont.getWidth(head));
+        int message_width = Math.min(MAX_WIDTH, editFont.getWidth(message));
         int width = Math.max(head_width, message_width);
 
-        Group group = new Group();
+        Group group = new Group(getGUIRoot());
         addChild(group);
-        LabelBox head_label = new LabelBox(head, Skin.getSkin().getHeadlineFont(), width);
+        LabelBox head_label = new LabelBox(head, headlineFont, width);
         group.addChild(head_label);
-        LabelBox info_label = new LabelBox(message, Skin.getSkin().getEditFont(), width);
+        LabelBox info_label = new LabelBox(message, editFont, width);
         group.addChild(info_label);
-        show_next_time = new CheckBox(false, i18n("dont_show"));
+        show_next_time = new CheckBox(guiRoot, false, i18n("dont_show"));
         group.addChild(show_next_time);
 
         head_label.place();
@@ -45,7 +45,7 @@ public final class WarningForm extends Form {
         show_next_time.place(info_label, BOTTOM_LEFT);
         group.compileCanvas();
 
-        HorizButton ok_button = new OKButton(70);
+        ok_button = new OKButton(guiRoot, 70);
         addChild(ok_button);
         ok_button.addMouseClickListener((_, _, _, _) -> {
             if (onDismiss != null) {
@@ -61,4 +61,19 @@ public final class WarningForm extends Form {
         compileCanvas();
         centerPos();
     }
+
+    public WarningForm(GUIRoot guiRoot, String head, String message) {
+        this(guiRoot, head, message, null);
+    }
+
+    @Override
+    public void setFocus(FocusDirection direction) {
+        if (direction == FocusDirection.BACKWARD) {
+            super.setFocus(direction);
+        } else {
+            ok_button.setFocus(direction);
+        }
+    }
+
+
 }

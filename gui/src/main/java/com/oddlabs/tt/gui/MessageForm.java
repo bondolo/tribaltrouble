@@ -11,28 +11,29 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
  */
 public class MessageForm extends Form {
     private static final int MAX_WIDTH = 500;
+    private final HorizButton ok_button;
 
-    public MessageForm(String head, String message) {
-        this(head, message, null, null);
-    }
-
-    public MessageForm(String head, String message, @Nullable String button,
-            MouseClickListener listener) {
-        int head_width = Math.min(MAX_WIDTH, Skin.getSkin().getHeadlineFont().getWidth(head));
-        int message_width = Math.min(MAX_WIDTH, Skin.getSkin().getEditFont().getWidth(message));
+    public MessageForm(GUIRoot guiRoot, String head, String message, @Nullable String button,
+            @Nullable MouseClickListener listener) {
+        super(guiRoot);
+        var headlineFont = skin.getHeadlineFont();
+        var editFont = skin.getEditFont();
+        int head_width = Math.min(MAX_WIDTH, headlineFont.getWidth(head));
+        int message_width = Math.min(MAX_WIDTH, editFont.getWidth(message));
         int width = Math.max(head_width, message_width);
 
-        LabelBox head_label = new LabelBox(head, Skin.getSkin().getHeadlineFont(), width);
+        LabelBox head_label = new LabelBox(head, headlineFont, width);
         addChild(head_label);
-        LabelBox info_label = new LabelBox(message, Skin.getSkin().getEditFont(), width);
+        LabelBox info_label = new LabelBox(message, editFont, width);
         addChild(info_label);
-        HorizButton ok_button;
         if (button == null) {
-            ok_button = new OKButton(70);
+            ok_button = new OKButton(guiRoot, 70);
             ok_button.addMouseClickListener(new OKListener(this));
         } else {
-            ok_button = new HorizButton(button, 70);
-            ok_button.addMouseClickListener(listener);
+            ok_button = new HorizButton(guiRoot, button, 70);
+            if (listener != null) {
+                ok_button.addMouseClickListener(listener);
+            }
         }
         addChild(ok_button);
         // Place objects
@@ -45,11 +46,17 @@ public class MessageForm extends Form {
         centerPos();
     }
 
-    public MessageForm(String message) {
-        int width = Math.min(500, Skin.getSkin().getEditFont().getWidth(message));
-        LabelBox info_label = new LabelBox(message, Skin.getSkin().getEditFont(), width);
+    public MessageForm(GUIRoot guiRoot, String head, String message) {
+        this(guiRoot, head, message, null, null);
+    }
+
+    public MessageForm(GUIRoot guiRoot, String message) {
+        super(guiRoot);
+        var editFont = skin.getEditFont();
+        int width = Math.min(MAX_WIDTH, editFont.getWidth(message));
+        LabelBox info_label = new LabelBox(message, editFont, width);
         addChild(info_label);
-        HorizButton ok_button = new OKButton(70);
+        ok_button = new OKButton(guiRoot, 70);
         addChild(ok_button);
         ok_button.place(info_label, BOTTOM_MID);
         ok_button.addMouseClickListener(new OKListener(this));
@@ -60,4 +67,14 @@ public class MessageForm extends Form {
         compileCanvas();
         centerPos();
     }
+
+    @Override
+    public void setFocus(FocusDirection direction) {
+        if (direction == FocusDirection.BACKWARD) {
+            super.setFocus(direction);
+        } else {
+            ok_button.setFocus(direction);
+        }
+    }
+
 }

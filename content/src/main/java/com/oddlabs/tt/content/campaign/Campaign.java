@@ -88,7 +88,7 @@ public abstract class Campaign {
 
     private void doFailed(Throwable e, WorldViewer viewer) {
         String failed_message = i18n("failed_message", LoadCampaignBox.SAVEGAMES_FILE_NAME, e.getMessage());
-        viewer.getGUIRoot().addModalForm(new MessageForm(failed_message));
+        viewer.getGUIRoot().addModalForm(new MessageForm(viewer.getGUIRoot(), failed_message));
     }
 
     public abstract CampaignIcons getIcons();

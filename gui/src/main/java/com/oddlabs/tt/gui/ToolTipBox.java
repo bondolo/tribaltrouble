@@ -12,10 +12,12 @@ import java.util.List;
 public final class ToolTipBox extends TextField {
     static final float MAX_DELAY_SECONDS = 1.5f;
 
+    private final Skin skin;
     private @Nullable List<IconQuad> icons;
 
-    public ToolTipBox() {
-        super(Skin.getSkin().getEditFont(), 200);
+    public ToolTipBox(GUIRoot guiRoot) {
+        super(guiRoot.getSkin().getEditFont(), 200);
+        this.skin = guiRoot.getSkin();
     }
 
     @Override
@@ -37,7 +39,7 @@ public final class ToolTipBox extends TextField {
     public void render(GUIRenderer renderer, int center_x, int top_y, int width, int height) {
         if (getText().isEmpty())
             return;
-        ToolTipBoxInfo box = Skin.getSkin().getToolTipInfo();
+        ToolTipBoxInfo box = skin.getToolTipInfo();
         int text_width = getFont().getWidth(getText());
         int box_width = text_width + box.leftOffset() + box.rightOffset();
         int box_height = box.box().getHeight();

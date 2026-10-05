@@ -10,31 +10,33 @@ import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
 
+/**
+ * Editable multi-line text field with keyboard navigation and caret rendering.
+ */
 public final class EditBox extends TextBox {
     private int index;
 
-    public EditBox(int width, int height, int max_codepoints) {
-        super(width, height, Skin.getSkin().getEditFont(), max_codepoints);
+    public EditBox(GUIRoot guiRoot, int width, int height, int max_codepoints) {
+        super(guiRoot, width, height, guiRoot.getSkin().getEditFont(), max_codepoints);
         index = 0;
     }
 
     @Override
     protected void renderGeometry(GUIRenderer renderer) {
-        Box edit_box = Skin.getSkin().getEditBox();
         super.renderBox(renderer, isDisabled() ? ModeIconQuads.Mode.DISABLED : ModeIconQuads.Mode.NORMAL);
         var c = isDisabled() ? new Color.Linear(0.5f, 0.8f) : Color.Linear.WHITE;
 
-        TextLineRenderer.render(renderer, getTextLayout(), edit_box.getLeftOffset(), getHeight() - edit_box
-                .getBottomOffset() - getFont().getHeight() + getOffsetY(), edit_box.getLeftOffset(), getWidth()
-                        - edit_box.getRightOffset(), c);
+        TextLineRenderer.render(renderer, getTextLayout(), editBox.getLeftOffset(), getHeight() - editBox
+                .getBottomOffset() - getFont().getHeight() + getOffsetY(), editBox.getLeftOffset(), getWidth()
+                        - editBox.getRightOffset(), c);
 
         if (isActive()) {
             TextLayout layout = getTextLayout();
             int cursorLine = layout.getCursorLine(index);
             int cursorX = layout.getCursorX(index);
-            int cursorY = getHeight() - edit_box.getBottomOffset() - getFont().getHeight() - (cursorLine * getFont()
+            int cursorY = getHeight() - editBox.getBottomOffset() - getFont().getHeight() - (cursorLine * getFont()
                     .getHeight()) + getOffsetY();
-            Index.renderIndex(renderer, edit_box.getLeftOffset() + cursorX, cursorY, getFont(), c);
+            Index.renderIndex(renderer, editBox.getLeftOffset() + cursorX, cursorY, getFont(), c);
         }
     }
 
@@ -109,7 +111,7 @@ public final class EditBox extends TextBox {
         int cursorLine = layout.getCursorLine(index);
         int lineHeight = getFont().getHeight();
 
-        Box edit_box = Skin.getSkin().getEditBox();
+        Box edit_box = skin.getEditBox();
         int visibleHeight = getHeight() - edit_box.getTopOffset() - edit_box.getBottomOffset();
         int visibleLines = visibleHeight / lineHeight;
 
@@ -130,7 +132,7 @@ public final class EditBox extends TextBox {
     @Override
     protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
         if (button == MouseButton.LEFT) {
-            Box edit_box = Skin.getSkin().getEditBox();
+            Box edit_box = skin.getEditBox();
             float relativeX = x - (getRootX() + edit_box.getLeftOffset());
             float relativeY = y - (getRootY() + edit_box.getBottomOffset() + getOffsetY());
             index = getTextLayout().getCharacterIndexAt(relativeX, relativeY, getTextLayout().getTextHeight());

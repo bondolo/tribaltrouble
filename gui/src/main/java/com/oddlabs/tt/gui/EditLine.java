@@ -17,13 +17,15 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A single-line text input field. Supports basic text editing, cursor navigation,
- * input filtering, and horizontal scrolling for text that exceeds the visual width.
+ * Single-line text input field supporting basic text editing, cursor navigation,
+ * input filtering, and horizontal scrolling for text exceeding visual width.
  */
 public class EditLine extends TextField implements Clipped {
     @SuppressWarnings("TimeUnitConversionChecker")
     private static final long ERROR_DURATION = TimeUnit.MILLISECONDS.toMillis(200);
     private static @Nullable Runnable errorAudioHandler;
+    private final Skin skin;
+    private final Box editBox;
     private final Set<EnterListener> enter_listeners = new CopyOnWriteArraySet<>();
     private final Origin alignment;
     private final @Nullable String allowed_chars;
@@ -38,23 +40,29 @@ public class EditLine extends TextField implements Clipped {
         errorAudioHandler = handler;
     }
 
-    public EditLine(int width, int max_codepoints) {
-        this(width, max_codepoints, Origin.AT_START);
+    public EditLine(GUIRoot guiRoot, int width, int max_codepoints) {
+        this(guiRoot, width, max_codepoints, Origin.AT_START);
     }
 
-    public EditLine(int width, int max_codepoints, Origin alignment) {
-        this(width, max_codepoints, null, alignment);
+    public EditLine(GUIRoot guiRoot, int width, int max_codepoints, Origin alignment) {
+        this(guiRoot, width, max_codepoints, null, alignment);
     }
 
-    public EditLine(int width, int max_codepoints, @Nullable String allowed_chars, Origin alignment) {
-        super(Skin.getSkin().getEditFont(), max_codepoints);
+    public EditLine(GUIRoot guiRoot, int width, int max_codepoints, @Nullable String allowed_chars, Origin alignment) {
+        super(guiRoot.getSkin().getEditFont(), max_codepoints);
+        this.skin = java.util.Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.editBox = skin.getEditBox();
         this.allowed_chars = allowed_chars;
         this.alignment = alignment;
-        Box edit_box = Skin.getSkin().getEditBox();
-        setDim(width, getFont().getHeight() + edit_box.getBottomOffset() + edit_box.getTopOffset());
+        setDim(width, getFont().getHeight() + editBox.getBottomOffset() + editBox.getTopOffset());
         setCanFocus(true);
-        this.max_text_width = width - edit_box.getLeftOffset() - edit_box.getRightOffset();
+        this.max_text_width = width - editBox.getLeftOffset() - editBox.getRightOffset();
         clear();
+    }
+
+    @Override
+    protected Skin getSkin() {
+        return skin;
     }
 
     @Override
@@ -68,10 +76,9 @@ public class EditLine extends TextField implements Clipped {
 
     @Override
     protected void renderGeometry(GUIRenderer renderer) {
-        Box edit_box = Skin.getSkin().getEditBox();
         var mode = isDisabled() ? ModeIconQuads.Mode.DISABLED : (isActive() ? ModeIconQuads.Mode.ACTIVE
                 : ModeIconQuads.Mode.NORMAL);
-        edit_box.render(renderer, 0f, 0f, getWidth(), getHeight(), mode);
+        editBox.render(renderer, 0f, 0f, getWidth(), getHeight(), mode);
 
         long elapsed = System.currentTimeMillis() - errorFlashStart;
         if (elapsed < ERROR_DURATION) {
@@ -81,7 +88,7 @@ public class EditLine extends TextField implements Clipped {
         }
 
         int render_index = isActive() ? index : -1;
-        renderText(renderer, edit_box, offset_x, render_index);
+        renderText(renderer, editBox, offset_x, render_index);
     }
 
     protected int getRenderedWidth(CharSequence text) {
@@ -263,8 +270,7 @@ public class EditLine extends TextField implements Clipped {
     @Override
     protected final void mousePressed(MouseButton button, int x, int y) {
         if (button == MouseButton.LEFT) {
-            Box edit_box = Skin.getSkin().getEditBox();
-            float relativeX = x - (getRootX() + edit_box.getLeftOffset() + offset_x);
+            float relativeX = x - (getRootX() + editBox.getLeftOffset() + offset_x);
 
             int bestIndex = 0;
             float bestDx = Float.MAX_VALUE;

@@ -1,24 +1,23 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.OKButton;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Panel;
 import com.oddlabs.tt.gui.PanelGroup;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.TextBox;
-import com.oddlabs.tt.base.util.Utils;
 
 import java.util.ResourceBundle;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 
+/**
+ * Modal dialog displaying game credits and acknowledgments.
+ */
 public final class CreditsForm extends Form {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(CreditsForm.class.getName());
 
@@ -26,18 +25,20 @@ public final class CreditsForm extends Form {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public CreditsForm(int last_revision) {
-        Label head_label = new Label(i18n("about"), Skin.getSkin().getHeadlineFont());
+    public CreditsForm(GUIRoot guiRoot, int last_revision) {
+        super(guiRoot, "");
+        Label head_label = new Label(i18n("about"), skin.getHeadlineFont());
         addChild(head_label);
         head_label.place();
 
-        PanelGroup panel_group = new PanelGroup(createAboutPanel(bundle, last_revision), createCreditsPanel(bundle),
-                createThanksPanel(
-                        bundle));
+        PanelGroup panel_group = new PanelGroup(guiRoot,
+                createAboutPanel(guiRoot, bundle, last_revision),
+                createCreditsPanel(guiRoot, bundle),
+                createThanksPanel(guiRoot, bundle));
         addChild(panel_group);
         panel_group.place(head_label, BOTTOM_LEFT);
 
-        HorizButton ok_button = new OKButton(100);
+        HorizButton ok_button = new OKButton(guiRoot, 100);
         addChild(ok_button);
         ok_button.addMouseClickListener((_, _, _, _) -> this.cancel());
         ok_button.place(Origin.AT_END);
@@ -45,9 +46,9 @@ public final class CreditsForm extends Form {
         centerPos();
     }
 
-    private static Panel createAboutPanel(ResourceBundle bundle, int last_revision) {
-        Panel about = new Panel(i18n("about"));
-        TextBox about_box = new TextBox(400, 300, Skin.getSkin().getEditFont(), 100000);
+    private static Panel createAboutPanel(GUIRoot guiRoot, ResourceBundle bundle, int last_revision) {
+        Panel about = new Panel(guiRoot, i18n("about"));
+        TextBox about_box = new TextBox(guiRoot, 400, 300, guiRoot.getSkin().getEditFont(), 100000);
         about.addChild(about_box);
         String about_text = i18n("about_text", Integer.toString(last_revision));
         about_box.append(about_text);
@@ -57,9 +58,9 @@ public final class CreditsForm extends Form {
         return about;
     }
 
-    private static Panel createCreditsPanel(ResourceBundle bundle) {
-        Panel credits = new Panel(i18n("credits"));
-        TextBox credits_box = new TextBox(400, 300, Skin.getSkin().getEditFont(), 100000);
+    private static Panel createCreditsPanel(GUIRoot guiRoot, ResourceBundle bundle) {
+        Panel credits = new Panel(guiRoot, i18n("credits"));
+        TextBox credits_box = new TextBox(guiRoot, 400, 300, guiRoot.getSkin().getEditFont(), 100000);
         credits.addChild(credits_box);
         credits_box.append(i18n("game_design_and_programming") + "\n");
         credits_box.append("Elias Naur\n");
@@ -79,9 +80,9 @@ public final class CreditsForm extends Form {
         return credits;
     }
 
-    private static Panel createThanksPanel(ResourceBundle bundle) {
-        Panel thanks = new Panel(i18n("thanks_to"));
-        TextBox thanks_box = new TextBox(400, 300, Skin.getSkin().getEditFont(), 100000);
+    private static Panel createThanksPanel(GUIRoot guiRoot, ResourceBundle bundle) {
+        Panel thanks = new Panel(guiRoot, i18n("thanks_to"));
+        TextBox thanks_box = new TextBox(guiRoot, 400, 300, guiRoot.getSkin().getEditFont(), 100000);
         thanks.addChild(thanks_box);
         thanks_box.append(i18n("thanks") + "\n");
         thanks_box.append(i18n("oddlabs_thanks") + "\n");

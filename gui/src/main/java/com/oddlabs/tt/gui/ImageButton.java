@@ -1,14 +1,22 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
-public class ImageButton extends ButtonObject {
+/**
+ * Button rendering stateful normal, hovered, and disabled graphical components.
+ */
+public final class ImageButton extends ButtonObject {
     private final GUIObject normal;
     private final GUIObject hovered;
     private final GUIObject disabled;
 
-    public ImageButton(GUIObject normal, GUIObject hovered, GUIObject disabled) {
-        super(Skin.getSkin().getEditFont());
+    public ImageButton(GUIRoot guiRoot, GUIObject normal, GUIObject hovered, GUIObject disabled) {
+        this(guiRoot.getSkin().getEditFont(), normal, hovered, disabled);
+    }
+
+    public ImageButton(Font font, GUIObject normal, GUIObject hovered, GUIObject disabled) {
+        super(font);
         setDim(normal.getWidth(), normal.getHeight());
         this.normal = normal;
         this.hovered = hovered;

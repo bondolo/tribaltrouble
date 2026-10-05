@@ -5,15 +5,20 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
-public final class ScrollButton extends GUIObject {
-    public ScrollButton() {
+/**
+ * Draggable vertical thumb button within a scrollbar track.
+ */
+final class ScrollButton extends GUIObject {
+    private final ScrollBar owner;
+
+    ScrollButton(ScrollBar owner) {
+        this.owner = owner;
         setCanFocus(true);
-//		setupPos();
     }
 
     public void setupPos(ScrollBar owner) {
         setPos(owner.getButtonX(), owner.getButtonY());
-        setDim(Skin.getSkin().getScrollBarData().scrollButton().getWidth(), owner.getButtonHeight());
+        setDim(owner.getScrollBarData().scrollButton().getWidth(), owner.getButtonHeight());
     }
 
     @Override
@@ -34,7 +39,8 @@ public final class ScrollButton extends GUIObject {
                         ? ModeIconQuads.Mode.ACTIVE
                 : ModeIconQuads.Mode.NORMAL;
 
-        Skin.getSkin().getScrollBarData().scrollButton()
+        var scrollBarData = owner.getScrollBarData();
+        scrollBarData.scrollButton()
                 .render(renderer, 0, 0, getHeight(), skinMode);
     }
 

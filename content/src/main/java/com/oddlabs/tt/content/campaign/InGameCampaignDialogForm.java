@@ -5,9 +5,8 @@ import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.Nullable;
 
+/** In-game dialog form for campaign events and dialogues. */
 public final class InGameCampaignDialogForm extends CampaignDialogForm {
-    private final WorldViewer viewer;
-
     public InGameCampaignDialogForm(WorldViewer viewer, CharSequence header,
             CharSequence text, IconQuad image, Origin align) {
         this(viewer, header, text, image, align, null);
@@ -21,8 +20,7 @@ public final class InGameCampaignDialogForm extends CampaignDialogForm {
     public InGameCampaignDialogForm(WorldViewer viewer, CharSequence header,
             CharSequence text, IconQuad image, Origin align, @Nullable Runnable runnable,
             boolean cancel) {
-        super(header, text, image, align, runnable, cancel);
-        this.viewer = viewer;
+        super(viewer.getGUIRoot(), header, text, image, align, runnable, cancel);
         viewer.setPaused(true);
         addCloseListener(() -> viewer.setPaused(false));
     }

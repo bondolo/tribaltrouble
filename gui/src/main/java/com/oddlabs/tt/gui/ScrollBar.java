@@ -8,21 +8,35 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
+import java.util.Objects;
+
+/**
+ * Vertical scrollbar control managing stepping, dragging, and proportional paging.
+ */
 public final class ScrollBar extends GUIObject {
-    private final Group focus_group = new Group();
+    private final Skin skin;
+    private final ScrollBarData scrollBarData;
+    private final Group focus_group;
     private final ArrowButton less_button;
     private final ArrowButton more_button;
-    private final ScrollButton scroll_button = new ScrollButton();
+    private final ScrollButton scroll_button;
     private final Scrollable owner;
 
-    public ScrollBar(int height, Scrollable owner) {
+    public ScrollBar(GUIRoot guiRoot, int height, Scrollable owner) {
+        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.scrollBarData = skin.getScrollBarData();
+        this.focus_group = new Group(guiRoot);
         this.owner = owner;
-        less_button = new ArrowButton(Skin.getSkin().getScrollBarData().scrollDownButtonPressed(),
-                Skin.getSkin().getScrollBarData().scrollDownButtonUnpressed(),
-                Skin.getSkin().getScrollBarData().scrollDownArrow());
-        more_button = new ArrowButton(Skin.getSkin().getScrollBarData().scrollUpButtonPressed(),
-                Skin.getSkin().getScrollBarData().scrollUpButtonUnpressed(),
-                Skin.getSkin().getScrollBarData().scrollUpArrow());
+        scroll_button = new ScrollButton(this);
+        var font = skin.getEditFont();
+        less_button = new ArrowButton(font,
+                scrollBarData.scrollDownButtonPressed(),
+                scrollBarData.scrollDownButtonUnpressed(),
+                scrollBarData.scrollDownArrow());
+        more_button = new ArrowButton(font,
+                scrollBarData.scrollUpButtonPressed(),
+                scrollBarData.scrollUpButtonUnpressed(),
+                scrollBarData.scrollUpArrow());
         less_button.setPos(0, 0);
         more_button.setPos(0, height - more_button.getHeight());
         focus_group.addChild(more_button);
@@ -43,6 +57,11 @@ public final class ScrollBar extends GUIObject {
         focus_group.setDim(getWidth(), getHeight());
         focus_group.setPos(0, 0);
         addChild(focus_group);
+    }
+
+    @Override
+    protected Skin getSkin() {
+        return skin;
     }
 
     public void update() {
@@ -67,33 +86,36 @@ public final class ScrollBar extends GUIObject {
         focus_group.setGroupFocus(direction);
     }
 
+    ScrollBarData getScrollBarData() {
+        return scrollBarData;
+    }
+
     @Override
     protected void renderGeometry(GUIRenderer renderer) {
-        ScrollBarData data = Skin.getSkin().getScrollBarData();
-        Vertical scroll_bar = data.scrollBar();
+        Vertical scroll_bar = scrollBarData.scrollBar();
         scroll_bar.render(renderer, 0, less_button.getHeight(), getHeight() - less_button.getHeight() - more_button
                 .getHeight(), ModeIconQuads.Mode.NORMAL);
     }
 
     public int getButtonX() {
-        return Skin.getSkin().getScrollBarData().leftOffset();
+        return scrollBarData.leftOffset();
     }
 
     public int getButtonY() {
-        ScrollBarData data = Skin.getSkin().getScrollBarData();
-        int max_height = getHeight() - less_button.getHeight() - more_button.getHeight() - data.bottomOffset() - data
-                .topOffset();
+        int max_height = getHeight() - less_button.getHeight() - more_button.getHeight() - scrollBarData.bottomOffset()
+                - scrollBarData
+                        .topOffset();
         int size = getButtonHeight();
         int offset = max_height - size - (int) ((max_height - size) * owner.getScrollBarOffset());
-        return less_button.getHeight() + data.bottomOffset() + offset;
+        return less_button.getHeight() + scrollBarData.bottomOffset() + offset;
     }
 
     public int getButtonHeight() {
-        ScrollBarData data = Skin.getSkin().getScrollBarData();
-        int max_height = getHeight() - less_button.getHeight() - more_button.getHeight() - data.bottomOffset() - data
-                .topOffset();
+        int max_height = getHeight() - less_button.getHeight() - more_button.getHeight() - scrollBarData.bottomOffset()
+                - scrollBarData
+                        .topOffset();
         float ratio = Math.min(owner.getScrollBarRatio(), 1.0f);
-        int size = Math.max((int) (ratio * max_height), data.scrollButton().getMinHeight());
+        int size = Math.max((int) (ratio * max_height), scrollBarData.scrollButton().getMinHeight());
         return Math.clamp(size, 0, max_height);
     }
 
@@ -145,7 +167,7 @@ public final class ScrollBar extends GUIObject {
     }
 
     private final class DragListener implements MouseMotionListener, MouseButtonListener {
-        final ScrollBarData data = Skin.getSkin().getScrollBarData();
+        final ScrollBarData data = skin.getScrollBarData();
         float start_offset;
 
         @Override

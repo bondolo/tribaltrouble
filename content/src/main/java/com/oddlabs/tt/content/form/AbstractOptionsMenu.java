@@ -9,7 +9,6 @@ import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.PanelGroup;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.simulation.SimulationConfig;
 
 import java.util.ResourceBundle;
@@ -33,14 +32,16 @@ public abstract class AbstractOptionsMenu extends Form {
     private final Peer engine;
 
     AbstractOptionsMenu(GUIRoot gui_root, Peer engine) {
+        super(gui_root, "");
         this.engine = engine;
-        Label label_headline = new Label(i18n("options_caption"), Skin.getSkin().getHeadlineFont());
+        Label label_headline = new Label(i18n("options_caption"), getSkin().getHeadlineFont());
         addChild(label_headline);
 
         generalPanel = new GeneralPanel(gui_root, this::changeGamespeed);
         graphicsPanel = new GraphicsPanel(gui_root, this, engine);
 
         PanelGroup panel_group = new PanelGroup(
+                gui_root,
                 generalPanel,
                 graphicsPanel,
                 new KeyBindingPanel(gui_root),
@@ -51,12 +52,13 @@ public abstract class AbstractOptionsMenu extends Form {
         addChild(panel_group);
 
         // Buttons
-        HorizButton button_close = new HorizButton(i18n("close"), BUTTON_WIDTH);
+        HorizButton button_close = new HorizButton(gui_root, i18n("close"), BUTTON_WIDTH);
         button_close.addMouseClickListener(new CancelListener(this));
         addChild(button_close);
 
-        HorizButton button_about = new HorizButton(i18n("about"), BUTTON_WIDTH);
+        HorizButton button_about = new HorizButton(gui_root, i18n("about"), BUTTON_WIDTH);
         button_about.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new CreditsForm(
+                gui_root,
                 gui_root.getGUI().getSettings().last_revision)));
         addChild(button_about);
 

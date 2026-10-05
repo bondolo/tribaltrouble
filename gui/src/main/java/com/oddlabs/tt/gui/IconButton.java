@@ -7,18 +7,20 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-/** a click-able button represented by an icon */
+/**
+ * Clickable button displaying a mode-dependent icon quad.
+ */
 public class IconButton extends ButtonObject {
     private final ModeIconQuads icon;
     private @Nullable IconDisabler icon_disabler;
 
-    public IconButton(ModeIconQuads icon, @Nullable Supplier<String> tool_tip) {
-        this(icon, null, tool_tip);
+    public IconButton(GUIRoot guiRoot, ModeIconQuads icon, @Nullable Supplier<String> tool_tip) {
+        this(guiRoot, icon, null, tool_tip);
     }
 
-    public IconButton(ModeIconQuads icon, @Nullable GameAction action, @Nullable Supplier<
+    public IconButton(GUIRoot guiRoot, ModeIconQuads icon, @Nullable GameAction action, @Nullable Supplier<
             String> tool_tip) {
-        super(Skin.getSkin().getEditFont(), action, tool_tip);
+        super(guiRoot.getSkin().getEditFont(), action, tool_tip);
         this.icon = icon;
         var normal = icon.quad(ModeIconQuads.Mode.NORMAL);
         setDim(normal.getWidth(), normal.getHeight());

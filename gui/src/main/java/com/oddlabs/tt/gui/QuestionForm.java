@@ -11,16 +11,18 @@ import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 public class QuestionForm extends Form {
     private final HorizButton yes_button;
 
-    public QuestionForm(String message, MouseClickListener yes_action) {
-        int message_width = Skin.getSkin().getEditFont().getWidth(message);
-        LabelBox info_label = new LabelBox(message, Skin.getSkin().getEditFont(), Math.min(400, message_width));
+    public QuestionForm(GUIRoot guiRoot, String message, MouseClickListener yes_action) {
+        super(guiRoot);
+        var font = skin.getEditFont();
+        int message_width = font.getWidth(message);
+        LabelBox info_label = new LabelBox(message, font, Math.min(400, message_width));
         addChild(info_label);
-        Group button_group = new Group();
-        yes_button = new OKButton(80);
+        Group button_group = new Group(getGUIRoot());
+        yes_button = new OKButton(guiRoot, 80);
         yes_button.addMouseClickListener(new OKListener(this));
         yes_button.addMouseClickListener(yes_action);
         button_group.addChild(yes_button);
-        HorizButton no_button = new CancelButton(80);
+        HorizButton no_button = new CancelButton(guiRoot, 80);
         no_button.addMouseClickListener((_, _, _, _) -> this.cancel());
         button_group.addChild(no_button);
         yes_button.place();
@@ -36,9 +38,14 @@ public class QuestionForm extends Form {
         centerPos();
     }
 
+
     @Override
-    public final void setFocus() {
-        yes_button.setFocus();
+    public void setFocus(FocusDirection direction) {
+        if (direction == FocusDirection.BACKWARD) {
+            super.setFocus(direction);
+        } else {
+            yes_button.setFocus(direction);
+        }
     }
 
     public final void connectionLost() {

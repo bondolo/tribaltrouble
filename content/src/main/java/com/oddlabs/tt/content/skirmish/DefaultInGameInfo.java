@@ -11,7 +11,6 @@ import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.player.Player;
@@ -62,23 +61,24 @@ public class DefaultInGameInfo implements InGameInfo, InGameMenuHook {
 
     protected final void addGameOverGUI(final WorldViewer viewer, final GameStatsDelegate delegate,
             int header_y, Group group, boolean replay) {
+        var guiRoot = viewer.getGUIRoot();
         String map_code_str = GameStatsDelegate.i18n("map_code", viewer.getParameters().mapCode());
-        Label map_code = new Label(map_code_str, Skin.getSkin().getEditFont());
+        Label map_code = new Label(map_code_str, guiRoot.getSkin().getEditFont());
         delegate.addChild(map_code);
         map_code.setPos((delegate.getWidth() - map_code.getWidth()) / 2, header_y - map_code.getHeight());
 
-        HorizButton button_replay = new HorizButton(GameStatsDelegate.i18n("replay_island"), 150);
+        HorizButton button_replay = new HorizButton(guiRoot, GameStatsDelegate.i18n("replay_island"), 150);
         button_replay.addMouseClickListener((_, _, _, _) -> {
             replay_island_flag = true;
             delegate.startMenu();
         });
-        HorizButton button_observer = new HorizButton(GameStatsDelegate.i18n("observer_mode"), 150);
+        HorizButton button_observer = new HorizButton(guiRoot, GameStatsDelegate.i18n("observer_mode"), 150);
         button_observer.addMouseClickListener((_, _, _, _) -> {
             delegate.getViewer().getDelegate().setObserverMode();
             delegate.pop();
         });
 
-        HorizButton button_end = new HorizButton(GameStatsDelegate.i18n("main_menu"), 150);
+        HorizButton button_end = new HorizButton(guiRoot, GameStatsDelegate.i18n("main_menu"), 150);
         button_end.addMouseClickListener((_, _, _, _) -> delegate.startMenu());
 
         if (replay)
@@ -94,25 +94,26 @@ public class DefaultInGameInfo implements InGameInfo, InGameMenuHook {
 
     private void addGameInfos(WorldViewer viewer, Menu menu, Group game_infos) {
         List<Player> players = viewer.getWorld().getPlayers();
-        Group names = new Group();
+        Group names = new Group(viewer.getGUIRoot());
         GUIObject last_name = null;
-        Group races = new Group();
+        Group races = new Group(viewer.getGUIRoot());
         GUIObject last_race = null;
-        Group teams = new Group();
+        Group teams = new Group(viewer.getGUIRoot());
         GUIObject last_team = null;
         for (Player player : players) {
             PlayerInfo player_info = player.getPlayerInfo();
             var player_color = player.getColor();
             var display_color = viewer.getPeerHub().isAlive(player) ? player_color : player_color.desaturate(0.3f)
                     .alpha(0.8f);
-            Label name = new Label(player_info.name(), Skin.getSkin().getHeadlineFont())
+            var headlineFont = viewer.getGUIRoot().getSkin().getHeadlineFont();
+            Label name = new Label(player_info.name(), headlineFont)
                     .setColor(display_color);
             String race_str = RaceData.getRaceName(player_info.race());
-            Label race = new Label(race_str, Skin.getSkin().getHeadlineFont())
+            Label race = new Label(race_str, headlineFont)
                     .setColor(display_color);
             String team_str = Utils.getBundleString(terrain_menu_bundle, "team", Integer.toString(player_info.team()
                     + 1));
-            Label team = new Label(team_str, Skin.getSkin().getHeadlineFont())
+            Label team = new Label(team_str, headlineFont)
                     .setColor(display_color);
             names.addChild(name);
             if (last_name != null)

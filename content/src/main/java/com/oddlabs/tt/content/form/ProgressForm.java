@@ -13,7 +13,6 @@ import com.oddlabs.tt.gui.GUIImage;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.LabelBox;
 import com.oddlabs.tt.gui.ProgressBar;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.render.UIRenderer;
 import org.jspecify.annotations.Nullable;
 
@@ -95,8 +94,8 @@ public final class ProgressForm {
             case MENU_RETURN -> new Layout("/textures/gui/startup", 1024, 1024, 800, 600, 250, 145, 300, false, false);
         };
 
-        ProgressForm form = gui.callWithSkin(() -> new ProgressForm(network, gui, audioManager,
-                callback, mode, layout, show_tip));
+        ProgressForm form = new ProgressForm(network, gui, audioManager,
+                callback, mode, layout, show_tip);
 
         return layout.firstProgress() ? form.getLoadTask() : null;
     }
@@ -106,7 +105,7 @@ public final class ProgressForm {
             Mode mode, Layout layout, boolean show_tip) {
         this.network = network;
         this.gui = gui;
-        this.load_task = () -> gui.runWithSkin(() -> executeCallback(callback, audioManager));
+        this.load_task = () -> executeCallback(callback, audioManager);
         if (audioManager != null) {
             audioManager.stopSources();
         }
@@ -127,7 +126,7 @@ public final class ProgressForm {
         delegate.addChild(image);
 
         if (layout.showProgressBar()) {
-            ProgressBar bar = new ProgressBar(progress_width, false);
+            ProgressBar bar = new ProgressBar(gui_root, progress_width, false);
             progress_y -= bar.getHeight();
             bar.setPos(progress_x, progress_y);
             delegate.addChild(bar);
@@ -139,8 +138,9 @@ public final class ProgressForm {
         if (show_tip && progress_bar != null) {
             var random = ThreadLocalRandom.current();
             CharSequence tip_string = LOADING_TIPS[random.nextInt(LOADING_TIPS.length)];
-            int tip_width = Math.min(gui_root.getWidth() - 10, Skin.getSkin().getEditFont().getWidth(tip_string));
-            LabelBox tip = new LabelBox(tip_string, Skin.getSkin().getEditFont(), tip_width);
+            var editFont = gui_root.getSkin().getEditFont();
+            int tip_width = Math.min(gui_root.getWidth() - 10, editFont.getWidth(tip_string));
+            LabelBox tip = new LabelBox(tip_string, editFont, tip_width);
             tip.setPos(progress_bar.getX() + progress_bar.getWidth() / 2 - tip.getWidth() / 2, progress_bar.getY() - tip
                     .getHeight() - PROGRESSBAR_LOADINGTIP_SPACING);
             delegate.addChild(tip);
@@ -159,7 +159,7 @@ public final class ProgressForm {
         GUIRoot client_root = gui.createRoot();
         ProgressListener listener = new FormProgressListener();
         UIRenderer renderer = ProgressListener.supply(listener,
-                () -> gui.callWithSkin(() -> callback.load(client_root)));
+                () -> callback.load(client_root));
         if (progress_bar != null) {
             progress_bar.setProgress(1f);
         }

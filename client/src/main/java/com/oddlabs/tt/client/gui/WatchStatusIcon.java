@@ -6,12 +6,17 @@ import com.oddlabs.tt.simulation.model.ReproduceUnitContainer;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
 
+import com.oddlabs.tt.engine.font.Font;
+
+/**
+ * Status icon displaying training and reproduction countdown metrics.
+ */
 public final class WatchStatusIcon extends StatusIcon {
     private static final Color.Linear COLOR = Color.Linear.WHITE.alpha(0.75f);
     private Building building;
 
-    public WatchStatusIcon(int label_width, IconQuad icon, String tooltip) {
-        super(label_width, icon, tooltip);
+    public WatchStatusIcon(Font font, int label_width, IconQuad icon, String tooltip) {
+        super(font, label_width, icon, tooltip);
     }
 
     public void setUnitContainerBuilding(Building building) {

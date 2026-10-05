@@ -62,7 +62,7 @@ public abstract class Island {
     }
 
     protected final void addModalForm(Form form) {
-        world_viewer.getGUIRoot().addModalForm(form);
+        getViewer().getGUIRoot().addModalForm(form);
     }
 
     protected final GameNetwork<GUIRoot, UIRenderer> startNewGame(GUIRoot gui_root,
@@ -103,7 +103,7 @@ public abstract class Island {
                     throw new IllegalArgumentException("unexpected difficulty: " + campaign.getState().getDifficulty());
             }
             start();
-            new DefeatTrigger(world_viewer, campaign, viewer.getLocalPlayer().getChieftain().orElse(null));
+            new DefeatTrigger(getViewer(), campaign, viewer.getLocalPlayer().getChieftain().orElse(null));
         };
         IslandConfig islandConfig = new IslandConfig(terrain, meters_per_world, hills, vegetation_amount,
                 supplies_amount, seed);
@@ -116,8 +116,8 @@ public abstract class Island {
                 null, islandConfig, ai_names);
     }
 
-    protected final @Nullable WorldViewer getViewer() {
-        return world_viewer;
+    protected final WorldViewer getViewer() {
+        return Objects.requireNonNull(world_viewer);
     }
 
     protected abstract void init(GUIRoot gui_root);
@@ -137,7 +137,7 @@ public abstract class Island {
         unit.removeNow();
         if (!owner.getUnitCountContainer().isSupplyFull()) {
             Unit new_unit = new Unit(owner, x, y, null, template);
-            world_viewer.getPicker().getRespondManager().addResponder(new_unit);
+            getViewer().getPicker().getRespondManager().addResponder(new_unit);
             return new_unit;
         } else
             return null;

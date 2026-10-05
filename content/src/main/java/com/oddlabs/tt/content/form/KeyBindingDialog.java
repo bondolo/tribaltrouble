@@ -1,16 +1,11 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.LabelBox;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputBinding;
 import com.oddlabs.tt.input.InputEvent;
@@ -35,6 +30,7 @@ public class KeyBindingDialog extends Form {
 
     public KeyBindingDialog(GUIRoot guiRoot, GameAction action,
             Consumer<Set<InputBinding>> onBindingChosen) {
+        super(guiRoot, "");
         this.guiRoot = guiRoot;
         this.action = action;
         this.onBindingChosen = onBindingChosen;
@@ -46,27 +42,27 @@ public class KeyBindingDialog extends Form {
             actionName = action.name();
         }
 
-        LabelBox info_label = new LabelBox("Press key for: " + actionName, Skin.getSkin().getEditFont(), 300);
+        LabelBox info_label = new LabelBox("Press key for: " + actionName, getSkin().getEditFont(), 300);
         addChild(info_label);
 
-        Group button_group = new Group();
+        Group button_group = new Group(guiRoot);
         addChild(button_group);
 
-        HorizButton clear_button = new HorizButton(AbstractOptionsMenu.i18n("btn_clear"), 80);
+        HorizButton clear_button = new HorizButton(guiRoot, AbstractOptionsMenu.i18n("btn_clear"), 80);
         clear_button.addMouseClickListener((_, _, _, _) -> {
             onBindingChosen.accept(Set.of());
             remove();
         });
         button_group.addChild(clear_button);
 
-        HorizButton reset_button = new HorizButton(AbstractOptionsMenu.i18n("btn_reset"), 80);
+        HorizButton reset_button = new HorizButton(guiRoot, AbstractOptionsMenu.i18n("btn_reset"), 80);
         reset_button.addMouseClickListener((_, _, _, _) -> {
             onBindingChosen.accept(guiRoot.getInputManager().getDefaultBindings(action));
             remove();
         });
         button_group.addChild(reset_button);
 
-        HorizButton cancel_button = new CancelButton(80);
+        HorizButton cancel_button = new CancelButton(guiRoot, 80);
         cancel_button.addMouseClickListener((_, _, _, _) -> cancel());
         button_group.addChild(cancel_button);
 
@@ -89,7 +85,7 @@ public class KeyBindingDialog extends Form {
             Key key = event.getKeyCode();
 
             if (event.hasAction(GameAction.GLOBAL_QUIT)) {
-                guiRoot.addModalForm(new QuitForm(guiRoot.getGUI().getShutdownHandler()));
+                guiRoot.addModalForm(new QuitForm(guiRoot, guiRoot.getGUI().getShutdownHandler()));
                 event.consume();
                 return;
             }

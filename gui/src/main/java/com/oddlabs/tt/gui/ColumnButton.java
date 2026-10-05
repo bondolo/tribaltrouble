@@ -5,7 +5,14 @@ import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 
+import java.util.Objects;
+
+/**
+ * Header button for a sortable column within a MultiColumnComboBox.
+ */
 public final class ColumnButton<T> extends RadioButtonGroupElement {
+    private final Skin skin;
+    private final MultiColumnComboBoxData data;
     private final RowCollection<T> rows;
     private final int arrow_offset;
     private final int column_index;
@@ -13,13 +20,14 @@ public final class ColumnButton<T> extends RadioButtonGroupElement {
     private boolean sorted_descending;
     private boolean pressed = false;
 
-    ColumnButton(RadioButtonGroup group, RowCollection<T> rows, ColumnInfo info,
+    ColumnButton(Skin skin, RadioButtonGroup group, RowCollection<T> rows, ColumnInfo info,
             int column_index, boolean sorted_descending) {
         super(column_index == 0, group);
+        this.skin = Objects.requireNonNull(skin, "Skin cannot be null");
+        this.data = skin.getMultiColumnComboBoxData();
         this.rows = rows;
         this.column_index = column_index;
         this.sorted_descending = sorted_descending;
-        MultiColumnComboBoxData data = Skin.getSkin().getMultiColumnComboBoxData();
         setDim(info.width(), data.buttonUnpressed().getHeight());
 
         Font font = data.font();
@@ -27,9 +35,14 @@ public final class ColumnButton<T> extends RadioButtonGroupElement {
         label.setPos(data.captionOffset(), (getHeight() - font.getHeight()) / 2 + 1);
         addChild(label);
 
-        IconQuad arrow = Skin.getSkin().getMultiColumnComboBoxData().descending().quad(ModeIconQuads.Mode.NORMAL);
+        IconQuad arrow = data.descending().quad(ModeIconQuads.Mode.NORMAL);
         arrow_offset = info.width() - arrow.getWidth();
         setCanFocus(true);
+    }
+
+    @Override
+    protected Skin getSkin() {
+        return skin;
     }
 
     @Override
@@ -49,7 +62,7 @@ public final class ColumnButton<T> extends RadioButtonGroupElement {
         rows.markChanged(column_index, sorted_descending);
     }
 
-    public int getColumnIndex() {
+    int getColumnIndex() {
         return column_index;
     }
 
@@ -63,7 +76,6 @@ public final class ColumnButton<T> extends RadioButtonGroupElement {
                         ? ModeIconQuads.Mode.ACTIVE
                 : ModeIconQuads.Mode.NORMAL;
 
-        var data = Skin.getSkin().getMultiColumnComboBoxData();
         Horizontal buttonHorizontal = skinMode == ModeIconQuads.Mode.ACTIVE && isHovered() && pressed
                 ? data.buttonPressed()
                 : data.buttonUnpressed();
@@ -74,7 +86,6 @@ public final class ColumnButton<T> extends RadioButtonGroupElement {
     }
 
     private void renderMark(GUIRenderer renderer, ModeIconQuads.Mode skinMode) {
-        var data = Skin.getSkin().getMultiColumnComboBoxData();
         ModeIconQuads arrow = sorted_descending
                 ? data.descending()
                 : data.ascending();

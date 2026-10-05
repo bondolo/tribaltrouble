@@ -20,12 +20,8 @@ import static com.oddlabs.tt.gui.Icons.getNamedIconQuad;
 import static com.oddlabs.tt.gui.Icons.getNamedIconQuads;
 import static com.oddlabs.tt.gui.Icons.getNodeByName;
 
-/**
- * Skin for GUI
- */
+/** GUI skin providing fonts, layout metrics, and icon definitions. */
 public final class Skin {
-    static final ScopedValue<Skin> CURRENT = ScopedValue.newInstance();
-
     private final Font edit_font;
     private final Font button_font;
     private final Font headline_font;
@@ -55,19 +51,6 @@ public final class Skin {
     private final PanelData panel_data;
     private final IconQuad flag_default;
     private final SequencedMap<String, IconQuad> flags;
-
-    public static Skin getSkin() {
-        return CURRENT.orElseThrow(() -> new IllegalStateException("Skin not in scope"));
-    }
-
-    public static void run(Skin skin, Runnable operation) {
-        ScopedValue.where(CURRENT, skin).run(operation);
-    }
-
-    public static <V, X extends Throwable> V call(Skin skin,
-            ScopedValue.CallableOp<V, X> operation) throws X {
-        return ScopedValue.where(CURRENT, skin).call(operation);
-    }
 
     public Skin(String xml_file) {
         Node root = Icons.loadFile(xml_file, new GUIErrorHandler());

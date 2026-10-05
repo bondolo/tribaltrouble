@@ -7,7 +7,6 @@ import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.net.ProfileListener;
 import com.oddlabs.tt.base.util.Utils;
 
@@ -15,6 +14,7 @@ import java.util.ResourceBundle;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
 
+/** Form displayed while a player profile is being created on the server. */
 public final class CreatingProfileForm extends Form implements ProfileListener {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(CreatingProfileForm.class.getName());
 
@@ -27,12 +27,13 @@ public final class CreatingProfileForm extends Form implements ProfileListener {
     private final GUIRoot gui_root;
 
     public CreatingProfileForm(Form profiles_form, Menu main_menu, String nick) {
+        super(main_menu.getGUIRoot());
         this.main_menu = main_menu;
         this.gui_root = main_menu.getGUIRoot();
         this.profiles_form = profiles_form;
-        Label info_label = new Label(i18n("creating"), Skin.getSkin().getHeadlineFont());
+        Label info_label = new Label(i18n("creating"), getSkin().getHeadlineFont());
         addChild(info_label);
-        HorizButton cancel_button = new CancelButton(120);
+        HorizButton cancel_button = new CancelButton(gui_root, 120);
         addChild(cancel_button);
         cancel_button.addMouseClickListener((_, _, _, _) -> this.cancel());
 
@@ -68,7 +69,7 @@ public final class CreatingProfileForm extends Form implements ProfileListener {
             case MatchmakingClientInterface.USERNAME_ERROR_TOO_SHORT -> i18n("username_error_too_short");
             default -> throw new IllegalArgumentException("Unknown error code: " + error_code);
         };
-        gui_root.addModalForm(new MessageForm(error_message));
+        gui_root.addModalForm(new MessageForm(gui_root, error_message));
     }
 
 }

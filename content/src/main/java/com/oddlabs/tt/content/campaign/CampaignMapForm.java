@@ -64,14 +64,15 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
 
                 if (campaign.getState().getCurrentIsland() == 14) {
                     final Runnable runnable_next = () -> {
-                        CampaignDialogForm dialog = new CampaignDialogForm(i18n("native_campaign_opened_header"),
+                        CampaignDialogForm dialog = new CampaignDialogForm(gui_root, i18n(
+                                "native_campaign_opened_header"),
                                 i18n("native_campaign_opened"),
                                 null,
                                 Origin.AT_START,
                                 () -> closeCampaign(campaign.getEngine(), gui_root.getGUI()));
                         gui_root.addModalForm(dialog);
                     };
-                    CampaignDialogForm dialog = new CampaignDialogForm(i18n("viking_header"),
+                    CampaignDialogForm dialog = new CampaignDialogForm(gui_root, i18n("viking_header"),
                             i18n("viking_campaign_completed"),
                             campaign.getIcons().getFaces()[0],
                             Origin.AT_START,
@@ -89,7 +90,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                 }
 
                 if (campaign.getState().getCurrentIsland() == 7) {
-                    CampaignDialogForm dialog = new CampaignDialogForm(i18n("native_header"),
+                    CampaignDialogForm dialog = new CampaignDialogForm(gui_root, i18n("native_header"),
                             i18n("native_campaign_completed"),
                             campaign.getIcons().getFaces()[0],
                             Origin.AT_START,
@@ -106,7 +107,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
             GUIObject island = switch (state) {
                 case CampaignState.ISLAND_AVAILABLE -> {
                     final int index = i;
-                    MapIslandButton button = new MapIslandButton(data.button(), index);
+                    MapIslandButton button = new MapIslandButton(getGUIRoot(), data.button(), index);
                     button.addMouseClickListener((_, _, _, _) -> campaign.islandChosen(getGUIRoot(), index));
                     addChild(button);
                     islandButtons.add(button);

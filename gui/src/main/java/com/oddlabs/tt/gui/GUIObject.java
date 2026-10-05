@@ -96,6 +96,17 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         return null != parent ? parent.getParentGUIRoot() : null;
     }
 
+    protected Skin getSkin() {
+        if (parent != null) {
+            return parent.getSkin();
+        }
+        GUIRoot root = getParentGUIRoot();
+        if (root != null) {
+            return root.getSkin();
+        }
+        throw new IllegalStateException("GUIObject has no parent with a skin: " + getClass().getSimpleName());
+    }
+
     @Override
     public boolean hasToolTip() {
         return getToolTipText().isPresent();
@@ -155,7 +166,8 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
     }
 
     public void place(GUIObject neighbor, Placement direction) {
-        place(neighbor, direction, Skin.getSkin().getFormData().objectSpacing());
+        Skin s = parent != null ? getSkin() : neighbor.getSkin();
+        place(neighbor, direction, s.getFormData().objectSpacing());
     }
 
     public final void place(GUIObject neighbor, Placement direction, int spacing) {

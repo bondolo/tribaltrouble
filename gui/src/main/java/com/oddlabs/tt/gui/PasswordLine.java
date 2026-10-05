@@ -4,13 +4,13 @@ import com.oddlabs.util.CryptUtils;
 import org.jspecify.annotations.Nullable;
 
 /**
- * provides password entry substituting the password characters with asterisks when displayed
+ * Masked single-line text input field substituting characters with asterisks.
  */
-public class PasswordLine extends EditLine {
+public final class PasswordLine extends EditLine {
     private @Nullable String password_digest;
 
-    public PasswordLine(int width, int max_codepoints) {
-        super(width, max_codepoints);
+    public PasswordLine(GUIRoot guiRoot, int width, int max_codepoints) {
+        super(guiRoot, width, max_codepoints);
     }
 
     /**

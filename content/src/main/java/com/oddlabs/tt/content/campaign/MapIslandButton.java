@@ -13,8 +13,8 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 final class MapIslandButton extends IconButton {
     private final int islandIndex;
 
-    MapIslandButton(ModeIconQuads icon, int islandIndex) {
-        super(icon, () -> "");
+    MapIslandButton(GUIRoot guiRoot, ModeIconQuads icon, int islandIndex) {
+        super(guiRoot, icon, () -> "");
         this.islandIndex = islandIndex;
         setCanFocus(true);
     }

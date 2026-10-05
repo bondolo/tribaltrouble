@@ -14,7 +14,6 @@ import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.MultiColumnComboBox;
 import com.oddlabs.tt.gui.Row;
 import java.util.List;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.base.util.Utils;
@@ -25,6 +24,7 @@ import static com.oddlabs.tt.gui.Origin.AT_END;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 
+/** Form displaying the list of available player profiles and management actions. */
 public final class ProfilesForm extends Form {
     private static final int NICK_SIZE = 200;
 
@@ -44,19 +44,21 @@ public final class ProfilesForm extends Form {
     private QuestionForm confirm_delete_form;
 
     public ProfilesForm(SelectGameMenu game_menu) {
+        super(game_menu.getGUIRoot());
         this.game_menu = game_menu;
         this.main_menu = game_menu.getMainMenu();
         this.gui_root = game_menu.getGUIRoot();
-        Label label_headline = new Label(i18n("profiles_caption"), Skin.getSkin().getHeadlineFont());
+        Label label_headline = new Label(i18n("profiles_caption"), getSkin().getHeadlineFont());
         addChild(label_headline);
 
-        ColumnInfo[] infos = new ColumnInfo[]{
+        profile_list_box = new MultiColumnComboBox<>(
+                gui_root,
+                200,
                 new ColumnInfo(i18n("nick"), NICK_SIZE),
                 new ColumnInfo(i18n("rating"), 120),
                 new ColumnInfo(i18n("wins"), 100),
                 new ColumnInfo(i18n("losses"), 100),
-                new ColumnInfo(i18n("invalid"), 100)};
-        profile_list_box = new MultiColumnComboBox<>(gui_root, infos, 200);
+                new ColumnInfo(i18n("invalid"), 100));
         profile_list_box.addRowListener(new RowListener<>() {
             @Override
             public void rowDoubleClicked(String nick) {
@@ -65,29 +67,29 @@ public final class ProfilesForm extends Form {
         });
         addChild(profile_list_box);
 
-        HorizButton create_profile_button = new HorizButton(i18n("create_new_profile"), 150);
+        HorizButton create_profile_button = new HorizButton(gui_root, i18n("create_new_profile"), 150);
         create_profile_button.addMouseClickListener((_, _, _, _) -> {
             new_profile_form = new NewProfileForm(main_menu, ProfilesForm.this);
             main_menu.setMenu(new_profile_form);
         });
         addChild(create_profile_button);
 
-        HorizButton delete_profile_button = new HorizButton(i18n("delete_profile"), 150);
+        HorizButton delete_profile_button = new HorizButton(gui_root, i18n("delete_profile"), 150);
         delete_profile_button.addMouseClickListener(new DeleteProfileListener());
         addChild(delete_profile_button);
 
-        join_button = new HorizButton(i18n("join"), 100);
+        join_button = new HorizButton(gui_root, i18n("join"), 100);
         join_button.addMouseClickListener((_, _, _, _) -> {
             String nick = profile_list_box.getSelected();
             if (nick == null) {
-                gui_root.addModalForm(new MessageForm(i18n("no_profiles")));
+                gui_root.addModalForm(new MessageForm(gui_root, i18n("no_profiles")));
             } else {
                 join(nick);
             }
         });
         addChild(join_button);
 
-        HorizButton logout_button = new HorizButton(i18n("logout"), 100);
+        HorizButton logout_button = new HorizButton(gui_root, i18n("logout"), 100);
         logout_button.addMouseClickListener((MouseButton _, int _, int _, int _) -> this.cancel());
         addChild(logout_button);
 
@@ -118,13 +120,14 @@ public final class ProfilesForm extends Form {
     public void receivedProfiles(Profile[] profiles, String last_nick) {
         profile_list_box.clear();
         Row<String, Label> selected_row = null;
+        var font = getSkin().getMultiColumnComboBoxData().font();
         for (Profile p : profiles) {
-            Row<String, Label> row = new Row<>(List.of(
-                    new Label(p.getNick(), Skin.getSkin().getMultiColumnComboBoxData().font(), NICK_SIZE),
-                    new IntegerLabel(p.getRating(), Skin.getSkin().getMultiColumnComboBoxData().font()),
-                    new IntegerLabel(p.getWins(), Skin.getSkin().getMultiColumnComboBoxData().font()),
-                    new IntegerLabel(p.getLosses(), Skin.getSkin().getMultiColumnComboBoxData().font()),
-                    new IntegerLabel(p.getInvalid(), Skin.getSkin().getMultiColumnComboBoxData().font())), p.getNick());
+            Row<String, Label> row = new Row<>(gui_root, List.of(
+                    new Label(p.getNick(), font, NICK_SIZE),
+                    new IntegerLabel(p.getRating(), font),
+                    new IntegerLabel(p.getWins(), font),
+                    new IntegerLabel(p.getLosses(), font),
+                    new IntegerLabel(p.getInvalid(), font)), p.getNick());
             profile_list_box.addRow(row);
             if (p.getNick().equalsIgnoreCase(last_nick))
                 selected_row = row;
@@ -143,10 +146,10 @@ public final class ProfilesForm extends Form {
         public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             String nick = profile_list_box.getSelected();
             if (nick == null) {
-                gui_root.addModalForm(new MessageForm(i18n("no_profiles")));
+                gui_root.addModalForm(new MessageForm(gui_root, i18n("no_profiles")));
             } else {
                 String confirm_str = i18n("confirm_delete", nick);
-                confirm_delete_form = new QuestionForm(confirm_str, (_, _, _, _) -> {
+                confirm_delete_form = new QuestionForm(gui_root, confirm_str, (_, _, _, _) -> {
                     main_menu.getEngine().getNetwork().getMatchmakingClient().deleteProfile(nick);
                     main_menu.getEngine().getNetwork().getMatchmakingClient().requestProfiles();
                 });

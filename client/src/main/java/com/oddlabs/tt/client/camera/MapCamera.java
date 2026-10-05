@@ -4,7 +4,6 @@ import com.oddlabs.tt.engine.render.CameraState;
 
 import com.oddlabs.tt.client.delegate.SelectionDelegate;
 import com.oddlabs.tt.gui.Label;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
@@ -51,8 +50,7 @@ public final class MapCamera extends Camera {
     private final SelectionDelegate delegate;
     private final CameraState original_camera_state;
     private final float distance_to_landscape;
-    private final Label label = new Label(Utils.getBundleString(ResourceBundle.getBundle(MapCamera.class.getName()),
-            "map_mode"), Skin.getSkin().getHeadlineFont());
+    private final Label label;
 
     private MapMode map_mode = MapMode.TO_MAP;
     private float fogTime = 0f;
@@ -65,6 +63,8 @@ public final class MapCamera extends Camera {
         mapCameraState.setFog(radialFog);
         super(old_camera.getLandscapeEnvironment(), mapCameraState, old_camera.getAnimationManager());
         this.delegate = delegate;
+        this.label = new Label(Utils.getBundleString(ResourceBundle.getBundle(MapCamera.class.getName()),
+                "map_mode"), delegate.getGUIRoot().getSkin().getHeadlineFont());
         Vector2fc target = old_camera.getRotationPoint();
         float target_z = getLandscapeEnvironment().getHeight(target.x(), target.y());
         float dx = target.x() - original_camera_state.getTargetX();

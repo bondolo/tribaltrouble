@@ -14,11 +14,10 @@ import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.gui.CounterLabel;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.gui.Skin;
+import org.jspecify.annotations.Nullable;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
@@ -40,8 +39,8 @@ final class NativeIsland4 extends Island {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final int minutes = 15;
-    private final CounterLabel counter = new CounterLabel(minutes * 60f, Skin.getSkin().getHeadlineFont(), true);
+    private static final int MINUTES = 15;
+    private @Nullable CounterLabel counter;
 
     private boolean alive;
 
@@ -51,10 +50,11 @@ final class NativeIsland4 extends Island {
 
     @Override
     public void init(GUIRoot gui_root) {
+        counter = new CounterLabel(MINUTES * 60f, gui_root.getSkin().getHeadlineFont(), true);
         String[] ai_names = IntStream.range(0, 6)
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
-        GameNetwork game_network = startNewGame(gui_root, 512, Terrain.VIKING, .8f, .8f, .8f, 19
+        var game_network = startNewGame(gui_root, 512, Terrain.VIKING, .8f, .8f, .8f, 19
                 * 19, 4, NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
@@ -88,9 +88,11 @@ final class NativeIsland4 extends Island {
     @Override
     protected void start() {
         alive = true;
-        counter.start(getViewer().getWorld().getAnimationManagerGameTime());
-        counter.setPos(0, 0);
-        getViewer().getGUIRoot().addChild(counter);
+        if (counter != null) {
+            counter.start(getViewer().getWorld().getAnimationManagerGameTime());
+            counter.setPos(0, 0);
+            getViewer().getGUIRoot().addChild(counter);
+        }
 
         final Player local_player = getViewer().getLocalPlayer();
         final Player captives = getViewer().getWorld().getPlayers().get(1);
@@ -145,7 +147,7 @@ final class NativeIsland4 extends Island {
         }
 
         // Winning condition
-        new TimeTrigger(getViewer().getWorld(), minutes * 60f, () -> {
+        new TimeTrigger(getViewer().getWorld(), MINUTES * 60f, () -> {
             // Winner prize
             getCampaign().getState().setIslandState(4, CampaignState.ISLAND_COMPLETED);
             getCampaign().getState().setNumPeons(getCampaign().getState().getNumPeons() + captives
@@ -312,8 +314,10 @@ final class NativeIsland4 extends Island {
 
     public void removeCounter() {
         alive = false;
-        counter.remove();
-        getViewer().getWorld().getAnimationManagerGameTime().removeAnimation(counter);
+        if (counter != null) {
+            counter.remove();
+            getViewer().getWorld().getAnimationManagerGameTime().removeAnimation(counter);
+        }
     }
 
     @Override
@@ -328,6 +332,6 @@ final class NativeIsland4 extends Island {
 
     @Override
     public CharSequence getCurrentObjective() {
-        return i18n("objective", minutes);
+        return i18n("objective", MINUTES);
     }
 }

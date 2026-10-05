@@ -1,5 +1,6 @@
 package com.oddlabs.tt.content.form;
 
+import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.QuestionForm;
 
 import com.oddlabs.tt.input.GameAction;
@@ -20,8 +21,8 @@ public final class QuitForm extends QuestionForm {
 
     private final Runnable shutdownAction;
 
-    public QuitForm(Runnable shutdownAction) {
-        super(i18n(PeerHub.isWaitingForAck() ? "confirm_quit_waiting_for_ack" : "confirm_quit"),
+    public QuitForm(GUIRoot guiRoot, Runnable shutdownAction) {
+        super(guiRoot, i18n(PeerHub.isWaitingForAck() ? "confirm_quit_waiting_for_ack" : "confirm_quit"),
                 (_, _, _, _) -> shutdownAction.run());
         this.shutdownAction = shutdownAction;
     }

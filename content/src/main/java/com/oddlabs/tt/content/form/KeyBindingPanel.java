@@ -2,8 +2,6 @@ package com.oddlabs.tt.content.form;
 
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
 
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.gui.ColumnInfo;
@@ -16,7 +14,6 @@ import com.oddlabs.tt.gui.MultiColumnComboBox;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Panel;
 import com.oddlabs.tt.gui.Row;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.SortedLabel;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.input.GameAction;
@@ -43,15 +40,15 @@ final class KeyBindingPanel extends Panel {
     private final GUIRoot gui_root;
 
     KeyBindingPanel(GUIRoot gui_root) {
-        super(AbstractOptionsMenu.i18n("key_bindings_title"));
+        super(gui_root, AbstractOptionsMenu.i18n("key_bindings_title"));
         this.gui_root = gui_root;
 
-        ColumnInfo[] infos = new ColumnInfo[]{
+        list_box = new MultiColumnComboBox<>(
+                gui_root,
+                300,
+                false,
                 new ColumnInfo(AbstractOptionsMenu.i18n("column_action"), COL_ACTION_WIDTH),
-                new ColumnInfo(AbstractOptionsMenu.i18n("column_bindings"), COL_BINDINGS_WIDTH)
-        };
-
-        list_box = new MultiColumnComboBox<>(gui_root, infos, 300, false);
+                new ColumnInfo(AbstractOptionsMenu.i18n("column_bindings"), COL_BINDINGS_WIDTH));
         addChild(list_box);
 
         updateList();
@@ -67,22 +64,23 @@ final class KeyBindingPanel extends Panel {
         });
 
         // Buttons
-        Group button_group = new Group();
+        Group button_group = new Group(gui_root);
         addChild(button_group);
 
-        HorizButton btn_reset = new HorizButton(AbstractOptionsMenu.i18n("btn_reset_all"), 100);
-        btn_reset.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new QuestionForm(AbstractOptionsMenu.i18n(
-                "confirm_reset_all"), (_, _, _, _) -> {
-                    gui_root.getInputManager().resetToDefaults();
-                    updateList();
-                })));
+        HorizButton btn_reset = new HorizButton(gui_root, AbstractOptionsMenu.i18n("btn_reset_all"), 100);
+        btn_reset.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new QuestionForm(gui_root,
+                AbstractOptionsMenu.i18n(
+                        "confirm_reset_all"), (_, _, _, _) -> {
+                            gui_root.getInputManager().resetToDefaults();
+                            updateList();
+                        })));
         button_group.addChild(btn_reset);
 
-        HorizButton btn_save = new HorizButton(AbstractOptionsMenu.i18n("btn_save_bindings"), 100);
+        HorizButton btn_save = new HorizButton(gui_root, AbstractOptionsMenu.i18n("btn_save_bindings"), 100);
         btn_save.addMouseClickListener((_, _, _, _) -> saveMappings());
         button_group.addChild(btn_save);
 
-        HorizButton btn_load = new HorizButton(AbstractOptionsMenu.i18n("btn_load_bindings"), 100);
+        HorizButton btn_load = new HorizButton(gui_root, AbstractOptionsMenu.i18n("btn_load_bindings"), 100);
         btn_load.addMouseClickListener((_, _, _, _) -> loadMappings());
         button_group.addChild(btn_load);
 
@@ -118,20 +116,19 @@ final class KeyBindingPanel extends Panel {
 
             var bindings = gui_root.getInputManager().getBindings(action);
             Label bindingLabel;
+            var comboFont = getSkin().getMultiColumnComboBoxData().font();
 
             if (bindings.isEmpty()) {
-                bindingLabel = new InvertedLabel(AbstractOptionsMenu.i18n("unassigned"), Skin.getSkin()
-                        .getMultiColumnComboBoxData().font(), COL_BINDINGS_WIDTH);
+                bindingLabel = new InvertedLabel(AbstractOptionsMenu.i18n("unassigned"), comboFont, COL_BINDINGS_WIDTH);
             } else {
                 var desc = bindings.stream()
                         .map(InputBinding::toString)
                         .collect(Collectors.joining(", "));
-                bindingLabel = new Label(desc, Skin.getSkin().getMultiColumnComboBoxData().font());
+                bindingLabel = new Label(desc, comboFont);
             }
 
-            Label actionLabel = new SortedLabel(name, action.ordinal(), Skin.getSkin().getMultiColumnComboBoxData()
-                    .font());
-            Row<GameAction, ?> row = new Row<>(List.of(actionLabel, bindingLabel), action);
+            Label actionLabel = new SortedLabel(name, action.ordinal(), comboFont);
+            Row<GameAction, ?> row = new Row<>(gui_root, List.of(actionLabel, bindingLabel), action);
             list_box.addRow(row);
 
             if (action == selectedAction) {
@@ -155,7 +152,7 @@ final class KeyBindingPanel extends Panel {
                         try {
                             Files.writeString(path, json);
                         } catch (IOException e) {
-                            gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n(
+                            gui_root.addModalForm(new MessageForm(gui_root, AbstractOptionsMenu.i18n(
                                     "error_save_failed", e.getMessage())));
                         }
                     }
@@ -174,7 +171,7 @@ final class KeyBindingPanel extends Panel {
                             gui_root.getInputManager().importBindings(json);
                             updateList();
                         } catch (IOException e) {
-                            gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n(
+                            gui_root.addModalForm(new MessageForm(gui_root, AbstractOptionsMenu.i18n(
                                     "error_load_failed", e.getMessage())));
                         }
                     }

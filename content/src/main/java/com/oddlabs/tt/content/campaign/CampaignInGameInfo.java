@@ -12,7 +12,6 @@ import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.LabelBox;
 import com.oddlabs.tt.gui.OKButton;
-import com.oddlabs.tt.gui.Skin;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 
@@ -50,8 +49,9 @@ final class CampaignInGameInfo implements InGameInfo, InGameMenuHook {
     public void addGUI(WorldViewer viewer, InGameMainMenu menu, Group game_infos) {
         menu.addAbortButton(Menu.i18n("end_game"));
         int screen_width = viewer.getGUIRoot().getWidth();
-        LabelBox label_objective = new LabelBox(Menu.i18n("objective"), Skin.getSkin().getEditFont(), screen_width / 2);
-        LabelBox label_description = new LabelBox(campaign.getCurrentObjective(), Skin.getSkin().getEditFont(),
+        var editFont = viewer.getGUIRoot().getSkin().getEditFont();
+        LabelBox label_objective = new LabelBox(Menu.i18n("objective"), editFont, screen_width / 2);
+        LabelBox label_description = new LabelBox(campaign.getCurrentObjective(), editFont,
                 screen_width / 2);
         game_infos.addChild(label_objective);
         game_infos.addChild(label_description);
@@ -63,7 +63,7 @@ final class CampaignInGameInfo implements InGameInfo, InGameMenuHook {
     @Override
     public void addGameOverGUI(WorldViewer viewer, final GameStatsDelegate delegate, int header_y,
             Group group) {
-        HorizButton button_ok = new OKButton(150);
+        HorizButton button_ok = new OKButton(viewer.getGUIRoot(), 150);
         button_ok.addMouseClickListener((_, _, _, _) -> delegate.startMenu());
 
         group.addChild(button_ok);

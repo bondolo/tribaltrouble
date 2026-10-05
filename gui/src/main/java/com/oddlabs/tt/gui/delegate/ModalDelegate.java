@@ -1,5 +1,6 @@
 package com.oddlabs.tt.gui.delegate;
 
+import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.InputEvent;
@@ -11,6 +12,14 @@ public final class ModalDelegate extends GUIObject implements InputDelegate {
     public ModalDelegate() {
         setPos(0, 0);
         setCanFocus(true);
+    }
+
+    @Override
+    public void setFocus(FocusDirection direction) {
+        GUIObject child = getFirstChild();
+        if (child != null) {
+            child.setFocus(direction);
+        }
     }
 
     @Override

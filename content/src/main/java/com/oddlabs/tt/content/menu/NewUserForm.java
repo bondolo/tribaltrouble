@@ -16,7 +16,6 @@ import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.PasswordLine;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.base.util.Utils;
@@ -28,6 +27,7 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_RIGHT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 
+/** Form for registering a new user account. */
 public final class NewUserForm extends Form {
     private static final int MIN_PASSWORD_LENGTH = 6;
 
@@ -49,27 +49,29 @@ public final class NewUserForm extends Form {
     private final GUIRoot gui_root;
 
     public NewUserForm(Menu main_menu) {
+        super(main_menu.getGUIRoot());
         this.main_menu = main_menu;
         this.gui_root = main_menu.getGUIRoot();
 
         CreateUserListener create_listener = new CreateUserListener();
         // headline
-        Label label_headline = new Label(i18n("create_new_user_caption"), Skin.getSkin().getHeadlineFont());
+        Label label_headline = new Label(i18n("create_new_user_caption"), getSkin().getHeadlineFont());
         addChild(label_headline);
 
         // login
-        Group login_group = new Group();
-        Label label_username = new Label(i18n("user_name"), Skin.getSkin().getEditFont());
-        editline_email = new EditLine(EDITLINE_WIDTH, 255);
+        var font = getSkin().getEditFont();
+        Group login_group = new Group(gui_root);
+        Label label_username = new Label(i18n("user_name"), font);
+        editline_email = new EditLine(gui_root, EDITLINE_WIDTH, 255);
         editline_email.addEnterListener(create_listener);
-        Label label_email = new Label(i18n("email"), Skin.getSkin().getEditFont());
-        editline_username = new EditLine(EDITLINE_WIDTH, 255);
+        Label label_email = new Label(i18n("email"), font);
+        editline_username = new EditLine(gui_root, EDITLINE_WIDTH, 255);
         editline_username.addEnterListener(create_listener);
-        Label label_password = new Label(i18n("password"), Skin.getSkin().getEditFont());
-        editline_password = new PasswordLine(EDITLINE_WIDTH, 255);
+        Label label_password = new Label(i18n("password"), font);
+        editline_password = new PasswordLine(gui_root, EDITLINE_WIDTH, 255);
         editline_password.addEnterListener(create_listener);
-        Label label_verify = new Label(i18n("reenter_password"), Skin.getSkin().getEditFont());
-        editline_verify = new PasswordLine(EDITLINE_WIDTH, 255);
+        Label label_verify = new Label(i18n("reenter_password"), font);
+        editline_verify = new PasswordLine(gui_root, EDITLINE_WIDTH, 255);
         editline_verify.addEnterListener(create_listener);
         login_group.addChild(label_username);
         login_group.addChild(editline_username);
@@ -94,16 +96,16 @@ public final class NewUserForm extends Form {
         addChild(login_group);
 
         // warning
-        Label label_one_user = new Label(i18n("one_user_per_key"), Skin.getSkin().getEditFont());
+        Label label_one_user = new Label(i18n("one_user_per_key"), font);
         addChild(label_one_user);
 
         // buttons
-        Group group_buttons = new Group();
+        Group group_buttons = new Group(gui_root);
 
 
-        ButtonObject button_create = new HorizButton(i18n("create_user"), BUTTON_WIDTH_LONG);
+        ButtonObject button_create = new HorizButton(gui_root, i18n("create_user"), BUTTON_WIDTH_LONG);
         button_create.addMouseClickListener(create_listener);
-        ButtonObject button_cancel = new CancelButton(BUTTON_WIDTH);
+        ButtonObject button_cancel = new CancelButton(gui_root, BUTTON_WIDTH);
         button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
 
         group_buttons.addChild(button_create);
@@ -142,18 +144,18 @@ public final class NewUserForm extends Form {
         String password = editline_password.getPasswordDigest();
         LoginDetails login_details = new LoginDetails(editline_email.getContents());
         if (!editline_password.getContents().equals(editline_verify.getContents())) {
-            gui_root.addModalForm(new MessageForm(i18n("no_match")));
+            gui_root.addModalForm(new MessageForm(gui_root, i18n("no_match")));
             editline_password.clear();
             editline_verify.clear();
         } else if (editline_password.getContents().length() < MIN_PASSWORD_LENGTH) {
             String min_length_err = i18n("min_length_error", MIN_PASSWORD_LENGTH);
-            gui_root.addModalForm(new MessageForm(min_length_err));
+            gui_root.addModalForm(new MessageForm(gui_root, min_length_err));
         } else if (!login_details.isValid()) {
-            gui_root.addModalForm(new MessageForm(i18n("invalid_email")));
+            gui_root.addModalForm(new MessageForm(gui_root, i18n("invalid_email")));
         } else {
             Login login = new Login(username, password);
             if (!login.isValid())
-                gui_root.addModalForm(new MessageForm(i18n("invalid_login")));
+                gui_root.addModalForm(new MessageForm(gui_root, i18n("invalid_login")));
             else
                 doCreateUser(username, login_details, password, login);
         }

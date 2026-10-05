@@ -3,6 +3,7 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.base.resource.NativeResource;
+import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.util.Color;
@@ -15,11 +16,13 @@ import java.util.function.DoubleSupplier;
 public final class Status {
     private final Settings settings;
     private final DoubleSupplier fpsSupplier;
+    private final Font font;
     private final StringBuilder buf = new StringBuilder();
 
-    public Status(Settings settings, DoubleSupplier fpsSupplier) {
+    public Status(Settings settings, DoubleSupplier fpsSupplier, Font font) {
         this.settings = settings;
         this.fpsSupplier = fpsSupplier;
+        this.font = font;
     }
 
     public void render(GUIRenderer renderer) {
@@ -42,7 +45,7 @@ public final class Status {
                 .append(Math.round(fps))
                 .append(" ms/frame)");
 
-        TextLineRenderer.render(renderer, Skin.getSkin().getEditFont(), buf, 0, 0, Float.NEGATIVE_INFINITY,
+        TextLineRenderer.render(renderer, font, buf, 0, 0, Float.NEGATIVE_INFINITY,
                 Float.POSITIVE_INFINITY, Color.Standard.WHITE);
     }
 }
