@@ -22,14 +22,12 @@ final class PostProcessShader extends ShaderProgram {
 
     private static final String VERTEX_SHADER = SHADER_HEADER +
             """
-                    layout(location = 0) in vec2 in_Position;
-
                     out vec2 v_texCoord;
 
                     void main() {
-                        // Full screen quad coordinates: -1 to 1
-                        gl_Position = vec4(in_Position, 0.0, 1.0);
-                        v_texCoord = (in_Position + 1.0) * 0.5;
+                        vec2 uv = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2);
+                        v_texCoord = uv;
+                        gl_Position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);
                     }
                     """;
 
@@ -232,8 +230,8 @@ final class PostProcessShader extends ShaderProgram {
                     }
                     """;
 
-    final int locSceneTexture;
-    final int locMaskTexture;
+    private final int locSceneTexture;
+    private final int locMaskTexture;
     final int locCvdMode;
     final int locCvdIntensity;
     final int locHighContrast;
@@ -256,6 +254,11 @@ final class PostProcessShader extends ShaderProgram {
         locContrastBrightness = getUniformLocation(Uniforms.CONTRAST_BRIGHTNESS);
         locContrastClarity = getUniformLocation(Uniforms.CONTRAST_CLARITY);
         locTeamStencil = getUniformLocation(Uniforms.TEAM_STENCIL);
+
+        try (var _ = use()) {
+            setUniform(locSceneTexture, 0);
+            setUniform(locMaskTexture, 1);
+        }
     }
 
     void setAccessibilityModes(int cvdMode, boolean highContrast) {

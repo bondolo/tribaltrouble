@@ -1,20 +1,16 @@
 package com.oddlabs.tt.engine.render;
 
 
-import com.oddlabs.tt.engine.settings.AccessibilitySettings;
-import org.jspecify.annotations.Nullable;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.engine.vbo.FloatVBO;
+import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.engine.vbo.VertexArray;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.system.MemoryStack;
 
 import java.util.function.Consumer;
 
@@ -25,7 +21,6 @@ import java.util.function.Consumer;
 public final class PostProcessor implements AutoCloseable {
     private final PostProcessShader shader;
     private final VertexArray vao;
-    private final FloatVBO quadVBO;
     private final FBO sceneFBO;
     private final int samples;
     private @Nullable FBO msaaSceneFBO;
@@ -33,7 +28,6 @@ public final class PostProcessor implements AutoCloseable {
     private final AccessibilitySettings accessibility;
     private int currentWidth;
     private int currentHeight;
-
 
     public PostProcessor(AccessibilitySettings accessibility, int width, int height, int samples) {
         this.accessibility = accessibility;
@@ -57,23 +51,8 @@ public final class PostProcessor implements AutoCloseable {
         this.depthCopyFBO.checkStatus();
         this.depthCopyFBO.unbind();
 
-        // Setup Full-Screen Quad
+        // Setup Full-Screen VAO (empty VAO for procedural gl_VertexID triangle rendering)
         this.vao = new VertexArray();
-        this.vao.bind();
-
-        try (var stack = MemoryStack.stackPush()) {
-            this.quadVBO = new FloatVBO(GL15.GL_STATIC_DRAW, stack.floats(
-                    -1.0f, -1.0f,
-                    1.0f, -1.0f,
-                    -1.0f, 1.0f,
-                    1.0f, 1.0f
-            ));
-        }
-
-        GL20.glEnableVertexAttribArray(0);
-        quadVBO.vertexAttribPointer(0, 2, 0, 0);
-
-        this.vao.unbind();
     }
 
     private FBO getActiveSceneFBO() {
@@ -155,14 +134,12 @@ public final class PostProcessor implements AutoCloseable {
             shader.setUniform(shader.locContrastBrightness, accessibility.contrast_brightness);
             shader.setUniform(shader.locContrastClarity, accessibility.contrast_clarity);
             shader.setUniform(shader.locTeamStencil, accessibility.team_stencil);
-            shader.setUniform(shader.locSceneTexture, 0);
-            shader.setUniform(shader.locMaskTexture, 1);
 
             context.setTexture(0, sceneFBO.getColorTexture());
             context.setTexture(1, sceneFBO.getMaskTexture());
 
             vao.bind();
-            GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
+            GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3);
             vao.unbind();
         } finally {
             // Unbind textures to prevent feedback loops in next frame
@@ -189,6 +166,5 @@ public final class PostProcessor implements AutoCloseable {
         }
         depthCopyFBO.close();
         vao.close();
-        quadVBO.close();
     }
 }
