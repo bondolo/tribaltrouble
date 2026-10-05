@@ -55,6 +55,7 @@ final class GLRenderContext implements RenderContext {
     private GLState cullFaceEnabled = GLState.UNKNOWN;
     private GLState framebufferSrgbEnabled = GLState.UNKNOWN;
     private GLState multisampleEnabled = GLState.UNKNOWN;
+    private int maxSamples = -1;
 
     private GLState maskR = GLState.UNKNOWN;
     private GLState maskG = GLState.UNKNOWN;
@@ -92,6 +93,7 @@ final class GLRenderContext implements RenderContext {
         }
         // Synchronize FBO state
         currentFBO = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
+        this.maxSamples = GL11.glGetInteger(GL30.GL_MAX_SAMPLES);
         checkGLError("RenderContext.init complete");
     }
 
@@ -381,6 +383,14 @@ final class GLRenderContext implements RenderContext {
     @Override
     public boolean isMultisampleEnabled() {
         return multisampleEnabled.isTrue();
+    }
+
+    @Override
+    public int getMaxSamples() {
+        if (maxSamples <= 0) {
+            maxSamples = GL11.glGetInteger(GL30.GL_MAX_SAMPLES);
+        }
+        return maxSamples;
     }
 
     @Override

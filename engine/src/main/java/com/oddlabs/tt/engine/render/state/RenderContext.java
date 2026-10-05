@@ -155,6 +155,13 @@ public interface RenderContext {
     boolean isMultisampleEnabled();
 
     /**
+     * Returns the maximum number of samples supported for multisampling by the hardware.
+     *
+     * @return the maximum hardware sample count
+     */
+    int getMaxSamples();
+
+    /**
      * Verifies that the tracked state matches the actual OpenGL state.
      *
      * @throws IllegalStateException if a mismatch is found.

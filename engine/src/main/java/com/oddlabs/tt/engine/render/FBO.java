@@ -77,7 +77,7 @@ public final class FBO extends NativeResource<FBO.Buffer> {
 
     public static FBO createMultisampleSceneFBO(int width, int height, int requestedSamples) {
         FBO fbo = new FBO(width, height);
-        int maxSamples = GL11.glGetInteger(GL30.GL_MAX_SAMPLES);
+        int maxSamples = RenderContext.current().getMaxSamples();
         fbo.samples = Math.max(1, Math.min(requestedSamples, maxSamples));
         fbo.bind();
 
