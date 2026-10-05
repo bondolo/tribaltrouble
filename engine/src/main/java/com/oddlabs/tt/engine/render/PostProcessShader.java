@@ -110,7 +110,7 @@ final class PostProcessShader extends ShaderProgram {
 
                         // 1. Edge Clarity (Unsharp Mask)
                         if (u_contrastClarity > 0.01) {
-                            vec2 texelSize = 1.0 / textureSize(u_sceneTexture, 0);
+                            vec2 texelSize = 1.0 / vec2(textureSize(u_sceneTexture, 0));
                             vec3 blurred = vec3(0.0);
                             // Simple 5-tap box filter for speed
                             blurred += texture(u_sceneTexture, v_texCoord + vec2(texelSize.x, 0.0)).rgb;
@@ -157,63 +157,58 @@ final class PostProcessShader extends ShaderProgram {
 
                         vec3 finalColor = sceneColor.rgb;
 
-                        // GUI pixels use alpha=0.5 in the mask buffer.
-                        bool isGui = abs(mask.a - 0.5) < 0.1;
+                        // Apply Accessibility Filters (contrast, unsharp mask, and unit-protected color inversion)
+                        float maskAlpha = mask.a;
+                        finalColor = applyContrastFilter(finalColor, maskAlpha);
 
-                        if (!isGui) {
-                            // Apply Accessibility Filters (only to 3D scene, not GUI)
-                            float maskAlpha = u_teamStencil ? mask.a : 0.0;
-                            finalColor = applyContrastFilter(finalColor, maskAlpha);
+                        // Team Stencil Overlay (Linear Space)
+                        if (u_teamStencil) {
+                            // Team objects write alpha=1.0. Clear colour is alpha=0.0.
+                            if (mask.a > 0.9 && dot(mask.rgb, vec3(1.0)) > 0.01) {
+                                finalColor = mix(finalColor, mask.rgb, 0.2);
+                            } else {
+                                vec2 texelSize = 1.0 / vec2(textureSize(u_maskTexture, 0));
+                                float maskCount = 0.0;
+                                vec3 accumulatedColor = vec3(0.0);
 
-                            // Team Stencil Overlay (Linear Space)
-                            if (u_teamStencil) {
-                                // Team objects write alpha=1.0. Clear colour is alpha=0.0.
-                                if (mask.a > 0.9 && dot(mask.rgb, vec3(1.0)) > 0.01) {
-                                    finalColor = mix(finalColor, mask.rgb, 0.2);
-                                } else {
-                                    vec2 texelSize = 1.0 / vec2(textureSize(u_maskTexture, 0));
-                                    float maskCount = 0.0;
-                                    vec3 accumulatedColor = vec3(0.0);
+                                // Advanced Sampling: use textureGather to fetch 2x2 texel blocks per instruction.
+                                // 16 gathers cover an 8x8 area (radius 4). This replaces an 81-tap dense loop.
+                                for (float y = -3.5; y <= 3.5; y += 2.0) {
+                                    for (float x = -3.5; x <= 3.5; x += 2.0) {
+                                        vec2 sampleUV = v_texCoord + vec2(x, y) * texelSize;
 
-                                    // Advanced Sampling: use textureGather to fetch 2x2 texel blocks per instruction.
-                                    // 16 gathers cover an 8x8 area (radius 4). This replaces an 81-tap dense loop.
-                                    for (float y = -3.5; y <= 3.5; y += 2.0) {
-                                        for (float x = -3.5; x <= 3.5; x += 2.0) {
-                                            vec2 sampleUV = v_texCoord + vec2(x, y) * texelSize;
+                                        // Gather Alpha channel (3) to quickly check for team units
+                                        vec4 alphas = textureGather(u_maskTexture, sampleUV, 3);
 
-                                            // Gather Alpha channel (3) to quickly check for team units
-                                            vec4 alphas = textureGather(u_maskTexture, sampleUV, 3);
+                                        // Team pixels have alpha ~ 1.0, Background has 0.0
+                                        bvec4 isTeam = greaterThan(alphas, vec4(0.9));
 
-                                            // Team pixels have alpha ~ 1.0, GUI has 0.5, Background has 0.0
-                                            bvec4 isTeam = greaterThan(alphas, vec4(0.9));
+                                        if (any(isTeam)) {
+                                            // Fetch R, G, B only if we hit a team pixel in this 2x2 block
+                                            vec4 r = textureGather(u_maskTexture, sampleUV, 0);
+                                            vec4 g = textureGather(u_maskTexture, sampleUV, 1);
+                                            vec4 b = textureGather(u_maskTexture, sampleUV, 2);
 
-                                            if (any(isTeam)) {
-                                                // Fetch R, G, B only if we hit a team pixel in this 2x2 block
-                                                vec4 r = textureGather(u_maskTexture, sampleUV, 0);
-                                                vec4 g = textureGather(u_maskTexture, sampleUV, 1);
-                                                vec4 b = textureGather(u_maskTexture, sampleUV, 2);
+                                            vec4 teamMask = vec4(isTeam);
+                                            maskCount += dot(teamMask, vec4(1.0));
 
-                                                vec4 teamMask = vec4(isTeam);
-                                                maskCount += dot(teamMask, vec4(1.0));
-
-                                                accumulatedColor.r += dot(r, teamMask);
-                                                accumulatedColor.g += dot(g, teamMask);
-                                                accumulatedColor.b += dot(b, teamMask);
-                                            }
+                                            accumulatedColor.r += dot(r, teamMask);
+                                            accumulatedColor.g += dot(g, teamMask);
+                                            accumulatedColor.b += dot(b, teamMask);
                                         }
                                     }
+                                }
 
-                                    if (maskCount > 0.0) {
-                                        finalColor = accumulatedColor / maskCount;
-                                    }
+                                if (maskCount > 0.0) {
+                                    finalColor = accumulatedColor / maskCount;
                                 }
                             }
                         }
 
-                        // 4. Apply CVD correction
+                        // Apply CVD correction
                         finalColor = applyCvdFilter(finalColor);
 
-                        // 5. Final Output (Opaque)
+                        // Final Output (Opaque)
                         out_FragColor = vec4(finalColor, 1.0);
                     }
                     """;

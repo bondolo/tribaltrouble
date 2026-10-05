@@ -119,7 +119,8 @@ public final class Main {
                                     clientEngine::getFPS
                             );
                             gui.setMovieRecordingStarter(clientEngine::startMovieRecording);
-                            gui.setErrorAudioHandler(() -> audioManager.newAudio(0f, 0f, 0f, AudioRegistry.ERROR_SOUND));
+                            gui.setErrorAudioHandler(() -> audioManager.newAudio(0f, 0f, 0f,
+                                    AudioRegistry.ERROR_SOUND));
                             gui.setCloseHandler(() -> {
                                 if (gui.getGUIRoot().isShowingModalForm(QuitForm.class)) {
                                     clientEngine.shutdown();

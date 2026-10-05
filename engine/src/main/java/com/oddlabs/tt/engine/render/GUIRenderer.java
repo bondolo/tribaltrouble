@@ -32,7 +32,8 @@ public final class GUIRenderer implements AutoCloseable {
     private static final Matrix4fc IDENTITY_MATRIX = new Matrix4f();
     private static final int[] TEXTURE_UNITS = new int[]{0, 1, 2, 3, 4, 5, 6, 7};
 
-    private record ScissorRect(int x, int y, int width, int height) {}
+    private record ScissorRect(int x, int y, int width, int height) {
+    }
 
     private final GUIShader shader;
     private final MatrixStack matrixStack = new MatrixStack(); // No flush callback

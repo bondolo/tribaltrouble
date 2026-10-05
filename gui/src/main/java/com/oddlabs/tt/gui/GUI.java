@@ -9,7 +9,6 @@ import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.engine.render.state.ScopedState;
 import com.oddlabs.tt.gui.render.UIRenderer;
 import com.oddlabs.tt.window.Window;
 import com.oddlabs.tt.window.WindowSettings;
@@ -272,12 +271,7 @@ public final class GUI implements Animated, AutoCloseable {
     private void renderGUI(RenderContext context) {
         GUIRoot guiRoot = getGUIRoot();
 
-        // If we are rendering directly to the back buffer (e.g. loading screen),
-        // we must set the correct blend mode here.
-        // During gameplay, PostProcessor.renderComposite sets per-buffer blend modes.
-        try (var _ = (renderer == null || renderer.isClosed()) ? context.withBlendMode(BlendMode.PREMULTIPLIED)
-                : (ScopedState) () -> {
-                }) {
+        try (var _ = context.withBlendMode(BlendMode.PREMULTIPLIED)) {
             guiRenderer.renderFrame(context, guiRoot.getWidth(), guiRoot.getHeight(), () -> {
                 guiRoot.render(guiRenderer);
                 guiRoot.renderTopmost(guiRenderer, renderer != null ? renderer.getToolTip() : null, renderer != null

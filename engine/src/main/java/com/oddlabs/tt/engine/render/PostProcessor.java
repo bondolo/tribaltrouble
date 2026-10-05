@@ -11,11 +11,9 @@ import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL40;
 import org.lwjgl.system.MemoryStack;
 
 import java.util.function.Consumer;
@@ -36,9 +34,6 @@ public final class PostProcessor implements AutoCloseable {
     private int currentWidth;
     private int currentHeight;
 
-    public PostProcessor(AccessibilitySettings accessibility, int width, int height) {
-        this(accessibility, width, height, 0);
-    }
 
     public PostProcessor(AccessibilitySettings accessibility, int width, int height, int samples) {
         this.accessibility = accessibility;
@@ -138,42 +133,12 @@ public final class PostProcessor implements AutoCloseable {
             RenderContext> guiRenderCallback) {
         FBO activeSceneFBO = getActiveSceneFBO();
 
-        // 1. If MSAA was used for 3D rendering, resolve activeSceneFBO to sceneFBO before GUI
+        // 1. If MSAA was used for 3D rendering, resolve activeSceneFBO to sceneFBO
         if (activeSceneFBO != sceneFBO) {
             activeSceneFBO.resolveTo(sceneFBO);
         }
 
-        // 2. Render GUI directly into the single-sampled Scene FBO (on top of the resolved 3D scene)
-        sceneFBO.bind();
-
-        // Ensure blending is enabled for the GUI pass.
-        // Buffer 0 (Color): GL_ONE, GL_ONE_MINUS_SRC_ALPHA (Premultiplied Linear)
-        // Buffer 1 (Mask): Wipes unit color proportionally and uses MAX for the marker alpha.
-        try (var _ = context.withBlendMode(BlendMode.CUSTOM)) {
-            context.setBlend(true);
-            context.setBlendFunc(GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_ALPHA);
-            // Mask RGB: Wipe background unit color as GUI becomes opaque
-            // Mask Alpha: Use MAX to prevent marker (0.5) from accumulating to 1.0
-            GL40.glBlendEquationSeparatei(1, GL14.GL_FUNC_ADD, GL14.GL_MAX);
-            GL40.glBlendFunci(1, GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-            try (var stack = MemoryStack.stackPush()) {
-                GL20.glDrawBuffers(stack.ints(GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1));
-            }
-
-            guiRenderCallback.accept(context);
-
-            // Explicitly reset per-buffer state to prevent leaking into next pass/frame
-            GL40.glBlendEquationSeparatei(1, GL14.GL_FUNC_ADD, GL14.GL_FUNC_ADD);
-            try (var stack = MemoryStack.stackPush()) {
-                GL20.glDrawBuffers(stack.ints(GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1));
-            }
-        }
-
-        sceneFBO.unbind();
-
-        // 3. Composite the FBO to the screen with Post-Processing (CVD, High Contrast, Team Stencil)
-        // Render to the default framebuffer (screen)
+        // 2. Composite the 3D scene from sceneFBO to the default framebuffer (screen) with Post-Processing
         context.bindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
         context.setViewport(0, 0, currentWidth, currentHeight);
         context.setDrawBuffers(false); // Ensure only back buffer is active for FBO 0
@@ -199,12 +164,20 @@ public final class PostProcessor implements AutoCloseable {
             vao.bind();
             GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
             vao.unbind();
+        } finally {
+            // Unbind textures to prevent feedback loops in next frame
+            context.setTexture(0, 0);
+            context.setTexture(1, 0);
         }
 
-        // Unbind textures to prevent feedback loops in next frame
-        context.setTexture(0, 0);
-        context.setTexture(1, 0);
-        context.setTexture(2, 0);
+        // 3. Render GUI directly onto the default framebuffer on top of the composited 3D scene.
+        // This guarantees UI text and vector borders remain 1:1 pixel-sharp, completely isolated from
+        // unsharp masking, contrast S-curves, smart inversion, and team outlines.
+        try (var _ = context.withBlendMode(BlendMode.PREMULTIPLIED)) {
+            guiRenderCallback.accept(context);
+        } finally {
+            context.resetBlendFunc();
+        }
     }
 
     @Override

@@ -28,7 +28,8 @@ public final class NotificationManager implements BeaconListener {
     private final int arrowHeadY;
     private @Nullable Notification latest_notification = null;
 
-    public NotificationManager(GUIRoot gui_root, AudioImplementation audio, IconQuad arrowQuad, int arrowHeadX, int arrowHeadY) {
+    public NotificationManager(GUIRoot gui_root, AudioImplementation audio, IconQuad arrowQuad, int arrowHeadX,
+            int arrowHeadY) {
         this.gui_root = gui_root;
         this.audio = audio;
         this.arrowQuad = arrowQuad;

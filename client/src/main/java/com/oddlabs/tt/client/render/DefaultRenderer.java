@@ -371,7 +371,6 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
         }
 
-        // Ensure Mask is enabled for GUI clearing
         context.setDrawBuffers(true);
 
         if (DebugFlags.debugRenderingEnabled()) {

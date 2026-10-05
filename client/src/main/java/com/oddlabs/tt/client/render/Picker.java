@@ -559,7 +559,8 @@ public final class Picker implements Updatable<TimerAnimation> {
                     render_tool_tip = false;
             }
             current_hovered = new_current_hovered;
-            current_tooltip = (new_tip && icons != null) ? new ToolTipAdapter((ModelToolTip) current_hovered, local_player, icons) : null;
+            current_tooltip = (new_tip && icons != null) ? new ToolTipAdapter((ModelToolTip) current_hovered,
+                    local_player, icons) : null;
         }
     }
 

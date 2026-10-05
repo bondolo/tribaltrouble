@@ -52,7 +52,6 @@ final class GUIShader extends ShaderProgram {
                     } fs_in;
 
                     layout(location = 0) out vec4 out_FragColor;
-                    layout(location = 1) out vec4 out_MaskColor;
 
                     void main() {
                         vec4 color;
@@ -79,13 +78,6 @@ final class GUIShader extends ShaderProgram {
                         }
 
                         out_FragColor = vec4(color.rgb * color.a, color.a);
-
-                        // Write a special marker to the mask alpha channel to indicate "GUI Pixel".
-                        // Team objects write alpha=1.0. Clear color is alpha=0.0.
-                        // We use alpha=0.5 to identify GUI pixels in the post-process shader.
-                        // Only truly opaque GUI pixels write the marker; translucent fragments
-                        // output vec4(0.0) so they do not overwrite or attenuate the 3D unit mask.
-                        out_MaskColor = color.a > 0.9 ? vec4(0.0, 0.0, 0.0, 0.5) : vec4(0.0);
                     }
                     """;
 
