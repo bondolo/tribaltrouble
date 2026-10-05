@@ -75,30 +75,41 @@ final class PostProcessShader extends ShaderProgram {
                     );
 
                     vec3 applyCvdFilter(vec3 color) {
-                        if (u_cvdMode == 0) {
+                        if (u_cvdMode == 0 || u_cvdIntensity <= 0.001) {
                             return color;
                         }
-                        vec3 simulated;
+
+                        // Anomalous Trichromacy Simulation:
+                        // Models partial cone deficiency severity s in [0, 1] by interpolating between Identity and Dichromacy.
+                        // Since c - ((1 - s)I + s M)c == s(c - Mc), we compute error directly against the constant dichromacy matrix.
+                        float s = clamp(u_cvdIntensity, 0.0, 1.0);
+
                         vec3 correction;
                         if (u_cvdMode == 1) {
-                            // Protanopia: shift lost red error into green and blue channels
-                            simulated = PROTANOPIA_SIM * color;
-                            vec3 error = color - simulated;
-                            correction = vec3(0.0, 0.7 * error.r + error.g, 0.7 * error.r + error.b);
+                            // Protanopia / Protanomaly (L-cone deficiency)
+                            vec3 error = (color - PROTANOPIA_SIM * color) * s;
+
+                            // Shift lost red error into green and blue channels.
+                            // Add red luminance compensation (+0.3 max(error.r, 0.0)) to offset photopic L-cone luminous loss.
+                            float redLumBoost = 0.3 * max(error.r, 0.0);
+                            correction = vec3(0.0, 0.7 * error.r + redLumBoost, 0.7 * error.r);
                         } else if (u_cvdMode == 2) {
-                            // Deuteranopia: shift lost green error into red and blue channels
-                            simulated = DEUTERANOPIA_SIM * color;
-                            vec3 error = color - simulated;
-                            correction = vec3(error.r + 0.7 * error.g, 0.0, 0.7 * error.g + error.b);
+                            // Deuteranopia / Deuteranomaly (M-cone deficiency)
+                            vec3 error = (color - DEUTERANOPIA_SIM * color) * s;
+
+                            // Shift lost green error into red and blue channels
+                            correction = vec3(0.7 * error.g, 0.0, 0.7 * error.g);
                         } else if (u_cvdMode == 3) {
-                            // Tritanopia: shift lost blue error into red and green channels
-                            simulated = TRITANOPIA_SIM * color;
-                            vec3 error = color - simulated;
-                            correction = vec3(error.r + 0.7 * error.b, error.g + 0.7 * error.b, 0.0);
+                            // Tritanopia / Tritanomaly (S-cone deficiency)
+                            vec3 error = (color - TRITANOPIA_SIM * color) * s;
+
+                            // Shift lost blue error into red and green channels
+                            correction = vec3(0.7 * error.b, 0.7 * error.b, 0.0);
                         } else {
                             return color;
                         }
-                        return clamp(color + correction * u_cvdIntensity, 0.0, 1.0);
+
+                        return clamp(color + correction, 0.0, 1.0);
                     }
 
                     // --- High Contrast & Accessibility Logic ---
