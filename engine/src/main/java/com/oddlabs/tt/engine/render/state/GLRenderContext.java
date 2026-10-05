@@ -455,6 +455,56 @@ final class GLRenderContext implements RenderContext {
         return viewH;
     }
 
+    private GLState scissorTestEnabled = GLState.UNKNOWN;
+    private int scissorX = -1;
+    private int scissorY = -1;
+    private int scissorW = -1;
+    private int scissorH = -1;
+
+    @Override
+    public void setScissorTest(boolean enabled) {
+        GLState state = GLState.from(enabled);
+        if (scissorTestEnabled == state) return;
+        if (enabled) {
+            GL11.glEnable(GL11.GL_SCISSOR_TEST);
+        } else {
+            GL11.glDisable(GL11.GL_SCISSOR_TEST);
+        }
+        checkGLError("glEnable/Disable(GL_SCISSOR_TEST)");
+        scissorTestEnabled = state;
+    }
+
+    @Override
+    public void setScissor(int x, int y, int w, int h) {
+        if (scissorX == x && scissorY == y && scissorW == w && scissorH == h) return;
+        GL11.glScissor(x, y, w, h);
+        checkGLError("glScissor()");
+        scissorX = x;
+        scissorY = y;
+        scissorW = w;
+        scissorH = h;
+    }
+
+    @Override
+    public ScopedState withScissor(int x, int y, int w, int h) {
+        GLState prevTest = scissorTestEnabled;
+        int prevX = scissorX;
+        int prevY = scissorY;
+        int prevW = scissorW;
+        int prevH = scissorH;
+
+        setScissorTest(true);
+        setScissor(x, y, w, h);
+
+        return () -> {
+            if (prevTest != GLState.UNKNOWN && prevTest.isTrue()) {
+                setScissor(prevX, prevY, prevW, prevH);
+            } else {
+                setScissorTest(false);
+            }
+        };
+    }
+
     private int currentVAO = -1;
 
     @Override

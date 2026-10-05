@@ -22,14 +22,11 @@ final class GUIShader extends ShaderProgram {
                     layout(location = 3) in vec4 in_Color;
                     layout(location = 2) in vec2 in_TexCoord;
                     layout(location = 4) in float in_TexIndex;
-                    layout(location = 5) in vec4 in_ClipRect;
 
                     out VS_OUT {
                         vec4 Color;
                         vec2 TexCoord;
                         flat int TexIndex;
-                        vec2 LogicalPos;
-                        flat vec4 ClipRect;
                     } vs_out;
 
                     void main() {
@@ -38,8 +35,6 @@ final class GUIShader extends ShaderProgram {
                         vs_out.Color = in_Color;
                         vs_out.TexCoord = in_TexCoord;
                         vs_out.TexIndex = int(in_TexIndex);
-                        vs_out.LogicalPos = pos.xy;
-                        vs_out.ClipRect = in_ClipRect;
                     }
                     """;
 
@@ -54,19 +49,12 @@ final class GUIShader extends ShaderProgram {
                         vec4 Color;
                         vec2 TexCoord;
                         flat int TexIndex;
-                        vec2 LogicalPos;
-                        flat vec4 ClipRect;
                     } fs_in;
 
                     layout(location = 0) out vec4 out_FragColor;
                     layout(location = 1) out vec4 out_MaskColor;
 
                     void main() {
-                        if (fs_in.LogicalPos.x < fs_in.ClipRect.x || fs_in.LogicalPos.x > fs_in.ClipRect.z ||
-                            fs_in.LogicalPos.y < fs_in.ClipRect.y || fs_in.LogicalPos.y > fs_in.ClipRect.w) {
-                            discard;
-                        }
-
                         vec4 color;
                         if (fs_in.TexIndex < 0) {
                             color = fs_in.Color;
@@ -112,15 +100,13 @@ final class GUIShader extends ShaderProgram {
         String COLOR = Shader.Attributes.COLOR;
         String TEX_COORD = Shader.Attributes.TEX_COORD;
         String TEX_INDEX = "in_TexIndex";
-        String CLIP_RECT = "in_ClipRect";
     }
 
     enum Attribute implements VertexAttribute {
         POSITION(Attributes.POSITION, 3, GL11.GL_FLOAT),
         COLOR(Attributes.COLOR, 4, GL11.GL_FLOAT, false),
         TEX_COORD(Attributes.TEX_COORD, 2, GL11.GL_FLOAT),
-        TEX_INDEX(Attributes.TEX_INDEX, 1, GL11.GL_FLOAT),
-        CLIP_RECT(Attributes.CLIP_RECT, 4, GL11.GL_FLOAT);
+        TEX_INDEX(Attributes.TEX_INDEX, 1, GL11.GL_FLOAT);
 
         private final String name;
         private final int componentCount;

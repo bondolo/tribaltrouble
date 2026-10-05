@@ -9,7 +9,6 @@ import com.oddlabs.tt.engine.vbo.VertexArray;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
-import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -33,6 +32,8 @@ public final class GUIRenderer implements AutoCloseable {
     private static final Matrix4fc IDENTITY_MATRIX = new Matrix4f();
     private static final int[] TEXTURE_UNITS = new int[]{0, 1, 2, 3, 4, 5, 6, 7};
 
+    private record ScissorRect(int x, int y, int width, int height) {}
+
     private final GUIShader shader;
     private final MatrixStack matrixStack = new MatrixStack(); // No flush callback
     private final Matrix4f projectionMatrix = new Matrix4f();
@@ -52,9 +53,10 @@ public final class GUIRenderer implements AutoCloseable {
     private final Deque<Color.Linear> modulationStack = new ArrayDeque<>();
     private Color.Linear currentModulation = Color.Linear.WHITE;
 
-    // Clip stack (logical coordinates)
-    private final Deque<Vector4f> clipStack = new ArrayDeque<>();
-    private Vector4f currentClip = new Vector4f();
+    // Scissor stack (physical framebuffer coordinates)
+    private final Deque<ScissorRect> scissorStack = new ArrayDeque<>();
+    private float scaleX = 1.0f;
+    private float scaleY = 1.0f;
 
     private @Nullable RenderContext currentContext;
 
@@ -64,8 +66,7 @@ public final class GUIRenderer implements AutoCloseable {
                 GUIShader.Attribute.POSITION,
                 GUIShader.Attribute.COLOR,
                 GUIShader.Attribute.TEX_COORD,
-                GUIShader.Attribute.TEX_INDEX,
-                GUIShader.Attribute.CLIP_RECT
+                GUIShader.Attribute.TEX_INDEX
         );
         this.modulationStack.push(Color.Linear.WHITE);
 
@@ -116,8 +117,14 @@ public final class GUIRenderer implements AutoCloseable {
 
     public void renderFrame(RenderContext context, float width, float height,
             Runnable frameCommands) {
+        if (width <= 0 || height <= 0) return;
         GLUtils.checkGLError("Before GUI Render");
         this.currentContext = context;
+
+        int fbWidth = context.getViewportWidth();
+        int fbHeight = context.getViewportHeight();
+        this.scaleX = (fbWidth > 0) ? (float) fbWidth / width : 1.0f;
+        this.scaleY = (fbHeight > 0) ? (float) fbHeight / height : 1.0f;
 
         try (var _ = shader.use(); var _ = context.withDepthMode(DepthMode.NONE); var _ = context.withCullMode(
                 CullMode.NONE)) {
@@ -131,14 +138,17 @@ public final class GUIRenderer implements AutoCloseable {
             modulationStack.push(Color.Linear.WHITE);
             currentModulation = Color.Linear.WHITE;
 
-            clipStack.clear();
-            currentClip = new Vector4f(0, 0, width, height);
-            clipStack.push(currentClip);
+            scissorStack.clear();
+            context.setScissorTest(false);
 
             frameCommands.run();
 
             flush();
         } finally {
+            if (this.currentContext != null) {
+                this.currentContext.setScissorTest(false);
+            }
+            scissorStack.clear();
             this.currentContext = null;
         }
     }
@@ -243,32 +253,28 @@ public final class GUIRenderer implements AutoCloseable {
                 .putFloat(mat.m01() * x1 + mat.m11() * y1 + mat.m31())
                 .putFloat(mat.m02() * x1 + mat.m12() * y1 + mat.m32())
                 .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
-                .putFloat(u1).putFloat(v1).putFloat(texIndex)
-                .putFloat(currentClip.x).putFloat(currentClip.y).putFloat(currentClip.z).putFloat(currentClip.w);
+                .putFloat(u1).putFloat(v1).putFloat(texIndex);
 
         // P2 (x2, y1)
         vertexBuffer.putFloat(mat.m00() * x2 + mat.m10() * y1 + mat.m30())
                 .putFloat(mat.m01() * x2 + mat.m11() * y1 + mat.m31())
                 .putFloat(mat.m02() * x2 + mat.m12() * y1 + mat.m32())
                 .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
-                .putFloat(u2).putFloat(v1).putFloat(texIndex)
-                .putFloat(currentClip.x).putFloat(currentClip.y).putFloat(currentClip.z).putFloat(currentClip.w);
+                .putFloat(u2).putFloat(v1).putFloat(texIndex);
 
         // P3 (x2, y2)
         vertexBuffer.putFloat(mat.m00() * x2 + mat.m10() * y2 + mat.m30())
                 .putFloat(mat.m01() * x2 + mat.m11() * y2 + mat.m31())
                 .putFloat(mat.m02() * x2 + mat.m12() * y2 + mat.m32())
                 .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
-                .putFloat(u2).putFloat(v2).putFloat(texIndex)
-                .putFloat(currentClip.x).putFloat(currentClip.y).putFloat(currentClip.z).putFloat(currentClip.w);
+                .putFloat(u2).putFloat(v2).putFloat(texIndex);
 
         // P4 (x1, y2)
         vertexBuffer.putFloat(mat.m00() * x1 + mat.m10() * y2 + mat.m30())
                 .putFloat(mat.m01() * x1 + mat.m11() * y2 + mat.m31())
                 .putFloat(mat.m02() * x1 + mat.m12() * y2 + mat.m32())
                 .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
-                .putFloat(u1).putFloat(v2).putFloat(texIndex)
-                .putFloat(currentClip.x).putFloat(currentClip.y).putFloat(currentClip.z).putFloat(currentClip.w);
+                .putFloat(u1).putFloat(v2).putFloat(texIndex);
 
         quadCount++;
     }
@@ -312,21 +318,50 @@ public final class GUIRenderer implements AutoCloseable {
     }
 
     public void pushClip(float x, float y, float w, float h) {
-        Vector4f parent = clipStack.peek();
-        assert parent != null;
-        float x1 = Math.max(parent.x, x);
-        float y1 = Math.max(parent.y, y);
-        float x2 = Math.min(parent.z, x + w);
-        float y2 = Math.min(parent.w, y + h);
+        flush();
 
-        currentClip = new Vector4f(x1, y1, x2, y2);
-        clipStack.push(currentClip);
+        int sx1 = Math.round(x * scaleX);
+        int sy1 = Math.round(y * scaleY);
+        int sx2 = Math.round((x + w) * scaleX);
+        int sy2 = Math.round((y + h) * scaleY);
+
+        ScissorRect rect;
+        if (scissorStack.isEmpty()) {
+            rect = new ScissorRect(sx1, sy1, Math.max(0, sx2 - sx1), Math.max(0, sy2 - sy1));
+            if (currentContext != null) {
+                currentContext.setScissorTest(true);
+            }
+        } else {
+            ScissorRect parent = scissorStack.peek();
+            assert parent != null;
+            int newX1 = Math.max(parent.x(), sx1);
+            int newY1 = Math.max(parent.y(), sy1);
+            int newX2 = Math.min(parent.x() + parent.width(), sx2);
+            int newY2 = Math.min(parent.y() + parent.height(), sy2);
+            rect = new ScissorRect(newX1, newY1, Math.max(0, newX2 - newX1), Math.max(0, newY2 - newY1));
+        }
+        scissorStack.push(rect);
+        if (currentContext != null) {
+            currentContext.setScissor(rect.x(), rect.y(), rect.width(), rect.height());
+        }
     }
 
     public void popClip() {
-        clipStack.pop();
-        currentClip = clipStack.peek();
-        assert currentClip != null;
+        flush();
+        if (!scissorStack.isEmpty()) {
+            scissorStack.pop();
+        }
+        if (scissorStack.isEmpty()) {
+            if (currentContext != null) {
+                currentContext.setScissorTest(false);
+            }
+        } else {
+            ScissorRect parent = scissorStack.peek();
+            assert parent != null;
+            if (currentContext != null) {
+                currentContext.setScissor(parent.x(), parent.y(), parent.width(), parent.height());
+            }
+        }
     }
 
     public MatrixStack getMatrixStack() {

@@ -70,6 +70,13 @@ public interface RenderContext {
 
     int getViewportHeight();
 
+    // Scissor
+    void setScissorTest(boolean enabled);
+
+    void setScissor(int x, int y, int w, int h);
+
+    ScopedState withScissor(int x, int y, int w, int h);
+
     // VAO
     void bindVertexArray(int vao);
 
