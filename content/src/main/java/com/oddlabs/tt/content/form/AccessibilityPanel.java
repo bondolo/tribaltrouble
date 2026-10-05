@@ -302,7 +302,7 @@ public final class AccessibilityPanel extends Panel {
         button_reset.addMouseClickListener((_, _, _, _) -> {
             int index = pm_player.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
             var resetColour = new Color.Standard(
-                    AccessibilitySettings.DEFAULT_PLAYER_COLOURS[index]);
+                    AccessibilitySettings.DEFAULT_PLAYER_COLOURS.get(index));
             accessibility.setPlayerColour(index, resetColour);
             World.updateAllPlayerColors(accessibility.linear_player_colours);
             refreshUI.run();

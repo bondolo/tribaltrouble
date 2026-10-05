@@ -22,7 +22,7 @@ final class AccessibilitySettingsTest {
         assertFalse(settings.invert_colours);
         assertTrue(settings.sound_emojis);
         assertNotNull(settings.player_colours);
-        assertEquals(AccessibilitySettings.DEFAULT_PLAYER_COLOURS.length, settings.player_colours.length);
+        assertEquals(AccessibilitySettings.DEFAULT_PLAYER_COLOURS.size(), settings.player_colours.length);
         assertNotNull(settings.linear_player_colours);
     }
 

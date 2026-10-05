@@ -7,6 +7,7 @@ import com.oddlabs.util.Color;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -35,14 +36,14 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
 
     private static final Logger logger = Logger.getLogger(AccessibilitySettings.class.getName());
 
-    public static final Color.Standard[] DEFAULT_PLAYER_COLOURS = {
+    public static final List<Color.Standard> DEFAULT_PLAYER_COLOURS = List.of(
             new Color.Standard(0xFFFFBF00), /* Orange */
             new Color.Standard(0xFF007FFF), /* Royal Blue */
             new Color.Standard(0xFFFF0040), /* Red */
             new Color.Standard(0xFF00FFBF), /* Teal */
             new Color.Standard(0xFFBF00FF), /* Purple */
             new Color.Standard(0xFFBFFF00) /* Lime */
-    };
+    );
 
     public int cvd_mode = 0; // 0=None, 1=Protanopia, 2=Deuteranopia, 3=Tritanopia
     public float cvd_intensity = 1.0f;
@@ -54,8 +55,7 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
     public boolean team_stencil = false;
     public boolean sound_emojis = true;
 
-    public Color.Standard[] player_colours = Arrays.copyOf(DEFAULT_PLAYER_COLOURS,
-            DEFAULT_PLAYER_COLOURS.length);
+    public Color.Standard[] player_colours = DEFAULT_PLAYER_COLOURS.toArray(Color.Standard[]::new);
 
     public transient Color.Linear[] linear_player_colours = Arrays.stream(player_colours)
             .map(Color.Linear::new)
@@ -133,7 +133,7 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
         }
         try {
             String[] hexStrings = value.split(",");
-            Color.Standard[] result = new Color.Standard[DEFAULT_PLAYER_COLOURS.length];
+            Color.Standard[] result = new Color.Standard[DEFAULT_PLAYER_COLOURS.size()];
             Arrays.setAll(result, i -> {
                 if (i < hexStrings.length) {
                     try {
@@ -143,7 +143,7 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
                         // ignore invalid color constants
                     }
                 }
-                return new Color.Standard(DEFAULT_PLAYER_COLOURS[i]);
+                return new Color.Standard(DEFAULT_PLAYER_COLOURS.get(i));
             });
             return result;
         } catch (Exception e) {
