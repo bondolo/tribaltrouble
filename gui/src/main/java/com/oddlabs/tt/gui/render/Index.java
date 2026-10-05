@@ -9,23 +9,13 @@ import com.oddlabs.util.Color;
  */
 public final class Index {
     public static final int INDEX_WIDTH = 1;
-    private static final long BLINK_INTERVAL_MS = 500L;
-
-    private static long last_reset_time = System.currentTimeMillis();
+    public static final long BLINK_INTERVAL_MS = 500L;
 
     private Index() {
     }
 
-    public static void resetBlinking() {
-        last_reset_time = System.currentTimeMillis();
-    }
-
     public static void renderIndex(GUIRenderer renderer, int render_x, int render_y, Font font,
             Color.Linear color) {
-        long elapsed = System.currentTimeMillis() - last_reset_time;
-        boolean blink_on = (elapsed / BLINK_INTERVAL_MS) % 2 == 0;
-        if (blink_on) {
-            renderer.drawColoredQuad(render_x, render_y + 3, INDEX_WIDTH, font.getHeight() - 6, color);
-        }
+        renderer.drawColoredQuad(render_x, render_y + 3, INDEX_WIDTH, font.getHeight() - 6, color);
     }
 }

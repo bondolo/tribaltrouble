@@ -2,7 +2,6 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
-import com.oddlabs.tt.gui.render.Index;
 import com.oddlabs.tt.input.ExtendedMouseButton;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
@@ -69,7 +68,7 @@ public final class InputState {
     }
 
     private void resetKeyTimer() {
-        Index.resetBlinking();
+        gui_root.resetCaretBlinking();
     }
 
     public void mouseScrolled(int dz) {
@@ -95,7 +94,7 @@ public final class InputState {
 
         int local_x = gui_hit.translateXToLocal(scaledX);
         int local_y = gui_hit.translateYToLocal(scaledY);
-        Index.resetBlinking();
+        gui_root.resetCaretBlinking();
         drag_x = scaledX;
         drag_y = scaledY;
         absolute_drag_x = drag_x;
@@ -129,7 +128,7 @@ public final class InputState {
         int scaledX = Math.round(localInput.getMouseX() / scale);
         int scaledY = Math.round(localInput.getMouseY() / scale);
 
-        Index.resetBlinking();
+        gui_root.resetCaretBlinking();
         if (button == drag_button)
             drag_obj = null;
         if (press_obj == null)

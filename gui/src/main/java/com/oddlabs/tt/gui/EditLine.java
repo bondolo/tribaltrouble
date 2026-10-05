@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 public class EditLine extends TextField implements Clipped {
     @SuppressWarnings("TimeUnitConversionChecker")
     private static final long ERROR_DURATION = TimeUnit.MILLISECONDS.toMillis(200);
-    private static @Nullable Runnable errorAudioHandler;
     private final Skin skin;
     private final Box editBox;
     private final Set<EnterListener> enter_listeners = new CopyOnWriteArraySet<>();
@@ -35,10 +34,6 @@ public class EditLine extends TextField implements Clipped {
     private int index;
 
     private long errorFlashStart = 0;
-
-    public static void setErrorAudioHandler(@Nullable Runnable handler) {
-        errorAudioHandler = handler;
-    }
 
     public EditLine(GUIRoot guiRoot, int width, int max_codepoints) {
         this(guiRoot, width, max_codepoints, Origin.AT_START);
@@ -102,9 +97,12 @@ public class EditLine extends TextField implements Clipped {
         TextLineRenderer.render(renderer, getFont(), displayText, box.getLeftOffset() + offset_x, box.getBottomOffset(),
                 box.getLeftOffset() + 1, getWidth() - box.getRightOffset() - 1, Color.Linear.WHITE);
         if (render_index != -1) {
-            int cursorX = getRenderedWidth(displayText.subSequence(0, render_index));
-            Index.renderIndex(renderer, box.getLeftOffset() + offset_x + cursorX, box.getBottomOffset(), getFont(),
-                    Color.Linear.WHITE);
+            var root = getParentGUIRoot();
+            if (root == null || root.isCaretVisible()) {
+                int cursorX = getRenderedWidth(displayText.subSequence(0, render_index));
+                Index.renderIndex(renderer, box.getLeftOffset() + offset_x + cursorX, box.getBottomOffset(), getFont(),
+                        Color.Linear.WHITE);
+            }
         }
     }
 
@@ -119,13 +117,9 @@ public class EditLine extends TextField implements Clipped {
 
     public void triggerError() {
         errorFlashStart = System.currentTimeMillis();
-        var handler = errorAudioHandler;
-        if (handler != null) {
-            try {
-                handler.run();
-            } catch (Exception _) {
-                // Ignore audio errors
-            }
+        var root = getParentGUIRoot();
+        if (root != null) {
+            root.playErrorAudio();
         }
     }
 

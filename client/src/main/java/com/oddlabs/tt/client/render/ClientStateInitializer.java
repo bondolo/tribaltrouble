@@ -1,8 +1,6 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
-import com.oddlabs.tt.client.resource.AudioRegistry;
-import com.oddlabs.tt.gui.EditLine;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.Model;
@@ -44,15 +42,5 @@ public final class ClientStateInitializer {
             case ThrowingWeapon throwingWeapon -> new ThrowingWeaponVisualModel(throwingWeapon, audio);
             default -> new DynamicVisualModel(model);
         };
-    }
-
-    /**
-     * Initializes global client handlers.
-     *
-     * @param audio the active audio implementation
-     */
-    public static void init(AudioImplementation audio) {
-        EditLine.setErrorAudioHandler(
-                () -> audio.newAudio(0f, 0f, 0f, AudioRegistry.ERROR_SOUND));
     }
 }

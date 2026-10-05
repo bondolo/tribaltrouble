@@ -38,6 +38,7 @@ public final class GUI implements Animated, AutoCloseable {
     private @Nullable UIRenderer renderer;
     private final CameraState frustum_state = new CameraState();
     private @Nullable Runnable closeHandler;
+    private @Nullable Runnable errorAudioHandler;
 
     public GUI(LocalInput localInput, Skin skin, Window window, LocalEventQueue eventQueue, Settings settings,
             Runnable shutdownHandler, @Nullable Consumer<GUI> progressUpdater, DoubleSupplier fpsSupplier) {
@@ -93,6 +94,21 @@ public final class GUI implements Animated, AutoCloseable {
 
     public void setMovieRecordingStarter(@Nullable Runnable movieRecordingStarter) {
         this.movieRecordingStarter = movieRecordingStarter;
+    }
+
+    public void setErrorAudioHandler(@Nullable Runnable handler) {
+        this.errorAudioHandler = handler;
+    }
+
+    public void playErrorAudio() {
+        var handler = errorAudioHandler;
+        if (handler != null) {
+            try {
+                handler.run();
+            } catch (Exception _) {
+                // Ignore audio errors
+            }
+        }
     }
 
     public void startMovieRecording() {

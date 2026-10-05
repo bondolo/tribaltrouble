@@ -12,6 +12,7 @@ import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.gui.delegate.InputDelegate;
 import com.oddlabs.tt.gui.delegate.ModalDelegate;
+import com.oddlabs.tt.gui.render.Index;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputManager;
@@ -105,6 +106,21 @@ public final class GUIRoot extends GUIObject {
 
     public float getTime() {
         return gui.getTime();
+    }
+
+    private long last_caret_reset_time = 0;
+
+    public void resetCaretBlinking() {
+        last_caret_reset_time = getEventQueue().getMillis();
+    }
+
+    public boolean isCaretVisible() {
+        long elapsed = getEventQueue().getMillis() - last_caret_reset_time;
+        return (elapsed / Index.BLINK_INTERVAL_MS) % 2 == 0;
+    }
+
+    public void playErrorAudio() {
+        gui.playErrorAudio();
     }
 
     public int getMouseX() {

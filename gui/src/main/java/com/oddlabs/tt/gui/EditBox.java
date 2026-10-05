@@ -31,12 +31,15 @@ public final class EditBox extends TextBox {
                         - editBox.getRightOffset(), c);
 
         if (isActive()) {
-            TextLayout layout = getTextLayout();
-            int cursorLine = layout.getCursorLine(index);
-            int cursorX = layout.getCursorX(index);
-            int cursorY = getHeight() - editBox.getBottomOffset() - getFont().getHeight() - (cursorLine * getFont()
-                    .getHeight()) + getOffsetY();
-            Index.renderIndex(renderer, editBox.getLeftOffset() + cursorX, cursorY, getFont(), c);
+            var root = getParentGUIRoot();
+            if (root == null || root.isCaretVisible()) {
+                TextLayout layout = getTextLayout();
+                int cursorLine = layout.getCursorLine(index);
+                int cursorX = layout.getCursorX(index);
+                int cursorY = getHeight() - editBox.getBottomOffset() - getFont().getHeight() - (cursorLine * getFont()
+                        .getHeight()) + getOffsetY();
+                Index.renderIndex(renderer, editBox.getLeftOffset() + cursorX, cursorY, getFont(), c);
+            }
         }
     }
 

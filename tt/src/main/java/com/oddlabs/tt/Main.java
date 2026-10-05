@@ -4,10 +4,10 @@ import com.oddlabs.tt.audio.AudioProvider;
 import com.oddlabs.tt.audio.AudioSettings;
 import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.GamePaths;
-import com.oddlabs.tt.input.InputBindingSettings;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.client.render.ClientStateInitializer;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.content.form.QuitForm;
+import com.oddlabs.tt.input.InputBindingSettings;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.ClientStartup;
@@ -96,7 +96,6 @@ public final class Main {
                 Peer engine = new Peer(gamePaths, settings, window, eventQueue, network, audioManager);
                 engine.run(
                         (clientEngine, firstProgress) -> {
-                            ClientStateInitializer.init(audioManager);
                             InputManager inputManager = new InputManager(InputBindingSettings.from(settings));
                             LocalInput localInput = new LocalInput(
                                     clientEngine.getWindow(), inputManager,
@@ -120,6 +119,7 @@ public final class Main {
                                     clientEngine::getFPS
                             );
                             gui.setMovieRecordingStarter(clientEngine::startMovieRecording);
+                            gui.setErrorAudioHandler(() -> audioManager.newAudio(0f, 0f, 0f, AudioRegistry.ERROR_SOUND));
                             gui.setCloseHandler(() -> {
                                 if (gui.getGUIRoot().isShowingModalForm(QuitForm.class)) {
                                     clientEngine.shutdown();
