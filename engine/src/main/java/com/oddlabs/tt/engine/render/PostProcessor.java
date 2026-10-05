@@ -9,7 +9,6 @@ import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL30;
 
 import java.util.function.Consumer;
@@ -39,17 +38,7 @@ public final class PostProcessor implements AutoCloseable {
         this.msaaSceneFBO = null;
 
         // Depth Copy FBO (for Soft Particles)
-        this.depthCopyFBO = new FBO(width, height);
-        this.depthCopyFBO.bind();
-        Texture depthCopy = new Texture(width, height, GL30.GL_DEPTH_COMPONENT24, GL11.GL_NEAREST,
-                GL11.GL_NEAREST,
-                GL12.GL_CLAMP_TO_EDGE);
-        this.depthCopyFBO.attachTexture(GL30.GL_DEPTH_ATTACHMENT, depthCopy);
-        // This FBO has no color attachment
-        GL11.glDrawBuffer(GL11.GL_NONE);
-        GL11.glReadBuffer(GL11.GL_NONE);
-        this.depthCopyFBO.checkStatus();
-        this.depthCopyFBO.unbind();
+        this.depthCopyFBO = FBO.createDepthOnlyFBO(width, height);
 
         // Setup Full-Screen VAO (empty VAO for procedural gl_VertexID triangle rendering)
         this.vao = new VertexArray();
@@ -82,13 +71,6 @@ public final class PostProcessor implements AutoCloseable {
         }
 
         depthCopyFBO.resize(width, height);
-        depthCopyFBO.bind();
-        // Since resize() in FBO.java doesn't handle custom depth-only FBOs cleanly yet,
-        // we'll manually ensure it's still color-less.
-        GL11.glDrawBuffer(GL11.GL_NONE);
-        GL11.glReadBuffer(GL11.GL_NONE);
-        depthCopyFBO.unbind();
-
         return true;
     }
 

@@ -113,6 +113,30 @@ public final class FBO extends NativeResource<FBO.Buffer> {
         return fbo;
     }
 
+    /**
+     * Creates an FBO configured with a 24-bit depth texture attachment and no color attachments.
+     *
+     * @param width the width in pixels
+     * @param height the height in pixels
+     * @return the configured depth-only FBO
+     */
+    public static FBO createDepthOnlyFBO(int width, int height) {
+        FBO fbo = new FBO(width, height);
+        fbo.bind();
+
+        Texture depth = new Texture(width, height, GL30.GL_DEPTH_COMPONENT24, GL11.GL_NEAREST, GL11.GL_NEAREST,
+                GL12.GL_CLAMP_TO_EDGE);
+        fbo.attachTexture(GL30.GL_DEPTH_ATTACHMENT, depth);
+        fbo.depthTexture = depth;
+
+        RenderContext.current().setDrawBuffers(new int[]{GL11.GL_NONE});
+        GL11.glReadBuffer(GL11.GL_NONE);
+
+        fbo.checkStatus();
+        fbo.unbind();
+        return fbo;
+    }
+
     public void resize(int width, int height) {
         if (this.width == width && this.height == height) return;
         this.width = width;
