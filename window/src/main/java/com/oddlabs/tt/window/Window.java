@@ -24,7 +24,24 @@ public interface Window extends AutoCloseable {
 
     void update();
 
+    /**
+     * Polls for pending window events without blocking.
+     */
     void pollEvents();
+
+    /**
+     * Waits for window events, blocking indefinitely until at least one event is available.
+     */
+    default void waitEvents() {
+        waitEvents(0);
+    }
+
+    /**
+     * Waits for window events, blocking until an event is available or the specified timeout expires.
+     *
+     * @param timeoutMs maximum time to wait in milliseconds, or 0 to wait indefinitely
+     */
+    void waitEvents(int timeoutMs);
 
     boolean isOpen();
 

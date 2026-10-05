@@ -389,7 +389,7 @@ public final class Peer implements AutoCloseable {
             if (isActive) {
                 window.pollEvents();
             } else {
-                ((LWJGL3Window) window).pollEvents(100);
+                window.waitEvents(100);
             }
             long t1 = System.nanoTime();
             totalPollEventsTime += (t1 - t0);

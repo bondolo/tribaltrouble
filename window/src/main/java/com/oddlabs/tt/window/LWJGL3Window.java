@@ -476,7 +476,9 @@ public final class LWJGL3Window implements Window {
     @Override
     public void update() {
         if (windowHandle != MemoryUtil.NULL && glContext != MemoryUtil.NULL) {
-            SDL_GL_SwapWindow(windowHandle);
+            if (!SDL_GL_SwapWindow(windowHandle)) {
+                logger.warning(() -> "SDL_GL_SwapWindow failed: " + SDL_GetError());
+            }
         }
     }
 
@@ -511,10 +513,18 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public void pollEvents() {
-        pollEvents(0);
+        processEvents(false, 0);
     }
 
-    public void pollEvents(int timeoutMs) {
+    @Override
+    public void waitEvents(int timeoutMs) {
+        if (timeoutMs < 0) {
+            throw new IllegalArgumentException("timeoutMs cannot be negative: " + timeoutMs);
+        }
+        processEvents(true, timeoutMs);
+    }
+
+    private void processEvents(boolean wait, int timeoutMs) {
         if (windowHandle == MemoryUtil.NULL) {
             return;
         }
@@ -523,8 +533,9 @@ public final class LWJGL3Window implements Window {
             SDL_Event event = SDL_Event.malloc(stack);
 
             boolean hasEvents = false;
-            if (timeoutMs > 0) {
-                if (SDL_WaitEventTimeout(event, timeoutMs)) {
+            if (wait) {
+                int sdlTimeout = timeoutMs == 0 ? -1 : timeoutMs;
+                if (SDL_WaitEventTimeout(event, sdlTimeout)) {
                     hasEvents = true;
                 }
             }
