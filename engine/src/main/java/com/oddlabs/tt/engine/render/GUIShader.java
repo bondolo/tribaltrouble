@@ -95,9 +95,9 @@ final class GUIShader extends ShaderProgram {
                         // Write a special marker to the mask alpha channel to indicate "GUI Pixel".
                         // Team objects write alpha=1.0. Clear color is alpha=0.0.
                         // We use alpha=0.5 to identify GUI pixels in the post-process shader.
-                        // This allows us to exclude GUI pixels from the team outline effect
-                        // while still applying CVD correction.
-                        out_MaskColor = vec4(0.0, 0.0, 0.0, 0.5);
+                        // Only truly opaque GUI pixels write the marker; translucent fragments
+                        // output vec4(0.0) so they do not overwrite or attenuate the 3D unit mask.
+                        out_MaskColor = color.a > 0.9 ? vec4(0.0, 0.0, 0.0, 0.5) : vec4(0.0);
                     }
                     """;
 

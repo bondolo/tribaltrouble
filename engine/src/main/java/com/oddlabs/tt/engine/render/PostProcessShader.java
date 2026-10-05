@@ -157,16 +157,16 @@ final class PostProcessShader extends ShaderProgram {
 
                         vec3 finalColor = sceneColor.rgb;
 
-                        // Apply Accessibility Filters
-                        float maskAlpha = u_teamStencil ? mask.a : 0.0;
-                        finalColor = applyContrastFilter(finalColor, maskAlpha);
+                        // GUI pixels use alpha=0.5 in the mask buffer.
+                        bool isGui = abs(mask.a - 0.5) < 0.1;
 
-                        // Team Stencil Overlay (Linear Space)
-                        if (u_teamStencil) {
-                            // GUI pixels use alpha=0.5 in the mask buffer.
-                            bool isGui = abs(mask.a - 0.5) < 0.1;
+                        if (!isGui) {
+                            // Apply Accessibility Filters (only to 3D scene, not GUI)
+                            float maskAlpha = u_teamStencil ? mask.a : 0.0;
+                            finalColor = applyContrastFilter(finalColor, maskAlpha);
 
-                            if (!isGui) {
+                            // Team Stencil Overlay (Linear Space)
+                            if (u_teamStencil) {
                                 // Team objects write alpha=1.0. Clear colour is alpha=0.0.
                                 if (mask.a > 0.9 && dot(mask.rgb, vec3(1.0)) > 0.01) {
                                     finalColor = mix(finalColor, mask.rgb, 0.2);
