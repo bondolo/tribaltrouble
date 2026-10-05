@@ -1,6 +1,7 @@
 package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
+import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 
 /**
  * Renders full-screen post-processing effects for Color Vision Deficiency (CVD) correction and High Contrast Mode.
@@ -233,14 +234,24 @@ final class PostProcessShader extends ShaderProgram {
 
     private final int locSceneTexture;
     private final int locMaskTexture;
-    final int locCvdMode;
-    final int locCvdIntensity;
-    final int locHighContrast;
-    final int locContrastIntensity;
-    final int locInvertColors;
-    final int locContrastBrightness;
-    final int locContrastClarity;
-    final int locTeamStencil;
+    private final int locCvdMode;
+    private final int locCvdIntensity;
+    private final int locHighContrast;
+    private final int locContrastIntensity;
+    private final int locInvertColors;
+    private final int locContrastBrightness;
+    private final int locContrastClarity;
+    private final int locTeamStencil;
+
+    private int lastCvdMode = -1;
+    private float lastCvdIntensity = -1.0f;
+    private boolean lastHighContrast = false;
+    private float lastContrastIntensity = -1.0f;
+    private boolean lastInvertColors = false;
+    private float lastContrastBrightness = -1.0f;
+    private float lastContrastClarity = -1.0f;
+    private boolean lastTeamStencil = false;
+    private boolean initialized = false;
 
     PostProcessShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
@@ -262,8 +273,39 @@ final class PostProcessShader extends ShaderProgram {
         }
     }
 
-    void setAccessibilityModes(int cvdMode, boolean highContrast) {
-        setUniform(locCvdMode, cvdMode);
-        setUniform(locHighContrast, highContrast);
+    void updateAccessibility(AccessibilitySettings settings) {
+        if (!initialized || lastCvdMode != settings.cvd_mode) {
+            setUniform(locCvdMode, settings.cvd_mode);
+            lastCvdMode = settings.cvd_mode;
+        }
+        if (!initialized || lastCvdIntensity != settings.cvd_intensity) {
+            setUniform(locCvdIntensity, settings.cvd_intensity);
+            lastCvdIntensity = settings.cvd_intensity;
+        }
+        if (!initialized || lastHighContrast != settings.high_contrast) {
+            setUniform(locHighContrast, settings.high_contrast);
+            lastHighContrast = settings.high_contrast;
+        }
+        if (!initialized || lastContrastIntensity != settings.contrast_intensity) {
+            setUniform(locContrastIntensity, settings.contrast_intensity);
+            lastContrastIntensity = settings.contrast_intensity;
+        }
+        if (!initialized || lastInvertColors != settings.invert_colours) {
+            setUniform(locInvertColors, settings.invert_colours);
+            lastInvertColors = settings.invert_colours;
+        }
+        if (!initialized || lastContrastBrightness != settings.contrast_brightness) {
+            setUniform(locContrastBrightness, settings.contrast_brightness);
+            lastContrastBrightness = settings.contrast_brightness;
+        }
+        if (!initialized || lastContrastClarity != settings.contrast_clarity) {
+            setUniform(locContrastClarity, settings.contrast_clarity);
+            lastContrastClarity = settings.contrast_clarity;
+        }
+        if (!initialized || lastTeamStencil != settings.team_stencil) {
+            setUniform(locTeamStencil, settings.team_stencil);
+            lastTeamStencil = settings.team_stencil;
+        }
+        initialized = true;
     }
 }
