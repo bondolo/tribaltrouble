@@ -11,7 +11,6 @@ import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
 
 import java.nio.ByteBuffer;
@@ -45,6 +44,7 @@ public final class GUIRenderer implements AutoCloseable {
     // Texture batching state
     private final @Nullable Texture[] currentTextures = new Texture[MAX_TEXTURES];
     private int textureCount = 0;
+    private int lastBoundTextureCount = 0;
     private int quadCount = 0;
 
     // Modulation stack
@@ -55,6 +55,8 @@ public final class GUIRenderer implements AutoCloseable {
     private final Deque<ScissorRect> scissorStack = new ArrayDeque<>();
     private float scaleX = 1.0f;
     private float scaleY = 1.0f;
+    private float lastWidth = -1.0f;
+    private float lastHeight = -1.0f;
 
     private @Nullable RenderContext currentContext;
 
@@ -127,8 +129,12 @@ public final class GUIRenderer implements AutoCloseable {
         try (var _ = shader.use(); var _ = context.withDepthMode(DepthMode.NONE); var _ = context.withCullMode(
                 CullMode.NONE)) {
 
-            projectionMatrix.identity().ortho(0, width, 0, height, -1, 1);
-            shader.setProjectionMatrix(projectionMatrix);
+            if (width != lastWidth || height != lastHeight) {
+                projectionMatrix.identity().ortho(0, width, 0, height, -1, 1);
+                shader.setProjectionMatrix(projectionMatrix);
+                lastWidth = width;
+                lastHeight = height;
+            }
 
             matrixStack.clear();
             modulationStack.clear();
@@ -144,7 +150,11 @@ public final class GUIRenderer implements AutoCloseable {
         } finally {
             if (this.currentContext != null) {
                 this.currentContext.setScissorTest(false);
+                for (int i = 0; i < lastBoundTextureCount; i++) {
+                    this.currentContext.setTexture(i, null);
+                }
             }
+            lastBoundTextureCount = 0;
             scissorStack.clear();
             this.currentContext = null;
         }
@@ -278,25 +288,17 @@ public final class GUIRenderer implements AutoCloseable {
 
     public void flush() {
         if (quadCount == 0) return;
+        RenderContext context = currentContext;
+        if (context == null) return;
 
         // Bind all active textures and unbind unused units in the sampler array to avoid conflicts
         for (int i = 0; i < textureCount; i++) {
-            if (currentContext != null) {
-                currentContext.setTexture(i, currentTextures[i]);
-            } else {
-                // Fallback if context missing (shouldn't happen in normal flow)
-                GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, currentTextures[i].getHandle());
-            }
+            context.setTexture(i, currentTextures[i]);
         }
-        for (int i = textureCount; i < MAX_TEXTURES; i++) {
-            if (currentContext != null) {
-                currentContext.setTexture(i, null);
-            } else {
-                GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
-            }
+        for (int i = textureCount; i < lastBoundTextureCount; i++) {
+            context.setTexture(i, null);
         }
+        lastBoundTextureCount = textureCount;
 
         vertexBuffer.flip();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
