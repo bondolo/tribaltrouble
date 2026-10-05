@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
+/** Formatted date-time label that renders a timestamp and compares chronologically. */
 public final class DateLabel extends Label {
     private final long when;
 

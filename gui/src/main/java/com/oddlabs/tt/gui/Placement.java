@@ -1,5 +1,6 @@
 package com.oddlabs.tt.gui;
 
+/** Relative alignment and side placement positions for neighboring GUI objects. */
 public enum Placement {
     TOP_LEFT,
     TOP_MID,

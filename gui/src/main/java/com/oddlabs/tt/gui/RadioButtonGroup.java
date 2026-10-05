@@ -5,6 +5,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Coordinator managing mutually exclusive selection across grouped radio buttons. */
 public final class RadioButtonGroup {
     private final List<RadioButtonGroupElement> buttons = new ArrayList<>();
 
@@ -20,7 +21,6 @@ public final class RadioButtonGroup {
 
     public void add(RadioButtonGroupElement button) {
         buttons.add(button);
-//		button.setMarked(false);
     }
 
     public @Nullable RadioButtonGroupElement getMarked() {

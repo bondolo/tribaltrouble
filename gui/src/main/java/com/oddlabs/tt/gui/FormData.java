@@ -3,6 +3,7 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 
+/** Configuration metrics, geometry boxes, and caption font for dialog forms. */
 public record FormData(Box form,
                        Box slimForm,
                        ModeIconQuads formClose,

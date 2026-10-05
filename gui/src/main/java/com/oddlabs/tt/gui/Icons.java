@@ -19,6 +19,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.NoSuchElementException;
 
 /**
  * Utilities for loading icon atlases.
@@ -59,7 +60,7 @@ public final class Icons {
                 return nl.item(i);
         }
         assert false : "Missing node: " + name;
-        return null;
+        throw new NoSuchElementException("Missing node: " + name);
     }
 
     static int getInt(Node n, String key) {

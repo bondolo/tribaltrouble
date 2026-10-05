@@ -3,6 +3,7 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
+/** Composite label displaying an icon alongside a text label. */
 public final class IconLabel extends GUIObject implements Comparable<IconLabel> {
     private final IconQuad icon;
     private final Label label;

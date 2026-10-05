@@ -3,6 +3,7 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 
+/** Three-patch vertical strip definition for borders and scrollbars. */
 public final class Vertical {
     private final ModeIconQuads bottom;
     private final ModeIconQuads center;

@@ -2,6 +2,7 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.font.Font;
 
+/** Text label ordered by an explicit index rather than text content. */
 public final class SortedLabel extends Label {
     private final int index;
 

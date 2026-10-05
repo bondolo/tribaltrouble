@@ -3,6 +3,7 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
+/** Three-patch horizontal strip definition for buttons, sliders, and progress bars. */
 public final class Horizontal {
     private final ModeIconQuads left;
     private final ModeIconQuads center;

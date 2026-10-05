@@ -2,6 +2,7 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.font.Font;
 
+/** Numeric label that renders an integer and compares numerically. */
 public final class IntegerLabel extends Label {
     private final int val;
 

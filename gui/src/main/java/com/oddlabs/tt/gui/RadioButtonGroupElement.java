@@ -1,6 +1,7 @@
 package com.oddlabs.tt.gui;
 
 
+/** Base class for selectable GUI elements belonging to a mutually exclusive group. */
 public abstract class RadioButtonGroupElement extends GUIObject {
     private boolean marked = false;
 

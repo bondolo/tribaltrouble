@@ -2,6 +2,7 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.gui.event.MouseClickListener;
 
+/** Mouse click listener that dismisses an associated dialog form. */
 public final class OKListener implements MouseClickListener {
     private final Form form;
 

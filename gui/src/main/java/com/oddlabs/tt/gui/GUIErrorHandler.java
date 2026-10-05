@@ -6,6 +6,7 @@ import org.xml.sax.SAXParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/** SAX parse error handler for XML GUI skin and layout parsing. */
 public final class GUIErrorHandler implements ErrorHandler {
     private static final Logger logger = Logger.getLogger("SAXParseError");
 
