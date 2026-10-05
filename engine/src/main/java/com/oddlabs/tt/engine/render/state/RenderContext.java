@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Manages low-level OpenGL rendering state and hardware pipeline bindings.
  */
-public interface RenderContext {
+public interface RenderContext extends AutoCloseable {
     ScopedValue<RenderContext> CURRENT = ScopedValue.newInstance();
 
     static RenderContext current() {
@@ -167,4 +167,11 @@ public interface RenderContext {
      * @throws IllegalStateException if a mismatch is found.
      */
     void validate();
+
+    /**
+     * Releases any graphics resources held by this render context.
+     */
+    @Override
+    default void close() {
+    }
 }

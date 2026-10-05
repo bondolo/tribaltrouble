@@ -87,7 +87,7 @@ final class GLRenderContext implements RenderContext {
         if (globalUbo == 0) {
             this.globalUbo = GL15.glGenBuffers();
             GL15.glBindBuffer(GL31.GL_UNIFORM_BUFFER, globalUbo);
-            GL15.glBufferData(GL31.GL_UNIFORM_BUFFER, 1024, GL15.GL_DYNAMIC_DRAW); // Pre-allocate 1KB
+            GL15.glBufferData(GL31.GL_UNIFORM_BUFFER, GlobalUniforms.UBO_SIZE, GL15.GL_DYNAMIC_DRAW);
             GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, GLOBAL_UBO_BINDING, globalUbo);
             GL15.glBindBuffer(GL31.GL_UNIFORM_BUFFER, 0);
         }
@@ -231,6 +231,34 @@ final class GLRenderContext implements RenderContext {
                 if (drawBuffer0 != GL30.GL_COLOR_ATTACHMENT0) {
                     logger.severe("Draw Buffer 0 Mismatch: Expected ATTACHMENT0, GL=" + drawBuffer0);
                 }
+            }
+        }
+
+        if (blendEnabled != GLState.UNKNOWN) {
+            boolean glBlend = GL11.glIsEnabled(GL11.GL_BLEND);
+            if (glBlend != blendEnabled.isTrue()) {
+                logger.severe("Blend Enable Mismatch: Tracked=" + blendEnabled.isTrue() + ", GL=" + glBlend);
+            }
+        }
+
+        if (depthTestEnabled != GLState.UNKNOWN) {
+            boolean glDepthTest = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
+            if (glDepthTest != depthTestEnabled.isTrue()) {
+                logger.severe("Depth Test Enable Mismatch: Tracked=" + depthTestEnabled.isTrue() + ", GL=" + glDepthTest);
+            }
+        }
+
+        if (depthMaskEnabled != GLState.UNKNOWN) {
+            boolean glDepthMask = GL11.glGetBoolean(GL11.GL_DEPTH_WRITEMASK);
+            if (glDepthMask != depthMaskEnabled.isTrue()) {
+                logger.severe("Depth Mask Mismatch: Tracked=" + depthMaskEnabled.isTrue() + ", GL=" + glDepthMask);
+            }
+        }
+
+        if (cullFaceEnabled != GLState.UNKNOWN) {
+            boolean glCullFace = GL11.glIsEnabled(GL11.GL_CULL_FACE);
+            if (glCullFace != cullFaceEnabled.isTrue()) {
+                logger.severe("Cull Face Enable Mismatch: Tracked=" + cullFaceEnabled.isTrue() + ", GL=" + glCullFace);
             }
         }
 
@@ -787,5 +815,13 @@ final class GLRenderContext implements RenderContext {
                 setFramebufferSrgb(true); // Safe linear default for the project
             }
         };
+    }
+
+    @Override
+    public void close() {
+        if (globalUbo != 0) {
+            GL15.glDeleteBuffers(globalUbo);
+            globalUbo = 0;
+        }
     }
 }

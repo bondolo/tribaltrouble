@@ -5,12 +5,25 @@ import com.oddlabs.tt.engine.render.shader.FogShader;
 import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
 import org.jspecify.annotations.Nullable;
 
+import org.lwjgl.BufferUtils;
+
 import java.nio.ByteBuffer;
 
 /**
  * Packs global uniform data into a ByteBuffer according to std140 layout.
  */
 public final class GlobalUniforms {
+    public static final int UBO_SIZE = 368;
+
+    private final ByteBuffer buffer = BufferUtils.createByteBuffer(UBO_SIZE);
+
+    public void update(RenderContext context, CameraState camera, float time, float seaLevel,
+            @Nullable WaterUniformsProvider water) {
+        update(camera, time, seaLevel, water, buffer);
+        buffer.flip();
+        context.updateGlobalState(buffer);
+    }
+
     public void update(CameraState camera, float time, float seaLevel, @Nullable WaterUniformsProvider water,
             ByteBuffer buffer) {
         buffer.clear();

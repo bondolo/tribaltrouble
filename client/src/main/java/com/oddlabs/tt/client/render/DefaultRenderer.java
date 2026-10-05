@@ -46,14 +46,11 @@ import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.system.MemoryStack;
 
-import java.nio.ByteBuffer;
 import java.util.function.Consumer;
 
 /**
- * The primary world renderer responsible for coordinating the rendering
- * of the landscape, units, buildings, and transient effects.
+ * Primary world renderer coordinating the rendering of landscape, units, buildings, and transient effects.
  */
 public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     private final Picker picker;
@@ -230,7 +227,6 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     @Override
     public void startFrame(RenderContext context) {
         postProcessor.bindSceneFBO();
-        context.clear(true, true);
     }
 
     @Override
@@ -255,14 +251,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         context.setViewport(0, 0, frustum_state.getWidth(), frustum_state.getHeight());
 
         float currentTime = gui_root.getTime();
-        // Update Global UBO
-        try (var stack = MemoryStack.stackPush()) {
-            ByteBuffer buf = stack.malloc(512);
-            globalUniforms.update(frustum_state, currentTime,
-                    world.getHeightMap().getSeaLevelMeters(), water, buf);
-            buf.flip();
-            context.updateGlobalState(buf);
-        }
+        globalUniforms.update(context, frustum_state, currentTime,
+                world.getHeightMap().getSeaLevelMeters(), water);
 
         ambient.updateSoundListener(frustum_state, world.getHeightMap());
         modelViewStack.current().set(frustum_state.getModelView());

@@ -92,6 +92,7 @@ public final class Renderer implements AutoCloseable {
 
     public void cleanup() {
         logger.info("Cleaning up Renderer...");
+        renderContext.close();
         destroyNative();
         logger.fine("Native resources still registered: " + NativeResource.getCount());
         logger.info("Renderer cleanup complete.");
