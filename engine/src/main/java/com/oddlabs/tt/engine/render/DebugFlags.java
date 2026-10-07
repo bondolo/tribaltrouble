@@ -9,6 +9,7 @@ public final class DebugFlags {
     private static final Logger logger = Logger.getLogger(DebugFlags.class.getName());
 
     public static boolean draw_status = false;
+    public static boolean frame_timing = Boolean.getBoolean("com.oddlabs.tt.frametiming");
     public static boolean draw_landscape = true;
     public static boolean draw_trees = true;
     public static boolean draw_misc = true;

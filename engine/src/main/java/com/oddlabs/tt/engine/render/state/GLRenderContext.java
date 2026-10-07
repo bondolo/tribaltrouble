@@ -1,5 +1,6 @@
 package com.oddlabs.tt.engine.render.state;
 
+import com.oddlabs.tt.engine.render.GpuTimer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import org.jspecify.annotations.Nullable;
@@ -74,6 +75,7 @@ final class GLRenderContext implements RenderContext {
     }
 
     private final Map<Integer, FboCacheEntry> fboCache = new HashMap<>();
+    private final GpuTimer gpuTimer = new GpuTimer();
 
     GLRenderContext() {
         Arrays.fill(boundTextures, -1);
@@ -818,7 +820,13 @@ final class GLRenderContext implements RenderContext {
     }
 
     @Override
+    public GpuTimer gpuTimer() {
+        return gpuTimer;
+    }
+
+    @Override
     public void close() {
+        gpuTimer.close();
         if (globalUbo != 0) {
             GL15.glDeleteBuffers(globalUbo);
             globalUbo = 0;

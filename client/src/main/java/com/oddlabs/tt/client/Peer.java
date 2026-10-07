@@ -12,6 +12,7 @@ import com.oddlabs.tt.window.WindowSettings;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.engine.render.FramePacer;
+import com.oddlabs.tt.engine.render.FrameTimeRecorder;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.engine.util.GLUtils;
@@ -42,14 +43,11 @@ import java.util.logging.SimpleFormatter;
  */
 public final class Peer implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(Peer.class.getSimpleName());
-    private static final boolean DEBUG = Boolean.getBoolean("com.oddlabs.tt.developer");
     private static final boolean PROFILE = Boolean.getBoolean("com.oddlabs.tt.profile");
 
     /** This is expected to be initialized before Locale.setDefault is ever called */
     private static final Locale default_locale = Locale.of(Locale.getDefault().getLanguage(), Locale.getDefault()
             .getCountry(), "default");
-
-    private static final int INSTRUMENTATION_FRAME_COUNT = Integer.MAX_VALUE;
 
     private volatile boolean finished = false;
     private static boolean grab_frames = false;
@@ -66,14 +64,7 @@ public final class Peer implements AutoCloseable {
 
     private boolean movie_recording_started = false;
 
-    private int instrumentationFrameCounter;
-    private long totalPollEventsTime;
-    private long totalRunGameLoopTime;
-    private long totalAudioUpdateTime;
-    private long totalWindowUpdateTime;
-    private long totalDisplayTime;
-    private long totalGLFinishTime;
-    private long totalLoopTime;
+    private final FrameTimeRecorder frameTimeRecorder;
 
     public Peer(
             GamePaths gamePaths,
@@ -91,6 +82,7 @@ public final class Peer implements AutoCloseable {
         this.audioManager = audioManager;
         window.setSettings(WindowSettings.from(settings));
         this.renderer = new Renderer(window, settings);
+        this.frameTimeRecorder = new FrameTimeRecorder(gamePaths.logDir(), renderer.getGpuTimer());
     }
 
     public void shutdown() {
@@ -382,17 +374,15 @@ public final class Peer implements AutoCloseable {
         boolean first_frame = true;
         boolean wasActive = window.isActive();
         while (!finished) {
-            long frameStart = System.nanoTime();
+            frameTimeRecorder.begin();
 
             boolean isActive = window.isActive();
-            long t0 = System.nanoTime();
             if (isActive) {
                 window.pollEvents();
             } else {
                 window.waitEvents(100);
             }
-            long t1 = System.nanoTime();
-            totalPollEventsTime += (t1 - t0);
+            frameTimeRecorder.mark(FrameTimeRecorder.Phase.POLL_EVENTS);
 
             if (isActive && !wasActive) {
                 logger.info("[ClientEngine] Focus Gained (isActive=true, wasActive=" + wasActive + ")");
@@ -411,35 +401,26 @@ public final class Peer implements AutoCloseable {
             }
             wasActive = isActive;
 
-            long t2 = System.nanoTime();
             runGameLoop(gui);
-            long t3 = System.nanoTime();
-            totalRunGameLoopTime += (t3 - t2);
+            frameTimeRecorder.mark(FrameTimeRecorder.Phase.SIMULATION);
 
-            long t4 = System.nanoTime();
             audioManager.update(AnimationManager.ANIMATION_SECONDS_PER_TICK);
-            long t5 = System.nanoTime();
-            totalAudioUpdateTime += (t5 - t4);
+            frameTimeRecorder.mark(FrameTimeRecorder.Phase.AUDIO);
 
             audioManager.setMasterGain(isActive ? 1f : 0f);
-            long t6 = System.nanoTime();
             renderer.display(gui::render);
-            long t7 = System.nanoTime();
-            totalDisplayTime += (t7 - t6);
+            frameTimeRecorder.mark(FrameTimeRecorder.Phase.DISPLAY);
 
-            long t8 = System.nanoTime();
             if (window.isVisible()) {
                 window.update();
             }
-            long t9 = System.nanoTime();
-            totalWindowUpdateTime += (t9 - t8);
+            frameTimeRecorder.mark(FrameTimeRecorder.Phase.SWAP);
 
             if (PROFILE) {
-                long tf0 = System.nanoTime();
                 GL11.glFinish();
-                long tf1 = System.nanoTime();
-                totalGLFinishTime += (tf1 - tf0);
             }
+            frameTimeRecorder.mark(FrameTimeRecorder.Phase.GL_FINISH);
+            frameTimeRecorder.end();
 
             if (first_frame) {
                 Duration startup_time = Duration.between(startTime, Instant.now());
@@ -458,38 +439,6 @@ public final class Peer implements AutoCloseable {
             }
             if (grab_frames && movie_recording_started) {
                 GLUtils.takeScreenshot("");
-            }
-
-            long frameEnd = System.nanoTime();
-            totalLoopTime += (frameEnd - frameStart);
-
-            instrumentationFrameCounter++;
-            if (DEBUG && (finished || instrumentationFrameCounter >= INSTRUMENTATION_FRAME_COUNT)) {
-                logger.info(String.format(Locale.ROOT,
-                        "[Instrumentation] Averages over %d frames: "
-                                + "Total frame: %.2f ms | "
-                                + "pollEvents: %.2f ms | "
-                                + "runGameLoop: %.2f ms | "
-                                + "audioUpdate: %.2f ms | "
-                                + "windowUpdate: %.2f ms | "
-                                + "display: %.2f ms | "
-                                + "glFinish: %.2f ms",
-                        instrumentationFrameCounter,
-                        (totalLoopTime / (float) instrumentationFrameCounter) / 1_000_000f,
-                        (totalPollEventsTime / (float) instrumentationFrameCounter) / 1_000_000f,
-                        (totalRunGameLoopTime / (float) instrumentationFrameCounter) / 1_000_000f,
-                        (totalAudioUpdateTime / (float) instrumentationFrameCounter) / 1_000_000f,
-                        (totalWindowUpdateTime / (float) instrumentationFrameCounter) / 1_000_000f,
-                        (totalDisplayTime / (float) instrumentationFrameCounter) / 1_000_000f,
-                        (totalGLFinishTime / (float) instrumentationFrameCounter) / 1_000_000f));
-                instrumentationFrameCounter = 0;
-                totalPollEventsTime = 0;
-                totalRunGameLoopTime = 0;
-                totalAudioUpdateTime = 0;
-                totalWindowUpdateTime = 0;
-                totalDisplayTime = 0;
-                totalGLFinishTime = 0;
-                totalLoopTime = 0;
             }
         }
 
@@ -549,6 +498,7 @@ public final class Peer implements AutoCloseable {
 
     public void cleanup() {
         logger.info("Cleaning up engine...");
+        frameTimeRecorder.close();
         renderer.cleanup();
         logger.info("Engine cleanup complete. Exiting");
     }

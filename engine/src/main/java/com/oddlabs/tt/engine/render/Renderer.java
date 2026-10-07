@@ -44,6 +44,10 @@ public final class Renderer implements AutoCloseable {
         return fps.getAveragePerUpdate();
     }
 
+    public GpuTimer getGpuTimer() {
+        return renderContext.gpuTimer();
+    }
+
     @Override
     public void close() {
         cleanup();

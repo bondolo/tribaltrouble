@@ -408,6 +408,10 @@ public final class GUIRoot extends GUIObject {
             DebugFlags.draw_status = !DebugFlags.draw_status;
             consumed = true;
         }
+        if (event.consumeAction(GameAction.GLOBAL_TOGGLE_FRAME_TIMING)) {
+            DebugFlags.frame_timing = !DebugFlags.frame_timing;
+            consumed = true;
+        }
 
         if (event.consumeAction(GameAction.GLOBAL_TOGGLE_FULLSCREEN)) {
             gui.toggleFullscreen();

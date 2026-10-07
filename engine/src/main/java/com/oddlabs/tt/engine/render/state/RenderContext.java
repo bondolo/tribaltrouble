@@ -1,5 +1,6 @@
 package com.oddlabs.tt.engine.render.state;
 
+import com.oddlabs.tt.engine.render.GpuTimer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.vbo.VBO;
 import org.jspecify.annotations.Nullable;
@@ -20,6 +21,8 @@ public interface RenderContext extends AutoCloseable {
     static RenderContext create() {
         return new GLRenderContext();
     }
+
+    GpuTimer gpuTimer();
 
     // State Management
     void setBlendMode(BlendMode mode);

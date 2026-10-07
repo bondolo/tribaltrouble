@@ -144,47 +144,41 @@ final class DecalShader extends ShaderProgram implements FogShader {
                         if ((fs_in.Flags & 1) != 0) { // Radial flag
                             // Ring: sample at unshifted position so it stays centred on the unit.
                             float dist = length(fs_in.TexCoord) * 2.5;
-                            float time = u_globalTime;
-                            float angle = atan(fs_in.TexCoord.y, fs_in.TexCoord.x);
-
-                            // LUT specialized channel mapping:
-                            // Red   = Ring Alpha
-                            // Green = Shadow Alpha
 
                             // Shadow: sampled at a position offset opposite the light direction
                             // so the blob falls behind the unit while the ring stays centred.
                             float shadowDist = length(fs_in.TexCoord - fs_in.ShadowOffset) * 2.5;
                             float shadowAlpha = sampleDecal(vec2(shadowDist * 2.0, 0.5)).g;
-
                             vec4 baseSample = sampleDecal(vec2(dist * 2.0, 0.5));
 
                             float ringAlpha = 0.0;
 
                             if (fs_in.Pattern > 0.5) { // Any active pattern (Selection/Target)
+                                float angle = atan(fs_in.TexCoord.y, fs_in.TexCoord.x);
                                 if (fs_in.Pattern < 1.5) { // Pattern 1: Friendly (Throb)
-                                    float offset = 0.03 * sin(time * 4.0);
+                                    float offset = 0.03 * sin(u_globalTime * 4.0);
                                     ringAlpha = sampleDecal(vec2((dist - offset) * 2.0, 0.5)).r;
                                 }
                                 else if (fs_in.Pattern < 2.5) { // Pattern 2: Neutral/Ally (Marching Ants)
-                                    float ants = step(0.5, fract(angle * 10.0 / 6.28318 + time * 2.0));
+                                    float ants = step(0.5, fract(angle * 10.0 / 6.28318 + u_globalTime * 2.0));
                                     ringAlpha = baseSample.r * (0.4 + 0.6 * ants);
                                 }
                                 else if (fs_in.Pattern < 3.5) { // Pattern 3: Enemy (Aggressive Double Ring)
-                                    float o1 = 0.03 * sin(time * 12.0);
+                                    float o1 = 0.03 * sin(u_globalTime * 12.0);
                                     float r1 = sampleDecal(vec2((dist - o1) * 2.0, 0.5)).r;
                                     float r2 = sampleDecal(vec2((dist + 0.12) * 2.0, 0.5)).r;
                                     ringAlpha = max(r1, r2);
                                 }
                                 else if (fs_in.Pattern < 4.5) { // Pattern 4: Friendly Building (Minimal Throb)
-                                    float offset = 0.01 * sin(time * 2.0);
+                                    float offset = 0.01 * sin(u_globalTime * 2.0);
                                     ringAlpha = sampleDecal(vec2((dist - offset) * 2.0, 0.5)).r;
                                 }
                                 else if (fs_in.Pattern < 5.5) { // Pattern 5: Neutral Building (Static Ring + Marching Ants)
-                                    float ants = step(0.5, fract(angle * 15.0 / 6.28318 + time * 1.0));
+                                    float ants = step(0.5, fract(angle * 15.0 / 6.28318 + u_globalTime * 1.0));
                                     ringAlpha = baseSample.r * (0.4 + 0.6 * ants);
                                 }
                                 else { // Pattern 6: Enemy Building (Double Ring + Minimal Throb)
-                                    float o1 = 0.01 * sin(time * 2.0);
+                                    float o1 = 0.01 * sin(u_globalTime * 2.0);
                                     float r1 = sampleDecal(vec2((dist - o1) * 2.0, 0.5)).r;
                                     float r2 = sampleDecal(vec2((dist + 0.12) * 2.0, 0.5)).r;
                                     ringAlpha = max(r1, r2);

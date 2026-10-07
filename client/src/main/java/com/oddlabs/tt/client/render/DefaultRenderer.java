@@ -14,6 +14,7 @@ import com.oddlabs.tt.engine.render.InstancedSpriteRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.PostProcessor;
 import com.oddlabs.tt.engine.render.DebugFlags;
+import com.oddlabs.tt.engine.render.GpuPass;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.SpriteRenderer;
@@ -231,11 +232,15 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
     @Override
     public void endFrame(RenderContext context, Consumer<RenderContext> guiRenderCallback) {
+        var gpu = context.gpuTimer();
+        gpu.begin(GpuPass.COMPOSITE);
         postProcessor.renderComposite(context, guiRenderCallback);
+        gpu.end();
     }
 
     @Override
     public void render(RenderContext context, CameraState frustum_state, GUIRoot gui_root) {
+        var gpu = context.gpuTimer();
         treeSpriteRenderer.clear();
         render_queues.getInstancedRenderer().clear();
 
@@ -266,14 +271,17 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         context.setDrawBuffers(false);
 
         if (DebugFlags.draw_sky) {
+            gpu.begin(GpuPass.SKY);
             sky.render(context, frustum_state, modelViewStack, projectionStack, currentTime);
             seaBottom.render(context, frustum_state, modelViewStack, projectionStack);
         }
 
         if (DebugFlags.process_landscape) {
+            gpu.begin(GpuPass.LANDSCAPE);
             landscape_renderer.prepareAll(frustum_state, false);
             landscape_renderer.render(context, frustum_state, modelViewStack, projectionStack);
         }
+        gpu.end();
         // Trees & Units write to mask -> Enable Mask Buffer
         context.setDrawBuffers(true);
 
@@ -296,25 +304,31 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         }
         sprite_sorter.distributeModels();
         if (DebugFlags.process_shadows && (cheat == null || cheat.draw_shadows)) {
-            render_queues.renderShadows(context, (float) world.getHeightMap().getMetersPerWorld(),
-                    landscape_renderer.getHeightMapVisual().getHeightTexture(), modelViewStack, projectionStack);
             if (DebugFlags.process_trees) {
                 tree_renderer.renderShadows(element_renderer.getRenderState().getDefaultShadowRenderer());
             }
+            gpu.begin(GpuPass.SHADOWS);
+            render_queues.renderShadows(context, (float) world.getHeightMap().getMetersPerWorld(),
+                    landscape_renderer.getHeightMapVisual().getHeightTexture(), modelViewStack, projectionStack);
+            gpu.end();
         }
 
         if (DebugFlags.process_trees) {
             tree_renderer.render(context, frustum_state, modelViewStack, projectionStack, currentTime);
         }
         if (DebugFlags.process_misc) {
+            gpu.begin(GpuPass.UNITS);
             render_queues.renderAll(context, frustum_state, projectionStack);
 
             // Render trees AFTER opaque units/misc.
             // Trees use Alpha-to-Coverage with Depth-Write enabled.
             // Separate renderer ensures they are flushed here.
+            gpu.begin(GpuPass.TREES);
             treeSpriteRenderer.renderAll(context, frustum_state, projectionStack);
 
+            gpu.begin(GpuPass.PLANTS);
             render_queues.renderPlants(context, frustum_state, projectionStack);
+            gpu.end();
 
             render_queues.renderNoDetail();
         }
@@ -332,9 +346,12 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         context.setDrawBuffers(true);
 
         if (DebugFlags.draw_water) {
+            gpu.begin(GpuPass.WATER);
             water.render(context, frustum_state, landscape_renderer.getVisiblePatches(), currentTime);
+            gpu.end();
         }
 
+        gpu.begin(GpuPass.EFFECTS);
         if (DebugFlags.process_misc)
             render_queues.renderBlends(context, frustum_state, projectionStack);
 
@@ -354,6 +371,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         context.setDrawBuffers(true);
         renderRallyPoint(context, frustum_state);
         render_queues.getInstancedRenderer().renderAll(context, frustum_state, projectionStack);
+        gpu.end();
 
         assert ShaderProgram.activeShader() == null : "Shader still active=" + ShaderProgram.activeShader();
 

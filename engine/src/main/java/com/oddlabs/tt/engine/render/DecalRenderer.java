@@ -40,7 +40,7 @@ public final class DecalRenderer implements AutoCloseable {
     private int instanceCount = 0;
     private final TextureBatcher textureBatcher = new TextureBatcher(14);
 
-    private static final int GRID_SIZE = 32; // 32x32 grid
+    private static final int GRID_SIZE = 16; // 16x16 grid (tight terrain conforming, 450 triangles vs 1,922)
     private static final int VERTEX_COUNT = GRID_SIZE * GRID_SIZE;
     private static final int INDEX_COUNT = (GRID_SIZE - 1) * (GRID_SIZE - 1) * 6;
     private static final int[] TEXTURE_UNITS = new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
@@ -153,7 +153,7 @@ public final class DecalRenderer implements AutoCloseable {
             shader.setUniform(shader.locModelViewMatrix, modelViewStack.current());
 
             shader.setUniform(shader.locWorldSize, worldSize);
-            shader.setUniform(shader.locDepthBias, 0.05f);
+            shader.setUniform(shader.locDepthBias, 0.08f);
 
             context.setTexture(1, heightTexture);
             shader.setUniform(shader.locHeightMap, 1);
