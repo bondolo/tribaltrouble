@@ -73,4 +73,39 @@ class ParticleTest {
         assertEquals(0.9f, particle.getColor().b(), 1e-4f);
         assertEquals(0.9f, particle.getColor().a(), 1e-4f);
     }
+
+    @Test
+    void testParametricParticleHeightLightingColor() {
+        ParametricFunction function = new ParametricFunction() {
+            @Override
+            public float getX(float u, float v) {
+                return 0f;
+            }
+
+            @Override
+            public float getY(float u, float v) {
+                return 0f;
+            }
+
+            @Override
+            public float getZ(float u, float v) {
+                return 1f;
+            }
+        };
+        ParametricParticle particle = new ParametricParticle(function, 0f, 0f, 0f, 0f, 0f);
+        particle.setColor(0.5f, 0.5f, 0.5f, 1.0f);
+        particle.setHeightLighting(0.2f, 1.0f);
+        particle.update(0f, 1f, 1f, 1f);
+
+        assertEquals(0.6f, particle.getColorR(), 1e-4f);
+        assertEquals(0.6f, particle.getColorG(), 1e-4f);
+        assertEquals(0.6f, particle.getColorB(), 1e-4f);
+        assertEquals(1.0f, particle.getColorA(), 1e-4f);
+
+        Color.Linear color = particle.getColor();
+        assertEquals(0.6f, color.r(), 1e-4f);
+        assertEquals(0.6f, color.g(), 1e-4f);
+        assertEquals(0.6f, color.b(), 1e-4f);
+        assertEquals(1.0f, color.a(), 1e-4f);
+    }
 }

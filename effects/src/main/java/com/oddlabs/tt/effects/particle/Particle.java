@@ -101,8 +101,14 @@ public class Particle {
         addColor(delta.r(), delta.g(), delta.b(), delta.a());
     }
 
-    public Color.Linear getColor() {
-        return new Color.Linear(colorR, colorG, colorB, colorA);
+    /**
+     * Resolves the particle color in linear RGB space as a {@link Color.Linear} object,
+     * reflecting any subclass component modulation.
+     *
+     * @return current linear RGB color
+     */
+    public final Color.Linear getColor() {
+        return new Color.Linear(getColorR(), getColorG(), getColorB(), getColorA());
     }
 
     public float getColorR() {
