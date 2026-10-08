@@ -22,6 +22,7 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import org.joml.Matrix4f;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -30,9 +31,7 @@ import org.lwjgl.opengl.GL33;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 
 /**
@@ -57,18 +56,48 @@ public final class EmitterRenderer implements AutoCloseable {
 
     private final VertexArray vao = new VertexArray();
     private int vbo_offset = 0;
+    private final Matrix4f cachedViewMatrix = new Matrix4f();
 
-    private record BatchKey(int srcBlend, int dstBlend, boolean fogEnabled) {
+    private static final class BatchGroup {
+        int srcBlend;
+        int dstBlend;
+        boolean fogEnabled;
+        final List<BatchEntry> entries = new ArrayList<>();
+
+        boolean matches(int srcBlend, int dstBlend, boolean fogEnabled) {
+            return this.srcBlend == srcBlend && this.dstBlend == dstBlend && this.fogEnabled == fogEnabled;
+        }
+
+        void reset(int srcBlend, int dstBlend, boolean fogEnabled) {
+            this.srcBlend = srcBlend;
+            this.dstBlend = dstBlend;
+            this.fogEnabled = fogEnabled;
+            this.entries.clear();
+        }
     }
 
-    private record BatchEntry<P extends Particle>(Emitter<P> emitter, java.util.Deque<P> particles,
-                                                  Texture texture) {
+    private static final class BatchEntry {
+        @Nullable Emitter<?> emitter;
+        @Nullable List<? extends Particle> particles;
+        @Nullable Texture texture;
+
+        void set(Emitter<?> emitter, List<? extends Particle> particles, Texture texture) {
+            this.emitter = emitter;
+            this.particles = particles;
+            this.texture = texture;
+        }
+
+        void clear() {
+            this.emitter = null;
+            this.particles = null;
+            this.texture = null;
+        }
     }
 
-    /**
-     * Grouping by blend modes. Inside each blend mode group, we will batch.
-     */
-    private final Map<BatchKey, List<BatchEntry<?>>> batches = new LinkedHashMap<>();
+    private final List<BatchGroup> activeGroups = new ArrayList<>();
+    private final List<BatchGroup> groupPool = new ArrayList<>();
+    private final List<BatchEntry> entryPool = new ArrayList<>();
+    private int entryPoolIndex = 0;
 
     public EmitterRenderer() {
         int floatsPerParticle = VERTEX_LAYOUT.getStride() / Float.BYTES;
@@ -90,29 +119,70 @@ public final class EmitterRenderer implements AutoCloseable {
         vao.unbind();
     }
 
+    private BatchGroup getGroup(int srcBlend, int dstBlend, boolean fogEnabled) {
+        for (int i = 0; i < activeGroups.size(); i++) {
+            BatchGroup g = activeGroups.get(i);
+            if (g.matches(srcBlend, dstBlend, fogEnabled)) {
+                return g;
+            }
+        }
+        BatchGroup g;
+        if (!groupPool.isEmpty()) {
+            g = groupPool.removeLast();
+        } else {
+            g = new BatchGroup();
+        }
+        g.reset(srcBlend, dstBlend, fogEnabled);
+        activeGroups.add(g);
+        return g;
+    }
+
+    private BatchEntry obtainEntry(Emitter<?> emitter, List<? extends Particle> particles, Texture texture) {
+        BatchEntry entry;
+        if (entryPoolIndex < entryPool.size()) {
+            entry = entryPool.get(entryPoolIndex++);
+        } else {
+            entry = new BatchEntry();
+            entryPool.add(entry);
+            entryPoolIndex++;
+        }
+        entry.set(emitter, particles, texture);
+        return entry;
+    }
+
     public void clear() {
-        batches.clear();
+        for (int i = 0; i < activeGroups.size(); i++) {
+            BatchGroup g = activeGroups.get(i);
+            g.entries.clear();
+            groupPool.add(g);
+        }
+        activeGroups.clear();
+        for (int i = 0; i < entryPoolIndex; i++) {
+            entryPool.get(i).clear();
+        }
+        entryPoolIndex = 0;
     }
 
     /**
      * Returns true if there are visible particles batched for rendering this frame.
      */
     public boolean hasVisibleParticles() {
-        return !batches.isEmpty();
+        return !activeGroups.isEmpty();
     }
 
     public void prepare(RenderQueues render_queues, Queue<? extends Emitter<?>> emitters,
             CameraState state, MatrixStack modelViewStack) {
         clear();
+        cachedViewMatrix.set(modelViewStack.current());
         if (DebugFlags.draw_particles)
             for (Emitter<?> emitter : emitters) {
-                collectParticles(render_queues, emitter, state, modelViewStack);
+                collectParticles(render_queues, emitter, state);
             }
     }
 
     public void render(RenderContext context, RenderQueues render_queues, CameraState state,
             MatrixStack modelViewStack, MatrixStack projectionStack, Texture depthTexture) {
-        if (batches.isEmpty()) return;
+        if (activeGroups.isEmpty()) return;
 
         // Reset offset and orphan at start of frame to prevent flickering
         vbo_offset = 0;
@@ -144,7 +214,7 @@ public final class EmitterRenderer implements AutoCloseable {
         }
     }
 
-    private <P extends Particle> void renderParticle(P particle, Emitter<P> emitter, float layer) {
+    private void renderParticle(Particle particle, Emitter<?> emitter, float layer) {
         particle_buffer.put(particle.getPosX()).put(particle.getPosY()).put(particle.getPosZ()); // World Position
         particle_buffer.put(particle.getRadiusX() * emitter.getScaleX()).put(particle.getRadiusY() * emitter
                 .getScaleY()).put(particle.getRadiusZ() * emitter.getScaleZ()); // Size (3D)
@@ -157,7 +227,7 @@ public final class EmitterRenderer implements AutoCloseable {
     }
 
     private <P extends Particle> void collectParticles(RenderQueues render_queues, Emitter<P> emitter,
-            CameraState state, MatrixStack modelViewStack) {
+            CameraState state) {
         if (!state.inNoDetailMode()
                 && RenderTools.inFrustum(emitter.getBounds(), state.getFrustum())
                         == RenderTools.FrustumIntersection.ALL_OUTSIDE) {
@@ -165,26 +235,24 @@ public final class EmitterRenderer implements AutoCloseable {
         }
 
         TextureKey[] textures = emitter.getTextures();
-        java.util.Deque<P>[] particles = emitter.getParticles();
+        List<P>[] particles = emitter.getParticles();
         SpriteKey[] sprite_renderers = emitter.getSpriteRenderers();
 
         if (textures != null) {
             for (int j = 0; j < particles.length; j++) {
-                if (particles[j].isEmpty()) continue;
+                List<P> pList = particles[j];
+                if (pList.isEmpty()) continue;
                 Texture texture = render_queues.getTexture(textures[j]);
-                BatchKey key = new BatchKey(emitter.getSrcBlendFunc(), emitter.getDstBlendFunc(), emitter
-                        .isFogEnabled());
-                batches.computeIfAbsent(key, k -> new ArrayList<>()).add(new BatchEntry<>(emitter, particles[j],
-                        texture));
+                BatchGroup group = getGroup(emitter.getSrcBlendFunc(), emitter.getDstBlendFunc(), emitter.isFogEnabled());
+                group.entries.add(obtainEntry(emitter, pList, texture));
             }
         } else if (sprite_renderers != null) {
             for (int j = 0; j < particles.length; j++) {
                 SpriteRenderer renderer = render_queues.getRenderer(sprite_renderers[j]);
-                for (Particle particle : particles[j]) {
-                    // Sprite path needs the actual View matrix for billboarding.
-                    // Must clone it because the stack will be mutated before the render pass.
-                    Matrix4f viewMatrix = new Matrix4f(modelViewStack.current());
-                    renderer.addToRenderList(PolyDetail.LOW_POLY, new ParticleModelState(particle, viewMatrix), false);
+                List<P> pList = particles[j];
+                for (int k = 0; k < pList.size(); k++) {
+                    Particle particle = pList.get(k);
+                    renderer.addToRenderList(PolyDetail.LOW_POLY, new ParticleModelState(particle, cachedViewMatrix), false);
                 }
             }
         }
@@ -193,17 +261,17 @@ public final class EmitterRenderer implements AutoCloseable {
     private void flushBatches(RenderContext context) {
         int floatsPerParticle = VERTEX_LAYOUT.getStride() / Float.BYTES;
 
-        for (var entry : batches.entrySet()) {
-            BatchKey key = entry.getKey();
-            context.setBlendFunc(key.srcBlend(), key.dstBlend());
-            shader.setUniform(shader.locIsAdditive, key.dstBlend() == GL11.GL_ONE ? 1.0f : 0.0f);
-            shader.setUniform(shader.locFogEnabled, key.fogEnabled());
+        for (int i = 0; i < activeGroups.size(); i++) {
+            BatchGroup group = activeGroups.get(i);
+            context.setBlendFunc(group.srcBlend, group.dstBlend);
+            shader.setUniform(shader.locIsAdditive, group.dstBlend == GL11.GL_ONE ? 1.0f : 0.0f);
+            shader.setUniform(shader.locFogEnabled, group.fogEnabled);
 
-            var batchEntries = entry.getValue();
             particle_buffer.clear();
             int particleCount = 0;
 
-            for (var batchEntry : batchEntries) {
+            for (int j = 0; j < group.entries.size(); j++) {
+                BatchEntry batchEntry = group.entries.get(j);
                 float layer = (float) batchEntry.texture.getLayer();
                 particleCount = processBatchEntry(batchEntry, layer, particleCount, floatsPerParticle);
             }
@@ -211,14 +279,15 @@ public final class EmitterRenderer implements AutoCloseable {
         }
     }
 
-    private <P extends Particle> int processBatchEntry(BatchEntry<P> batch, float layer, int particleCount,
+    private int processBatchEntry(BatchEntry batch, float layer, int particleCount,
             int floatsPerParticle) {
-        var particles = batch.particles();
-        var emitter = batch.emitter();
+        List<? extends Particle> particles = batch.particles;
+        Emitter<?> emitter = batch.emitter;
+        if (particles == null || emitter == null) return particleCount;
 
         // Iterate backwards as per original logic
-        for (var it = particles.descendingIterator(); it.hasNext();) {
-            P particle = it.next();
+        for (int i = particles.size() - 1; i >= 0; i--) {
+            Particle particle = particles.get(i);
             if (particleCount >= MAX_PARTICLES || particle_buffer.remaining() < floatsPerParticle) {
                 flush(particleCount);
                 particle_buffer.clear();

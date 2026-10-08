@@ -88,6 +88,7 @@ final class ParticleShader extends ShaderProgram implements FogShader {
                         vec4 color;
                         float fogDist;
                         vec3 viewPos;
+                        float verticalFactor;
                         flat int texSlot;
                     } vs_out;
 
@@ -129,8 +130,14 @@ final class ParticleShader extends ShaderProgram implements FogShader {
                         vec4 viewCenter = mv * vec4(center, 1.0);
                         vs_out.fogDist = length(viewCenter.xyz);
 
-                        vec3 p = center + (scaledRight * rotatedOffset.x) + (scaledUp * rotatedOffset.y);
+                        vec3 worldOffset = (scaledRight * rotatedOffset.x) + (scaledUp * rotatedOffset.y);
+                        vec3 p = center + worldOffset;
                         vs_out.texCoord = UV_COORDS[gl_VertexID];
+
+                        // Vertical elevation factor in world space (Z is Up in Tribal Trouble):
+                        // Ranges from -1.0 at bottom edge to +1.0 at top edge of billboard
+                        float maxRadius = max(max(radius.x, radius.y), 0.001);
+                        vs_out.verticalFactor = clamp(worldOffset.z / maxRadius, -1.0, 1.0);
 
                         vec4 viewPosition = mv * vec4(p, 1.0);
                         vs_out.viewPos = viewPosition.xyz;
@@ -154,6 +161,7 @@ final class ParticleShader extends ShaderProgram implements FogShader {
                         vec4 color;
                         float fogDist;
                         vec3 viewPos;
+                        float verticalFactor;
                         flat int texSlot;
                     } fs_in;
 
@@ -174,6 +182,13 @@ final class ParticleShader extends ShaderProgram implements FogShader {
 
                         if (finalColor.a <= 0.0) {
                             discard;
+                        }
+
+                        // Volumetric hemisphere ambient lighting for non-additive particles (smoke, dust)
+                        if (u_isAdditive <= 0.5) {
+                            float hemi = clamp(0.5 + 0.5 * fs_in.verticalFactor, 0.0, 1.0);
+                            vec3 ambientTone = mix(vec3(0.86, 0.84, 0.82), vec3(1.06, 1.07, 1.10), hemi);
+                            finalColor.rgb *= ambientTone;
                         }
 
                         // Soft Particles (Depth Fading)

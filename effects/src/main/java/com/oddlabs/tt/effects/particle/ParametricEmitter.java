@@ -8,7 +8,7 @@ import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
-import java.util.Deque;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -88,7 +88,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
 
     @Override
     public final void animate(float dt) {
-        for (Deque<ParametricParticle> list : getParticles()) {
+        for (List<ParametricParticle> list : getParticles()) {
             list.removeIf(ParametricParticle::isDead);
         }
 
@@ -107,8 +107,10 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
         float z_min = Float.POSITIVE_INFINITY;
         float z_max = Float.NEGATIVE_INFINITY;
 
-        for (Deque<ParametricParticle> list : getParticles()) {
-            for (ParametricParticle particle : list) {
+        for (List<ParametricParticle> list : getParticles()) {
+            int count = list.size();
+            for (int i = 0; i < count; i++) {
+                ParametricParticle particle = list.get(i);
                 particle.update(dt, getScaleX(), getScaleY(), getScaleZ());
                 float x = particle.getPosX();
                 float y = particle.getPosY();

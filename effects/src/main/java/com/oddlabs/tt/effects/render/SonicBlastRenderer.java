@@ -21,8 +21,8 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 
 /**
@@ -63,7 +63,7 @@ public final class SonicBlastRenderer implements AutoCloseable {
         vao.unbind();
     }
 
-    private final Deque<SonicBlastEffect> activeEffects = new ArrayDeque<>();
+    private final List<SonicBlastEffect> activeEffects = new ArrayList<>();
 
     public void prepare(Queue<SonicBlastEffect> queue) {
         activeEffects.clear();
@@ -84,7 +84,8 @@ public final class SonicBlastRenderer implements AutoCloseable {
 
             vao.bind();
 
-            for (SonicBlastEffect effect : activeEffects) {
+            for (int i = 0; i < activeEffects.size(); i++) {
+                SonicBlastEffect effect = activeEffects.get(i);
                 if (effect.isDead()) continue;
                 if (!state.inNoDetailMode()
                         && RenderTools.inFrustum(effect.getBounds(), state.getFrustum())

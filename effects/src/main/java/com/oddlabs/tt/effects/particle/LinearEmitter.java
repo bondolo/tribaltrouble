@@ -152,7 +152,9 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         float z_max = Float.NEGATIVE_INFINITY;
 
         for (var particles : getParticles()) {
-            for (LinearParticle particle : particles) {
+            int count = particles.size();
+            for (int i = 0; i < count; i++) {
+                LinearParticle particle = particles.get(i);
                 particle.update(dt);
 
                 float x = particle.getPosX();

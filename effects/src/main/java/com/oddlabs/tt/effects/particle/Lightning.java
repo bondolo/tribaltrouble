@@ -7,8 +7,8 @@ import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.util.Color;
 import org.joml.Vector3fc;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -18,7 +18,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class Lightning implements Animated, BoundsProvider {
     private static final float SQRT_2 = (float) Math.sqrt(2f);
 
-    private final Deque<StretchParticle> particles = new ArrayDeque<>();
+    private final List<StretchParticle> particles = new ArrayList<>();
     private final Vector3fc src;
     private final Vector3fc dst;
     private final float width;
@@ -53,7 +53,7 @@ public final class Lightning implements Animated, BoundsProvider {
         return bounds;
     }
 
-    public Deque<StretchParticle> getParticles() {
+    public List<StretchParticle> getParticles() {
         return particles;
     }
 

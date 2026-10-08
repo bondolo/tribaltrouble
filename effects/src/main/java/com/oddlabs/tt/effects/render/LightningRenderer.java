@@ -24,8 +24,8 @@ import org.lwjgl.opengl.GL15;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 
 /**
@@ -75,7 +75,7 @@ public final class LightningRenderer implements AutoCloseable {
         vao.unbind();
     }
 
-    private final Deque<Lightning> activeLightnings = new ArrayDeque<>();
+    private final List<Lightning> activeLightnings = new ArrayList<>();
 
     public void prepare(Queue<Lightning> queue) {
         activeLightnings.clear();
@@ -102,7 +102,8 @@ public final class LightningRenderer implements AutoCloseable {
             vao.bind();
 
             if (DebugFlags.draw_particles) {
-                for (Lightning emitter : activeLightnings) {
+                for (int i = 0; i < activeLightnings.size(); i++) {
+                    Lightning emitter = activeLightnings.get(i);
                     if (state.inNoDetailMode()
                             || RenderTools.inFrustum(emitter.getBounds(), state.getFrustum())
                                     != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
@@ -155,10 +156,12 @@ public final class LightningRenderer implements AutoCloseable {
         context.setTexture(0, render_queues.getTexture(lightning.getTexture()));
 
         particle_buffer.clear();
-        Deque<StretchParticle> particles = lightning.getParticles();
+        List<StretchParticle> particles = lightning.getParticles();
         int particleCount = 0;
+        int numParticles = particles.size();
 
-        for (StretchParticle particle : particles) {
+        for (int i = 0; i < numParticles; i++) {
+            StretchParticle particle = particles.get(i);
             if (particleCount >= MAX_PARTICLES) {
                 flush(particleCount);
                 particleCount = 0;
