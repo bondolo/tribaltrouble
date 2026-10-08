@@ -108,8 +108,9 @@ public final class SpriteRenderer {
             pickFromList(respond_render_lists[i], picks);
             respond_render_lists[i].clear();
         }
-        for (ModelState<?> model : no_detail_render_list) {
-            picks.accept((Target) model.getModel());
+        int noDetailCount = no_detail_render_list.size();
+        for (int i = 0; i < noDetailCount; i++) {
+            picks.accept((Target) no_detail_render_list.get(i).getModel());
         }
         clearRenderLists();
     }
@@ -181,7 +182,9 @@ public final class SpriteRenderer {
             SpriteList quadList = SpriteList.getQuadInstance();
             var batch = instancedSpriteRenderer.getBatch(quadList, instancedSpriteRenderer.getWhiteTexture(), null,
                     null, false, true, false, false);
-            for (var model : no_detail_render_list) {
+            int size = no_detail_render_list.size();
+            for (int i = 0; i < size; i++) {
+                ModelState<?> model = no_detail_render_list.get(i);
                 if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
                     RenderTools.draw(model.getModel());
                 }
@@ -192,7 +195,9 @@ public final class SpriteRenderer {
                 tempMatrix.identity().translation(x, y, z + 0.1f).scale(r * 2);
                 // Quads don't have animation, so pass -1
                 // Disable depth test for no-detail sprites (overlays). Enable blend. No Depth Write.
-                batch.addInstance(0, -1, tempMatrix, model.getTeamColor(), Color.Linear.TRANSPARENT);
+                batch.addInstance(0, -1, tempMatrix,
+                        model.getTeamColorR(), model.getTeamColorG(), model.getTeamColorB(), model.getTeamColorA(),
+                        0f, 0f, 0f, 0f);
             }
         }
         clearRenderLists();

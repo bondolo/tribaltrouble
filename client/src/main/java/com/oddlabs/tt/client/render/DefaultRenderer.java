@@ -77,6 +77,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
     private final GlobalUniforms globalUniforms = new GlobalUniforms();
 
+    private final Matrix4f rallyPointMatrix = new Matrix4f();
+
     private @Nullable Building selected_building;
 
     public DefaultRenderer(@Nullable Cheat cheat, Player local_player,
@@ -157,15 +159,13 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             z += rally.z();
         }
 
-        Matrix4f modelMatrix = new Matrix4f();
         float dx = camera_state.getCurrentX() - x;
         float dy = camera_state.getCurrentY() - y;
-        float len = (float) Math.sqrt(dx * dx + dy * dy);
-        if (len > 0.1f) {
-            float angle = (float) Math.atan2(dy / len, dx / len);
-            modelMatrix.translation(x, y, z).rotate(angle, 0f, 0f, 1f);
+        if (dx * dx + dy * dy > 0.01f) {
+            float angle = (float) Math.atan2(dy, dx);
+            rallyPointMatrix.translation(x, y, z).rotate(angle, 0f, 0f, 1f);
         } else {
-            modelMatrix.translation(x, y, z);
+            rallyPointMatrix.translation(x, y, z);
         }
 
         rally_point_renderer.addInstance(
@@ -176,7 +176,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
                 true,  // blend
                 true,  // depthWrite
                 true,  // depthTest
-                modelMatrix,
+                rallyPointMatrix,
                 Color.Linear.WHITE,
                 teamColor
         );

@@ -159,11 +159,17 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             GL31.glTexBuffer(GL31.GL_TEXTURE_BUFFER, GL30.GL_RGBA32F, boneMatrixVBO.getHandle());
 
             sortedBatches.clear();
-            sortedBatches.addAll(batches.values());
-            sortedBatches.sort(RenderBatch.COMPARATOR);
+            for (RenderBatch batch : batches.values()) {
+                if (batch.hasInstances()) {
+                    sortedBatches.add(batch);
+                }
+            }
+            if (!sortedBatches.isEmpty()) {
+                sortedBatches.sort(RenderBatch.COMPARATOR);
 
-            for (RenderBatch batch : sortedBatches) {
-                batch.render(context, shader, whiteTexture, respondTexture);
+                for (int i = 0; i < sortedBatches.size(); i++) {
+                    sortedBatches.get(i).render(context, shader, whiteTexture, respondTexture);
+                }
             }
         } finally {
             // Restore default state to prevent leakage to other renderers (Sky, Landscape, etc.)
@@ -429,6 +435,15 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
         public void addInstance(int spriteIndex, Matrix4fc modelMatrix, Color color, Color decalColor) {
             addInstance(spriteIndex, -1, modelMatrix, color, decalColor);
+        }
+
+        boolean hasInstances() {
+            for (InstanceGroup group : groups) {
+                if (group != null && group.count > 0) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         void render(RenderContext context, InstancedSpriteShader shader, Texture whiteTexture,
