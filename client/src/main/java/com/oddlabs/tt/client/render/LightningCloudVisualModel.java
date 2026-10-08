@@ -30,7 +30,6 @@ import java.util.Deque;
 public final class LightningCloudVisualModel extends AbstractVisualModel implements EmitterAccessory,
         LightningAccessory {
     private static final float BRIGHTNESS = Color.toLinear(.2f);
-    private static final Color.LinearDelta BRIGHTNESS_DELTA = new Color.LinearDelta(BRIGHTNESS, 0);
     private static final float LIGHTNING_TIME = .15f;
     private static final Color.LinearDelta DELTA_COLOR = Color.LinearDelta.ZERO.alpha(-1f / LIGHTNING_TIME);
 
@@ -83,7 +82,7 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
     @Override
     public void triggerStrike(float tx, float ty, float tz) {
         if (lightningTimer <= 0f) {
-            emitter.adjustColor(BRIGHTNESS_DELTA);
+            emitter.adjustColor(BRIGHTNESS, BRIGHTNESS, BRIGHTNESS, 0f);
             lightningTimer = LIGHTNING_TIME;
             lighted = true;
 
@@ -130,14 +129,14 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
         // Handle cloud fade out in the last 2 seconds
         float secondsToLive = cloud.getSecondsToLive();
         if (secondsToLive <= 2.0f) {
-            emitter.adjustColor(new Color.LinearDelta(0f, -0.8f * dt / 2.0f));
+            emitter.adjustColor(0f, 0f, 0f, -0.8f * dt / 2.0f);
         }
 
         // Handle lightning strike cloud flash dimming
         if (lighted) {
             lightningTimer -= dt;
             if (lightningTimer <= 0) {
-                emitter.adjustColor(BRIGHTNESS_DELTA.negate());
+                emitter.adjustColor(-BRIGHTNESS, -BRIGHTNESS, -BRIGHTNESS, 0f);
                 lighted = false;
             }
         }

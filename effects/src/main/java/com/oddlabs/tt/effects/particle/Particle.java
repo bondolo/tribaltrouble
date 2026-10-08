@@ -25,11 +25,11 @@ public class Particle {
     private int type;
     private float energy;
 
-    public Particle() {
+    Particle() {
         this(0f);
     }
 
-    public Particle(float angle) {
+    Particle(float angle) {
         this.angle = angle;
     }
 

@@ -1,21 +1,25 @@
 package com.oddlabs.tt.effects.render;
 
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.effects.particle.Particle;
+import com.oddlabs.tt.engine.render.ModelState;
+import com.oddlabs.tt.engine.render.PolyDetail;
+import com.oddlabs.tt.engine.render.VisualPattern;
+import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 
-public final class ParticleModelState implements ModelState<Model> {
+/**
+ * Adapts an individual {@link Particle} to the {@link ModelState} interface for 3D sprite mesh rendering.
+ */
+final class ParticleModelState implements ModelState<Model> {
     private static final Color NO_SELECTION = Color.Linear.TRANSPARENT;
     private final Particle particle;
     private final Matrix4fc viewMatrix;
 
-    public ParticleModelState(Particle particle, Matrix4fc viewMatrix) {
+    ParticleModelState(Particle particle, Matrix4fc viewMatrix) {
         this.particle = particle;
         this.viewMatrix = viewMatrix;
     }

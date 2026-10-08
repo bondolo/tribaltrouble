@@ -291,13 +291,31 @@ public abstract class Emitter<P extends Particle> implements Animated {
         return scale_z;
     }
 
-    public final void adjustColor(Color.LinearDelta delta) {
+    /**
+     * Adjusts the color of all active particles by applying the specified delta components in linear RGB space.
+     *
+     * @param r linear red delta
+     * @param g linear green delta
+     * @param b linear blue delta
+     * @param a alpha delta
+     */
+    public final void adjustColor(float r, float g, float b, float a) {
         for (int i = 0; i < particles.length; i++) {
             List<P> list = particles[i];
-            for (int j = 0; j < list.size(); j++) {
-                list.get(j).addColor(delta);
+            int size = list.size();
+            for (int j = 0; j < size; j++) {
+                list.get(j).addColor(r, g, b, a);
             }
         }
+    }
+
+    /**
+     * Adjusts the color of all active particles by applying the specified color delta.
+     *
+     * @param delta color delta in linear RGB space
+     */
+    public final void adjustColor(Color.LinearDelta delta) {
+        adjustColor(delta.r(), delta.g(), delta.b(), delta.a());
     }
 
     public final void start() {
