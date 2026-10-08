@@ -124,9 +124,22 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
         uploadPixels(channel.getPixels(), internal_format);
     }
 
+    private int upload_format = GL11.GL_RED;
+
+    private static int determineUploadFormat(int internal_format) {
+        return switch (internal_format) {
+            case GL30.GL_RG8, GL30.GL_RG, GL30.GL_RG16F, GL30.GL_RG32F -> GL30.GL_RG;
+            case GL11.GL_RGBA8, GL11.GL_RGBA -> GL11.GL_RGBA;
+            case GL11.GL_RGB8, GL11.GL_RGB -> GL11.GL_RGB;
+            default -> GL11.GL_RED;
+        };
+    }
+
     private void uploadPixels(float[] pixels, int internal_format) {
         FloatBuffer buffer = BufferUtils.createFloatBuffer(pixels.length);
         buffer.put(pixels).flip();
+
+        this.upload_format = determineUploadFormat(internal_format);
 
         GL11.glBindTexture(target, getHandle());
         GL11.glPixelStorei(GL11.GL_UNPACK_ROW_LENGTH, 0);
@@ -134,7 +147,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
         GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_ROWS, 0);
         GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
 
-        int format = GL11.GL_RED;
+        int format = this.upload_format;
         int type = GL11.GL_FLOAT;
 
         GL11.glTexImage2D(target, 0, internal_format, width, height, 0, format, type, buffer);
@@ -145,6 +158,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
     }
 
     public void update(int x, int y, int width, int height, float value) {
+        int prevBinding = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(1);
             buffer.put(value).flip();
@@ -154,9 +168,25 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
             GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_PIXELS, 0);
             GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_ROWS, 0);
             GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
-            GL11.glTexSubImage2D(target, 0, x, y, width, height, GL11.GL_RED, GL11.GL_FLOAT, buffer);
+            GL11.glTexSubImage2D(target, 0, x, y, width, height, upload_format, GL11.GL_FLOAT, buffer);
+            GL11.glBindTexture(target, prevBinding);
         }
         GLUtils.checkAndThrow("Texture update (single value)");
+    }
+
+    public void update(int x, int y, int width, int height, float[] pixels) {
+        int prevBinding = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
+        FloatBuffer buffer = BufferUtils.createFloatBuffer(pixels.length);
+        buffer.put(pixels).flip();
+
+        GL11.glBindTexture(target, getHandle());
+        GL11.glPixelStorei(GL11.GL_UNPACK_ROW_LENGTH, 0);
+        GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_PIXELS, 0);
+        GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_ROWS, 0);
+        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
+        GL11.glTexSubImage2D(target, 0, x, y, width, height, upload_format, GL11.GL_FLOAT, buffer);
+        GL11.glBindTexture(target, prevBinding);
+        GLUtils.checkAndThrow("Texture update (float[])");
     }
 
     public Texture(TextureFile texture_file) {
@@ -216,6 +246,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
             }
             case GL11.GL_RGB, GL11.GL_RGB8 -> GL11.GL_RGB;
             case GL11.GL_RED, GL30.GL_R8 -> GL11.GL_RED;
+            case GL30.GL_RG, GL30.GL_RG8 -> GL30.GL_RG;
             default -> GL11.GL_RGBA;
         };
 
@@ -394,6 +425,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
                 return size_buffer.get(0);
             } else {
                 return switch (internal_format) {
+                    case GL30.GL_RG, GL30.GL_RG8 -> width * height * 2;
                     case GL13.GL_COMPRESSED_RGB, GL11.GL_RGB, GL11.GL_RGB8, GL21.GL_SRGB8 -> width * height * 3;
                     case GL13.GL_COMPRESSED_RGBA, GL11.GL_RGBA, GL11.GL_RGBA8, GL21.GL_SRGB8_ALPHA8 -> width * height
                             * 4;

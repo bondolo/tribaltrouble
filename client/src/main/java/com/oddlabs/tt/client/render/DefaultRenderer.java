@@ -95,7 +95,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false, sprite_sorter,
                 selection, audioManager);
         this.tree_renderer = new TreeRenderer(cheat, sprite_sorter, picker.getRespondManager(), treeSpriteRenderer,
-                picker.getAnimationManager());
+                picker.getAnimationManager(), landscape_renderer);
         this.landscape_renderer = landscape_renderer;
         this.sky = new Sky(world.getHeightMap(), world_info.landscapeData().terrain());
         this.seaBottom = new SeaBottom(world_info.landscapeData().terrain(),
@@ -305,7 +305,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         sprite_sorter.distributeModels();
         if (DebugFlags.process_shadows && (cheat == null || cheat.draw_shadows)) {
             if (DebugFlags.process_trees) {
-                tree_renderer.renderShadows(element_renderer.getRenderState().getDefaultShadowRenderer());
+                tree_renderer.renderShadows(element_renderer.getRenderState().getDefaultShadowRenderer(), currentTime);
             }
             gpu.begin(GpuPass.SHADOWS);
             render_queues.renderShadows(context, (float) world.getHeightMap().getMetersPerWorld(),
@@ -406,6 +406,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             seaBottom.close();
             water.close();
             tree_renderer.close();
+            landscape_renderer.close();
             treeSpriteRenderer.close();
             postProcessor.close();
         }

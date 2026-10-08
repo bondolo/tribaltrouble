@@ -20,6 +20,8 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
         String DETAIL_ALPHA_SCALE = "u_DetailAlphaScale";
         String SEA_BOTTOM_COLOR = "u_SeaBottomColor";
         String OCEAN_MASK = "u_oceanMask";
+        String PERSISTENT_SHADOW_MAP = "u_PersistentShadowMap";
+        String SHADOW_INTENSITY = "u_ShadowIntensity";
     }
 
     private static final String VERTEX_SHADER = SHADER_HEADER +
@@ -36,6 +38,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         vec2 texCoord0;
                         vec2 texCoordColormap;
                         vec2 texCoord1;
+                        vec2 texCoordCanopy;
                         float fogDist;
                         vec3 viewPosition;
                         float height;
@@ -55,6 +58,11 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         vs_out.texCoord0 = uv;
                         vs_out.texCoordColormap = worldPos / u_WorldSize;
                         vs_out.texCoord1 = worldPos * u_DetailScale;
+                        vec2 windOffset = vec2(
+                            0.28 * cos(u_globalTime),
+                            0.56 * sin(u_globalTime)
+                        ) / u_WorldSize;
+                        vs_out.texCoordCanopy = vs_out.texCoordColormap - windOffset;
                         vs_out.fogDist = length(viewPosition.xyz);
                         vs_out.viewPosition = viewPosition.xyz;
                         vs_out.height = h;
@@ -72,6 +80,8 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                     uniform sampler2D u_DetailNormalMap;
                     uniform sampler2D u_HeightMap;
                     uniform sampler2D u_oceanMask;
+                    uniform sampler2D u_PersistentShadowMap;
+                    uniform float u_ShadowIntensity;
                     uniform vec3 u_SeaBottomColor;
                     uniform float u_WorldSize;
                     uniform float u_DetailScale;
@@ -81,6 +91,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         vec2 texCoord0;
                         vec2 texCoordColormap;
                         vec2 texCoord1;
+                        vec2 texCoordCanopy;
                         float fogDist;
                         vec3 viewPosition;
                         float height;
@@ -256,6 +267,18 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         float washIntensity = wash * 0.30 * waveScale;
                         diffuseColor.rgb = mix(diffuseColor.rgb, foamColor, washIntensity);
 
+                        // Attenuate diffuse and specular by dynamic swaying tree canopy shadows (Channel R)
+                        // and stationary structure/rock shadows (Channel G),
+                        // softly modulated by ambient skylight color (cool atmospheric shadow fill)
+                        float swayShadow = texture(u_PersistentShadowMap, fs_in.texCoordCanopy).r;
+                        float staticShadow = texture(u_PersistentShadowMap, fs_in.texCoordColormap).g;
+                        float shadowAttenuation = clamp(max(swayShadow, staticShadow) * u_ShadowIntensity, 0.0, 0.85);
+                        float shadowFactor = 1.0 - shadowAttenuation;
+                        vec3 skyHue = u_fogColor.rgb / max(max(u_fogColor.r, u_fogColor.g), max(u_fogColor.b, 0.01));
+                        vec3 shadowTint = mix(vec3(1.0), skyHue, 0.20);
+                        diffuseColor.rgb *= shadowFactor * shadowTint;
+                        specular *= shadowFactor;
+
                         vec3 litColor = diffuseColor.rgb + specular * 1.1;
 
                         // --- Underwater Caustics ---
@@ -290,6 +313,8 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
     final int locDetailAlphaScale;
     final int locSeaBottomColor;
     final int locOceanMask;
+    final int locPersistentShadowMap;
+    final int locShadowIntensity;
 
     LandscapeShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
@@ -304,5 +329,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
         locDetailAlphaScale = getUniformLocation(Uniforms.DETAIL_ALPHA_SCALE);
         locSeaBottomColor = getUniformLocation(Uniforms.SEA_BOTTOM_COLOR);
         locOceanMask = getUniformLocation(Uniforms.OCEAN_MASK);
+        locPersistentShadowMap = getUniformLocation(Uniforms.PERSISTENT_SHADOW_MAP);
+        locShadowIntensity = getUniformLocation(Uniforms.SHADOW_INTENSITY);
     }
 }

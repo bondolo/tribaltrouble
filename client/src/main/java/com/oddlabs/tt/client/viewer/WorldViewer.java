@@ -54,6 +54,7 @@ import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.DistributableTable;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
+import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.Selectable;
@@ -173,6 +174,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 Player owner = target.getOwner();
                 if (owner == getLocalPlayer())
                     notification_manager.newSelectableNotification(target, animation_manager_local, getLocalPlayer());
+                if (initialized[0] && target instanceof Building building && landscape_renderer != null) {
+                    landscape_renderer.onStaticModelAdded(building);
+                }
             }
 
             @Override
@@ -261,6 +265,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
                     } else if (target instanceof TreeSupply tree) {
                         renderer.onTreeSpawned(tree);
                     }
+                    if (target instanceof Model model && landscape_renderer != null) {
+                        landscape_renderer.onStaticModelAdded(model);
+                    }
                 }
             }
 
@@ -293,6 +300,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
             @Override
             public void onModelRemoved(Model model) {
                 WorldViewer.this.renderer.getRenderState().onModelRemoved(model);
+                if (initialized[0] && landscape_renderer != null) {
+                    landscape_renderer.onStaticModelRemoved(model);
+                }
             }
 
             @Override

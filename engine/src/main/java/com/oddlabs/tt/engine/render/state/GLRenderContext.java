@@ -246,7 +246,8 @@ final class GLRenderContext implements RenderContext {
         if (depthTestEnabled != GLState.UNKNOWN) {
             boolean glDepthTest = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
             if (glDepthTest != depthTestEnabled.isTrue()) {
-                logger.severe("Depth Test Enable Mismatch: Tracked=" + depthTestEnabled.isTrue() + ", GL=" + glDepthTest);
+                logger.severe("Depth Test Enable Mismatch: Tracked=" + depthTestEnabled.isTrue() + ", GL="
+                        + glDepthTest);
             }
         }
 

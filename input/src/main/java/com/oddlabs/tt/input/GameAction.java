@@ -142,6 +142,7 @@ public enum GameAction {
     CHEAT_10,
     CHEAT_11,
     CHEAT_12,
+    CHEAT_13,
 
     DEBUG_PRINT_INFO,
     DEBUG_KILL_SELECTED,

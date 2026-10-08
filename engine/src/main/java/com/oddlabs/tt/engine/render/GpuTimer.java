@@ -66,7 +66,7 @@ public final class GpuTimer implements AutoCloseable {
         for (int pass = 0; pass < PASS_COUNT; pass++) {
             if ((mask & (1 << pass)) != 0
                     && GL15.glGetQueryObjecti(queries[frameSlot * PASS_COUNT + pass],
-                    GL15.GL_QUERY_RESULT_AVAILABLE) == 0) {
+                            GL15.GL_QUERY_RESULT_AVAILABLE) == 0) {
                 return false;
             }
         }

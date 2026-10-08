@@ -92,24 +92,66 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
         }
     }
 
-    private void insertTreeRecursive(AbstractTreeGroup node, World world, TreeType tree_type,
+    public final TreeSupply spawnTree(World world, TreeType tree_type, float tree_x, float tree_y) {
+        int center_grid_x = UnitGrid.toGridCoordinate(tree_x);
+        int center_grid_y = UnitGrid.toGridCoordinate(tree_y);
+        float actual_x = UnitGrid.coordinateFromGrid(center_grid_x);
+        float actual_y = UnitGrid.coordinateFromGrid(center_grid_y);
+        int grid_size = (tree_type == TreeType.PALM || tree_type == TreeType.PINE) ? 1 : 3;
+        float radius = grid_size == 1 ? 1.6f : 2.3f;
+
+        Matrix4f matrix = new Matrix4f();
+        float rotation = world.getRandom().nextFloat(0f, 360f);
+        matrix.identity();
+        matrix.rotate((float) Math.toRadians(rotation), 0f, 0f, 1f);
+        Matrix4f matrix2 = new Matrix4f();
+        matrix2.identity();
+        matrix2.translate(actual_x, actual_y, world.getHeightMap().getNearestHeight(actual_x, actual_y));
+        matrix2.mul(matrix, matrix);
+
+        TreeSupply tree = insertTreeRecursive(this, world, tree_type, grid_size, radius, matrix,
+                actual_x, actual_y, center_grid_x, center_grid_y,
+                world.getHeightMap().getMetersPerWorld(), 0, 0);
+        tree.propagateBoundsUp();
+        return tree;
+    }
+
+    private TreeSupply insertTreeRecursive(AbstractTreeGroup node, World world, TreeType tree_type,
             int grid_size, float radius, Matrix4f matrix, float tree_x,
             float tree_y, int center_grid_x, int center_grid_y, int size, int x, int y) {
-        switch (node) {
+        return switch (node) {
             case TreeLeaf leaf -> {
                 TreeSupply tree = new TreeSupply(world, leaf, tree_x, tree_y, center_grid_x, center_grid_y, grid_size,
                         radius, matrix, tree_type);
                 leaf.insertTree(tree);
+                yield tree;
             }
             case TreeGroup group -> {
                 int child_size = size >> 1;
                 int child_index = (tree_x < x + child_size ? 0 : 1) | (tree_y < y + child_size ? 0 : 2);
                 int next_x = x + (child_index & 1) * child_size;
                 int next_y = y + ((child_index >> 1) & 1) * child_size;
-                insertTreeRecursive(group.child(child_index), world, tree_type, grid_size, radius, matrix,
+                yield insertTreeRecursive(group.child(child_index), world, tree_type, grid_size, radius, matrix,
                         tree_x, tree_y, center_grid_x, center_grid_y, child_size, next_x, next_y);
             }
             case TreeSupply _ -> throw new IllegalStateException("Unexpected TreeSupply node in tree hierarchy");
+        };
+    }
+
+    public final void expandBounds(BoundingBox box) {
+        if (!isValid()) {
+            setBounds(box);
+        } else {
+            checkBounds(box);
+        }
+        if (parent != null) {
+            parent.expandBounds(box);
+        }
+    }
+
+    public final void propagateBoundsUp() {
+        if (parent != null) {
+            parent.expandBounds(this);
         }
     }
 

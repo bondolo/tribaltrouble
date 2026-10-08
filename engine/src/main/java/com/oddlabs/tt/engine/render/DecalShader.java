@@ -198,8 +198,13 @@ final class DecalShader extends ShaderProgram implements FogShader {
                             float finalAlpha = a_r + a_s * (1.0 - a_r);
 
                             // Final output is premultiplied:
-                            // RGB comes only from the ring (tinted). Shadow is black (adds 0 to RGB).
-                            baseColor = vec4(fs_in.Color.rgb * a_r, finalAlpha);
+                            // Selection rings get fs_in.Color, unpolluted by ambient light.
+                            // Shadows receive soft ambient skylight fill.
+                            vec3 ringRgb = fs_in.Color.rgb * a_r;
+                            vec3 skyHue = u_fogColor.rgb / max(max(u_fogColor.r, u_fogColor.g), max(u_fogColor.b, 0.01));
+                            vec3 shadowAmbient = u_globalAmbient.rgb * skyHue * 0.10;
+                            vec3 shadowRgb = shadowAmbient * a_s * (1.0 - a_r);
+                            baseColor = vec4(ringRgb + shadowRgb, finalAlpha);
                         } else {
                             // Standard 2D sampling (Square Building Sites and Impact Cracks)
                             baseColor = sampleDecal(fs_in.TexCoord + 0.5) * fs_in.Color;

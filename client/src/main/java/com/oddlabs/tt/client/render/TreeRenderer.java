@@ -18,6 +18,7 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.model.Shadowable;
+import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
@@ -41,27 +42,38 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
     private final @Nullable Cheat cheat;
     private final Matrix4f tempMatrix = new Matrix4f();
     private final AnimationManager animationManager;
+    private final @Nullable LandscapeRenderer landscapeRenderer;
     private final Map<TreeSupply, Float> fallingTrees = new HashMap<>();
     private final Map<TreeSupply, Float> spawningTrees = new HashMap<>();
 
     TreeRenderer(@Nullable Cheat cheat, SpriteSorter sprite_sorter,
             RespondManager respond_manager,
             InstancedSpriteRenderer instancedSpriteRenderer,
-            AnimationManager animationManager
+            AnimationManager animationManager,
+            @Nullable LandscapeRenderer landscapeRenderer
     ) {
         super(sprite_sorter, respond_manager);
         this.cheat = cheat;
         this.instancedSpriteRenderer = instancedSpriteRenderer;
         this.animationManager = animationManager;
+        this.landscapeRenderer = landscapeRenderer;
         animationManager.registerAnimation(this);
     }
 
     void onTreeFelled(TreeSupply tree) {
         spawningTrees.remove(tree);
         fallingTrees.put(tree, 0f);
+        if (landscapeRenderer != null) {
+            landscapeRenderer.onTreeFelled(tree);
+        }
     }
 
     void onTreeSpawned(TreeSupply tree) {
+        Tree visual = getTrees().get(tree.getTreeType());
+        if (visual != null) {
+            tree.updateBounds(visual.modelBounds());
+        }
+        tree.propagateBoundsUp();
         fallingTrees.remove(tree);
         spawningTrees.put(tree, 0f);
     }
@@ -91,6 +103,9 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
                 var entry = eachSpawning.next();
                 float progress = entry.getValue() + dt / TREE_SPAWN_DURATION;
                 if (entry.getKey().isEmpty() || progress >= 1.0f) {
+                    if (progress >= 1.0f && !entry.getKey().isEmpty() && landscapeRenderer != null) {
+                        landscapeRenderer.onTreeSpawned(entry.getKey());
+                    }
                     eachSpawning.remove();
                 } else {
                     entry.setValue(progress);
@@ -99,57 +114,56 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
         }
     }
 
-    void renderShadows(SelectableShadowRenderer shadowRenderer) {
+    void renderShadows(SelectableShadowRenderer shadowRenderer, float currentTime) {
         if (!DebugFlags.draw_trees || (cheat != null && !cheat.draw_trees)) {
             return;
         }
-        for (var entry : getRenderLists().entrySet()) {
-            Tree visual = getTrees().get(entry.getKey());
-            for (TreeSupply tree : entry.getValue()) {
-                Float fallProgress = fallingTrees.get(tree);
-                if (fallProgress != null) {
-                    float p = fallProgress;
-                    float scale;
-                    float opacity;
-                    final float pHit = 0.65f;
-                    if (p <= pHit) {
-                        float u = p / pHit;
-                        float ramp = 1.0f - (1.0f - u) * (1.0f - u);
-                        opacity = 1.0f + 0.35f * ramp;
-                        scale = 1.0f - 0.15f * ramp;
-                    } else {
-                        float v = Math.min(1.0f, (p - pHit) / (1.0f - pHit));
-                        float fade = (1.0f - v) * (1.0f - v);
-                        opacity = 1.35f * fade;
-                        scale = 0.85f * fade;
-                    }
-                    if (scale > 0.001f && opacity > 0.001f) {
-                        shadowRenderer.addToShadowList(new TreeShadow(tree, visual, scale, opacity));
-                    }
-                } else if (!tree.isEmpty()) {
-                    Float spawnProgress = spawningTrees.get(tree);
-                    if (spawnProgress != null) {
-                        float inv = 1f - spawnProgress;
-                        float scale = 1f - inv * inv * inv * inv * inv * inv;
-                        shadowRenderer.addToShadowList(new TreeShadow(tree, visual, scale, 1.0f));
-                    } else {
-                        shadowRenderer.addToShadowList(new TreeShadow(tree, visual, 1.0f, 1.0f));
-                    }
-                }
+        float windX = 0.28f * (float) Math.cos(currentTime);
+        float windY = 0.56f * (float) Math.sin(currentTime);
+        for (var entry : fallingTrees.entrySet()) {
+            TreeSupply tree = entry.getKey();
+            float p = entry.getValue();
+            Tree visual = getTrees().get(tree.getTreeType());
+            float scale;
+            float opacity;
+            final float pHit = 0.65f;
+            if (p <= pHit) {
+                float u = p / pHit;
+                float ramp = 1.0f - (1.0f - u) * (1.0f - u);
+                opacity = 1.0f + 0.35f * ramp;
+                scale = 1.0f - 0.15f * ramp;
+            } else {
+                float v = Math.min(1.0f, (p - pHit) / (1.0f - pHit));
+                float fade = (1.0f - v) * (1.0f - v);
+                opacity = 1.35f * fade;
+                scale = 0.85f * fade;
+            }
+            if (scale > 0.001f && opacity > 0.001f) {
+                shadowRenderer.addToShadowList(new TreeShadow(tree, visual, scale, opacity, windX, windY));
+            }
+        }
+        for (var entry : spawningTrees.entrySet()) {
+            TreeSupply tree = entry.getKey();
+            if (!tree.isEmpty()) {
+                float spawnProgress = entry.getValue();
+                Tree visual = getTrees().get(tree.getTreeType());
+                float inv = 1f - spawnProgress;
+                float scale = 1f - inv * inv * inv * inv * inv * inv;
+                shadowRenderer.addToShadowList(new TreeShadow(tree, visual, scale, 1.0f, windX, windY));
             }
         }
     }
 
-    private record TreeShadow(TreeSupply tree, Tree visual, float scale, float opacityMultiplier) implements
-            Shadowable {
+    private record TreeShadow(TreeSupply tree, Tree visual, float scale, float opacityMultiplier,
+                              float windX, float windY) implements Shadowable {
         @Override
         public float getPositionX() {
-            return tree.getPositionX();
+            return tree.getPositionX() + windX;
         }
 
         @Override
         public float getPositionY() {
-            return tree.getPositionY();
+            return tree.getPositionY() + windY;
         }
 
         @Override

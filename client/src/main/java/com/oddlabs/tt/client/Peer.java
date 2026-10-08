@@ -17,7 +17,6 @@ import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.net.Network;
-import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import com.oddlabs.tt.window.Window;
 import org.jspecify.annotations.Nullable;

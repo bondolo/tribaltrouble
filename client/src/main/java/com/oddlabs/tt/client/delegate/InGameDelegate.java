@@ -121,6 +121,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
             // Option-F7 toggles shadows
             cheat.draw_shadows = !cheat.draw_shadows;
             DebugFlags.process_shadows = cheat.draw_shadows;
+            DebugFlags.draw_shadows = cheat.draw_shadows;
             return true;
         }
 
@@ -146,6 +147,19 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
                 var world = viewer.getWorld();
                 if (!world.getUnitGrid().isGridOccupied(gx, gy)) {
                     new IronSupply(world, gx, gy, loc.x(), loc.y(), false);
+                    return true;
+                }
+            }
+        }
+        if (actions.contains(GameAction.CHEAT_13)) {
+            // ALT-F10 spawns a tree
+            if (pickLocation.isPresent()) {
+                var loc = pickLocation.get();
+                int gx = UnitGrid.toGridCoordinate(loc.x());
+                int gy = UnitGrid.toGridCoordinate(loc.y());
+                var world = viewer.getWorld();
+                if (!world.getUnitGrid().isGridOccupied(gx, gy)) {
+                    world.spawnTree(loc.x(), loc.y());
                     return true;
                 }
             }

@@ -391,7 +391,7 @@ public final class RenderState implements SceneContext {
                             .getShadowRenderer(shadowKey);
                     if (isHovered(selectable) || isSelected(selectable)) {
                         shadow_renderer.addToSelectionList(state);
-                    } else if (selectable.getShadowDiameter() > 0f) {
+                    } else if (selectable instanceof Unit && selectable.getShadowDiameter() > 0f) {
                         shadow_renderer.addToShadowList(state);
                     }
                 }
@@ -533,35 +533,6 @@ public final class RenderState implements SceneContext {
                 supply_model_visitor, model);
         addToRenderList(state);
         if (!picking && getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
-            var shadow = svm.getShadowProperties();
-            if (shadow.opacity() > 0f && shadow.diameter() > 0f) {
-                default_shadow_renderer.addToShadowList(java.util.List.of(new Shadowable() {
-                    @Override
-                    public float getPositionX() {
-                        return model.getPositionX();
-                    }
-
-                    @Override
-                    public float getPositionY() {
-                        return model.getPositionY();
-                    }
-
-                    @Override
-                    public float getShadowDiameter() {
-                        return shadow.diameter();
-                    }
-
-                    @Override
-                    public float getShadowOpacity() {
-                        return shadow.opacity();
-                    }
-
-                    @Override
-                    public float getShadowVerticalCenter() {
-                        return shadow.verticalCenter();
-                    }
-                }));
-            }
             var decal = svm.getDecalProperties();
             if (decal.opacity() > 0.0f) {
                 crack_shadow_renderer.addToCrackList(new Shadowable() {
@@ -653,10 +624,6 @@ public final class RenderState implements SceneContext {
         }
         ModelState<SceneryModel> state = getCachedState(scenery_model_visitor, model);
         addToRenderList(state);
-        if (!picking) {
-            if (model.getShadowDiameter() > 0f)
-                default_shadow_renderer.addToShadowList(state);
-        }
     }
 
     private static final float START_FADE_DIST = 120f;

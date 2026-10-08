@@ -23,6 +23,8 @@ import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
 import com.oddlabs.tt.simulation.landscape.PatchGroup;
 import com.oddlabs.tt.simulation.landscape.World;
+import com.oddlabs.tt.simulation.model.Model;
+import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
@@ -41,13 +43,14 @@ import java.util.Set;
 /**
  * Renders the 3D terrain landscape.
  */
-public final class LandscapeRenderer implements SceneRenderer, Animated {
+public final class LandscapeRenderer implements SceneRenderer, Animated, AutoCloseable {
     private final List<LandscapeLeaf> render_list = new ArrayList<>();
     private final World world;
     private final Texture diffuseMap;
     private final Texture normalMap;
     private final Texture detailMap;
     private final Texture detailNormalMap;
+    private final PersistentShadowMap persistentShadowMap;
     private final PatchMesh patchMesh = new PatchMesh();
     private final LandscapeShader shader = new LandscapeShader();
     private final HeightMapVisual heightMapVisual;
@@ -72,8 +75,25 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
         this.normalMap = world_info.maps().normal();
         this.detailMap = world_info.detail();
         this.detailNormalMap = world_info.detailNormal();
+        this.persistentShadowMap = new PersistentShadowMap(world);
 
         manager.registerAnimation(this);
+    }
+
+    public void onTreeFelled(TreeSupply tree) {
+        persistentShadowMap.onTreeFelled(tree);
+    }
+
+    public void onTreeSpawned(TreeSupply tree) {
+        persistentShadowMap.onTreeSpawned(tree);
+    }
+
+    public void onStaticModelAdded(Model model) {
+        persistentShadowMap.onStaticModelAdded(model);
+    }
+
+    public void onStaticModelRemoved(Model model) {
+        persistentShadowMap.onStaticModelRemoved(model);
     }
 
     public Collection<LandscapeLeaf> getVisiblePatches() {
@@ -159,6 +179,11 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
                 shader.setUniform(shader.locOceanMask, 5);
             }
 
+            context.setTexture(6, persistentShadowMap.getTexture());
+            shader.setUniform(shader.locPersistentShadowMap, 6);
+            shader.setUniform(shader.locShadowIntensity, (DebugFlags.process_shadows && DebugFlags.draw_shadows) ? 1.0f
+                    : 0.0f);
+
             if (DebugFlags.draw_landscape && !render_list.isEmpty()) {
                 int instanceCount = render_list.size();
                 int requiredFloats = instanceCount * 3;
@@ -223,5 +248,13 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     @Override
     public void animate(float dt) {
         // No animation needed for static VTF geometry
+    }
+
+    @Override
+    public void close() {
+        persistentShadowMap.close();
+        instanceVBO.close();
+        patchMesh.delete();
+        shader.close();
     }
 }

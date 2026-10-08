@@ -199,6 +199,13 @@ public final class World implements SimulationClock {
         return tree_root;
     }
 
+    public TreeSupply spawnTree(float x, float y) {
+        AbstractTreeGroup.TreeType tree_type = (terrain == Terrain.VIKING)
+                ? (random.nextBoolean() ? AbstractTreeGroup.TreeType.OAK : AbstractTreeGroup.TreeType.PINE)
+                : (random.nextBoolean() ? AbstractTreeGroup.TreeType.JUNGLE : AbstractTreeGroup.TreeType.PALM);
+        return tree_root.spawnTree(this, tree_type, x, y);
+    }
+
     public AbstractPatchGroup getPatchRoot() {
         return patch_root;
     }

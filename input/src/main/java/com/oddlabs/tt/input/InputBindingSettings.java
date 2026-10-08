@@ -226,6 +226,7 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
         def(GameAction.CHEAT_10, Key.F7, Modifier.ALT);
         def(GameAction.CHEAT_11, Key.F11, Modifier.ALT);
         def(GameAction.CHEAT_12, Key.F12, Modifier.ALT);
+        def(GameAction.CHEAT_13, Key.F10, Modifier.ALT);
 
         // Debug
         def(GameAction.DEBUG_PRINT_INFO, Key.I, Modifier.CONTROL, Modifier.ALT);
