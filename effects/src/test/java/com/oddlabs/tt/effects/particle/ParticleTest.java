@@ -34,17 +34,12 @@ class ParticleTest {
     }
 
     @Test
-    void testParticleUVCoordinates() {
-        Particle particle = new Particle(0f);
-
-        assertEquals(0.0f, particle.getU1(), 1e-4f);
-        assertEquals(1.0f, particle.getV1(), 1e-4f);
-        assertEquals(1.0f, particle.getU2(), 1e-4f);
-        assertEquals(1.0f, particle.getV2(), 1e-4f);
-        assertEquals(1.0f, particle.getU3(), 1e-4f);
-        assertEquals(0.0f, particle.getV3(), 1e-4f);
-        assertEquals(0.0f, particle.getU4(), 1e-4f);
-        assertEquals(0.0f, particle.getV4(), 1e-4f);
+    void testParticleAngle() {
+        Particle particle = new Particle(1.5f);
+        assertEquals(1.5f, particle.getAngle(), 1e-4f);
+        particle.setAngularVelocity(2.0f);
+        particle.update(1.0f);
+        assertEquals(3.5f, particle.getAngle(), 1e-4f);
     }
 
     @Test

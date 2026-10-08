@@ -24,8 +24,7 @@ final class ParticleShader extends ShaderProgram implements FogShader {
         String CENTER_POSITION = "in_CenterPosition";
         String SIZE = "in_Size";
         String COLOR = Shader.Attributes.COLOR;
-        String UV_COORDS_1 = "in_UvCoords1"; // u1, v1, u2, v2
-        String UV_COORDS_2 = "in_UvCoords2"; // u3, v3, u4, v4
+        String ANGLE = "in_Angle";
         String TEX_SLOT = "in_TextureSlot";
     }
 
@@ -33,8 +32,7 @@ final class ParticleShader extends ShaderProgram implements FogShader {
         CENTER_POSITION(Attributes.CENTER_POSITION, 3, GL11.GL_FLOAT),
         SIZE(Attributes.SIZE, 3, GL11.GL_FLOAT), // radius_x, radius_y, radius_z
         COLOR(Attributes.COLOR, 4, GL11.GL_FLOAT),
-        UV_COORDS_1(Attributes.UV_COORDS_1, 4, GL11.GL_FLOAT),
-        UV_COORDS_2(Attributes.UV_COORDS_2, 4, GL11.GL_FLOAT),
+        ANGLE(Attributes.ANGLE, 1, GL11.GL_FLOAT),
         TEX_SLOT(Attributes.TEX_SLOT, 1, GL11.GL_FLOAT);
 
         private final String name;
@@ -80,9 +78,8 @@ final class ParticleShader extends ShaderProgram implements FogShader {
                     layout(location = 0) in vec3 in_CenterPosition;
                     layout(location = 1) in vec3 in_Size;
                     layout(location = 3) in vec4 in_Color;
-                    layout(location = 4) in vec4 in_UvCoords1;
-                    layout(location = 5) in vec4 in_UvCoords2;
-                    layout(location = 6) in float in_TextureSlot;
+                    layout(location = 4) in float in_Angle;
+                    layout(location = 5) in float in_TextureSlot;
 
                     uniform mat4 u_modelViewMatrix;
 
@@ -101,6 +98,13 @@ final class ParticleShader extends ShaderProgram implements FogShader {
                         vec2(1.0, 1.0)    // Top-right
                     );
 
+                    const vec2 UV_COORDS[4] = vec2[](
+                        vec2(0.0, 1.0), // Bottom-left
+                        vec2(1.0, 1.0), // Bottom-right
+                        vec2(0.0, 0.0), // Top-left
+                        vec2(1.0, 0.0)  // Top-right
+                    );
+
                     void main() {
                         vec3 center = in_CenterPosition;
                         vec3 radius = in_Size;
@@ -111,22 +115,22 @@ final class ParticleShader extends ShaderProgram implements FogShader {
                         vec3 right = vec3(mv[0][0], mv[1][0], mv[2][0]);
                         vec3 up = vec3(mv[0][1], mv[1][1], mv[2][1]);
 
+                        float cosA = cos(in_Angle);
+                        float sinA = sin(in_Angle);
+                        vec2 offset = OFFSETS[gl_VertexID];
+                        vec2 rotatedOffset = vec2(
+                            offset.x * cosA - offset.y * sinA,
+                            offset.x * sinA + offset.y * cosA
+                        );
+
                         vec3 scaledRight = right * radius.x;
                         vec3 scaledUp = up * radius.y;
 
                         vec4 viewCenter = mv * vec4(center, 1.0);
                         vs_out.fogDist = length(viewCenter.xyz);
 
-                        vec2 uv_coords[4] = vec2[](
-                            in_UvCoords1.xy, // Bottom-left
-                            in_UvCoords1.zw, // Bottom-right
-                            in_UvCoords2.zw, // Top-left
-                            in_UvCoords2.xy  // Top-right
-                        );
-
-                        vec2 offset = OFFSETS[gl_VertexID];
-                        vec3 p = center + (scaledRight * offset.x) + (scaledUp * offset.y);
-                        vs_out.texCoord = uv_coords[gl_VertexID];
+                        vec3 p = center + (scaledRight * rotatedOffset.x) + (scaledUp * rotatedOffset.y);
+                        vs_out.texCoord = UV_COORDS[gl_VertexID];
 
                         vec4 viewPosition = mv * vec4(p, 1.0);
                         vs_out.viewPos = viewPosition.xyz;

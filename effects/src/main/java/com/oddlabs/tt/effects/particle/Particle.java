@@ -1,22 +1,12 @@
 package com.oddlabs.tt.effects.particle;
 
 import com.oddlabs.util.Color;
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 /**
  * Base data representation for an individual visual particle.
  */
 public class Particle {
-    private final float u1;
-    private final float v1;
-    private final float u2;
-    private final float v2;
-    private final float u3;
-    private final float v3;
-    private final float u4;
-    private final float v4;
     private float angle;
     private float angularVelocity = 0f;
 
@@ -41,67 +31,14 @@ public class Particle {
 
     public Particle(float angle) {
         this.angle = angle;
-        Matrix4f rotMatrix = new Matrix4f();
-        Vector3f axis = new Vector3f(0f, 0f, 1f);
-        Vector4f uvVector = new Vector4f();
-
-        rotMatrix.rotate(angle, axis);
-
-        uvVector.set(-.5f, -.5f, 0f, 0f);
-        rotMatrix.transform(uvVector);
-        u1 = uvVector.x() + .5f;
-        v1 = .5f - uvVector.y();
-
-        uvVector.set(.5f, -.5f, 0f, 0f);
-        rotMatrix.transform(uvVector);
-        u2 = uvVector.x() + .5f;
-        v2 = .5f - uvVector.y();
-
-        uvVector.set(.5f, .5f, 0f, 0f);
-        rotMatrix.transform(uvVector);
-        u3 = uvVector.x() + .5f;
-        v3 = .5f - uvVector.y();
-
-        uvVector.set(-.5f, .5f, 0f, 0f);
-        rotMatrix.transform(uvVector);
-        u4 = uvVector.x() + .5f;
-        v4 = .5f - uvVector.y();
-    }
-
-    public final float getU1() {
-        return u1;
-    }
-
-    public final float getV1() {
-        return v1;
-    }
-
-    public final float getU2() {
-        return u2;
-    }
-
-    public final float getV2() {
-        return v2;
-    }
-
-    public final float getU3() {
-        return u3;
-    }
-
-    public final float getV3() {
-        return v3;
-    }
-
-    public final float getU4() {
-        return u4;
-    }
-
-    public final float getV4() {
-        return v4;
     }
 
     public final float getAngle() {
         return angle;
+    }
+
+    public final void setAngle(float angle) {
+        this.angle = angle;
     }
 
     public void update(float t) {

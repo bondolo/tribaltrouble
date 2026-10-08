@@ -358,8 +358,10 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         // Water & Particles don't write to mask -> Disable Mask Buffer
         context.setDrawBuffers(false);
 
-        // Copy depth buffer for Soft Particles (smoke/effects)
-        postProcessor.copyDepthBuffer();
+        // Copy depth buffer for Soft Particles (smoke/effects) only when visible particles exist
+        if (emitterRenderer.hasVisibleParticles()) {
+            postProcessor.copyDepthBuffer();
+        }
 
         // Render transient effects (smoke, lightning) AFTER all other scene objects.
         // This ensures they are depth-tested against the complete scene (including water and blended units).

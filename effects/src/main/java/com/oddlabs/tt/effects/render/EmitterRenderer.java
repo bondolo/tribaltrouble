@@ -40,12 +40,13 @@ import java.util.Queue;
  */
 public final class EmitterRenderer implements AutoCloseable {
     private static final int MAX_PARTICLES = 50000;
+    private static final float DEFAULT_SOFT_RANGE = 2.0f;
+
     private static final VertexLayout<ParticleShader.Attribute> VERTEX_LAYOUT = new VertexLayout<>(
             ParticleShader.Attribute.CENTER_POSITION,
             ParticleShader.Attribute.SIZE,
             ParticleShader.Attribute.COLOR,
-            ParticleShader.Attribute.UV_COORDS_1,
-            ParticleShader.Attribute.UV_COORDS_2,
+            ParticleShader.Attribute.ANGLE,
             ParticleShader.Attribute.TEX_SLOT
     );
 
@@ -93,6 +94,13 @@ public final class EmitterRenderer implements AutoCloseable {
         batches.clear();
     }
 
+    /**
+     * Returns true if there are visible particles batched for rendering this frame.
+     */
+    public boolean hasVisibleParticles() {
+        return !batches.isEmpty();
+    }
+
     public void prepare(RenderQueues render_queues, Queue<? extends Emitter<?>> emitters,
             CameraState state, MatrixStack modelViewStack) {
         clear();
@@ -126,7 +134,7 @@ public final class EmitterRenderer implements AutoCloseable {
             shader.setUniform(shader.locDepthMap, 1);
 
             shader.setUniform(shader.locNearFar, RenderConfig.VIEW_MIN, RenderConfig.VIEW_MAX);
-            shader.setUniform(shader.locSoftRange, 2.0f); // Adjust default as needed
+            shader.setUniform(shader.locSoftRange, DEFAULT_SOFT_RANGE);
 
             flushBatches(context);
         } finally {
@@ -144,11 +152,7 @@ public final class EmitterRenderer implements AutoCloseable {
         particle_buffer.put(particle.getColorR()).put(particle.getColorG()).put(particle.getColorB())
                 .put(particle.getColorA());
 
-        // UV Info 1: u1, v1, u2, v2
-        particle_buffer.put(particle.getU1()).put(particle.getV1()).put(particle.getU2()).put(particle.getV2());
-        // UV Info 2: u3, v3, u4, v4
-        particle_buffer.put(particle.getU3()).put(particle.getV3()).put(particle.getU4()).put(particle.getV4());
-
+        particle_buffer.put(particle.getAngle());
         particle_buffer.put(layer);
     }
 
