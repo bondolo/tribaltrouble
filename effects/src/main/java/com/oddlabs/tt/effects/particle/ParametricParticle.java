@@ -1,5 +1,7 @@
 package com.oddlabs.tt.effects.particle;
 
+import com.oddlabs.util.Color;
+
 /**
  * A particle whose movement and position are defined by a {@link ParametricFunction}.
  * Used for complex visual effects like clouds or expanding rings.
@@ -86,5 +88,13 @@ final class ParametricParticle extends Particle {
         float factor = localZ / maxLocalZ;
         float multiplier = 1.0f + factor * heightLightingIntensity;
         return Math.clamp(super.getColorB() * multiplier, 0f, 1f);
+    }
+
+    @Override
+    public Color.Linear getColor() {
+        if (heightLightingIntensity <= 0.0f) {
+            return super.getColor();
+        }
+        return new Color.Linear(getColorR(), getColorG(), getColorB(), getColorA());
     }
 }

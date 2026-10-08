@@ -199,15 +199,15 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         int initiated = 0;
         var clusterColor = getClusterColor();
         for (int i = 0; i < count; i++) {
-            var particleColor = nextParticleColor(clusterColor, color);
+            computeNextParticleColor(clusterColor, color);
             float particleEnergy = minEnergy > 0f && maxEnergy >= minEnergy
                     ? ThreadLocalRandom.current().nextFloat(minEnergy, maxEnergy)
                     : energy;
-            float baseFadeRate = particleEnergy > 0f ? -particleColor.a() / particleEnergy : 0f;
+            float baseFadeRate = particleEnergy > 0f ? -nextColorA / particleEnergy : 0f;
             float multiplier = ThreadLocalRandom.current().nextFloat(0.85f, 1.15f);
             float particleDeltaAlpha = baseFadeRate * multiplier;
             initiated += initParticle(getPosition(), velocity, acceleration,
-                    particleColor.r(), particleColor.g(), particleColor.b(), particleColor.a(),
+                    nextColorR, nextColorG, nextColorB, nextColorA,
                     delta_color.r(), delta_color.g(), delta_color.b(), particleDeltaAlpha,
                     particle_radius, growth_rate, particleEnergy);
         }

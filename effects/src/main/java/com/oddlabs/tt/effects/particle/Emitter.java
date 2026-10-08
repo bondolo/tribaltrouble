@@ -11,12 +11,9 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Stream;
 
 /**
  * Base class for all particle emitters. Manages a collection of particles and their textures.
@@ -94,7 +91,10 @@ public abstract class Emitter<P extends Particle> implements Animated {
         this.types = types;
         this.remaining_particles = remaining_particles;
         this.particles_per_second = particles_per_second;
-        particles = Stream.generate(ArrayList::new).limit(types).toArray(List[]::new);
+        this.particles = (List<P>[]) new List[types];
+        for (int i = 0; i < types; i++) {
+            this.particles[i] = new ArrayList<>();
+        }
     }
 
     public final void setColorSpectrum(ColorSpectrum spectrum) {
@@ -173,14 +173,19 @@ public abstract class Emitter<P extends Particle> implements Animated {
                 .add(cluster_r, cluster_g, cluster_b, cluster_a);
     }
 
+    protected float nextColorR;
+    protected float nextColorG;
+    protected float nextColorB;
+    protected float nextColorA;
+
     /**
-     * Resolves the next particle color in linear RGB space with jitter and template modulation.
+     * Calculates the jittered and modulated linear color components for the next particle,
+     * writing them to {@link #nextColorR}, {@link #nextColorG}, {@link #nextColorB}, and {@link #nextColorA}.
      *
      * @param clusterColor base cluster color in linear RGB space
      * @param templateColor emitter template color in linear RGB space
-     * @return jittered and modulated particle color in linear RGB space
      */
-    protected final Color.Linear nextParticleColor(Color.Linear clusterColor, Color.Linear templateColor) {
+    protected final void computeNextParticleColor(Color.Linear clusterColor, Color.Linear templateColor) {
         float jitter = (float) ThreadLocalRandom.current().nextGaussian() * jitter_intensity;
         float r = Math.clamp(clusterColor.r() + jitter, 0, 1);
         float g = Math.clamp(clusterColor.g() + jitter, 0, 1);
@@ -188,11 +193,10 @@ public abstract class Emitter<P extends Particle> implements Animated {
         float a = Math.max(0, clusterColor.a() * templateColor.a() + jitter);
 
         // Modulation
-        r *= templateColor.r();
-        g *= templateColor.g();
-        b *= templateColor.b();
-
-        return new Color.Linear(r, g, b, a);
+        nextColorR = r * templateColor.r();
+        nextColorG = g * templateColor.g();
+        nextColorB = b * templateColor.b();
+        nextColorA = a;
     }
 
     protected final int nextType() {
@@ -233,7 +237,12 @@ public abstract class Emitter<P extends Particle> implements Animated {
      * @return true if there are active particles.
      */
     public final boolean hasActiveParticles() {
-        return Arrays.stream(particles).anyMatch(list -> !list.isEmpty());
+        for (int i = 0; i < particles.length; i++) {
+            if (!particles[i].isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected final void add(P particle) {
@@ -283,9 +292,12 @@ public abstract class Emitter<P extends Particle> implements Animated {
     }
 
     public final void adjustColor(Color.LinearDelta delta) {
-        Arrays.stream(particles)
-                .flatMap(Collection::stream)
-                .forEach(p -> p.addColor(delta));
+        for (int i = 0; i < particles.length; i++) {
+            List<P> list = particles[i];
+            for (int j = 0; j < list.size(); j++) {
+                list.get(j).addColor(delta);
+            }
+        }
     }
 
     public final void start() {

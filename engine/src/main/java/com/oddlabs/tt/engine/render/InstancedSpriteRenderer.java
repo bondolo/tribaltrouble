@@ -307,6 +307,13 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             }
 
             void add(int boneBaseOffset, Matrix4fc modelMatrix, Color color, Color decalColor) {
+                add(boneBaseOffset, modelMatrix, color.r(), color.g(), color.b(), color.a(),
+                        decalColor.r(), decalColor.g(), decalColor.b(), decalColor.a());
+            }
+
+            void add(int boneBaseOffset, Matrix4fc modelMatrix,
+                    float r, float g, float b, float a,
+                    float dr, float dg, float db, float da) {
                 if (count >= capacity) {
                     int newCapacity = capacity * 2;
                     FloatBuffer newBuffer = BufferUtils.createFloatBuffer(newCapacity * FLOATS_PER_INSTANCE);
@@ -328,8 +335,14 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
                 int base = count * FLOATS_PER_INSTANCE;
                 modelMatrix.get(base, buffer);
-                color.get(base + 16, buffer);
-                decalColor.get(base + 20, buffer);
+                buffer.put(base + 16, r);
+                buffer.put(base + 17, g);
+                buffer.put(base + 18, b);
+                buffer.put(base + 19, a);
+                buffer.put(base + 20, dr);
+                buffer.put(base + 21, dg);
+                buffer.put(base + 22, db);
+                buffer.put(base + 23, da);
                 buffer.put(base + 24, (float) boneBaseOffset);
 
                 count++;
@@ -401,6 +414,17 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 groups[spriteIndex] = group;
             }
             group.add(boneBaseOffset, modelMatrix, color, decalColor);
+        }
+
+        public void addInstance(int spriteIndex, int boneBaseOffset, Matrix4fc modelMatrix,
+                float r, float g, float b, float a,
+                float dr, float dg, float db, float da) {
+            InstanceGroup group = groups[spriteIndex];
+            if (group == null) {
+                group = new InstanceGroup(spriteIndex, key, FLOATS_PER_INSTANCE);
+                groups[spriteIndex] = group;
+            }
+            group.add(boneBaseOffset, modelMatrix, r, g, b, a, dr, dg, db, da);
         }
 
         public void addInstance(int spriteIndex, Matrix4fc modelMatrix, Color color, Color decalColor) {

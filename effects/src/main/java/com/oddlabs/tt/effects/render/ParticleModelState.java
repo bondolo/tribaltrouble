@@ -37,7 +37,27 @@ public final class ParticleModelState implements ModelState<Model> {
 
     @Override
     public Color getTeamColor() {
-        return particle.getColor();
+        return getColor();
+    }
+
+    @Override
+    public float getTeamColorR() {
+        return particle.getColorR();
+    }
+
+    @Override
+    public float getTeamColorG() {
+        return particle.getColorG();
+    }
+
+    @Override
+    public float getTeamColorB() {
+        return particle.getColorB();
+    }
+
+    @Override
+    public float getTeamColorA() {
+        return particle.getColorA();
     }
 
     @Override
@@ -53,6 +73,26 @@ public final class ParticleModelState implements ModelState<Model> {
     @Override
     public Color getColor() {
         return particle.getColor();
+    }
+
+    @Override
+    public float getColorR() {
+        return particle.getColorR();
+    }
+
+    @Override
+    public float getColorG() {
+        return particle.getColorG();
+    }
+
+    @Override
+    public float getColorB() {
+        return particle.getColorB();
+    }
+
+    @Override
+    public float getColorA() {
+        return particle.getColorA();
     }
 
     @Override

@@ -37,7 +37,7 @@ public class Particle {
         return angle;
     }
 
-    public final void setAngle(float angle) {
+    final void setAngle(float angle) {
         this.angle = angle;
     }
 
@@ -51,7 +51,7 @@ public class Particle {
         energy -= t;
     }
 
-    public final void setAngularVelocity(float angularVelocity) {
+    final void setAngularVelocity(float angularVelocity) {
         this.angularVelocity = angularVelocity;
     }
 
@@ -59,7 +59,7 @@ public class Particle {
         return angularVelocity;
     }
 
-    public final void setPos(float x, float y, float z) {
+    final void setPos(float x, float y, float z) {
         position.set(x, y, z);
     }
 
@@ -90,14 +90,18 @@ public class Particle {
         this.colorA = a;
     }
 
-    public final void addColor(Color.LinearDelta delta) {
-        this.colorR += delta.r();
-        this.colorG += delta.g();
-        this.colorB += delta.b();
-        this.colorA += delta.a();
+    public final void addColor(float r, float g, float b, float a) {
+        this.colorR += r;
+        this.colorG += g;
+        this.colorB += b;
+        this.colorA += a;
     }
 
-    public final Color.Linear getColor() {
+    public final void addColor(Color.LinearDelta delta) {
+        addColor(delta.r(), delta.g(), delta.b(), delta.a());
+    }
+
+    public Color.Linear getColor() {
         return new Color.Linear(colorR, colorG, colorB, colorA);
     }
 
@@ -125,14 +129,14 @@ public class Particle {
      * @param b linear blue delta per second
      * @param a alpha delta per second
      */
-    public final void setDeltaColor(float r, float g, float b, float a) {
+    final void setDeltaColor(float r, float g, float b, float a) {
         this.deltaR = r;
         this.deltaG = g;
         this.deltaB = b;
         this.deltaA = a;
     }
 
-    public final void setEnergy(float energy) {
+    final void setEnergy(float energy) {
         this.energy = energy;
     }
 
@@ -144,7 +148,7 @@ public class Particle {
         return energy <= 0f;
     }
 
-    public final void setType(int type) {
+    final void setType(int type) {
         this.type = type;
     }
 
@@ -152,7 +156,7 @@ public class Particle {
         return type;
     }
 
-    public final void setGrowthRate(float growth_rate_x, float growth_rate_y, float growth_rate_z) {
+    final void setGrowthRate(float growth_rate_x, float growth_rate_y, float growth_rate_z) {
         this.growthRate.set(growth_rate_x, growth_rate_y, growth_rate_z);
     }
 
@@ -168,7 +172,7 @@ public class Particle {
         return growthRate.z();
     }
 
-    public final void setRadius(float radius_x, float radius_y, float radius_z) {
+    final void setRadius(float radius_x, float radius_y, float radius_z) {
         this.radius.set(radius_x, radius_y, radius_z);
     }
 

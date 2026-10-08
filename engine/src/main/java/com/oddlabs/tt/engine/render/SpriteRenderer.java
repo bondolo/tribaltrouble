@@ -148,8 +148,9 @@ public final class SpriteRenderer {
                         ? instancedSpriteRenderer.getOrEvaluateBoneOffset(sprite_list, modelState.getAnimation(),
                                 modelState.getAnimationTicks())
                         : -1;
-                batch.addInstance(index, boneBaseOffset, modelState.getTransform(tempMatrix), modelState.getColor(),
-                        modelState.getTeamColor());
+                batch.addInstance(index, boneBaseOffset, modelState.getTransform(tempMatrix),
+                        modelState.getColorR(), modelState.getColorG(), modelState.getColorB(), modelState.getColorA(),
+                        modelState.getTeamColorR(), modelState.getTeamColorG(), modelState.getTeamColorB(), modelState.getTeamColorA());
             }
             render_list.clear();
         }
@@ -167,8 +168,9 @@ public final class SpriteRenderer {
                         ? instancedSpriteRenderer.getOrEvaluateBoneOffset(sprite_list, model.getAnimation(),
                                 model.getAnimationTicks())
                         : -1;
-                batch.addInstance(index, boneBaseOffset, model.getTransform(tempMatrix), Color.Linear.WHITE,
-                        Color.Linear.WHITE);
+                batch.addInstance(index, boneBaseOffset, model.getTransform(tempMatrix),
+                        1f, 1f, 1f, 1f,
+                        1f, 1f, 1f, 1f);
             }
             render_list.clear();
         }

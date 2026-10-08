@@ -18,9 +18,41 @@ public interface ModelState<M extends Model> extends LODObject {
 
     Color getTeamColor();
 
+    default float getTeamColorR() {
+        return getTeamColor().r();
+    }
+
+    default float getTeamColorG() {
+        return getTeamColor().g();
+    }
+
+    default float getTeamColorB() {
+        return getTeamColor().b();
+    }
+
+    default float getTeamColorA() {
+        return getTeamColor().a();
+    }
+
     Color getSelectionColor();
 
     Color getColor();
+
+    default float getColorR() {
+        return getColor().r();
+    }
+
+    default float getColorG() {
+        return getColor().g();
+    }
+
+    default float getColorB() {
+        return getColor().b();
+    }
+
+    default float getColorA() {
+        return getColor().a();
+    }
 
     VisualPattern getPattern();
 

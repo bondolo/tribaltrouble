@@ -83,9 +83,9 @@ public final class RingEmitter extends LinearEmitter {
             float energyMultiplier = ThreadLocalRandom.current().nextFloat(0.4f, 1.6f);
 
             // Per-particle color (called per-particle for individual variation within the ring)
-            var particleColor = nextParticleColor(clusterColor, this.color);
+            computeNextParticleColor(clusterColor, this.color);
             float actualEnergy = energy * energyMultiplier;
-            float baseFadeRate = actualEnergy > 0f ? -particleColor.a() / actualEnergy : 0f;
+            float baseFadeRate = actualEnergy > 0f ? -nextColorA / actualEnergy : 0f;
             float fadeMultiplier = ThreadLocalRandom.current().nextFloat(0.8f, 1.2f);
             float particleDeltaA = baseFadeRate * fadeMultiplier;
 
@@ -97,7 +97,7 @@ public final class RingEmitter extends LinearEmitter {
                     velocity.z() * velocityMultiplier * (float) Math.sin(angle),
                     0);
             particle.setAcceleration(acceleration.x(), acceleration.y(), acceleration.z());
-            particle.setColor(particleColor.r(), particleColor.g(), particleColor.b(), particleColor.a());
+            particle.setColor(nextColorR, nextColorG, nextColorB, nextColorA);
             particle.setDeltaColor(deltaR, deltaG, deltaB, particleDeltaA);
             particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
             particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());

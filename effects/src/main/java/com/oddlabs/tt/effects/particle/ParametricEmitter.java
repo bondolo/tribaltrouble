@@ -149,9 +149,9 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
         int initiated = 0;
         var clusterColor = getClusterColor();
         for (int i = 0; i < count; i++) {
-            var particleColor = nextParticleColor(clusterColor, color);
+            computeNextParticleColor(clusterColor, color);
             initiated += initParticle(function, velocity_u, velocity_v,
-                    particleColor.r(), particleColor.g(), particleColor.b(), particleColor.a(),
+                    nextColorR, nextColorG, nextColorB, nextColorA,
                     delta_color.r(), delta_color.g(), delta_color.b(), delta_color.a(),
                     particle_radius, growth_rate, energy);
         }
