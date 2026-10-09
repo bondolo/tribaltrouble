@@ -23,7 +23,8 @@ import com.oddlabs.tt.engine.render.shader.DebugShaderRenderer;
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.render.state.GlobalUniforms;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.gui.render.SceneRenderer;
+import com.oddlabs.tt.gui.render.SceneHoverProvider;
+import com.oddlabs.tt.gui.render.WorldSceneRenderer;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.scenery.SeaBottom;
 import com.oddlabs.tt.scenery.Sky;
@@ -51,7 +52,7 @@ import org.lwjgl.opengl.GL11;
 /**
  * Primary world renderer coordinating the rendering of landscape, units, buildings, and transient effects.
  */
-public final class DefaultRenderer implements SceneRenderer, AutoCloseable {
+public final class DefaultRenderer implements WorldSceneRenderer, SceneHoverProvider {
     private final Picker picker;
     private final Water water;
     private final Sky sky;
@@ -119,11 +120,6 @@ public final class DefaultRenderer implements SceneRenderer, AutoCloseable {
         float center = world.getHeightMap().getMetersPerWorld() / 2f;
         float z = world.getHeightMap().getNearestHeight(center, center);
         DebugRender.drawAxes(center, z);
-    }
-
-    @Override
-    public boolean isCheater() {
-        return cheat != null && cheat.isEnabled();
     }
 
     public RenderState getRenderState() {

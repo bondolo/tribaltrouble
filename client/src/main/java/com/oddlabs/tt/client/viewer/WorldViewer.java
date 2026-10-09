@@ -336,7 +336,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 selection, modelViewStack, projectionStack, audioManager, engine.getSettings(),
                 gui_root.getWidth(), gui_root.getHeight());
         this.gui_root = gui_root;
-        this.gui_root.setCheatIcon(icons.getCheatIcon());
+        this.gui_root.setCheatIndicator(icons.getCheatIcon(), cheat::isEnabled);
         this.chat_listener = message -> {
             var infoPrinter = gui_root.getInfoPrinter();
             switch (message.type()) {

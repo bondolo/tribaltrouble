@@ -10,7 +10,7 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MessageForm;
-import com.oddlabs.tt.gui.render.SceneRenderer;
+import com.oddlabs.tt.gui.render.WorldSceneRenderer;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.GameNetwork;
@@ -26,7 +26,7 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
 /**
  * UI form shown while establishing a multiplayer connection or initializing a local game.
  */
-public final class ConnectingForm extends Form implements ConfigurationListener<GUIRoot, SceneRenderer> {
+public final class ConnectingForm extends Form implements ConfigurationListener<GUIRoot, WorldSceneRenderer> {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ConnectingForm.class.getName());
 
     public static String i18n(String key, Object... args) {
@@ -35,10 +35,11 @@ public final class ConnectingForm extends Form implements ConfigurationListener<
 
     private final MultiplayerLobby owner;
     private final GUIRoot gui_root;
-    private final GameNetwork<GUIRoot, SceneRenderer> game_network;
+    private final GameNetwork<GUIRoot, WorldSceneRenderer> game_network;
     private final AudioManager audioManager;
 
-    public ConnectingForm(GameNetwork<GUIRoot, SceneRenderer> game_network, GUIRoot gui_root, MultiplayerLobby owner,
+    public ConnectingForm(GameNetwork<GUIRoot, WorldSceneRenderer> game_network, GUIRoot gui_root,
+            MultiplayerLobby owner,
             AudioManager audioManager) {
         super(gui_root, "");
         this.game_network = game_network;
@@ -62,7 +63,7 @@ public final class ConnectingForm extends Form implements ConfigurationListener<
     }
 
     @Override
-    public void connected(Client<GUIRoot, SceneRenderer> client, Game game, WorldGenerator<?> generator,
+    public void connected(Client<GUIRoot, WorldSceneRenderer> client, Game game, WorldGenerator<?> generator,
             int player_slot) {
         Race race = Race.values()[ThreadLocalRandom.current().nextInt(Race.values().length)];
         int team = player_slot;
@@ -88,7 +89,7 @@ public final class ConnectingForm extends Form implements ConfigurationListener<
     }
 
     @Override
-    public void gameStarted(LoadCallback<GUIRoot, SceneRenderer> loadCallback) {
+    public void gameStarted(LoadCallback<GUIRoot, WorldSceneRenderer> loadCallback) {
         remove();
         ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(), audioManager,
                 loadCallback);

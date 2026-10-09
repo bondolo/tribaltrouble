@@ -27,7 +27,7 @@ import com.oddlabs.tt.content.form.ProgressForm;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.render.LandscapeBaker;
-import com.oddlabs.tt.gui.render.SceneRenderer;
+import com.oddlabs.tt.gui.render.WorldSceneRenderer;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.client.resource.LandscapeAssetsLoader;
 import com.oddlabs.tt.engine.render.MatrixStack;
@@ -48,7 +48,6 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MenuButton;
 import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.WarningForm;
-import com.oddlabs.tt.gui.render.SceneRenderer;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
@@ -327,7 +326,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         }
     }
 
-    public final GameNetwork<GUIRoot, SceneRenderer> joinGame(GUI gui, int host_id,
+    public final GameNetwork<GUIRoot, WorldSceneRenderer> joinGame(GUI gui, int host_id,
             int gamespeed, String map_code, MultiplayerLobby owner, InGameInfo ingame_info,
             int max_unit_count) {
         GUIRoot gui_root = getGUIRoot();
@@ -336,17 +335,18 @@ public abstract class Menu extends CameraDelegate<Camera> {
         var matchmakingClient = engine.getNetwork().getMatchmakingClient();
         var chatHub = engine.getNetwork().getChatHub();
         var networkSelector = engine.getNetwork().getSelector();
-        @SuppressWarnings("unchecked") LoadCallbackFactory<GUIRoot, SceneRenderer> starterFactory = (session_id,
+        @SuppressWarnings("unchecked") LoadCallbackFactory<GUIRoot, WorldSceneRenderer> starterFactory = (session_id,
                 generator,
                 player_slots,
                 unit_infos, player_slot) -> new WorldStarter(session_id,
                         (WorldGenerator<GeneratedLandscapeData>) generator, world_params, player_slots, unit_infos,
                         player_slot, ingame_info,
                         new DefaultWorldInitAction(), engine);
-        Client<GUIRoot, SceneRenderer> client = new Client<>(null, networkSelector, matchmakingClient, chatHub, host_id,
+        Client<GUIRoot, WorldSceneRenderer> client = new Client<>(null, networkSelector, matchmakingClient, chatHub,
+                host_id,
                 starterFactory,
                 new DefaultPlayerSlotHandler());
-        GameNetwork<GUIRoot, SceneRenderer> game_network = new GameNetwork<>(null, client);
+        GameNetwork<GUIRoot, WorldSceneRenderer> game_network = new GameNetwork<>(null, client);
         ConnectingForm connecting_form = new ConnectingForm(game_network, getGUIRoot(), owner, engine
                 .getAudioManager());
         client.setConfigurationListener(connecting_form);
@@ -354,7 +354,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         return game_network;
     }
 
-    public static GameNetwork<GUIRoot, SceneRenderer> startNewGame(
+    public static GameNetwork<GUIRoot, WorldSceneRenderer> startNewGame(
             Peer engine, GUIRoot gui_root,
             @Nullable MultiplayerLobby owner, WorldParameters world_params, InGameInfo ingame_info,
             WorldInitAction init_action, @Nullable Game game, IslandConfig islandConfig, String[] ai_names) {
@@ -368,14 +368,15 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 address, generator, multiplayer, ai_names,
                 (team, race_val, name) -> new PlayerInfo(team, Race.fromValue(race_val), name),
                 new DefaultPlayerSlotHandler());
-        @SuppressWarnings("unchecked") LoadCallbackFactory<GUIRoot, SceneRenderer> starterFactory = (session_id, gen,
+        @SuppressWarnings("unchecked") LoadCallbackFactory<GUIRoot, WorldSceneRenderer> starterFactory = (session_id,
+                gen,
                 player_slots, unit_infos,
                 player_slot) -> new WorldStarter(
                         session_id, (WorldGenerator<GeneratedLandscapeData>) gen,
                         world_params, player_slots, unit_infos, player_slot, ingame_info, init_action, engine);
-        Client<GUIRoot, SceneRenderer> client = new Client<>(server::close, networkSelector, matchmakingClient,
+        Client<GUIRoot, WorldSceneRenderer> client = new Client<>(server::close, networkSelector, matchmakingClient,
                 chatHub, -1, starterFactory, new DefaultPlayerSlotHandler());
-        GameNetwork<GUIRoot, SceneRenderer> game_network = new GameNetwork<>(server, client);
+        GameNetwork<GUIRoot, WorldSceneRenderer> game_network = new GameNetwork<>(server, client);
         if (multiplayer) {
             ConnectingForm connecting_form = new ConnectingForm(game_network, gui_root, owner, engine
                     .getAudioManager());
@@ -384,7 +385,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
         } else {
             client.setConfigurationListener(new ConfigurationListener<>() {
                 @Override
-                public void connected(Client<GUIRoot, SceneRenderer> client, Game game, WorldGenerator<?> generator,
+                public void connected(Client<GUIRoot, WorldSceneRenderer> client, Game game, WorldGenerator<
+                        ?> generator,
                         int player_slot) {
                     assert player_slot == 0 : "player_slot must be 0";
                 }
@@ -399,7 +401,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 }
 
                 @Override
-                public void gameStarted(LoadCallback<GUIRoot, SceneRenderer> loadCallback) {
+                public void gameStarted(LoadCallback<GUIRoot, WorldSceneRenderer> loadCallback) {
                     ProgressForm.Mode mode = ingame_info.showLoadingHints()
                             ? ProgressForm.Mode.GAME_LOAD
                             : ProgressForm.Mode.TUTORIAL;
@@ -430,7 +432,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
                         first_progress, generator), mode);
     }
 
-    private static SceneRenderer finishMainMenu(
+    private static WorldSceneRenderer finishMainMenu(
             Peer engine, GUIRoot gui_root,
             boolean first_progress, WorldGenerator<GeneratedLandscapeData> generator) {
         engine.getFramePacer().freezeTime();
@@ -455,7 +457,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, menuAnimationManager);
         Player local_player = world.getPlayers().getFirst();
         Selection selection = new Selection(local_player);
-        SceneRenderer renderer = new DefaultRenderer(null, local_player,
+        WorldSceneRenderer renderer = new DefaultRenderer(null, local_player,
                 render_queues, world_info,
                 landscape_renderer, new Picker(menuAnimationManager, local_player, gui_root, render_queues,
                         landscape_renderer, selection, engine.getAudioManager()), selection, modelViewStack,

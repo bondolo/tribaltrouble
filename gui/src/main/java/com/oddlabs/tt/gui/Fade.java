@@ -1,7 +1,8 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import com.oddlabs.tt.gui.render.SceneRenderer;
+import com.oddlabs.tt.gui.render.SceneHoverProvider;
+import com.oddlabs.tt.gui.render.WorldSceneRenderer;
 import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
@@ -14,22 +15,29 @@ final class Fade {
 
     private final @Nullable Runnable onComplete;
     private final GUIRoot gui_root;
-    private final @Nullable SceneRenderer renderer;
+    private final @Nullable WorldSceneRenderer renderer;
+    private final @Nullable SceneHoverProvider hoverProvider;
 
     private float time = 0;
     private boolean image_switched = false;
 
-    Fade(@Nullable Runnable onComplete, GUIRoot gui_root, @Nullable SceneRenderer renderer) {
+    Fade(@Nullable Runnable onComplete, GUIRoot gui_root, @Nullable WorldSceneRenderer renderer,
+            @Nullable SceneHoverProvider hoverProvider) {
         this.onComplete = onComplete;
         this.gui_root = gui_root;
         this.renderer = renderer;
+        this.hoverProvider = hoverProvider;
+    }
+
+    Fade(@Nullable Runnable onComplete, GUIRoot gui_root, @Nullable WorldSceneRenderer renderer) {
+        this(onComplete, gui_root, renderer, renderer instanceof SceneHoverProvider hover ? hover : null);
     }
 
     public void animate(GUI gui, float t) {
         time += t;
         if (!image_switched && time >= FADE_TIME / 2) {
             image_switched = true;
-            gui.switchRoot(gui_root, renderer);
+            gui.switchRoot(gui_root, renderer, hoverProvider);
         }
 
         if (time >= FADE_TIME) {

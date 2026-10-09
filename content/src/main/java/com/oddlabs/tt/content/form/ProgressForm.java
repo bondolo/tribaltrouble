@@ -13,7 +13,7 @@ import com.oddlabs.tt.gui.GUIImage;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.LabelBox;
 import com.oddlabs.tt.gui.ProgressBar;
-import com.oddlabs.tt.gui.render.SceneRenderer;
+import com.oddlabs.tt.gui.render.WorldSceneRenderer;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ResourceBundle;
@@ -79,13 +79,13 @@ public final class ProgressForm {
     }
 
     public static void setProgressForm(NetworkSelector network, GUI gui, @Nullable AudioManager audioManager,
-            LoadCallback<GUIRoot, SceneRenderer> callback) {
+            LoadCallback<GUIRoot, WorldSceneRenderer> callback) {
         setProgressForm(network, gui, audioManager, callback, Mode.GAME_LOAD);
     }
 
     public static @Nullable Runnable setProgressForm(NetworkSelector network, final GUI gui,
             @Nullable AudioManager audioManager,
-            final LoadCallback<GUIRoot, SceneRenderer> callback, final Mode mode) {
+            final LoadCallback<GUIRoot, WorldSceneRenderer> callback, final Mode mode) {
         boolean show_tip = (mode == Mode.GAME_LOAD);
         Layout layout = switch (mode) {
             case STARTUP -> new Layout("/textures/gui/oddlabs", 1024, 1024, 800, 600, 320, 145, 200, true, true);
@@ -101,7 +101,7 @@ public final class ProgressForm {
     }
 
     private ProgressForm(NetworkSelector network, final GUI gui, @Nullable AudioManager audioManager,
-            final LoadCallback<GUIRoot, SceneRenderer> callback,
+            final LoadCallback<GUIRoot, WorldSceneRenderer> callback,
             Mode mode, Layout layout, boolean show_tip) {
         this.network = network;
         this.gui = gui;
@@ -155,10 +155,11 @@ public final class ProgressForm {
         return load_task;
     }
 
-    private void executeCallback(LoadCallback<GUIRoot, SceneRenderer> callback, @Nullable AudioManager audioManager) {
+    private void executeCallback(LoadCallback<GUIRoot, WorldSceneRenderer> callback,
+            @Nullable AudioManager audioManager) {
         GUIRoot client_root = gui.createRoot();
         ProgressListener listener = new FormProgressListener();
-        SceneRenderer renderer = ProgressListener.supply(listener,
+        WorldSceneRenderer renderer = ProgressListener.supply(listener,
                 () -> callback.load(client_root));
         if (progress_bar != null) {
             progress_bar.setProgress(1f);

@@ -26,6 +26,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.function.BooleanSupplier;
 import java.util.logging.Logger;
 
 /**
@@ -55,6 +56,7 @@ public final class GUIRoot extends GUIObject {
     private final InputState input_state;
     private boolean render_tool_tip = false;
     private @Nullable IconQuad cheatIcon;
+    private @Nullable BooleanSupplier cheatActiveSupplier;
 
     /**
      * the control that currently has focus
@@ -219,8 +221,13 @@ public final class GUIRoot extends GUIObject {
         return info_printer;
     }
 
-    public void setCheatIcon(@Nullable IconQuad cheatIcon) {
+    public void setCheatIndicator(@Nullable IconQuad cheatIcon, @Nullable BooleanSupplier cheatActiveSupplier) {
         this.cheatIcon = cheatIcon;
+        this.cheatActiveSupplier = cheatActiveSupplier;
+    }
+
+    public void setCheatIcon(@Nullable IconQuad cheatIcon) {
+        setCheatIndicator(cheatIcon, null);
     }
 
     public void pushDelegate(InputDelegate delegate) {
@@ -573,8 +580,8 @@ public final class GUIRoot extends GUIObject {
         return getModalDelegate() != null || getDelegate().renderCursor();
     }
 
-    void renderTopmost(GUIRenderer renderer, @Nullable ToolTip hovered, boolean cheater) {
-        if (cheater && cheatIcon != null) {
+    void renderTopmost(GUIRenderer renderer, @Nullable ToolTip hovered) {
+        if (cheatIcon != null && cheatActiveSupplier != null && cheatActiveSupplier.getAsBoolean()) {
             renderer.drawIcon(cheatIcon,
                     getWidth() - cheatIcon.getWidth() - 10,
                     5);

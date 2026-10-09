@@ -8,7 +8,8 @@ import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.gui.render.SceneRenderer;
+import com.oddlabs.tt.gui.render.SceneHoverProvider;
+import com.oddlabs.tt.gui.render.WorldSceneRenderer;
 import com.oddlabs.tt.window.Window;
 import com.oddlabs.tt.window.WindowSettings;
 import org.jspecify.annotations.Nullable;
@@ -32,7 +33,8 @@ public final class GUI implements Animated, AutoCloseable {
     private final GUIRenderer guiRenderer = new GUIRenderer();
     private GUIRoot current_root;
     private @Nullable Fade fade;
-    private @Nullable SceneRenderer renderer;
+    private @Nullable WorldSceneRenderer renderer;
+    private @Nullable SceneHoverProvider hoverProvider;
     private @Nullable Runnable closeHandler;
     private @Nullable Runnable errorAudioHandler;
 
@@ -154,18 +156,28 @@ public final class GUI implements Animated, AutoCloseable {
     }
 
     public GUIRoot newFade() {
-        return newFade(null, null);
+        return newFade(null, (WorldSceneRenderer) null);
     }
 
-    public GUIRoot newFade(@Nullable Runnable onComplete, @Nullable SceneRenderer renderer) {
+    public GUIRoot newFade(@Nullable Runnable onComplete, @Nullable WorldSceneRenderer renderer) {
+        return newFade(onComplete, renderer, renderer instanceof SceneHoverProvider hover ? hover : null);
+    }
+
+    public GUIRoot newFade(@Nullable Runnable onComplete, @Nullable WorldSceneRenderer renderer,
+            @Nullable SceneHoverProvider hoverProvider) {
         GUIRoot gui_root = createRoot();
-        newFade(onComplete, gui_root, renderer);
+        newFade(onComplete, gui_root, renderer, hoverProvider);
         return gui_root;
     }
 
     public GUIRoot newFade(@Nullable Runnable onComplete, GUIRoot gui_root,
-            @Nullable SceneRenderer renderer) {
-        fade = new Fade(onComplete, gui_root, renderer);
+            @Nullable WorldSceneRenderer renderer) {
+        return newFade(onComplete, gui_root, renderer, renderer instanceof SceneHoverProvider hover ? hover : null);
+    }
+
+    public GUIRoot newFade(@Nullable Runnable onComplete, GUIRoot gui_root,
+            @Nullable WorldSceneRenderer renderer, @Nullable SceneHoverProvider hoverProvider) {
+        fade = new Fade(onComplete, gui_root, renderer, hoverProvider);
         eventQueue.getManager().registerAnimation(this);
         return gui_root;
     }
@@ -189,13 +201,19 @@ public final class GUI implements Animated, AutoCloseable {
         fade = null;
     }
 
-    void switchRoot(GUIRoot gui_root, @Nullable SceneRenderer renderer) {
+    void switchRoot(GUIRoot gui_root, @Nullable WorldSceneRenderer renderer) {
+        switchRoot(gui_root, renderer, renderer instanceof SceneHoverProvider hover ? hover : null);
+    }
+
+    void switchRoot(GUIRoot gui_root, @Nullable WorldSceneRenderer renderer,
+            @Nullable SceneHoverProvider hoverProvider) {
         current_root.removeTree();
         current_root = gui_root;
         if (this.renderer != null && this.renderer != renderer) {
             this.renderer.close();
         }
         this.renderer = renderer;
+        this.hoverProvider = hoverProvider;
     }
 
     @Override
@@ -205,6 +223,7 @@ public final class GUI implements Animated, AutoCloseable {
             renderer.close();
             renderer = null;
         }
+        hoverProvider = null;
     }
 
     public GUIRoot getGUIRoot() {
@@ -216,15 +235,19 @@ public final class GUI implements Animated, AutoCloseable {
         return fade;
     }
 
-    public @Nullable SceneRenderer getRenderer() {
+    public @Nullable WorldSceneRenderer getRenderer() {
         return renderer;
+    }
+
+    public @Nullable SceneHoverProvider getHoverProvider() {
+        return hoverProvider;
     }
 
     public void pickHover(CameraState cameraState) {
         var guiRoot = getGUIRoot();
         GUIObject gui_hit = guiRoot.getCurrentGUIObject();
-        if (renderer != null) {
-            renderer.pickHover(gui_hit.canHoverBehind(), cameraState,
+        if (hoverProvider != null) {
+            hoverProvider.pickHover(gui_hit.canHoverBehind(), cameraState,
                     localInput.getMouseX(), localInput.getMouseY());
         }
     }
@@ -235,8 +258,7 @@ public final class GUI implements Animated, AutoCloseable {
         try (var _ = context.withBlendMode(BlendMode.PREMULTIPLIED)) {
             guiRenderer.renderFrame(context, guiRoot.getWidth(), guiRoot.getHeight(), () -> {
                 guiRoot.render(guiRenderer);
-                guiRoot.renderTopmost(guiRenderer, renderer != null ? renderer.getToolTip() : null, renderer != null
-                        && renderer.isCheater());
+                guiRoot.renderTopmost(guiRenderer, hoverProvider != null ? hoverProvider.getToolTip() : null);
             });
         }
     }

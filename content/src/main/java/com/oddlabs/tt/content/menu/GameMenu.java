@@ -28,14 +28,13 @@ import com.oddlabs.tt.gui.PulldownMenu;
 import com.oddlabs.tt.gui.TextBox;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
-import com.oddlabs.tt.gui.render.SceneRenderer;
+import com.oddlabs.tt.gui.render.WorldSceneRenderer;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.GameNetwork;
-import com.oddlabs.tt.gui.render.SceneRenderer;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.client.viewer.ChatCommand;
 import com.oddlabs.tt.base.util.LoadCallback;
@@ -64,7 +63,7 @@ import static com.oddlabs.tt.gui.Placement.TOP_RIGHT;
 /**
  * UI panel representing the multiplayer lobby game setup and slots configuration menu.
  */
-public final class GameMenu extends Panel implements ConfigurationListener<GUIRoot, SceneRenderer>, ChatListener {
+public final class GameMenu extends Panel implements ConfigurationListener<GUIRoot, WorldSceneRenderer>, ChatListener {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(GameMenu.class.getName());
 
     private static String i18n(String key, Object... args) {
@@ -117,7 +116,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
     private final int local_player_slot;
     private final WorldGenerator<?> generator;
     private final Peer engine;
-    private final GameNetwork<GUIRoot, SceneRenderer> game_network;
+    private final GameNetwork<GUIRoot, WorldSceneRenderer> game_network;
     private final Game game;
     private final boolean rated;
     private SortedSet<String> human_names = new TreeSet<>();
@@ -126,7 +125,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
     private boolean ready;
 
     @SuppressWarnings("unchecked")
-    public GameMenu(GameNetwork<GUIRoot, SceneRenderer> game_network,
+    public GameMenu(GameNetwork<GUIRoot, WorldSceneRenderer> game_network,
             SelectGameMenu owner,
             Game game, WorldGenerator<?> generator, int player_slot, int compare_width, int compare_height,
             int button_width) {
@@ -271,7 +270,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
     }
 
     @Override
-    public void connected(Client<GUIRoot, SceneRenderer> client, Game game, WorldGenerator<?> generator,
+    public void connected(Client<GUIRoot, WorldSceneRenderer> client, Game game, WorldGenerator<?> generator,
             int player_slot) {
         assert false;
     }
@@ -509,7 +508,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
     }
 
     @Override
-    public void gameStarted(LoadCallback<GUIRoot, SceneRenderer> loadCallback) {
+    public void gameStarted(LoadCallback<GUIRoot, WorldSceneRenderer> loadCallback) {
         setDisabled(true);
         ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(), engine.getAudioManager(),
                 loadCallback);
