@@ -237,6 +237,17 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
     }
 
     private void renderList(Tree tree, List<TreeSupply> render_list, boolean respond) {
+        CameraState camera = getCamera();
+        if (camera != null && render_list.size() > 1) {
+            float camX = camera.getCurrentX();
+            float camY = camera.getCurrentY();
+            float camZ = camera.getCurrentZ();
+            render_list.sort((a, b) -> Float.compare(
+                    RenderTools.getEyeDistanceSquared(a, camX, camY, camZ),
+                    RenderTools.getEyeDistanceSquared(b, camX, camY, camZ)
+            ));
+        }
+
         SpriteList crownList = tree.crown();
         SpriteList trunkList = tree.trunk();
 

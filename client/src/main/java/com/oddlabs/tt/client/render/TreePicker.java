@@ -188,10 +188,7 @@ sealed class TreePicker permits TreeRenderer {
     }
 
     private void addToRenderList(TreeSupply tree, CameraState camera) {
-        if (isPicking())
-            markDetailPolygon(tree, PolyDetail.HIGH_POLY);
-        else
-            sprite_sorter.add(getRenderState(tree), camera, false);
+        markDetailPolygon(tree, PolyDetail.HIGH_POLY);
     }
 
     private LODObject getRenderState(TreeSupply tree_supply) {
