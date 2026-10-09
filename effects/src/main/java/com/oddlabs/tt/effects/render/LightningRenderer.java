@@ -105,8 +105,7 @@ public final class LightningRenderer implements AutoCloseable {
                 for (int i = 0; i < activeLightnings.size(); i++) {
                     Lightning emitter = activeLightnings.get(i);
                     if (state.inNoDetailMode()
-                            || RenderTools.inFrustum(emitter.getBounds(), state.getFrustum())
-                                    != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+                            || emitter.getBounds().testFrustum(state.getFrustum())) {
                         renderInternal(context, render_queues, emitter);
                     }
                 }

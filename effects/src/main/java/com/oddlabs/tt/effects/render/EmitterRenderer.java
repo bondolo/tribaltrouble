@@ -10,7 +10,6 @@ import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.PolyDetail;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
-import com.oddlabs.tt.engine.render.RenderTools;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.SpriteRenderer;
 import com.oddlabs.tt.engine.render.Texture;
@@ -231,9 +230,7 @@ public final class EmitterRenderer implements AutoCloseable {
 
     private <P extends Particle> void collectParticles(RenderQueues render_queues, Emitter<P> emitter,
             CameraState state) {
-        if (!state.inNoDetailMode()
-                && RenderTools.inFrustum(emitter.getBounds(), state.getFrustum())
-                        == RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+        if (!state.inNoDetailMode() && !emitter.getBounds().testFrustum(state.getFrustum())) {
             return;
         }
 

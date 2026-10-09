@@ -1,5 +1,6 @@
 package com.oddlabs.tt.base.geom;
 
+import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
@@ -222,5 +223,27 @@ public class BoundingBox {
         bmax_y = len;
 
         computeXYCenter();
+    }
+
+    /**
+     * Tests whether this bounding box is partly or completely within the frustum.
+     *
+     * @param frustum the frustum intersection culler
+     * @return {@code true} if inside or intersecting; {@code false} if completely outside
+     */
+    public final boolean testFrustum(FrustumIntersection frustum) {
+        return frustum.testAab(bmin_x, bmin_y, bmin_z, bmax_x, bmax_y, bmax_z);
+    }
+
+    /**
+     * Tests this bounding box against the frustum.
+     *
+     * @param frustum the frustum intersection culler
+     * @return index of the culling plane (&gt;= 0) if outside;
+     *         {@link FrustumIntersection#INSIDE} (-2) if completely inside;
+     *         or {@link FrustumIntersection#INTERSECT} (-1) if intersecting.
+     */
+    public final int intersectFrustum(FrustumIntersection frustum) {
+        return frustum.intersectAab(bmin_x, bmin_y, bmin_z, bmax_x, bmax_y, bmax_z);
     }
 }

@@ -23,6 +23,7 @@ import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
 import com.oddlabs.tt.simulation.landscape.PatchGroup;
 import com.oddlabs.tt.simulation.landscape.World;
+import org.joml.FrustumIntersection;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.util.Color;
@@ -115,29 +116,27 @@ public final class LandscapeRenderer implements SceneRenderer, Animated, AutoClo
 
     private void doPrepareAll(CameraState camera, final boolean visible_override, Collection<
             LandscapeLeaf> result) {
-        traverse(world.getPatchRoot(), camera,
-                visible_override ? RenderTools.FRUSTUM_INSIDE : RenderTools.ALL_PLANES_MASK, result);
+        traverse(world.getPatchRoot(), camera, visible_override, result);
     }
 
-    private void traverse(AbstractPatchGroup node, CameraState camera, int planeMask,
+    private void traverse(AbstractPatchGroup node, CameraState camera, boolean fullyInside,
             Collection<LandscapeLeaf> result) {
         switch (node) {
             case PatchGroup group -> {
-                int nextPlaneMask = planeMask;
-                if (planeMask != RenderTools.FRUSTUM_INSIDE) {
-                    nextPlaneMask = RenderTools.testFrustum(group, camera.getFrustum(), planeMask);
-                    if (nextPlaneMask == RenderTools.FRUSTUM_OUTSIDE) {
+                boolean childInside = fullyInside;
+                if (!fullyInside) {
+                    int res = group.intersectFrustum(camera.getFrustum());
+                    if (res >= 0) {
                         return;
                     }
+                    childInside = (res == FrustumIntersection.INSIDE);
                 }
                 for (AbstractPatchGroup child : group.children()) {
-                    traverse(child, camera, nextPlaneMask, result);
+                    traverse(child, camera, childInside, result);
                 }
             }
             case LandscapeLeaf leaf -> {
-                if (planeMask == RenderTools.FRUSTUM_INSIDE
-                        || RenderTools.testFrustum(leaf, camera.getFrustum(), planeMask)
-                                != RenderTools.FRUSTUM_OUTSIDE) {
+                if (fullyInside || leaf.testFrustum(camera.getFrustum())) {
                     result.add(leaf);
                 }
             }

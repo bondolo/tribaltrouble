@@ -6,7 +6,6 @@ import com.oddlabs.tt.effects.particle.SonicBlastEffect;
 import com.oddlabs.tt.engine.procedural.GeneratorNoise;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderQueues;
-import com.oddlabs.tt.engine.render.RenderTools;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.shader.VertexLayout;
 import com.oddlabs.tt.engine.render.state.BlendMode;
@@ -88,8 +87,7 @@ public final class SonicBlastRenderer implements AutoCloseable {
                 SonicBlastEffect effect = activeEffects.get(i);
                 if (effect.isDead()) continue;
                 if (!state.inNoDetailMode()
-                        && RenderTools.inFrustum(effect.getBounds(), state.getFrustum())
-                                == RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+                        && !effect.getBounds().testFrustum(state.getFrustum())) {
                     continue;
                 }
 

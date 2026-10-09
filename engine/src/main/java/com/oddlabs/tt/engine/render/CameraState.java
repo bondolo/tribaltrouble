@@ -3,6 +3,7 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.util.Color;
+import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -19,7 +20,7 @@ public final class CameraState {
     private final Matrix4f modl = new Matrix4f();
     private final Matrix4f proj = new Matrix4f();
     private final Matrix4f proj_modl = new Matrix4f();
-    private final float[][] frustum = new float[6][4];
+    private final FrustumIntersection frustum = new FrustumIntersection();
     private final Vector3f f = new Vector3f();
     private final Vector3f s = new Vector3f();
     private final Vector3f u = new Vector3f();
@@ -165,9 +166,7 @@ public final class CameraState {
         modl.set(camera.modl);
         proj.set(camera.proj);
         proj_modl.set(camera.proj_modl);
-        for (int i = 0; i < frustum.length; i++) {
-            System.arraycopy(camera.frustum[i], 0, frustum[i], 0, frustum[i].length);
-        }
+        frustum.set(camera.proj_modl);
         f.set(camera.f);
         s.set(camera.s);
         u.set(camera.u);
@@ -268,7 +267,7 @@ public final class CameraState {
         return proj_modl;
     }
 
-    public float[][] getFrustum() {
+    public FrustumIntersection getFrustum() {
         return frustum;
     }
 
@@ -283,55 +282,7 @@ public final class CameraState {
 
         this.proj.set(proj);
         proj.mul(modl, proj_modl);
-        findFrustumPlanes(proj_modl);
-    }
-
-    public void findFrustumPlanes(Matrix4f matrix) {
-        /* Extract the numbers for the RIGHT plane */
-        frustum[0][0] = matrix.m03() - matrix.m00();
-        frustum[0][1] = matrix.m13() - matrix.m10();
-        frustum[0][2] = matrix.m23() - matrix.m20();
-        frustum[0][3] = matrix.m33() - matrix.m30();
-
-        /* Extract the numbers for the LEFT plane */
-        frustum[1][0] = matrix.m03() + matrix.m00();
-        frustum[1][1] = matrix.m13() + matrix.m10();
-        frustum[1][2] = matrix.m23() + matrix.m20();
-        frustum[1][3] = matrix.m33() + matrix.m30();
-
-        /* Extract the BOTTOM plane */
-        frustum[2][0] = matrix.m03() + matrix.m01();
-        frustum[2][1] = matrix.m13() + matrix.m11();
-        frustum[2][2] = matrix.m23() + matrix.m21();
-        frustum[2][3] = matrix.m33() + matrix.m31();
-
-        /* Extract the TOP plane */
-        frustum[3][0] = matrix.m03() - matrix.m01();
-        frustum[3][1] = matrix.m13() - matrix.m11();
-        frustum[3][2] = matrix.m23() - matrix.m21();
-        frustum[3][3] = matrix.m33() - matrix.m31();
-
-        /* Extract the FAR plane */
-        frustum[4][0] = matrix.m03() - matrix.m02();
-        frustum[4][1] = matrix.m13() - matrix.m12();
-        frustum[4][2] = matrix.m23() - matrix.m22();
-        frustum[4][3] = matrix.m33() - matrix.m32();
-
-        /* Extract the NEAR plane */
-        frustum[5][0] = matrix.m03() + matrix.m02();
-        frustum[5][1] = matrix.m13() + matrix.m12();
-        frustum[5][2] = matrix.m23() + matrix.m22();
-        frustum[5][3] = matrix.m33() + matrix.m32();
-
-        for (float[] frustum1 : frustum) {
-            /* Normalize the result */
-            float length_inv = 1f / ((float) Math.sqrt(frustum1[0] * frustum1[0] + frustum1[1] * frustum1[1]
-                    + frustum1[2] * frustum1[2]));
-            frustum1[0] *= length_inv;
-            frustum1[1] *= length_inv;
-            frustum1[2] *= length_inv;
-            frustum1[3] *= length_inv;
-        }
+        frustum.set(proj_modl);
     }
 
     public int getWidth() {

@@ -62,6 +62,7 @@ import com.oddlabs.tt.simulation.model.weapon.SonicBlast;
 import com.oddlabs.tt.simulation.model.weapon.Stun;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.util.Color;
+import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
@@ -305,8 +306,8 @@ public final class RenderState implements SceneContext {
         var responds = picker.getTargetResponds();
         responds.removeIf(LandscapeTargetRespond::isFinished);
         for (LandscapeTargetRespond respond : responds) {
-            if (visible_override || camera.inNoDetailMode() || RenderTools.inFrustum(respond.getBounds(), camera
-                    .getFrustum()) != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+            if (visible_override || camera.inNoDetailMode()
+                    || respond.getBounds().testFrustum(camera.getFrustum())) {
                 target_respond_renderer.addToTargetList(respond);
             }
         }
@@ -351,13 +352,13 @@ public final class RenderState implements SceneContext {
         return state;
     }
 
-    private static boolean pickingInFrustum(Target target, float[][] frustum, float z_offset,
+    private static boolean pickingInFrustum(Target target, FrustumIntersection frustum, float z_offset,
             float selection_radius, float selection_height) {
         BoundingBox picking_selection_box = new BoundingBox();
         picking_selection_box.setBounds(-selection_radius + target.getPositionX(), selection_radius + target
                 .getPositionX(), -selection_radius + target.getPositionY(), selection_radius + target
                         .getPositionY(), z_offset, z_offset + selection_height);
-        return RenderTools.inFrustum(picking_selection_box, frustum) != RenderTools.FrustumIntersection.ALL_OUTSIDE;
+        return picking_selection_box.testFrustum(frustum);
     }
 
     boolean isHovered(Selectable<?> selectable) {
@@ -618,8 +619,7 @@ public final class RenderState implements SceneContext {
     };
 
     private void visitSceneryModel(final SceneryModel model) {
-        if (picking && !visible_override
-                && RenderTools.inFrustum(model, camera.getFrustum()) == RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+        if (picking && !visible_override && !model.testFrustum(camera.getFrustum())) {
             return;
         }
         ModelState<SceneryModel> state = getCachedState(scenery_model_visitor, model);

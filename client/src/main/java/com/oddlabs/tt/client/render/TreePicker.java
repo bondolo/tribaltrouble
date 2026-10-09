@@ -4,7 +4,6 @@ import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.LODObject;
 import com.oddlabs.tt.engine.render.PolyDetail;
 import com.oddlabs.tt.engine.render.RenderConfig;
-import com.oddlabs.tt.engine.render.RenderTools;
 import com.oddlabs.tt.engine.render.SpriteList;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.SpriteFile;
@@ -13,6 +12,7 @@ import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeLeaf;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
+import org.joml.FrustumIntersection;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -147,35 +147,35 @@ sealed class TreePicker permits TreeRenderer {
     }
 
     final void visit(AbstractTreeGroup node) {
-        visit(node, camera != null && camera.inNoDetailMode() ? RenderTools.FRUSTUM_INSIDE
-                : RenderTools.ALL_PLANES_MASK);
+        visit(node, camera != null && camera.inNoDetailMode());
     }
 
-    private void visit(AbstractTreeGroup node, int planeMask) {
-        int nextPlaneMask = planeMask;
-        if (planeMask != RenderTools.FRUSTUM_INSIDE && camera != null) {
-            nextPlaneMask = RenderTools.testFrustum(node, camera.getFrustum(), planeMask);
-            if (nextPlaneMask == RenderTools.FRUSTUM_OUTSIDE) {
+    private void visit(AbstractTreeGroup node, boolean fullyInside) {
+        boolean childInside = fullyInside;
+        if (!fullyInside && camera != null) {
+            int res = node.intersectFrustum(camera.getFrustum());
+            if (res >= 0) {
                 return;
             }
+            childInside = (res == FrustumIntersection.INSIDE);
         }
 
         switch (node) {
             case TreeGroup group -> {
                 for (AbstractTreeGroup child : group.children()) {
-                    visit(child, nextPlaneMask);
+                    visit(child, childInside);
                 }
             }
             case TreeLeaf leaf -> {
                 for (TreeSupply tree : leaf.getTrees()) {
-                    visitTree(tree, nextPlaneMask);
+                    visitTree(tree, childInside);
                 }
             }
-            case TreeSupply tree -> visitTree(tree, nextPlaneMask);
+            case TreeSupply tree -> visitTree(tree, childInside);
         }
     }
 
-    private boolean pickingInFrustum(TreeSupply tree_supply, float[][] frustum, int planeMask) {
+    private boolean pickingInFrustum(TreeSupply tree_supply, FrustumIntersection frustum) {
         float heightScale = trees.get(tree_supply.getTreeType()).heightScale();
         picking_selection_box.setBounds(-SELECTION_RADIUS + tree_supply.getPositionX(),
                 SELECTION_RADIUS + tree_supply.getPositionX(),
@@ -183,7 +183,7 @@ sealed class TreePicker permits TreeRenderer {
                 SELECTION_RADIUS + tree_supply.getPositionY(),
                 tree_supply.bmin_z,
                 tree_supply.bmin_z + (tree_supply.bmax_z - tree_supply.bmin_z) * heightScale);
-        return RenderTools.testFrustum(picking_selection_box, frustum, planeMask) != RenderTools.FRUSTUM_OUTSIDE;
+        return picking_selection_box.testFrustum(frustum);
     }
 
     private void addToRenderList(TreeSupply tree, CameraState camera) {
@@ -196,20 +196,19 @@ sealed class TreePicker permits TreeRenderer {
         return render_state;
     }
 
-    private void visitTree(TreeSupply tree_supply, int planeMask) {
+    private void visitTree(TreeSupply tree_supply, boolean fullyInside) {
         if (tree_supply.isEmpty() && !isFalling(tree_supply))
             return;
 
         boolean in_view;
-        if (planeMask == RenderTools.FRUSTUM_INSIDE) {
+        if (fullyInside) {
             in_view = !isPicking() || !tree_supply.isDead();
         } else if (camera == null) {
             in_view = false;
         } else if (isPicking()) {
-            in_view = !tree_supply.isDead() && pickingInFrustum(tree_supply, camera.getFrustum(), planeMask);
+            in_view = !tree_supply.isDead() && pickingInFrustum(tree_supply, camera.getFrustum());
         } else {
-            in_view = RenderTools.testFrustum(tree_supply, camera.getFrustum(), planeMask)
-                    != RenderTools.FRUSTUM_OUTSIDE;
+            in_view = tree_supply.testFrustum(camera.getFrustum());
         }
         if (in_view && camera != null) {
             addToRenderList(tree_supply, camera);

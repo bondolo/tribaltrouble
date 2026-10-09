@@ -4,7 +4,7 @@ import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.client.viewer.Selection;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.RenderQueues;
-import com.oddlabs.tt.engine.render.RenderTools;
+import org.joml.FrustumIntersection;
 import com.oddlabs.tt.simulation.model.AbstractElementNode;
 import com.oddlabs.tt.simulation.model.Element;
 import com.oddlabs.tt.simulation.model.ElementNode;
@@ -45,26 +45,27 @@ final class ElementRenderer<T extends Element<T>> implements AutoCloseable {
     }
 
     public void visit(AbstractElementNode<T> node) {
-        visit(node, camera.inNoDetailMode() ? RenderTools.FRUSTUM_INSIDE : RenderTools.ALL_PLANES_MASK);
+        visit(node, camera.inNoDetailMode());
     }
 
-    private void visit(AbstractElementNode<T> node, int planeMask) {
-        int nextPlaneMask = planeMask;
-        if (planeMask != RenderTools.FRUSTUM_INSIDE) {
-            nextPlaneMask = RenderTools.testFrustum(node, camera.getFrustum(), planeMask);
-            if (nextPlaneMask == RenderTools.FRUSTUM_OUTSIDE) {
+    private void visit(AbstractElementNode<T> node, boolean fullyInside) {
+        boolean childInside = fullyInside;
+        if (!fullyInside) {
+            int res = node.intersectFrustum(camera.getFrustum());
+            if (res >= 0) {
                 return;
             }
+            childInside = (res == FrustumIntersection.INSIDE);
         }
         boolean old_state_override = render_state.overrideVisibility();
-        render_state.setVisibleOverride(nextPlaneMask == RenderTools.FRUSTUM_INSIDE);
+        render_state.setVisibleOverride(childInside);
 
         for (T element = node.getModels().getFirst(); element != null; element = element.getNext()) {
             render_state.visit(element);
         }
         if (node instanceof ElementNode<T> elementNode) {
             for (AbstractElementNode<T> child : elementNode.children()) {
-                visit(child, nextPlaneMask);
+                visit(child, childInside);
             }
         }
 
