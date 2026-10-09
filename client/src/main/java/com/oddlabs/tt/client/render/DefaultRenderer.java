@@ -251,10 +251,42 @@ public final class DefaultRenderer implements SceneRenderer, AutoCloseable {
                 GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
             }
 
-            // Sky & Landscape don't write to mask -> Disable Mask Buffer
-            context.setDrawBuffers(false);
+            renderEnvironment(context, frustum_state, currentTime);
+            prepareCPU(frustum_state, currentTime);
+            renderOpaqueGeometry(context, frustum_state, gui_root, currentTime);
+            renderWater(context, frustum_state, currentTime);
+            renderTransparents(context, frustum_state);
+            renderOverlays(context, frustum_state);
+        }
 
+        gpu.begin(GpuPass.COMPOSITE);
+        postProcessor.renderComposite(context);
+        gpu.end();
+    }
+
+    private void prepareCPU(CameraState frustum_state, float currentTime) {
+        if (DebugFlags.process_trees) {
+            tree_renderer.setup(frustum_state);
+            tree_renderer.visit(world.getTreeRoot());
+        }
+        if (DebugFlags.process_misc) {
+            element_renderer.setup(frustum_state, currentTime);
+            element_renderer.visit(world.getElementRoot());
+        }
+
+        if (DebugFlags.process_misc) {
+            var renderState = element_renderer.getRenderState();
+            emitterRenderer.prepare(render_queues, renderState.getEmitterQueue(), frustum_state, modelViewStack);
+            lightningRenderer.prepare(renderState.getLightningQueue());
+            sonicBlastRenderer.prepare(renderState.getSonicBlastQueue());
+        }
+        sprite_sorter.distributeModels();
+    }
+
+    private void renderEnvironment(RenderContext context, CameraState frustum_state, float currentTime) {
+        try (var _ = context.withDrawBuffers(false)) {
             if (DebugFlags.draw_sky) {
+                var gpu = context.gpuTimer();
                 gpu.begin(GpuPass.SKY);
                 sky.render(context, frustum_state, modelViewStack, projectionStack, currentTime);
                 seaBottom.render(context, frustum_state, modelViewStack, projectionStack);
@@ -262,123 +294,105 @@ public final class DefaultRenderer implements SceneRenderer, AutoCloseable {
             }
 
             if (DebugFlags.process_landscape) {
+                var gpu = context.gpuTimer();
                 gpu.begin(GpuPass.LANDSCAPE);
                 landscape_renderer.prepareAll(frustum_state, false);
                 landscape_renderer.render(context, frustum_state, modelViewStack, projectionStack);
                 gpu.end();
             }
-            // Trees & Units write to mask -> Enable Mask Buffer
-            context.setDrawBuffers(true);
+        }
+    }
 
+    private void renderOpaqueGeometry(RenderContext context, CameraState frustum_state, GUIRoot gui_root,
+            float currentTime) {
+        var gpu = context.gpuTimer();
+        if (DebugFlags.process_shadows && (cheat == null || cheat.draw_shadows)) {
+            gpu.begin(GpuPass.SHADOWS);
             if (DebugFlags.process_trees) {
-                tree_renderer.setup(frustum_state);
-                tree_renderer.visit(world.getTreeRoot());
+                tree_renderer.renderShadows(element_renderer.getRenderState().getDefaultShadowRenderer(), currentTime);
             }
-            if (DebugFlags.process_misc) {
-                element_renderer.setup(frustum_state, currentTime);
-                element_renderer.visit(world.getElementRoot());
-            }
+            render_queues.renderShadows(context, (float) world.getHeightMap().getMetersPerWorld(),
+                    landscape_renderer.getHeightMapVisual().getHeightTexture(), modelViewStack, projectionStack);
+            gpu.end();
+        }
 
-            // Process transient effects (smoke, lightning, fragments) immediately after visitation.
-            if (DebugFlags.process_misc) {
-                var renderState = element_renderer.getRenderState();
-                emitterRenderer.prepare(render_queues, renderState.getEmitterQueue(), frustum_state,
-                        modelViewStack);
-                lightningRenderer.prepare(renderState.getLightningQueue());
-                sonicBlastRenderer.prepare(renderState.getSonicBlastQueue());
-            }
-            sprite_sorter.distributeModels();
-            if (DebugFlags.process_shadows && (cheat == null || cheat.draw_shadows)) {
-                gpu.begin(GpuPass.SHADOWS);
-                if (DebugFlags.process_trees) {
-                    tree_renderer.renderShadows(element_renderer.getRenderState().getDefaultShadowRenderer(),
-                            currentTime);
-                }
-                render_queues.renderShadows(context, (float) world.getHeightMap().getMetersPerWorld(),
-                        landscape_renderer.getHeightMapVisual().getHeightTexture(), modelViewStack, projectionStack);
-                gpu.end();
-            }
+        if (DebugFlags.process_trees) {
+            gpu.begin(GpuPass.TREES);
+            tree_renderer.render(context, frustum_state, modelViewStack, projectionStack, currentTime);
+            gpu.end();
+        }
+        if (DebugFlags.process_misc) {
+            gpu.begin(GpuPass.UNITS);
+            render_queues.renderAll(context, frustum_state, projectionStack);
+            gpu.end();
 
-            if (DebugFlags.process_trees) {
-                tree_renderer.render(context, frustum_state, modelViewStack, projectionStack, currentTime);
-            }
-            if (DebugFlags.process_misc) {
-                gpu.begin(GpuPass.UNITS);
-                render_queues.renderAll(context, frustum_state, projectionStack);
-                gpu.end();
+            gpu.begin(GpuPass.TREES);
+            treeSpriteRenderer.renderAll(context, frustum_state, projectionStack);
+            gpu.end();
 
-                // Render trees AFTER opaque units/misc.
-                // Trees use Alpha-to-Coverage with Depth-Write enabled.
-                // Separate renderer ensures they are flushed here.
-                gpu.begin(GpuPass.TREES);
-                treeSpriteRenderer.renderAll(context, frustum_state, projectionStack);
-                gpu.end();
+            gpu.begin(GpuPass.PLANTS);
+            render_queues.renderPlants(context, frustum_state, projectionStack);
+            gpu.end();
 
-                gpu.begin(GpuPass.PLANTS);
-                render_queues.renderPlants(context, frustum_state, projectionStack);
-                gpu.end();
+            render_queues.renderNoDetail();
+        }
 
-                render_queues.renderNoDetail();
-            }
+        if (gui_root.getDelegate() instanceof Delegate delegate) {
+            delegate.render3D(context, landscape_renderer, render_queues, frustum_state, modelViewStack,
+                    projectionStack);
+        }
 
-            if (gui_root.getDelegate() instanceof Delegate delegate) {
-                delegate.render3D(context, landscape_renderer, render_queues, frustum_state, modelViewStack,
-                        projectionStack);
-            }
+        if (DebugFlags.debugRenderingEnabled()) {
+            renderDebugElements(frustum_state);
+        }
+    }
 
-            if (DebugFlags.debugRenderingEnabled()) {
-                renderDebugElements(frustum_state);
-            }
+    private void renderWater(RenderContext context, CameraState frustum_state, float currentTime) {
+        if (DebugFlags.draw_water) {
+            var gpu = context.gpuTimer();
+            gpu.begin(GpuPass.WATER);
+            water.render(context, frustum_state, landscape_renderer.getVisiblePatches(), currentTime);
+            gpu.end();
+        }
+    }
 
-            // Enable Mask Buffer for Water interaction (occluding submerged unit outlines)
-            context.setDrawBuffers(true);
+    private void renderTransparents(RenderContext context, CameraState frustum_state) {
+        if (!DebugFlags.process_misc && !DebugFlags.draw_particles) {
+            return;
+        }
 
-            if (DebugFlags.draw_water) {
-                gpu.begin(GpuPass.WATER);
-                water.render(context, frustum_state, landscape_renderer.getVisiblePatches(), currentTime);
-                gpu.end();
-            }
+        var gpu = context.gpuTimer();
+        gpu.begin(GpuPass.EFFECTS);
+        if (DebugFlags.process_misc) {
+            render_queues.renderBlends(context, frustum_state, projectionStack);
+        }
 
-            gpu.begin(GpuPass.EFFECTS);
-            if (DebugFlags.process_misc)
-                render_queues.renderBlends(context, frustum_state, projectionStack);
-
-            // Water & Particles don't write to mask -> Disable Mask Buffer
-            context.setDrawBuffers(false);
-
-            // Copy depth buffer for Soft Particles (smoke/effects) only when visible particles exist
+        try (var _ = context.withDrawBuffers(false)) {
             if (emitterRenderer.hasVisibleParticles()) {
                 postProcessor.copyDepthBuffer();
             }
 
-            // Render transient effects (smoke, lightning) AFTER all other scene objects.
-            // This ensures they are depth-tested against the complete scene (including water and blended units).
             lightningRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack);
             emitterRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack, postProcessor
                     .getDepthCopyTexture());
             sonicBlastRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack);
-            // Rally point uses SpriteShader (Mask) -> Enable
-            context.setDrawBuffers(true);
-            renderRallyPoint(context, frustum_state);
-            render_queues.getInstancedRenderer().renderAll(context, frustum_state, projectionStack);
-            gpu.end();
+        }
+        gpu.end();
+    }
 
-            assert ShaderProgram.activeShader() == null : "Shader still active=" + ShaderProgram.activeShader();
+    private void renderOverlays(RenderContext context, CameraState frustum_state) {
+        renderRallyPoint(context, frustum_state);
+        render_queues.getInstancedRenderer().renderAll(context, frustum_state, projectionStack);
 
-            if (DebugFlags.line_mode || (cheat != null && cheat.line_mode)) {
-                GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-            }
+        assert ShaderProgram.activeShader() == null : "Shader still active=" + ShaderProgram.activeShader();
 
-            context.setDrawBuffers(true);
-
-            if (DebugFlags.debugRenderingEnabled()) {
-                context.validate();
-            }
+        if (DebugFlags.line_mode || (cheat != null && cheat.line_mode)) {
+            GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
         }
 
-        gpu.begin(GpuPass.COMPOSITE);
-        postProcessor.renderComposite(context);
-        gpu.end();
+        if (DebugFlags.debugRenderingEnabled()) {
+            context.validate();
+        }
     }
 
     private boolean closed = false;
