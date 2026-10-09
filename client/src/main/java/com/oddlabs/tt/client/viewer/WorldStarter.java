@@ -6,7 +6,7 @@ import com.oddlabs.router.SessionID;
 import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.render.UIRenderer;
+import com.oddlabs.tt.gui.render.SceneRenderer;
 import com.oddlabs.tt.procedural.landscape.GeneratedLandscapeData;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
@@ -22,7 +22,7 @@ import java.util.List;
  * Triggers world loading, initializes players and matchmaking session information,
  * and sets up the active gameplay session once loading is complete.
  */
-public final class WorldStarter implements LoadCallback<GUIRoot, UIRenderer> {
+public final class WorldStarter implements LoadCallback<GUIRoot, SceneRenderer> {
     private final Peer engine;
     private final UnitInfo[] unit_infos;
     private final PlayerSlot[] player_slots;
@@ -49,7 +49,7 @@ public final class WorldStarter implements LoadCallback<GUIRoot, UIRenderer> {
     }
 
     @Override
-    public UIRenderer load(GUIRoot gui_root) {
+    public SceneRenderer load(GUIRoot gui_root) {
         engine.getFramePacer().freezeTime();
         List<PlayerSlot> player_slot_list = new ArrayList<>();
         List<UnitInfo> unit_info_list = new ArrayList<>();

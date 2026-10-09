@@ -1,6 +1,5 @@
 package com.oddlabs.tt.engine.render;
 
-
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
@@ -151,7 +150,8 @@ public final class SpriteRenderer {
                         : -1;
                 batch.addInstance(index, boneBaseOffset, modelState.getTransform(tempMatrix),
                         modelState.getColorR(), modelState.getColorG(), modelState.getColorB(), modelState.getColorA(),
-                        modelState.getTeamColorR(), modelState.getTeamColorG(), modelState.getTeamColorB(), modelState.getTeamColorA());
+                        modelState.getTeamColorR(), modelState.getTeamColorG(), modelState.getTeamColorB(), modelState
+                                .getTeamColorA());
             }
             render_list.clear();
         }

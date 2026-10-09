@@ -6,18 +6,17 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.ToolTip;
 import org.jspecify.annotations.Nullable;
 
-import java.util.function.Consumer;
-
 /**
- * Interface for rendering the 3D scene underneath the 2D user interface.
+ * Interface for rendering the 3D scene.
  */
-public interface UIRenderer extends AutoCloseable {
+public interface SceneRenderer extends AutoCloseable {
     /**
      * Closes the renderer and releases any underlying graphics resources.
      */
     @Override
     default void close() {
     }
+
     /**
      * Renders the 3D scene.
      *
@@ -51,21 +50,6 @@ public interface UIRenderer extends AutoCloseable {
      * @return true if cheat mode is active
      */
     boolean isCheater();
-
-    /**
-     * Prepares frame rendering for the 3D scene.
-     *
-     * @param context the current render context
-     */
-    void startFrame(RenderContext context);
-
-    /**
-     * Finalizes frame rendering and invokes the 2D GUI overlay callback.
-     *
-     * @param context the current render context
-     * @param guiRenderCallback callback to render the 2D GUI overlay
-     */
-    void endFrame(RenderContext context, Consumer<RenderContext> guiRenderCallback);
 
     /**
      * Checks if this renderer has been closed.

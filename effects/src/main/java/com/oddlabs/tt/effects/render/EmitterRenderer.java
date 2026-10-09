@@ -77,9 +77,12 @@ public final class EmitterRenderer implements AutoCloseable {
     }
 
     private static final class BatchEntry {
-        @Nullable Emitter<?> emitter;
-        @Nullable List<? extends Particle> particles;
-        @Nullable Texture texture;
+        @Nullable
+        Emitter<?> emitter;
+        @Nullable
+        List<? extends Particle> particles;
+        @Nullable
+        Texture texture;
 
         void set(Emitter<?> emitter, List<? extends Particle> particles, Texture texture) {
             this.emitter = emitter;
@@ -243,7 +246,8 @@ public final class EmitterRenderer implements AutoCloseable {
                 List<P> pList = particles[j];
                 if (pList.isEmpty()) continue;
                 Texture texture = render_queues.getTexture(textures[j]);
-                BatchGroup group = getGroup(emitter.getSrcBlendFunc(), emitter.getDstBlendFunc(), emitter.isFogEnabled());
+                BatchGroup group = getGroup(emitter.getSrcBlendFunc(), emitter.getDstBlendFunc(), emitter
+                        .isFogEnabled());
                 group.entries.add(obtainEntry(emitter, pList, texture));
             }
         } else if (sprite_renderers != null) {
@@ -252,7 +256,8 @@ public final class EmitterRenderer implements AutoCloseable {
                 List<P> pList = particles[j];
                 for (int k = 0; k < pList.size(); k++) {
                     Particle particle = pList.get(k);
-                    renderer.addToRenderList(PolyDetail.LOW_POLY, new ParticleModelState(particle, cachedViewMatrix), false);
+                    renderer.addToRenderList(PolyDetail.LOW_POLY, new ParticleModelState(particle, cachedViewMatrix),
+                            false);
                 }
             }
         }

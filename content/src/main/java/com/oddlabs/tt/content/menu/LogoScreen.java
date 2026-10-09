@@ -12,7 +12,7 @@ import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.gui.render.UIRenderer;
+import com.oddlabs.tt.gui.render.SceneRenderer;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -29,11 +29,11 @@ public final class LogoScreen extends CameraDelegate<StaticCamera> implements Up
     private final TimerAnimation delay_timer;
     private final GUIRoot client_root;
     private final @Nullable Runnable onComplete;
-    private final UIRenderer renderer;
+    private final SceneRenderer renderer;
     private boolean fade_started = false;
 
     public LogoScreen(GUIRoot gui_root, @Nullable Texture logo, @Nullable Runnable onComplete,
-            GUIRoot client_root, UIRenderer renderer) {
+            GUIRoot client_root, SceneRenderer renderer) {
         super(gui_root, new StaticCamera(new CameraState()));
         this.delay_timer = new TimerAnimation(gui_root.getAnimationManager(), this, DELAY);
         this.client_root = client_root;

@@ -10,5 +10,6 @@ public enum GpuPass {
     PLANTS,
     WATER,
     EFFECTS,
-    COMPOSITE
+    COMPOSITE,
+    GUI
 }

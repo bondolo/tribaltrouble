@@ -5,11 +5,10 @@ import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.gui.render.UIRenderer;
+import com.oddlabs.tt.gui.render.SceneRenderer;
 import com.oddlabs.tt.window.Window;
 import com.oddlabs.tt.window.WindowSettings;
 import org.jspecify.annotations.Nullable;
@@ -33,7 +32,7 @@ public final class GUI implements Animated, AutoCloseable {
     private final GUIRenderer guiRenderer = new GUIRenderer();
     private GUIRoot current_root;
     private @Nullable Fade fade;
-    private @Nullable UIRenderer renderer;
+    private @Nullable SceneRenderer renderer;
     private final CameraState frustum_state = new CameraState();
     private @Nullable Runnable closeHandler;
     private @Nullable Runnable errorAudioHandler;
@@ -159,14 +158,14 @@ public final class GUI implements Animated, AutoCloseable {
         return newFade(null, null);
     }
 
-    public GUIRoot newFade(@Nullable Runnable onComplete, @Nullable UIRenderer renderer) {
+    public GUIRoot newFade(@Nullable Runnable onComplete, @Nullable SceneRenderer renderer) {
         GUIRoot gui_root = createRoot();
         newFade(onComplete, gui_root, renderer);
         return gui_root;
     }
 
     public GUIRoot newFade(@Nullable Runnable onComplete, GUIRoot gui_root,
-            @Nullable UIRenderer renderer) {
+            @Nullable SceneRenderer renderer) {
         fade = new Fade(onComplete, gui_root, renderer);
         eventQueue.getManager().registerAnimation(this);
         return gui_root;
@@ -191,7 +190,7 @@ public final class GUI implements Animated, AutoCloseable {
         fade = null;
     }
 
-    void switchRoot(GUIRoot gui_root, @Nullable UIRenderer renderer) {
+    void switchRoot(GUIRoot gui_root, @Nullable SceneRenderer renderer) {
         current_root.removeTree();
         current_root = gui_root;
         if (this.renderer != null && this.renderer != renderer) {
@@ -218,45 +217,12 @@ public final class GUI implements Animated, AutoCloseable {
         return fade;
     }
 
-    public @Nullable UIRenderer getRenderer() {
+    public @Nullable SceneRenderer getRenderer() {
         return renderer;
     }
 
-    public void render() {
-        var guiRoot = getGUIRoot();
-
-        RenderContext context = RenderContext.current();
-
-        int width = context.getViewportWidth();
-        int height = context.getViewportHeight();
-
-        var delegate = guiRoot.getDelegate();
-        delegate.updateView(width, height);
-
-        CameraState camera = delegate.getCameraState();
-        if (camera != null) {
-            if (!DebugFlags.frustum_freeze) {
-                frustum_state.set(camera);
-            }
-        } else {
-            frustum_state.setView(width, height);
-        }
-
-        if (renderer != null && !renderer.isClosed()) {
-            renderer.startFrame(context);
-        } else {
-            context.clear(true, true);
-        }
-
-        if (renderer != null && !renderer.isClosed()) {
-            renderer.render(context, frustum_state, current_root);
-        }
-
-        if (renderer != null && !renderer.isClosed()) {
-            renderer.endFrame(context, this::renderGUI);
-        } else {
-            renderGUI(context);
-        }
+    public CameraState getFrustumState() {
+        return frustum_state;
     }
 
     public void pickHover() {
@@ -269,7 +235,7 @@ public final class GUI implements Animated, AutoCloseable {
         }
     }
 
-    private void renderGUI(RenderContext context) {
+    public void render(RenderContext context) {
         GUIRoot guiRoot = getGUIRoot();
 
         try (var _ = context.withBlendMode(BlendMode.PREMULTIPLIED)) {

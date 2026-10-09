@@ -162,7 +162,7 @@ public final class Picker implements Updatable<TimerAnimation> {
         this.respond_manager = new RespondManager(manager);
         this.element_renderer = new ElementRenderer<>(local_player, render_queues, this, true, sprite_sorter,
                 selection, audio);
-        this.tree_renderer = new TreePicker(sprite_sorter, respond_manager);
+        this.tree_renderer = new TreePicker(respond_manager);
         TreePicker.initTreeBounds(local_player.getWorld().getTreeRoot(), tree_renderer.getTrees());
         this.landscape_renderer = landscape_renderer;
         this.icons = icons;
@@ -543,11 +543,13 @@ public final class Picker implements Updatable<TimerAnimation> {
         tool_tip_timer.stop();
     }
 
-    @Nullable ToolTip getCurrentToolTip() {
+    @Nullable
+    ToolTip getCurrentToolTip() {
         return canRenderToolTip() ? current_tooltip : null;
     }
 
-    @Nullable Target getCurrentHovered() {
+    @Nullable
+    Target getCurrentHovered() {
         return current_hovered;
     }
 
@@ -624,8 +626,10 @@ public final class Picker implements Updatable<TimerAnimation> {
     private final class LandscapeLeafComparator implements Comparator<LandscapeLeaf> {
         @Override
         public int compare(LandscapeLeaf l1, LandscapeLeaf l2) {
-            float l1_dist = RenderTools.getCameraDistanceXYSquared(l1, tmp_camera.getCurrentX(), tmp_camera.getCurrentY());
-            float l2_dist = RenderTools.getCameraDistanceXYSquared(l2, tmp_camera.getCurrentX(), tmp_camera.getCurrentY());
+            float l1_dist = RenderTools.getCameraDistanceXYSquared(l1, tmp_camera.getCurrentX(), tmp_camera
+                    .getCurrentY());
+            float l2_dist = RenderTools.getCameraDistanceXYSquared(l2, tmp_camera.getCurrentX(), tmp_camera
+                    .getCurrentY());
             int c = Float.compare(l1_dist, l2_dist);
             if (c != 0) {
                 return c;

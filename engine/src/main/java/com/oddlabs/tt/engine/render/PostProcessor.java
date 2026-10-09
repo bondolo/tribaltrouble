@@ -4,13 +4,12 @@ import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
+import com.oddlabs.tt.engine.render.state.ScopedState;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
-
-import java.util.function.Consumer;
 
 /**
  * Coordinates the full-screen post-processing pipeline, rendering the scene to an FBO and applying
@@ -94,22 +93,26 @@ public final class PostProcessor implements AutoCloseable {
         return depthCopyFBO.getDepthTexture();
     }
 
-    public void bindSceneFBO() {
+    /**
+     * Binds the active scene framebuffer for 3D rendering and returns a scoped handle that unbinds
+     * back to the default framebuffer upon exit.
+     *
+     * @param width the viewport width in pixels
+     * @param height the viewport height in pixels
+     * @return a scoped handle restoring framebuffer 0 upon closure
+     */
+    public ScopedState withScene(int width, int height) {
+        resize(width, height);
         getActiveSceneFBO().bind();
-    }
-
-    public void unbindSceneFBO() {
-        getActiveSceneFBO().unbind();
+        return () -> RenderContext.current().bindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
     }
 
     /**
-     * Resolves multisample buffers if enabled, composites post-processing effects onto the default framebuffer,
-     * and executes the 2D user interface render callback.
+     * Resolves multisample buffers if enabled and composites post-processing effects onto the default framebuffer.
      *
      * @param context the active render context
-     * @param guiRenderCallback the callback responsible for rendering GUI elements on top of the composited scene
      */
-    public void renderComposite(RenderContext context, Consumer<RenderContext> guiRenderCallback) {
+    public void renderComposite(RenderContext context) {
         FBO activeSceneFBO = getActiveSceneFBO();
 
         // 1. If MSAA was used for 3D rendering, resolve activeSceneFBO to sceneFBO
@@ -138,15 +141,6 @@ public final class PostProcessor implements AutoCloseable {
             // Unbind textures to prevent feedback loops in next frame
             context.setTexture(0, 0);
             context.setTexture(1, 0);
-        }
-
-        // 3. Render GUI directly onto the default framebuffer on top of the composited 3D scene.
-        // This guarantees UI text and vector borders remain 1:1 pixel-sharp, completely isolated from
-        // unsharp masking, contrast S-curves, smart inversion, and team outlines.
-        try (var _ = context.withBlendMode(BlendMode.PREMULTIPLIED)) {
-            guiRenderCallback.accept(context);
-        } finally {
-            context.resetBlendFunc();
         }
     }
 

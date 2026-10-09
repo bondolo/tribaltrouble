@@ -46,13 +46,13 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
     private final Map<TreeSupply, Float> fallingTrees = new HashMap<>();
     private final Map<TreeSupply, Float> spawningTrees = new HashMap<>();
 
-    TreeRenderer(@Nullable Cheat cheat, SpriteSorter sprite_sorter,
+    TreeRenderer(@Nullable Cheat cheat,
             RespondManager respond_manager,
             InstancedSpriteRenderer instancedSpriteRenderer,
             AnimationManager animationManager,
             @Nullable LandscapeRenderer landscapeRenderer
     ) {
-        super(sprite_sorter, respond_manager);
+        super(respond_manager);
         this.cheat = cheat;
         this.instancedSpriteRenderer = instancedSpriteRenderer;
         this.animationManager = animationManager;

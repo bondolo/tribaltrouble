@@ -33,16 +33,14 @@ sealed class TreePicker permits TreeRenderer {
     private final EnumMap<TreeType, List<TreeSupply>> render_lists = createTreeListMap();
     private final EnumMap<TreeType, List<TreeSupply>> respond_render_lists = createTreeListMap();
     private final BoundingBox picking_selection_box = new BoundingBox();
-    private final SpriteSorter sprite_sorter;
     private final RenderStateCache<TreeRenderState> render_state_cache
             = new RenderStateCache<>(() -> new TreeRenderState(TreePicker.this));
     private final Map<TreeType, Tree> trees = loadTrees();
     private final RespondManager respond_manager;
     private @Nullable CameraState camera;
 
-    TreePicker(SpriteSorter sprite_sorter, RespondManager respond_manager) {
+    TreePicker(RespondManager respond_manager) {
         this.respond_manager = respond_manager;
-        this.sprite_sorter = sprite_sorter;
     }
 
     private static EnumMap<TreeType, List<TreeSupply>> createTreeListMap() {
@@ -149,7 +147,8 @@ sealed class TreePicker permits TreeRenderer {
     }
 
     final void visit(AbstractTreeGroup node) {
-        visit(node, camera != null && camera.inNoDetailMode() ? RenderTools.FRUSTUM_INSIDE : RenderTools.ALL_PLANES_MASK);
+        visit(node, camera != null && camera.inNoDetailMode() ? RenderTools.FRUSTUM_INSIDE
+                : RenderTools.ALL_PLANES_MASK);
     }
 
     private void visit(AbstractTreeGroup node, int planeMask) {

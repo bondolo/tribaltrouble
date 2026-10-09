@@ -1,7 +1,7 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import com.oddlabs.tt.gui.render.UIRenderer;
+import com.oddlabs.tt.gui.render.SceneRenderer;
 import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
@@ -14,12 +14,12 @@ final class Fade {
 
     private final @Nullable Runnable onComplete;
     private final GUIRoot gui_root;
-    private final @Nullable UIRenderer renderer;
+    private final @Nullable SceneRenderer renderer;
 
     private float time = 0;
     private boolean image_switched = false;
 
-    Fade(@Nullable Runnable onComplete, GUIRoot gui_root, @Nullable UIRenderer renderer) {
+    Fade(@Nullable Runnable onComplete, GUIRoot gui_root, @Nullable SceneRenderer renderer) {
         this.onComplete = onComplete;
         this.gui_root = gui_root;
         this.renderer = renderer;

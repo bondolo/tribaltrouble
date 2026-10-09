@@ -9,11 +9,14 @@ import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.GamePaths;
 import com.oddlabs.tt.gui.LocaleSettings;
 import com.oddlabs.tt.window.WindowSettings;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.engine.render.FramePacer;
 import com.oddlabs.tt.engine.render.FrameTimeRecorder;
+import com.oddlabs.tt.engine.render.GpuPass;
 import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.engine.render.state.RenderContext;
+import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.net.Network;
@@ -125,7 +128,38 @@ public final class Peer implements AutoCloseable {
     }
 
     public void updateProgress(GUI gui) {
-        renderer.updateProgress(gui::render);
+        renderer.updateProgress(() -> renderFrame(gui));
+    }
+
+    private void renderFrame(GUI gui) {
+        RenderContext context = RenderContext.current();
+        var guiRoot = gui.getGUIRoot();
+        var delegate = guiRoot.getDelegate();
+        int width = context.getViewportWidth();
+        int height = context.getViewportHeight();
+        delegate.updateView(width, height);
+
+        CameraState frustumState = gui.getFrustumState();
+        CameraState camera = delegate.getCameraState();
+        if (camera != null) {
+            if (!DebugFlags.frustum_freeze) {
+                frustumState.set(camera);
+            }
+        } else {
+            frustumState.setView(width, height);
+        }
+
+        var sceneRenderer = gui.getRenderer();
+        if (sceneRenderer != null && !sceneRenderer.isClosed()) {
+            sceneRenderer.render(context, frustumState, guiRoot);
+        } else {
+            context.clear(true, true);
+        }
+
+        var gpu = context.gpuTimer();
+        gpu.begin(GpuPass.GUI);
+        gui.render(context);
+        gpu.end();
     }
 
     public float getFPS() {
@@ -407,7 +441,7 @@ public final class Peer implements AutoCloseable {
             frameTimeRecorder.mark(FrameTimeRecorder.Phase.AUDIO);
 
             audioManager.setMasterGain(isActive ? 1f : 0f);
-            renderer.display(gui::render);
+            renderer.display(() -> renderFrame(gui));
             frameTimeRecorder.mark(FrameTimeRecorder.Phase.DISPLAY);
 
             if (window.isVisible()) {
