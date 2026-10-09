@@ -33,7 +33,6 @@ public final class GUI implements Animated, AutoCloseable {
     private GUIRoot current_root;
     private @Nullable Fade fade;
     private @Nullable SceneRenderer renderer;
-    private final CameraState frustum_state = new CameraState();
     private @Nullable Runnable closeHandler;
     private @Nullable Runnable errorAudioHandler;
 
@@ -221,16 +220,11 @@ public final class GUI implements Animated, AutoCloseable {
         return renderer;
     }
 
-    public CameraState getFrustumState() {
-        return frustum_state;
-    }
-
-    public void pickHover() {
+    public void pickHover(CameraState cameraState) {
         var guiRoot = getGUIRoot();
-        CameraState camera = guiRoot.getDelegate().getCameraState();
         GUIObject gui_hit = guiRoot.getCurrentGUIObject();
         if (renderer != null) {
-            renderer.pickHover(gui_hit.canHoverBehind(), camera != null ? camera : frustum_state,
+            renderer.pickHover(gui_hit.canHoverBehind(), cameraState,
                     localInput.getMouseX(), localInput.getMouseY());
         }
     }

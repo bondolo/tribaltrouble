@@ -61,6 +61,7 @@ public final class Peer implements AutoCloseable {
     private final Network network;
     private final AudioManager audioManager;
     private final FramePacer framePacer = new FramePacer();
+    private final CameraState frustumState = new CameraState();
     private final Renderer renderer;
     private @Nullable IntSupplier pathfindCountSupplier;
 
@@ -139,7 +140,6 @@ public final class Peer implements AutoCloseable {
         int height = context.getViewportHeight();
         delegate.updateView(width, height);
 
-        CameraState frustumState = gui.getFrustumState();
         CameraState camera = delegate.getCameraState();
         if (camera != null) {
             if (!DebugFlags.frustum_freeze) {
@@ -312,7 +312,8 @@ public final class Peer implements AutoCloseable {
         }
         deterministic.setEnabled(false);
         if (!DebugFlags.frustum_freeze) {
-            gui.pickHover();
+            CameraState camera = gui.getGUIRoot().getDelegate().getCameraState();
+            gui.pickHover(camera != null ? camera : frustumState);
         }
     }
 
