@@ -592,7 +592,7 @@ public final class Picker implements Updatable<TimerAnimation> {
             proj.scale(sx, sy, 1.0f);
         }
 
-        gui_root.multProjection(proj);
+        proj.mul(camera.getProjectionMatrix());
 
         tmp_camera.set(camera);
         tmp_camera.setView(proj, width, height);

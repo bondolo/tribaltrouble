@@ -4,7 +4,6 @@ import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.input.InputEvent;
-import org.joml.Matrix4f;
 
 import java.util.Objects;
 
@@ -40,11 +39,6 @@ public abstract class CameraDelegate<C extends Camera> extends Delegate {
     @Override
     public void updateView(int width, int height) {
         camera.updateView(width, height);
-    }
-
-    @Override
-    public Matrix4f multProjection(Matrix4f matrix, int width, int height) {
-        return camera.applyPerspective(matrix, width, height);
     }
 
     @Override

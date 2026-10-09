@@ -2,7 +2,6 @@ package com.oddlabs.tt.gui.delegate;
 
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -60,18 +59,6 @@ public interface InputDelegate {
      */
     default boolean renderCursor() {
         return true;
-    }
-
-    /**
-     * Applies projection transformations associated with this delegate's viewport or camera.
-     *
-     * @param matrix the projection matrix to transform
-     * @param width the viewport width in pixels
-     * @param height the viewport height in pixels
-     * @return the transformed matrix
-     */
-    default Matrix4f multProjection(Matrix4f matrix, int width, int height) {
-        return matrix;
     }
 
     /**

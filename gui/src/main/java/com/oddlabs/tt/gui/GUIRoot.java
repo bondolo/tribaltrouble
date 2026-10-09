@@ -18,7 +18,6 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.window.SerializableDisplayMode;
-import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
@@ -606,10 +605,6 @@ public final class GUIRoot extends GUIObject {
             if (tooltip != null)
                 renderToolTip(renderer, tooltip);
         }
-    }
-
-    public Matrix4f multProjection(Matrix4f matrix) {
-        return getDelegate().multProjection(matrix, getWidth(), getHeight());
     }
 
     private @Nullable ToolTip getToolTip() {
