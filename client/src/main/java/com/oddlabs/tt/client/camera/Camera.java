@@ -12,7 +12,7 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The View
+ * Viewport camera managing position, orientation, smoothing, and terrain collision avoidance.
  */
 public abstract class Camera implements Animated {
     /**
@@ -33,8 +33,9 @@ public abstract class Camera implements Animated {
     private static final float GROUND_CLEARANCE = 1.0f;
 
     private final Matrix4f proj = new Matrix4f();
+    private final Matrix4f combinedMatrix = new Matrix4f();
     private final CameraState tmp_camera = new CameraState();
-
+    private final int[] viewport = new int[4];
     private final Vector3f hit_result = new Vector3f();
 
     private final @Nullable LandscapeEnvironment landscapeEnvironment;
@@ -93,23 +94,61 @@ public abstract class Camera implements Animated {
         }
     }
 
+    /**
+     * Applies perspective projection transformation for this camera at the specified altitude and dimensions.
+     *
+     * @param matrix the target matrix to transform
+     * @param z the camera altitude in meters
+     * @param width the viewport width in pixels
+     * @param height the viewport height in pixels
+     * @return the transformed matrix
+     */
+    public Matrix4f applyPerspective(Matrix4f matrix, float z, int width, int height) {
+        if (height > 0) {
+            float aspect = (float) width / height;
+            float fovy = calculateDynamicFOV(z, aspect, FOVMode.DIAGONAL);
+            float zNear = RenderConfig.VIEW_MIN;
+            float zFar = RenderConfig.VIEW_MAX;
+            return matrix.perspective((float) Math.toRadians(fovy), aspect, zNear, zFar);
+        }
+        return matrix;
+    }
+
+    /**
+     * Applies perspective projection transformation for this camera using its current altitude.
+     *
+     * @param matrix the target matrix to transform
+     * @param width the viewport width in pixels
+     * @param height the viewport height in pixels
+     * @return the transformed matrix
+     */
+    public Matrix4f applyPerspective(Matrix4f matrix, int width, int height) {
+        return applyPerspective(matrix, state.getCurrentZ(), width, height);
+    }
+
+    public void updateView(int width, int height) {
+        state.setView(applyPerspective(proj.identity(), width, height), width, height);
+    }
+
     protected final boolean bounce(float x, float y, float z, int width, int height) {
+        if (width <= 0 || height <= 0) {
+            return false;
+        }
         boolean bounced = false;
 
-        int[] viewport = {0, 0, width, height};
+        viewport[0] = 0;
+        viewport[1] = 0;
+        viewport[2] = width;
+        viewport[3] = height;
+
+        applyPerspective(proj.identity(), z, width, height);
+        tmp_camera.set(state);
+        tmp_camera.setTargetView(proj);
+        combinedMatrix.set(proj).mul(tmp_camera.getModelView());
 
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 2; j++) {
-                float aspect = (float) width / height;
-                float fovy = calculateDynamicFOV(z, aspect, FOVMode.DIAGONAL);
-                float zNear = RenderConfig.VIEW_MIN;
-                float zFar = RenderConfig.VIEW_MAX;
-                proj.setPerspective((float) Math.toRadians(fovy), aspect, zNear, zFar);
-                tmp_camera.set(state);
-                tmp_camera.setTargetView(proj);
-
-                Matrix4f combinedMatrix = new Matrix4f(proj).mul(tmp_camera.getModelView());
-                unproject(i * width, j * height, 0f, tmp_camera.getModelView(), combinedMatrix, viewport);
+                combinedMatrix.unproject(i * width, j * height, 0f, viewport, hit_result);
                 float hit_x = hit_result.x();
                 float hit_y = hit_result.y();
                 float hit_z = hit_result.z();
@@ -139,12 +178,6 @@ public abstract class Camera implements Animated {
         if (bounced)
             state.setTargetZ(z);
         return bounced;
-    }
-
-    private void unproject(float winx, float winy, float winz, Matrix4f model, Matrix4f proj,
-            int[] viewport) {
-        proj.mul(model);
-        proj.unproject(winx, winy, winz, viewport, hit_result);
     }
 
     public final CameraState getState() {

@@ -87,6 +87,7 @@ public final class RenderState implements SceneContext {
     private final @Nullable Selection selection;
     private final Player local_player;
     private final MatrixStack model_view_stack = new MatrixStack();
+    private final Matrix4f emitterTransform = new Matrix4f();
     private final AudioImplementation audio;
     private final IdentityHashMap<Model, VisualModel> visualModels = new IdentityHashMap<>();
     private final Deque<VisualModel> detachedVisualModels = new ArrayDeque<>();
@@ -446,10 +447,9 @@ public final class RenderState implements SceneContext {
 
     private <M extends Model> void updateEmitterWorldPosition(Emitter<?> emitter,
             Accessory accessory, ElementSceneContext<M> parentState) {
-        Matrix4f transform = new Matrix4f();
-        parentState.getTransform(transform);
-        accessory.getRelativeTransform(transform, parentState.model);
-        emitter.getPosition().set(transform.m30(), transform.m31(), transform.m32());
+        parentState.getTransform(emitterTransform);
+        accessory.getRelativeTransform(emitterTransform, parentState.model);
+        emitter.getPosition().set(emitterTransform.m30(), emitterTransform.m31(), emitterTransform.m32());
     }
 
     private float getVisuallyCorrectHeight(float x_f, float y_f) {

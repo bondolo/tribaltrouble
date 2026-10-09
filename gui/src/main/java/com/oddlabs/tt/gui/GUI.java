@@ -12,7 +12,6 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.gui.render.UIRenderer;
 import com.oddlabs.tt.window.Window;
 import com.oddlabs.tt.window.WindowSettings;
-import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -224,21 +223,23 @@ public final class GUI implements Animated, AutoCloseable {
     }
 
     public void render() {
-        Matrix4f proj = new Matrix4f();
         var guiRoot = getGUIRoot();
 
         RenderContext context = RenderContext.current();
 
-        CameraState camera = guiRoot.getDelegate().getCameraState();
+        int width = context.getViewportWidth();
+        int height = context.getViewportHeight();
+
+        var delegate = guiRoot.getDelegate();
+        delegate.updateView(width, height);
+
+        CameraState camera = delegate.getCameraState();
         if (camera != null) {
-            camera.setView(guiRoot.multProjection(proj.identity()), context.getViewportWidth(),
-                    context.getViewportHeight());
             if (!DebugFlags.frustum_freeze) {
                 frustum_state.set(camera);
             }
         } else {
-            frustum_state.setView(guiRoot.multProjection(proj.identity()), context.getViewportWidth(),
-                    context.getViewportHeight());
+            frustum_state.setView(width, height);
         }
 
         if (renderer != null && !renderer.isClosed()) {

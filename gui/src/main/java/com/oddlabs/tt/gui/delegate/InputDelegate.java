@@ -19,6 +19,15 @@ public interface InputDelegate {
     }
 
     /**
+     * Updates the camera view and projection matrices for this delegate.
+     *
+     * @param width the viewport width in pixels
+     * @param height the viewport height in pixels
+     */
+    default void updateView(int width, int height) {
+    }
+
+    /**
      * Renders 2D delegate visual elements using the provided GUI renderer.
      *
      * @param renderer the GUI renderer

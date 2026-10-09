@@ -18,7 +18,6 @@ import com.oddlabs.tt.client.viewer.Cheat;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.simulation.player.AI;
-import org.jspecify.annotations.Nullable;
 
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -32,7 +31,7 @@ import com.oddlabs.tt.client.GameplaySettings;
 public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C> {
     private final WorldViewer viewer;
 
-    protected InGameDelegate(WorldViewer viewer, @Nullable C camera) {
+    protected InGameDelegate(WorldViewer viewer, C camera) {
         super(viewer.getGUIRoot(), camera);
         this.viewer = viewer;
     }

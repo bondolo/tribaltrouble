@@ -243,6 +243,13 @@ public final class CameraState {
         doSetView(target_camera_x, target_camera_y, target_camera_z, target_horiz_angle, target_vert_angle, proj);
     }
 
+    public void setView(int width, int height) {
+        this.width = width;
+        this.height = height;
+        proj.identity();
+        doSetView(camera_x, camera_y, camera_z, horiz_angle, vert_angle, proj);
+    }
+
     public void setView(Matrix4f proj, int width, int height) {
         this.width = width;
         this.height = height;

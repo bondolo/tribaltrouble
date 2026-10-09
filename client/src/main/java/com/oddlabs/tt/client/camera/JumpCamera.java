@@ -1,9 +1,9 @@
 package com.oddlabs.tt.client.camera;
 
-
-import com.oddlabs.tt.client.delegate.CameraDelegate;
-import com.oddlabs.tt.client.delegate.JumpDelegate;
+import com.oddlabs.tt.client.render.Picker;
+import com.oddlabs.tt.gui.GUIRoot;
 import org.joml.Vector2fc;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A specialized camera that performs a transition jump from one camera
@@ -13,7 +13,8 @@ public final class JumpCamera extends Camera {
     private static final float DEFAULT_METERS_PER_SECOND = 300f;
     private static final float DEFAULT_MAX_SECONDS = .5f;
 
-    private final CameraDelegate<?> delegate;
+    private final GUIRoot gui_root;
+    private @Nullable Runnable onComplete;
 
     private final float dst_x;
     private final float dst_y;
@@ -27,15 +28,15 @@ public final class JumpCamera extends Camera {
     private float z_speed;
     private float temp_z;
 
-    public JumpCamera(JumpDelegate delegate, GameCamera old_camera, float x, float y) {
-        this(delegate, old_camera, x, y, DEFAULT_METERS_PER_SECOND, DEFAULT_MAX_SECONDS);
+    public JumpCamera(GUIRoot gui_root, Picker picker, GameCamera old_camera, float x, float y) {
+        this(gui_root, picker, old_camera, x, y, DEFAULT_METERS_PER_SECOND, DEFAULT_MAX_SECONDS);
     }
 
-    public JumpCamera(JumpDelegate delegate, GameCamera old_camera, float x, float y,
+    public JumpCamera(GUIRoot gui_root, Picker picker, GameCamera old_camera, float x, float y,
             float meters_per_second, float max_seconds) {
         super(old_camera.getLandscapeEnvironment(), old_camera.getState(), old_camera.getAnimationManager());
-        this.delegate = delegate;
-        delegate.getViewer().getPicker().pickRotate(old_camera);
+        this.gui_root = gui_root;
+        picker.pickRotate(old_camera);
         Vector2fc target = old_camera.getRotationPoint();
         float target_z = getLandscapeEnvironment().getHeight(target.x(), target.y());
         float dx_to_landscape = target.x() - getState().getTargetX();
@@ -63,13 +64,19 @@ public final class JumpCamera extends Camera {
         temp_z = getState().getTargetZ();
     }
 
+    public void setOnComplete(@Nullable Runnable onComplete) {
+        this.onComplete = onComplete;
+    }
+
     @Override
     public void doAnimate(float dt) {
         if (seconds <= 0f) {
             getState().setTargetX(dst_x);
             getState().setTargetY(dst_y);
             getState().setTargetZ(dst_z);
-            delegate.pop();
+            if (onComplete != null) {
+                onComplete.run();
+            }
             return;
         }
         seconds -= dt;
@@ -78,7 +85,7 @@ public final class JumpCamera extends Camera {
         temp_z += z_speed * dt;
         getState().setTargetZ(temp_z);
         z_speed += z_accel * dt;
-        bounce(getState().getTargetX(), getState().getTargetY(), getState().getTargetZ(), delegate.getGUIRoot()
-                .getWidth(), delegate.getGUIRoot().getHeight());
+        bounce(getState().getTargetX(), getState().getTargetY(), getState().getTargetZ(), gui_root.getWidth(),
+                gui_root.getHeight());
     }
 }
