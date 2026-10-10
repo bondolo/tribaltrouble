@@ -11,7 +11,7 @@ import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.MenuCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.client.delegate.FormFactory;
-import com.oddlabs.tt.client.render.DefaultRenderer;
+import com.oddlabs.tt.client.render.FullSceneRenderer;
 import com.oddlabs.tt.client.render.Picker;
 import com.oddlabs.tt.engine.settings.GraphicsSettings;
 import com.oddlabs.tt.client.trigger.GameOverTrigger;
@@ -31,7 +31,6 @@ import com.oddlabs.tt.client.screen.DefaultScreen;
 import com.oddlabs.tt.client.screen.Screen;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.client.resource.LandscapeAssetsLoader;
-import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Texture;
@@ -441,8 +440,6 @@ public abstract class Menu extends CameraDelegate<Camera> {
             Peer engine, GUIRoot gui_root,
             boolean first_progress, WorldGenerator<GeneratedLandscapeData> generator) {
         engine.getFramePacer().freezeTime();
-        MatrixStack modelViewStack = new MatrixStack();
-        MatrixStack projectionStack = new MatrixStack();
         WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);
         var players = List.of(new PlayerInfo(0, Race.NATIVES, ""));
         GeneratedLandscapeData landscapeData = ProgressListener.subTask(0.40f,
@@ -462,11 +459,10 @@ public abstract class Menu extends CameraDelegate<Camera> {
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, menuAnimationManager);
         Player local_player = world.getPlayers().getFirst();
         Selection selection = new Selection(local_player);
-        var renderer = new DefaultRenderer(null, local_player,
+        var renderer = new FullSceneRenderer(null, local_player,
                 render_queues, world_info,
                 landscape_renderer, new Picker(menuAnimationManager, local_player, gui_root, render_queues,
-                        landscape_renderer, selection, engine.getAudioManager()), selection, modelViewStack,
-                projectionStack,
+                        landscape_renderer, selection, engine.getAudioManager()), selection,
                 engine.getAudioManager(), engine.getSettings(),
                 gui_root.getWidth(), gui_root.getHeight());
         engine.getAudioManager().setMusic(AudioRegistry.MUSIC_MENU, 0f);

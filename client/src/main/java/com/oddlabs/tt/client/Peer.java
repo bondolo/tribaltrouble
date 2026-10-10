@@ -14,7 +14,7 @@ import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.FramePacer;
 import com.oddlabs.tt.engine.render.FrameTimeRecorder;
 import com.oddlabs.tt.engine.render.GpuPass;
-import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.engine.render.RenderHost;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.gui.GUI;
@@ -64,7 +64,7 @@ public final class Peer implements AutoCloseable {
     private final AudioManager audioManager;
     private final FramePacer framePacer = new FramePacer();
     private final CameraState frustumState = new CameraState();
-    private final Renderer renderer;
+    private final RenderHost renderHost;
     private @Nullable IntSupplier pathfindCountSupplier;
     private @Nullable ScreenManager screenManager;
 
@@ -87,8 +87,8 @@ public final class Peer implements AutoCloseable {
         this.network = network;
         this.audioManager = audioManager;
         window.setSettings(WindowSettings.from(settings));
-        this.renderer = new Renderer(window, settings);
-        this.frameTimeRecorder = new FrameTimeRecorder(gamePaths.logDir(), renderer.getGpuTimer());
+        this.renderHost = new RenderHost(window, settings);
+        this.frameTimeRecorder = new FrameTimeRecorder(gamePaths.logDir(), renderHost.getGpuTimer());
     }
 
     public void shutdown() {
@@ -142,7 +142,7 @@ public final class Peer implements AutoCloseable {
     public void updateProgress() {
         var manager = screenManager;
         if (manager != null) {
-            renderer.updateProgress(() -> renderFrame(manager));
+            renderHost.updateProgress(() -> renderFrame(manager));
         }
     }
 
@@ -177,7 +177,7 @@ public final class Peer implements AutoCloseable {
     }
 
     public float getFPS() {
-        return renderer.getFPS();
+        return renderHost.getFPS();
     }
 
     public static Locale getDefaultLocale() {
@@ -397,10 +397,10 @@ public final class Peer implements AutoCloseable {
 
         startSound();
 
-        renderer.runWithContext(() -> {
+        renderHost.runWithContext(() -> {
             try {
                 try {
-                    renderer.initNative(crashed);
+                    renderHost.initNative(crashed);
                 } catch (Throwable e) {
                     throw new IllegalStateException("Failed initializing natives", e);
                 }
@@ -458,7 +458,7 @@ public final class Peer implements AutoCloseable {
             frameTimeRecorder.mark(FrameTimeRecorder.Phase.AUDIO);
 
             audioManager.setMasterGain(isActive ? 1f : 0f);
-            renderer.display(() -> renderFrame(screenManager));
+            renderHost.display(() -> renderFrame(screenManager));
             frameTimeRecorder.mark(FrameTimeRecorder.Phase.DISPLAY);
 
             if (window.isVisible()) {
@@ -482,7 +482,7 @@ public final class Peer implements AutoCloseable {
                         load_task.run();
                     } finally {
                         event_queue.getDeterministic().setEnabled(false);
-                        renderer.resetContext();
+                        renderHost.resetContext();
                     }
                     load_task = null;
                 }
@@ -549,7 +549,7 @@ public final class Peer implements AutoCloseable {
     public void cleanup() {
         logger.info("Cleaning up engine...");
         frameTimeRecorder.close();
-        renderer.cleanup();
+        renderHost.cleanup();
         logger.info("Engine cleanup complete. Exiting");
     }
 

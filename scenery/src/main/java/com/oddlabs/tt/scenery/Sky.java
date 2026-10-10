@@ -4,7 +4,7 @@ import com.oddlabs.procedural.Channel;
 import com.oddlabs.tt.engine.image.GLByteImage;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.MatrixStack;
-import com.oddlabs.tt.engine.render.SceneRenderer;
+import com.oddlabs.tt.engine.render.SubSceneRenderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
@@ -36,7 +36,7 @@ import java.util.function.Supplier;
 /**
  * Sky dome, clouds, and background water scenery renderer.
  */
-public final class Sky implements SceneRenderer, AutoCloseable {
+public final class Sky implements SubSceneRenderer, AutoCloseable {
     private record WindSpeeds(float[] outer, float[] inner) {
         private static WindSpeeds fromPolar(float outerAngleDeg, float outerSpeed, float innerAngleDeg,
                 float innerSpeed) {

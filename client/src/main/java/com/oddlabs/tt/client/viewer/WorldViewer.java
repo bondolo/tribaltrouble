@@ -16,7 +16,7 @@ import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.client.delegate.SelectionDelegate;
 import com.oddlabs.tt.client.gui.ActionButtonPanel;
 import com.oddlabs.tt.client.gui.GUIIcons;
-import com.oddlabs.tt.client.render.DefaultRenderer;
+import com.oddlabs.tt.client.render.FullSceneRenderer;
 import com.oddlabs.tt.client.render.Picker;
 import com.oddlabs.tt.client.resource.RacesAssetsLoader;
 import com.oddlabs.tt.client.Peer;
@@ -27,7 +27,6 @@ import com.oddlabs.tt.client.render.LandscapeBaker;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.client.resource.LandscapeAssetsLoader;
 import com.oddlabs.tt.engine.render.IconQuad;
-import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.SpriteKey;
@@ -107,7 +106,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
     private final Selection selection;
     private final World world;
     private final Picker picker;
-    private final DefaultRenderer renderer;
+    private final FullSceneRenderer renderer;
     private final LandscapeRenderer landscape_renderer;
     private final Player local_player;
     private final WorldParameters world_params;
@@ -134,8 +133,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
         final CameraState camera_state = new CameraState();
         this.notification_manager = new NotificationManager(gui_root, audioManager, icons.getNotifyArrow(),
                 icons.getNotifyArrowHeadX(), icons.getNotifyArrowHeadY());
-        MatrixStack modelViewStack = new MatrixStack();
-        MatrixStack projectionStack = new MatrixStack();
         RenderQueues render_queues = new RenderQueues();
         LandscapeGeometry landscape_geometry = new LandscapeGeometry();
         ProgressListener.subTask(0.15f,
@@ -331,9 +328,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
         this.picker = new Picker(animation_manager_local, local_player, gui_root, render_queues, landscape_renderer,
                 selection, audioManager, icons);
-        this.renderer = new DefaultRenderer(cheat, local_player, render_queues,
+        this.renderer = new FullSceneRenderer(cheat, local_player, render_queues,
                 world_info, landscape_renderer, picker,
-                selection, modelViewStack, projectionStack, audioManager, engine.getSettings(),
+                selection, audioManager, engine.getSettings(),
                 gui_root.getWidth(), gui_root.getHeight());
         this.gui_root = gui_root;
         this.gui_root.setCheatIndicator(icons.getCheatIcon(), cheat::isEnabled);
@@ -510,7 +507,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         return picker;
     }
 
-    public DefaultRenderer getRenderer() {
+    public FullSceneRenderer getRenderer() {
         return renderer;
     }
 

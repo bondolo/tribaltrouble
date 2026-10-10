@@ -9,7 +9,7 @@ import com.oddlabs.tt.engine.render.HeightMapVisual;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.PatchMesh;
 import com.oddlabs.tt.engine.render.RenderTools;
-import com.oddlabs.tt.engine.render.SceneRenderer;
+import com.oddlabs.tt.engine.render.SubSceneRenderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
@@ -44,7 +44,7 @@ import java.util.Set;
 /**
  * Renders the 3D terrain landscape.
  */
-public final class LandscapeRenderer implements SceneRenderer, Animated, AutoCloseable {
+public final class LandscapeRenderer implements SubSceneRenderer, Animated, AutoCloseable {
     private final List<LandscapeLeaf> render_list = new ArrayList<>();
     private final World world;
     private final Texture diffuseMap;

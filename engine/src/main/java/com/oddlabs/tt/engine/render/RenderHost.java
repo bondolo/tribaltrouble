@@ -20,11 +20,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * OpenGL graphics renderer and display manager.
- * Manages rendering contexts, display passes, viewports, VBO cleanup, and frame metrics.
+ * Host and display manager for OpenGL rendering contexts, display passes, viewports, and frame metrics.
  */
-public final class Renderer implements AutoCloseable {
-    private static final Logger logger = Logger.getLogger(Renderer.class.getSimpleName());
+public final class RenderHost implements AutoCloseable {
+    private static final Logger logger = Logger.getLogger(RenderHost.class.getSimpleName());
 
     private final StatCounter fps = new StatCounter(10);
 
@@ -35,7 +34,7 @@ public final class Renderer implements AutoCloseable {
     private int lastDisplayW = -1;
     private int lastDisplayH = -1;
 
-    public Renderer(Window window, Settings settings) {
+    public RenderHost(Window window, Settings settings) {
         this.window = window;
         this.settings = settings;
     }
@@ -69,7 +68,8 @@ public final class Renderer implements AutoCloseable {
         int w = window.getWidth();
         int h = window.getHeight();
         if (w != lastDisplayW || h != lastDisplayH) {
-            logger.info("[Renderer] display() viewport changed: " + lastDisplayW + "x" + lastDisplayH + " -> " + w + "x"
+            logger.info("[RenderHost] display() viewport changed: " + lastDisplayW + "x" + lastDisplayH + " -> " + w
+                    + "x"
                     + h);
             lastDisplayW = w;
             lastDisplayH = h;
@@ -95,17 +95,17 @@ public final class Renderer implements AutoCloseable {
     }
 
     public void cleanup() {
-        logger.info("Cleaning up Renderer...");
+        logger.info("Cleaning up RenderHost...");
         renderContext.close();
         destroyNative();
         logger.fine("Native resources still registered: " + NativeResource.getCount());
-        logger.info("Renderer cleanup complete.");
+        logger.info("RenderHost cleanup complete.");
     }
 
     private static void destroyNative() {
         logger.info("Clearing Resources...");
         Resources.clearResources();
-        logger.info("Renderer Closed.");
+        logger.info("RenderHost Closed.");
     }
 
     private void dumpWindowInfo() {
@@ -216,7 +216,7 @@ public final class Renderer implements AutoCloseable {
         renderContext.applyDefaults(enableMultisample);
         int w = window.getWidth();
         int h = window.getHeight();
-        logger.info("[Renderer] initGL: window.getWidth()=" + w + ", window.getHeight()=" + h);
+        logger.info("[RenderHost] initGL: window.getWidth()=" + w + ", window.getHeight()=" + h);
         renderContext.setViewport(0, 0, w, h);
     }
 }

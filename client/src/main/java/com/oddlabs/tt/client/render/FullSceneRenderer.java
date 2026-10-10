@@ -50,7 +50,7 @@ import org.lwjgl.opengl.GL11;
 /**
  * Primary world renderer coordinating the rendering of landscape, units, buildings, and transient effects.
  */
-public final class DefaultRenderer implements WorldSceneRenderer, SceneHoverProvider {
+public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverProvider {
     private final Picker picker;
     private final Water water;
     private final Sky sky;
@@ -61,8 +61,8 @@ public final class DefaultRenderer implements WorldSceneRenderer, SceneHoverProv
     private final TreeRenderer tree_renderer;
     private final SpriteSorter sprite_sorter;
     private final RenderQueues render_queues;
-    private final MatrixStack modelViewStack;
-    private final MatrixStack projectionStack;
+    private final MatrixStack modelViewStack = new MatrixStack();
+    private final MatrixStack projectionStack = new MatrixStack();
     private final Selection selection;
     private final LightningRenderer lightningRenderer;
     private final SonicBlastRenderer sonicBlastRenderer;
@@ -78,11 +78,11 @@ public final class DefaultRenderer implements WorldSceneRenderer, SceneHoverProv
 
     private @Nullable Building selected_building;
 
-    public DefaultRenderer(@Nullable Cheat cheat, Player local_player,
+    public FullSceneRenderer(@Nullable Cheat cheat, Player local_player,
             RenderQueues render_queues,
             WorldInfo<Texture> world_info, LandscapeRenderer landscape_renderer,
             Picker picker,
-            Selection selection, MatrixStack modelViewStack, MatrixStack projectionStack,
+            Selection selection,
             AudioManager audioManager, Settings settings, int width, int height) {
         this.world = local_player.getWorld();
         this.cheat = cheat;
@@ -99,8 +99,6 @@ public final class DefaultRenderer implements WorldSceneRenderer, SceneHoverProv
         this.sky = new Sky(world.getHeightMap(), world_info.landscapeData().terrain());
         this.seaBottom = new SeaBottom(world_info.landscapeData().terrain(),
                 world_info.detail(), world_info.detailNormal(), sky.getRingMesh());
-        this.modelViewStack = modelViewStack;
-        this.projectionStack = projectionStack;
         this.water = new Water(landscape_renderer.getHeightMapVisual(), world.getHeightMap(), world_info.landscapeData()
                 .terrain(), sky, modelViewStack);
         this.landscape_renderer.setWater(this.water);

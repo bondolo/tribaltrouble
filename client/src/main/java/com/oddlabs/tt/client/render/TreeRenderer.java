@@ -9,9 +9,9 @@ import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.InstancedSpriteRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderTools;
-import com.oddlabs.tt.engine.render.SceneRenderer;
 import com.oddlabs.tt.engine.render.Sprite;
 import com.oddlabs.tt.engine.render.SpriteList;
+import com.oddlabs.tt.engine.render.SubSceneRenderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.WaveAnimation;
 import com.oddlabs.tt.engine.render.state.RenderContext;
@@ -32,7 +32,7 @@ import java.util.Map;
  * Specialized renderer for forest elements, coordinating the efficient
  * drawing of crown and trunk sprite lists using hardware instancing.
  */
-final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRenderer, Animated {
+final class TreeRenderer extends TreePicker implements AutoCloseable, SubSceneRenderer, Animated {
     private static final float TREE_FALL_DURATION = 3f;
     private static final float TREE_SPAWN_DURATION = 3f;
     private static final float TREE_WAVE_SCALE = 0.035f;

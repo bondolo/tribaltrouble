@@ -3,7 +3,7 @@ package com.oddlabs.tt.scenery;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.MatrixStack;
-import com.oddlabs.tt.engine.render.SceneRenderer;
+import com.oddlabs.tt.engine.render.SubSceneRenderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * Renders the ocean floor scenery surrounding the island using concentric rings.
  */
-public final class SeaBottom implements SceneRenderer, AutoCloseable {
+public final class SeaBottom implements SubSceneRenderer, AutoCloseable {
 
     public static final Map<Terrain, Color.Linear> SEA_BOTTOM_COLOR = Map.of(
             Terrain.NATIVE, new Color.Standard(0xFF_73_40_99).linear(),
