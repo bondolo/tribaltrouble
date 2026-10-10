@@ -601,10 +601,6 @@ public final class GUIRoot extends GUIObject {
             status.render(renderer);
         }
 
-        if (gui.getFade() != null) {
-            gui.getFade().render(renderer);
-        }
-
         if (showToolTip()) {
             ToolTip tooltip = getToolTip();
             if (tooltip == null)
@@ -626,5 +622,12 @@ public final class GUIRoot extends GUIObject {
                 Math.round(gui.getLocalInput().getMouseX() / effective_scale),
                 Math.round(gui.getLocalInput().getMouseY() / effective_scale) - CURSOR_OFFSET_Y,
                 getWidth(), getHeight());
+    }
+
+    /**
+     * Detaches this root and its child hierarchy from active presentation.
+     */
+    public void detach() {
+        removeTree();
     }
 }

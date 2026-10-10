@@ -8,12 +8,12 @@ import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.camera.NullCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.client.delegate.NullDelegate;
-import com.oddlabs.tt.gui.GUI;
+import com.oddlabs.tt.client.screen.Screen;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.gui.GUIImage;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.LabelBox;
 import com.oddlabs.tt.gui.ProgressBar;
-import com.oddlabs.tt.gui.render.WorldSceneRenderer;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ResourceBundle;
@@ -56,7 +56,7 @@ public final class ProgressForm {
 
     private final NetworkSelector network;
     private final @Nullable ProgressBar progress_bar;
-    private final GUI gui;
+    private final ScreenManager screenManager;
     private final Runnable load_task;
     private long lastUpdateTime;
     private float currentProgress;
@@ -78,14 +78,15 @@ public final class ProgressForm {
     ) {
     }
 
-    public static void setProgressForm(NetworkSelector network, GUI gui, @Nullable AudioManager audioManager,
-            LoadCallback<GUIRoot, WorldSceneRenderer> callback) {
-        setProgressForm(network, gui, audioManager, callback, Mode.GAME_LOAD);
+    public static void setProgressForm(NetworkSelector network, ScreenManager screenManager,
+            @Nullable AudioManager audioManager,
+            LoadCallback<GUIRoot, Screen> callback) {
+        setProgressForm(network, screenManager, audioManager, callback, Mode.GAME_LOAD);
     }
 
-    public static @Nullable Runnable setProgressForm(NetworkSelector network, final GUI gui,
+    public static @Nullable Runnable setProgressForm(NetworkSelector network, final ScreenManager screenManager,
             @Nullable AudioManager audioManager,
-            final LoadCallback<GUIRoot, WorldSceneRenderer> callback, final Mode mode) {
+            final LoadCallback<GUIRoot, Screen> callback, final Mode mode) {
         boolean show_tip = (mode == Mode.GAME_LOAD);
         Layout layout = switch (mode) {
             case STARTUP -> new Layout("/textures/gui/oddlabs", 1024, 1024, 800, 600, 320, 145, 200, true, true);
@@ -94,22 +95,23 @@ public final class ProgressForm {
             case MENU_RETURN -> new Layout("/textures/gui/startup", 1024, 1024, 800, 600, 250, 145, 300, false, false);
         };
 
-        ProgressForm form = new ProgressForm(network, gui, audioManager,
+        ProgressForm form = new ProgressForm(network, screenManager, audioManager,
                 callback, mode, layout, show_tip);
 
         return layout.firstProgress() ? form.getLoadTask() : null;
     }
 
-    private ProgressForm(NetworkSelector network, final GUI gui, @Nullable AudioManager audioManager,
-            final LoadCallback<GUIRoot, WorldSceneRenderer> callback,
+    private ProgressForm(NetworkSelector network, final ScreenManager screenManager,
+            @Nullable AudioManager audioManager,
+            final LoadCallback<GUIRoot, Screen> callback,
             Mode mode, Layout layout, boolean show_tip) {
         this.network = network;
-        this.gui = gui;
+        this.screenManager = screenManager;
         this.load_task = () -> executeCallback(callback, audioManager);
         if (audioManager != null) {
             audioManager.stopSources();
         }
-        var gui_root = (mode == Mode.STARTUP) ? gui.getGUIRoot() : gui.newFade(load_task, null);
+        var gui_root = (mode == Mode.STARTUP) ? screenManager.getGUIRoot() : screenManager.newFade(load_task);
         CameraDelegate<NullCamera> delegate = new NullDelegate(gui_root, false);
         gui_root.pushDelegate(delegate);
 
@@ -148,28 +150,28 @@ public final class ProgressForm {
 
         // Force an initial render to show the progress screen immediately
         this.lastUpdateTime = System.nanoTime();
-        gui.updateProgress();
+        screenManager.getEngine().updateProgress();
     }
 
     private Runnable getLoadTask() {
         return load_task;
     }
 
-    private void executeCallback(LoadCallback<GUIRoot, WorldSceneRenderer> callback,
+    private void executeCallback(LoadCallback<GUIRoot, Screen> callback,
             @Nullable AudioManager audioManager) {
-        GUIRoot client_root = gui.createRoot();
+        GUIRoot client_root = screenManager.createRoot();
         ProgressListener listener = new FormProgressListener();
-        WorldSceneRenderer renderer = ProgressListener.supply(listener,
+        Screen screen = ProgressListener.supply(listener,
                 () -> callback.load(client_root));
         if (progress_bar != null) {
             progress_bar.setProgress(1f);
         }
-        gui.updateProgress();
-        gui.newFade(() -> {
+        screenManager.getEngine().updateProgress();
+        screenManager.newFade(() -> {
             if (audioManager != null) {
                 audioManager.startSources();
             }
-        }, client_root, renderer);
+        }, screen);
     }
 
     private final class FormProgressListener implements ProgressListener {
@@ -183,7 +185,7 @@ public final class ProgressForm {
             long now = System.nanoTime();
             if (now - lastUpdateTime >= THROTTLE_INTERVAL_NANOS) {
                 lastUpdateTime = now;
-                gui.updateProgress();
+                screenManager.getEngine().updateProgress();
             }
         }
 

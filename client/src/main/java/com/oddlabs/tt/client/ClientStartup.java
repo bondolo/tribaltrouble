@@ -1,23 +1,28 @@
 package com.oddlabs.tt.client;
 
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.gui.GUI;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Initializes client systems and GUI, returning an optional background load task.
+ * Initializes client systems and active screen manager, returning an optional background load task.
  */
 @FunctionalInterface
 public interface ClientStartup {
     /**
-     * Container holding the initialized GUI and optional background load task.
+     * Container holding the initialized screen manager and optional background load task.
      *
-     * @param gui the active GUI
+     * @param screenManager the active screen manager
      * @param loadTask optional background runnable to execute after the first frame
      */
-    record Session(GUI gui, @Nullable Runnable loadTask) implements AutoCloseable {
+    record Session(ScreenManager screenManager, @Nullable Runnable loadTask) implements AutoCloseable {
+        public GUI gui() {
+            return screenManager.getGUI();
+        }
+
         @Override
         public void close() {
-            gui.close();
+            screenManager.close();
         }
     }
 

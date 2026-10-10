@@ -1,4 +1,4 @@
-package com.oddlabs.tt.gui.render;
+package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.state.RenderContext;

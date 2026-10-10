@@ -11,7 +11,7 @@ import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.render.WorldSceneRenderer;
+import com.oddlabs.tt.client.screen.Screen;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Action;
@@ -65,7 +65,7 @@ public abstract class Island {
         getViewer().getGUIRoot().addModalForm(form);
     }
 
-    protected final GameNetwork<GUIRoot, WorldSceneRenderer> startNewGame(GUIRoot gui_root,
+    protected final GameNetwork<GUIRoot, Screen> startNewGame(GUIRoot gui_root,
             int meters_per_world, Terrain terrain, float hills, float vegetation_amount,
             float supplies_amount, int seed, int campaign_num, int initial_units, String[] ai_names) {
         InGameInfo ingame_info = new CampaignInGameInfo(campaign);

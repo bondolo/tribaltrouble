@@ -16,6 +16,7 @@ import com.oddlabs.tt.engine.render.FrameTimeRecorder;
 import com.oddlabs.tt.engine.render.GpuPass;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.state.RenderContext;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.engine.util.GLUtils;
@@ -32,6 +33,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
@@ -64,6 +66,7 @@ public final class Peer implements AutoCloseable {
     private final CameraState frustumState = new CameraState();
     private final Renderer renderer;
     private @Nullable IntSupplier pathfindCountSupplier;
+    private @Nullable ScreenManager screenManager;
 
     private boolean movie_recording_started = false;
 
@@ -128,13 +131,29 @@ public final class Peer implements AutoCloseable {
         this.pathfindCountSupplier = supplier;
     }
 
-    public void updateProgress(GUI gui) {
-        renderer.updateProgress(() -> renderFrame(gui));
+    public ScreenManager getScreenManager() {
+        return Objects.requireNonNull(screenManager, "ScreenManager is not initialized");
     }
 
-    private void renderFrame(GUI gui) {
+    public void setScreenManager(@Nullable ScreenManager screenManager) {
+        this.screenManager = screenManager;
+    }
+
+    public void updateProgress() {
+        var manager = screenManager;
+        if (manager != null) {
+            renderer.updateProgress(() -> renderFrame(manager));
+        }
+    }
+
+    public void updateProgress(GUI gui) {
+        updateProgress();
+    }
+
+    private void renderFrame(ScreenManager screenManager) {
         RenderContext context = RenderContext.current();
-        var guiRoot = gui.getGUIRoot();
+        var screen = screenManager.getScreen();
+        var guiRoot = screen.guiRoot();
         var delegate = guiRoot.getDelegate();
         int width = context.getViewportWidth();
         int height = context.getViewportHeight();
@@ -149,16 +168,11 @@ public final class Peer implements AutoCloseable {
             frustumState.setView(width, height);
         }
 
-        var sceneRenderer = gui.getRenderer();
-        if (sceneRenderer != null && !sceneRenderer.isClosed()) {
-            sceneRenderer.render(context, frustumState, guiRoot);
-        } else {
-            context.clear(true, true);
-        }
+        screen.render3D(context, frustumState);
 
         var gpu = context.gpuTimer();
         gpu.begin(GpuPass.GUI);
-        gui.render(context);
+        screenManager.renderUI(context);
         gpu.end();
     }
 
@@ -249,7 +263,7 @@ public final class Peer implements AutoCloseable {
         windowSettings.view_freq = new_mode.getFrequency();
     }
 
-    private void runGameLoop(GUI gui) {
+    private void runGameLoop(ScreenManager screenManager) {
         if (framePacer.isTimeFrozen() && !framePacer.isTimeStopped()) {
             framePacer.unfreezeTime();
         }
@@ -274,6 +288,7 @@ public final class Peer implements AutoCloseable {
         framePacer.addExecutionTimePrecision(framePacer.getFrameTimeCounter().getAveragePerUpdate());
         deterministic.setEnabled(true);
         var selector = network.getSelector();
+        GUI gui = screenManager.getGUI();
         while (framePacer.getExecutionTimePrecision()
                 >= AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK && !isFinished()) {
             framePacer.addExecutionTimePrecision(
@@ -312,8 +327,9 @@ public final class Peer implements AutoCloseable {
         }
         deterministic.setEnabled(false);
         if (!DebugFlags.frustum_freeze) {
-            CameraState camera = gui.getGUIRoot().getDelegate().getCameraState();
-            gui.pickHover(camera != null ? camera : frustumState);
+            CameraState camera = screenManager.getGUIRoot().getDelegate().getCameraState();
+            screenManager.pickHover(camera != null ? camera : frustumState, gui.getLocalInput().getMouseX(),
+                    gui.getLocalInput().getMouseY());
         }
     }
 
@@ -403,7 +419,7 @@ public final class Peer implements AutoCloseable {
     }
 
     private void runMainLoop(ClientStartup.Session session, Instant startTime) {
-        GUI gui = session.gui();
+        ScreenManager screenManager = session.screenManager();
         Runnable load_task = session.loadTask();
         boolean first_frame = true;
         boolean wasActive = window.isActive();
@@ -435,14 +451,14 @@ public final class Peer implements AutoCloseable {
             }
             wasActive = isActive;
 
-            runGameLoop(gui);
+            runGameLoop(screenManager);
             frameTimeRecorder.mark(FrameTimeRecorder.Phase.SIMULATION);
 
             audioManager.update(AnimationManager.ANIMATION_SECONDS_PER_TICK);
             frameTimeRecorder.mark(FrameTimeRecorder.Phase.AUDIO);
 
             audioManager.setMasterGain(isActive ? 1f : 0f);
-            renderer.display(() -> renderFrame(gui));
+            renderer.display(() -> renderFrame(screenManager));
             frameTimeRecorder.mark(FrameTimeRecorder.Phase.DISPLAY);
 
             if (window.isVisible()) {

@@ -46,7 +46,8 @@ public abstract class Campaign {
     }
 
     public final void pushDelegate(GUI gui) {
-        final GUIRoot gui_root = gui.newFade(null, gui.getRenderer());
+        final GUIRoot gui_root = gui.createRoot();
+        engine.getScreenManager().newFade(null, engine.getScreenManager().getScreen().withGUIRoot(gui_root));
         gui_root.pushDelegate(new CampaignMapForm(gui_root, Campaign.this));
     }
 

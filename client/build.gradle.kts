@@ -24,6 +24,6 @@ dependencies {
     api(project(":engine"))
     api(project(":scenery"))
     implementation(project(":effects"))
-    implementation(project(":gui"))
+    api(project(":gui"))
     compileOnlyApi(libs.jspecify)
 }

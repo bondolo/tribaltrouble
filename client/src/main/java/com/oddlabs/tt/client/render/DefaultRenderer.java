@@ -23,8 +23,6 @@ import com.oddlabs.tt.engine.render.shader.DebugShaderRenderer;
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.render.state.GlobalUniforms;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.gui.render.SceneHoverProvider;
-import com.oddlabs.tt.gui.render.WorldSceneRenderer;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.scenery.SeaBottom;
 import com.oddlabs.tt.scenery.Sky;

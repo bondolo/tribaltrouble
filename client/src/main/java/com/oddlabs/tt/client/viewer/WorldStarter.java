@@ -5,8 +5,9 @@ import com.oddlabs.matchmaking.Participant;
 import com.oddlabs.router.SessionID;
 import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.client.Peer;
+import com.oddlabs.tt.client.screen.DefaultScreen;
+import com.oddlabs.tt.client.screen.Screen;
 import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.render.WorldSceneRenderer;
 import com.oddlabs.tt.procedural.landscape.GeneratedLandscapeData;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
@@ -22,7 +23,7 @@ import java.util.List;
  * Triggers world loading, initializes players and matchmaking session information,
  * and sets up the active gameplay session once loading is complete.
  */
-public final class WorldStarter implements LoadCallback<GUIRoot, WorldSceneRenderer> {
+public final class WorldStarter implements LoadCallback<GUIRoot, Screen> {
     private final Peer engine;
     private final UnitInfo[] unit_infos;
     private final PlayerSlot[] player_slots;
@@ -49,7 +50,7 @@ public final class WorldStarter implements LoadCallback<GUIRoot, WorldSceneRende
     }
 
     @Override
-    public WorldSceneRenderer load(GUIRoot gui_root) {
+    public Screen load(GUIRoot gui_root) {
         engine.getFramePacer().freezeTime();
         List<PlayerSlot> player_slot_list = new ArrayList<>();
         List<UnitInfo> unit_info_list = new ArrayList<>();
@@ -75,7 +76,7 @@ public final class WorldStarter implements LoadCallback<GUIRoot, WorldSceneRende
             engine.getNetwork().getMatchmakingClient().getInterface().gameStartedNotify(game_session);
         }
         System.out.println("PeerHub created (session_id = " + session_id + ") Player list:");
-        return viewer.getRenderer();
+        return new DefaultScreen(gui_root, viewer.getRenderer());
     }
 
     private static Participant[] getParticipants(WorldViewer viewer,

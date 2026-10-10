@@ -1,26 +1,23 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.Settings;
-import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.gui.render.SceneHoverProvider;
-import com.oddlabs.tt.gui.render.WorldSceneRenderer;
 import com.oddlabs.tt.window.Window;
 import com.oddlabs.tt.window.WindowSettings;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 
 /**
- * Container for the 2D user interface
+ * Container for the 2D user interface.
  */
-public final class GUI implements Animated, AutoCloseable {
+public final class GUI implements AutoCloseable {
     private final Skin skin;
     private final LocalInput localInput;
     private final Window window;
@@ -31,10 +28,7 @@ public final class GUI implements Animated, AutoCloseable {
     private final DoubleSupplier fpsSupplier;
     private @Nullable Runnable movieRecordingStarter;
     private final GUIRenderer guiRenderer = new GUIRenderer();
-    private GUIRoot current_root;
-    private @Nullable Fade fade;
-    private @Nullable WorldSceneRenderer renderer;
-    private @Nullable SceneHoverProvider hoverProvider;
+    private GUIRoot currentRoot;
     private @Nullable Runnable closeHandler;
     private @Nullable Runnable errorAudioHandler;
 
@@ -48,7 +42,7 @@ public final class GUI implements Animated, AutoCloseable {
         this.shutdownHandler = shutdownHandler;
         this.progressUpdater = progressUpdater;
         this.fpsSupplier = fpsSupplier;
-        this.current_root = createRoot();
+        this.currentRoot = createRoot();
     }
 
     public GUI(LocalInput localInput, Window window, LocalEventQueue eventQueue, Settings settings,
@@ -155,33 +149,6 @@ public final class GUI implements Animated, AutoCloseable {
         }
     }
 
-    public GUIRoot newFade() {
-        return newFade(null, (WorldSceneRenderer) null);
-    }
-
-    public GUIRoot newFade(@Nullable Runnable onComplete, @Nullable WorldSceneRenderer renderer) {
-        return newFade(onComplete, renderer, renderer instanceof SceneHoverProvider hover ? hover : null);
-    }
-
-    public GUIRoot newFade(@Nullable Runnable onComplete, @Nullable WorldSceneRenderer renderer,
-            @Nullable SceneHoverProvider hoverProvider) {
-        GUIRoot gui_root = createRoot();
-        newFade(onComplete, gui_root, renderer, hoverProvider);
-        return gui_root;
-    }
-
-    public GUIRoot newFade(@Nullable Runnable onComplete, GUIRoot gui_root,
-            @Nullable WorldSceneRenderer renderer) {
-        return newFade(onComplete, gui_root, renderer, renderer instanceof SceneHoverProvider hover ? hover : null);
-    }
-
-    public GUIRoot newFade(@Nullable Runnable onComplete, GUIRoot gui_root,
-            @Nullable WorldSceneRenderer renderer, @Nullable SceneHoverProvider hoverProvider) {
-        fade = new Fade(onComplete, gui_root, renderer, hoverProvider);
-        eventQueue.getManager().registerAnimation(this);
-        return gui_root;
-    }
-
     public GUIRoot createRoot() {
         GUIRoot gui_root = new GUIRoot(this, skin);
         // This happens early before the viewport is fully initialized
@@ -189,77 +156,45 @@ public final class GUI implements Animated, AutoCloseable {
         return gui_root;
     }
 
-    @Override
-    public void animate(float dt) {
-        if (fade != null) {
-            fade.animate(this, dt);
-        }
+    public GUIRoot getRoot() {
+        return currentRoot;
     }
 
-    void stopFade() {
-        eventQueue.getManager().removeAnimation(this);
-        fade = null;
+    public GUIRoot getGUIRoot() {
+        return currentRoot;
     }
 
-    void switchRoot(GUIRoot gui_root, @Nullable WorldSceneRenderer renderer) {
-        switchRoot(gui_root, renderer, renderer instanceof SceneHoverProvider hover ? hover : null);
+    public void setRoot(GUIRoot root) {
+        this.currentRoot = Objects.requireNonNull(root, "root cannot be null");
     }
 
-    void switchRoot(GUIRoot gui_root, @Nullable WorldSceneRenderer renderer,
-            @Nullable SceneHoverProvider hoverProvider) {
-        current_root.removeTree();
-        current_root = gui_root;
-        if (this.renderer != null && this.renderer != renderer) {
-            this.renderer.close();
-        }
-        this.renderer = renderer;
-        this.hoverProvider = hoverProvider;
+    public GUIRenderer getRenderer() {
+        return guiRenderer;
     }
 
     @Override
     public void close() {
         guiRenderer.close();
-        if (renderer != null) {
-            renderer.close();
-            renderer = null;
-        }
-        hoverProvider = null;
     }
 
-    public GUIRoot getGUIRoot() {
-        return current_root;
-    }
-
-    @Nullable
-    Fade getFade() {
-        return fade;
-    }
-
-    public @Nullable WorldSceneRenderer getRenderer() {
-        return renderer;
-    }
-
-    public @Nullable SceneHoverProvider getHoverProvider() {
-        return hoverProvider;
-    }
-
-    public void pickHover(CameraState cameraState) {
-        var guiRoot = getGUIRoot();
-        GUIObject gui_hit = guiRoot.getCurrentGUIObject();
-        if (hoverProvider != null) {
-            hoverProvider.pickHover(gui_hit.canHoverBehind(), cameraState,
-                    localInput.getMouseX(), localInput.getMouseY());
-        }
-    }
-
-    public void render(RenderContext context) {
-        GUIRoot guiRoot = getGUIRoot();
-
+    public void render(RenderContext context, @Nullable ToolTip sceneToolTip, @Nullable Consumer<GUIRenderer> overlay) {
+        GUIRoot guiRoot = this.currentRoot;
         try (var _ = context.withBlendMode(BlendMode.PREMULTIPLIED)) {
             guiRenderer.renderFrame(context, guiRoot.getWidth(), guiRoot.getHeight(), () -> {
                 guiRoot.render(guiRenderer);
-                guiRoot.renderTopmost(guiRenderer, hoverProvider != null ? hoverProvider.getToolTip() : null);
+                guiRoot.renderTopmost(guiRenderer, sceneToolTip);
+                if (overlay != null) {
+                    overlay.accept(guiRenderer);
+                }
             });
         }
+    }
+
+    public void render(RenderContext context, @Nullable ToolTip sceneToolTip) {
+        render(context, sceneToolTip, null);
+    }
+
+    public void render(RenderContext context) {
+        render(context, null, null);
     }
 }

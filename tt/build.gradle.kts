@@ -27,7 +27,7 @@ application {
         "-Dorg.lwjgl.util.Debug=true",
         "-Dorg.lwjgl.util.DebugLoader=true",
         "-Dcom.oddlabs.tt.developer=true",
-        "-Xms80m", "-Xmx512m"
+        "-Xms256m", "-Xmx512m"
 //        , "-javaagent:/Users/mike/.m2/repository/org/lwjglx/lwjglx-debug/1.1.0/lwjglx-debug-1.1.0.jar=validate;trace;output=trace.log"
     )
     if (System.getProperty("os.name").lowercase().contains("mac")) {

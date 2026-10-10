@@ -9,7 +9,7 @@ module com.oddlabs.tt.client {
     requires transitive com.oddlabs.tt.engine;
     requires transitive com.oddlabs.tt.scenery;
     requires com.oddlabs.tt.effects;
-    requires com.oddlabs.tt.gui;
+    requires transitive com.oddlabs.tt.gui;
     requires static org.jspecify;
     requires java.desktop;
     requires java.logging;
@@ -22,6 +22,7 @@ module com.oddlabs.tt.client {
     exports com.oddlabs.tt.client.gui;
     exports com.oddlabs.tt.client.render;
     exports com.oddlabs.tt.client.resource;
+    exports com.oddlabs.tt.client.screen;
     exports com.oddlabs.tt.client.trigger;
     exports com.oddlabs.tt.client.viewer;
 

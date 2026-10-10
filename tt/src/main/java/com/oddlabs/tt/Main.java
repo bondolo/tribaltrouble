@@ -11,6 +11,7 @@ import com.oddlabs.tt.input.InputBindingSettings;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.ClientStartup;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.LocalInput;
@@ -129,8 +130,9 @@ public final class Main {
                                             clientEngine::shutdown));
                                 }
                             });
+                            ScreenManager screenManager = new ScreenManager(clientEngine, gui);
                             Runnable loadTask = Menu.setupMainMenu(clientEngine, gui, firstProgress);
-                            return new ClientStartup.Session(gui, loadTask);
+                            return new ClientStartup.Session(screenManager, loadTask);
                         }, args
                 );
             }

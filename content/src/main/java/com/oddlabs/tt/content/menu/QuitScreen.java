@@ -4,6 +4,7 @@ import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.gui.GUIImage;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MouseButton;
@@ -24,7 +25,7 @@ public final class QuitScreen extends CameraDelegate<Camera> implements Updatabl
     private boolean key_pressed = false;
     private boolean time_out = false;
 
-    public QuitScreen(GUIRoot gui_root, Camera camera) {
+    public QuitScreen(GUIRoot gui_root, Camera camera, ScreenManager screenManager) {
         super(gui_root, camera);
         this.delay_timer = new TimerAnimation(gui_root.getAnimationManager(), this, DELAY);
         setCanFocus(true);
@@ -35,7 +36,7 @@ public final class QuitScreen extends CameraDelegate<Camera> implements Updatabl
         overlay.setPos(0, 0);
         addChild(overlay);
 
-        GUIRoot quit_root = gui_root.getGUI().newFade();
+        GUIRoot quit_root = screenManager.newFade();
 
         delay_timer.start();
 
