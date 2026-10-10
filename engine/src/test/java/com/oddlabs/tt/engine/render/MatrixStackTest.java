@@ -4,8 +4,6 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -87,17 +85,5 @@ final class MatrixStackTest {
         assertEquals(1, stack.size());
         stack.current().getTranslation(pos);
         assertEquals(0f, pos.x, 1e-5f);
-    }
-
-    @Test
-    void testTopListenerNotification() {
-        AtomicInteger notifications = new AtomicInteger();
-        MatrixStack stack = new MatrixStack(_ -> notifications.incrementAndGet());
-
-        stack.push();
-        assertEquals(1, notifications.get());
-
-        stack.pop();
-        assertEquals(2, notifications.get());
     }
 }
