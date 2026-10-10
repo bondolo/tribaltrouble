@@ -272,10 +272,10 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         // softly modulated by ambient skylight color (cool atmospheric shadow fill)
                         float swayShadow = texture(u_PersistentShadowMap, fs_in.texCoordCanopy).r;
                         float staticShadow = texture(u_PersistentShadowMap, fs_in.texCoordColormap).g;
-                        float shadowAttenuation = clamp(max(swayShadow, staticShadow) * u_ShadowIntensity, 0.0, 0.85);
+                        float shadowAttenuation = clamp(max(swayShadow, staticShadow) * u_ShadowIntensity, 0.0, 0.85) * edgeBlend;
                         float shadowFactor = 1.0 - shadowAttenuation;
                         vec3 skyHue = u_fogColor.rgb / max(max(u_fogColor.r, u_fogColor.g), max(u_fogColor.b, 0.01));
-                        vec3 shadowTint = mix(vec3(1.0), skyHue, 0.20);
+                        vec3 shadowTint = mix(vec3(1.0), skyHue, shadowAttenuation * 0.20);
                         diffuseColor.rgb *= shadowFactor * shadowTint;
                         specular *= shadowFactor;
 
