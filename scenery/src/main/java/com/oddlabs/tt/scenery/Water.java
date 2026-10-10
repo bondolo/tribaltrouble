@@ -8,6 +8,7 @@ import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.HeightMapVisual;
 import com.oddlabs.tt.engine.render.PatchMesh;
+import com.oddlabs.tt.engine.render.SubSceneRenderer;
 import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.BlendMode;
@@ -44,7 +45,7 @@ import java.util.function.Supplier;
 /**
  * Water surface renderer for oceans and inland water.
  */
-public final class Water implements WaterUniformsProvider, AutoCloseable {
+public final class Water implements SubSceneRenderer, WaterUniformsProvider, AutoCloseable {
     private static final int OCEAN_TEXTURE_SIZE = 512;
 
     public static final int WAVE_COUNT = 3;
@@ -80,6 +81,7 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
 
     private final Terrain terrain;
     private final Sky sky;
+    private final ConcentricRingMesh ringMesh;
     private final HeightMap heightMap;
     private final HeightMapVisual heightMapVisual;
 
@@ -112,10 +114,13 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
     private final float[] waveLengths;
     private final float waveSpeed;
 
-    public Water(HeightMapVisual heightMapVisual, HeightMap heightmap, Terrain terrain, Sky sky) {
+    public Water(HeightMapVisual heightMapVisual, HeightMap heightmap, Terrain terrain, Sky sky,
+            ConcentricRingMesh ringMesh) {
         this.heightMapVisual = heightMapVisual;
         this.heightMap = heightmap;
         this.terrain = terrain;
+        this.sky = sky;
+        this.ringMesh = ringMesh;
         waveAmplitudes = switch (terrain) {
             case VIKING -> new float[]{
                     WAVE_AMPLITUDE_BASE * VIKING_AMPLITUDE_MULTIPLIER,
@@ -150,10 +155,8 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
         };
         this.ocean = Resources.findResource(new OceanTextures(terrain));
 
-        this.sky = sky;
-
         skyWaterVao.bind();
-        setupWaterAttributes(sky.getWaterVertices());
+        setupWaterAttributes(ringMesh.waterVertices());
         skyWaterVao.unbind();
 
         int gridUnits = heightmap.getGridUnitsPerWorld();
@@ -247,6 +250,11 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
     }
 
 
+    @Override
+    public void render(RenderContext context, CameraState state, Matrix4fc modelView) {
+        render(context, state, modelView, java.util.List.of(), 0.0f);
+    }
+
     public void render(RenderContext context, CameraState state, Matrix4fc modelView, Collection<
             LandscapeLeaf> visiblePatches, float currentTime) {
         updateAnimation(currentTime);
@@ -294,7 +302,7 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
             waterShader.setUniform(waterShader.locWaterHeight, 0.0f);
             GL20.glVertexAttrib3f(4, 0.0f, 0.0f, 1.0f);
             skyWaterVao.bind();
-            sky.getWaterIndices().drawElements(GL11.GL_TRIANGLES, sky.getWaterIndices().capacity(), 0);
+            ringMesh.indices().drawElements(GL11.GL_TRIANGLES, ringMesh.indices().capacity(), 0);
             skyWaterVao.unbind();
 
             // Render Instanced Water Patches. u_waterHeight = seaLevel.

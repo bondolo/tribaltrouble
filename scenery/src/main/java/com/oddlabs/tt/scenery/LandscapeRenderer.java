@@ -36,7 +36,6 @@ import org.lwjgl.opengl.GL33;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -55,7 +54,7 @@ public final class LandscapeRenderer implements SubSceneRenderer, Animated, Auto
     private final PatchMesh patchMesh = new PatchMesh();
     private final LandscapeShader shader = new LandscapeShader();
     private final HeightMapVisual heightMapVisual;
-    private @Nullable Water water;
+    private @Nullable Texture oceanMaskTexture;
     private FloatVBO instanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 3);
     private FloatBuffer instanceBuffer = BufferUtils.createFloatBuffer(1024 * 3);
 
@@ -64,8 +63,8 @@ public final class LandscapeRenderer implements SubSceneRenderer, Animated, Auto
     }
 
 
-    public void setWater(Water water) {
-        this.water = water;
+    public void setOceanMask(@Nullable Texture oceanMask) {
+        this.oceanMaskTexture = oceanMask;
     }
 
     public LandscapeRenderer(World world, WorldInfo<Texture> world_info,
@@ -171,9 +170,8 @@ public final class LandscapeRenderer implements SubSceneRenderer, Animated, Auto
             context.setTexture(4, detailNormalMap);
             shader.setUniform(shader.locDetailNormalMap, 4);
 
-            Water activeWater = water;
-            if (activeWater != null) {
-                context.setTexture(5, activeWater.getOceanMaskTexture());
+            if (oceanMaskTexture != null) {
+                context.setTexture(5, oceanMaskTexture);
                 shader.setUniform(shader.locOceanMask, 5);
             }
 
@@ -196,16 +194,12 @@ public final class LandscapeRenderer implements SubSceneRenderer, Animated, Auto
 
                 instanceBuffer.clear();
                 float patchSize = world.getHeightMap().getMetersPerPatch();
-                int patchesPerWorld = world.getHeightMap().getPatchesPerWorld();
-                BitSet activeOceanPatches = activeWater != null ? activeWater.getOceanPatches() : null;
                 for (LandscapeLeaf leaf : render_list) {
                     int px = leaf.getPatchX();
                     int py = leaf.getPatchY();
-                    float waveScale = (activeOceanPatches != null && activeOceanPatches.get(py * patchesPerWorld + px))
-                            ? 1.0f : 0.0f;
                     instanceBuffer.put(px * patchSize);
                     instanceBuffer.put(py * patchSize);
-                    instanceBuffer.put(waveScale);
+                    instanceBuffer.put(0.0f);
                 }
                 instanceBuffer.flip();
 

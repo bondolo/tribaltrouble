@@ -93,14 +93,13 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
     private static final float START_ANGLE = -(float) Math.PI / 4f;
 
     private final Color.Linear skyColor;
-    private final Color.@NonNull Linear cloudShadow;
+    private final Color.Linear cloudShadow;
     private final float horizonCloudFade;
     private final float originX;
     private final float originY;
     private final float originZ;
     private final ShortVBO[] strip_indices;
     private final ShortVBO fan_indices;
-    private final ConcentricRingMesh ringMesh;
     private final FloatVBO sky_vbo;
 
     private final Texture[] clouds;
@@ -116,8 +115,6 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
     private final float[] outerOffset = new float[2];
     private final float[] speedOuter;
     private final float[] speedInner;
-
-    private static final int RING_SUBDIV_AXIS = 64;
 
     public Sky(HeightMap heightMap, Terrain terrain) {
         this(heightMap, terrain, 6000f, 32, 32,
@@ -156,8 +153,6 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
 
         strip_indices = makeSkyStripIndices();
         fan_indices = makeSkyFanIndices();
-
-        this.ringMesh = new ConcentricRingMesh(heightMap, radius, RING_SUBDIV_AXIS);
 
         this.skyVAO = new VertexArray();
         skyVAO.bind();
@@ -218,20 +213,8 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
     }
 
 
-    public ConcentricRingMesh getRingMesh() {
-        return ringMesh;
-    }
-
-    public FloatVBO getWaterVertices() {
-        return ringMesh.waterVertices();
-    }
-
     public Color.Linear getSkyColor() {
         return skyColor;
-    }
-
-    public ShortVBO getWaterIndices() {
-        return ringMesh.indices();
     }
 
     public float[] getInnerOffset() {
@@ -390,7 +373,6 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
         skyVAO.close();
         skyShader.close();
         sky_vbo.close();
-        ringMesh.close();
         fan_indices.close();
         for (ShortVBO vbo : strip_indices) {
             vbo.close();

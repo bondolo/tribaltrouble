@@ -23,6 +23,7 @@ import com.oddlabs.tt.engine.render.shader.DebugShaderRenderer;
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.render.state.GlobalUniforms;
 import com.oddlabs.tt.engine.render.state.RenderContext;
+import com.oddlabs.tt.scenery.ConcentricRingMesh;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.scenery.SeaBottom;
 import com.oddlabs.tt.scenery.Sky;
@@ -52,6 +53,7 @@ import org.lwjgl.opengl.GL11;
  */
 public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverProvider {
     private final Picker picker;
+    private final ConcentricRingMesh ringMesh;
     private final Water water;
     private final Sky sky;
     private final SeaBottom seaBottom;
@@ -96,12 +98,13 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
         this.tree_renderer = new TreeRenderer(cheat, picker.getRespondManager(), treeSpriteRenderer,
                 picker.getAnimationManager(), landscape_renderer);
         this.landscape_renderer = landscape_renderer;
+        this.ringMesh = new ConcentricRingMesh(world.getHeightMap());
         this.sky = new Sky(world.getHeightMap(), world_info.landscapeData().terrain());
         this.seaBottom = new SeaBottom(world_info.landscapeData().terrain(),
-                world_info.detail(), world_info.detailNormal(), sky.getRingMesh());
+                world_info.detail(), world_info.detailNormal(), ringMesh);
         this.water = new Water(landscape_renderer.getHeightMapVisual(), world.getHeightMap(), world_info.landscapeData()
-                .terrain(), sky);
-        this.landscape_renderer.setWater(this.water);
+                .terrain(), sky, ringMesh);
+        this.landscape_renderer.setOceanMask(this.water.getOceanMaskTexture());
         this.lightningRenderer = new LightningRenderer();
         this.sonicBlastRenderer = new SonicBlastRenderer();
         this.emitterRenderer = new EmitterRenderer();
@@ -407,6 +410,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
             sky.close();
             seaBottom.close();
             water.close();
+            ringMesh.close();
             tree_renderer.close();
             landscape_renderer.close();
             treeSpriteRenderer.close();
