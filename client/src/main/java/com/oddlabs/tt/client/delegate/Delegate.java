@@ -7,7 +7,7 @@ import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
-import com.oddlabs.tt.engine.render.MatrixStack;
+import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.gui.delegate.InputDelegate;
@@ -57,7 +57,7 @@ public abstract class Delegate extends GUIObject implements InputDelegate {
     }
 
     public void render3D(RenderContext context, LandscapeRenderer renderer, RenderQueues render_queues,
-            CameraState state, MatrixStack modelViewStack, MatrixStack projectionStack) {
+            CameraState state, Matrix4fc modelView) {
     }
 
     @Override

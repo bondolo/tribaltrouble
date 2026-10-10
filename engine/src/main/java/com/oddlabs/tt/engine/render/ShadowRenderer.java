@@ -5,6 +5,7 @@ import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.render.state.ScopedState;
 import com.oddlabs.util.Color;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -18,10 +19,9 @@ public abstract class ShadowRenderer {
     private @Nullable DecalRenderer sharedRenderer;
 
     public ScopedState setupShadows(RenderContext context, RenderQueues queues,
-            float worldSize, Texture heightTexture, MatrixStack modelViewStack,
-            MatrixStack projectionStack) {
+            float worldSize, Texture heightTexture, Matrix4fc modelView) {
         this.sharedRenderer = queues.getDecalRenderer();
-        var decalState = sharedRenderer.setup(context, worldSize, heightTexture, modelViewStack, projectionStack);
+        var decalState = sharedRenderer.setup(context, worldSize, heightTexture, modelView);
 
         return () -> {
             decalState.close();

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.engine.render.MatrixStack;
+import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.ShadowListRenderer;
 import com.oddlabs.tt.engine.render.Texture;
@@ -35,11 +35,10 @@ public final class TargetRespondRenderer extends ShadowListRenderer {
 
     @Override
     public void renderShadows(RenderContext context, RenderQueues queues,
-            float worldSize, Texture heightTexture, MatrixStack modelViewStack,
-            MatrixStack projectionStack) {
+            float worldSize, Texture heightTexture, Matrix4fc modelView) {
         if (target_list.isEmpty()) return;
 
-        try (var _ = setupShadows(context, queues, worldSize, heightTexture, modelViewStack, projectionStack)) {
+        try (var _ = setupShadows(context, queues, worldSize, heightTexture, modelView)) {
             setShadowColor(Color.Linear.GREEN);
             setPattern(VisualPattern.FRIENDLY);
             bindShadowTexture(ring);

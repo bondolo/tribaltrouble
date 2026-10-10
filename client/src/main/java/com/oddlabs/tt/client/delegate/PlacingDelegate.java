@@ -16,7 +16,8 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.BuildingSiteScanFilter;
 import com.oddlabs.tt.client.render.BuildingSiteRenderer;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
-import com.oddlabs.tt.engine.render.MatrixStack;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import com.oddlabs.tt.client.render.PlacingRenderer;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Sprite;
@@ -41,6 +42,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
 
     private final BuildingSiteRenderer site_renderer = new BuildingSiteRenderer();
     private final PlacingRenderer placingRenderer = new PlacingRenderer();
+    private final Matrix4f ghostMatrix = new Matrix4f();
     private final BuildingType building_type;
 
     public PlacingDelegate(WorldViewer viewer, CameraState old_camera,
@@ -112,7 +114,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
 
     @Override
     public void render3D(RenderContext context, LandscapeRenderer renderer, RenderQueues queues, CameraState state,
-            MatrixStack modelViewStack, MatrixStack projectionStack) {
+            Matrix4fc modelView) {
         var hit = getViewer().getPicker().pickLocation(getCamera().getState());
         if (hit.isEmpty()) {
             return;
@@ -131,7 +133,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
         unit_grid.scan(filter, placing_center_grid_x, placing_center_grid_y);
         List<LandscapeTarget> target_list = filter.getResults();
 
-        site_renderer.renderSites(context, queues, renderer, modelViewStack, projectionStack, target_list, center_x,
+        site_renderer.renderSites(context, queues, renderer, modelView, target_list, center_x,
                 center_y, 2 * GRID_RADIUS);
 
         com.oddlabs.tt.engine.util.GLUtils.checkGLError("Placing: After renderSites");
@@ -149,12 +151,9 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
 
         float z = getViewer().getWorld().getHeightMap().getNearestHeight(center_x, center_y);
 
-        modelViewStack.push();
-        modelViewStack.translate(center_x, center_y, z);
+        ghostMatrix.set(modelView).translate(center_x, center_y, z);
 
         placingRenderer.renderGhost(context, sprite, built_renderer.getSpriteList(), placeColor,
-                getViewer().getLocalPlayer().getColor(), modelViewStack);
-
-        modelViewStack.pop();
+                getViewer().getLocalPlayer().getColor(), ghostMatrix);
     }
 }

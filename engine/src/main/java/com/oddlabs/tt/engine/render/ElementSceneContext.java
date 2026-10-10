@@ -7,14 +7,14 @@ import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Tracks the specific rendering properties (position, color, pattern)
+ * Tracks the specific rendering properties (position, colour, pattern)
  * for an individual world element.
  */
 public final class ElementSceneContext<M extends Model> implements ModelState<M> {
 
     public final SceneContext sceneContext;
-    public ModelVisitor<M> visitor;
-    public M model;
+    public @Nullable ModelVisitor<M> visitor;
+    public @Nullable M model;
     public float f;
     private Color.Linear color = Color.Linear.WHITE;
 

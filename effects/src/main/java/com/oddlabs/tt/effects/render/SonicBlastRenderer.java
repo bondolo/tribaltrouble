@@ -4,8 +4,9 @@ package com.oddlabs.tt.effects.render;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.effects.particle.SonicBlastEffect;
 import com.oddlabs.tt.engine.procedural.GeneratorNoise;
-import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderQueues;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.shader.VertexLayout;
 import com.oddlabs.tt.engine.render.state.BlendMode;
@@ -37,6 +38,7 @@ public final class SonicBlastRenderer implements AutoCloseable {
     private final FloatVBO vbo;
     private final VertexArray vao = new VertexArray();
     private final Texture[] noiseTextures;
+    private final Matrix4f effectMatrix = new Matrix4f();
 
     public SonicBlastRenderer() {
         // Create a simple quad centered at 0,0 on XY plane, scaled to 1x1
@@ -71,7 +73,7 @@ public final class SonicBlastRenderer implements AutoCloseable {
     }
 
     public void render(RenderContext context, RenderQueues render_queues, CameraState state,
-            MatrixStack modelViewStack, MatrixStack projectionStack) {
+            Matrix4fc modelView) {
         if (activeEffects.isEmpty()) return;
 
         try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ADDITIVE); var _ = context.withDepthMode(
@@ -90,8 +92,6 @@ public final class SonicBlastRenderer implements AutoCloseable {
                         && !effect.getBounds().testFrustum(state.getFrustum())) {
                     continue;
                 }
-
-                modelViewStack.push();
 
                 float x = effect.getPositionX();
                 float y = effect.getPositionY();
@@ -112,21 +112,20 @@ public final class SonicBlastRenderer implements AutoCloseable {
                 float angleY = (float) Math.atan2(dh_dy, 1.0f);
 
                 // Position, align to terrain slope, and scale the quad
-                modelViewStack.translate(x, y, z);
-                modelViewStack.current().rotateY(-angleX);
-                modelViewStack.current().rotateX(angleY);
-                modelViewStack.scale(r, r, 1.0f);
+                effectMatrix.set(modelView)
+                        .translate(x, y, z)
+                        .rotateY(-angleX)
+                        .rotateX(angleY)
+                        .scale(r, r, 1.0f);
 
                 shader.setUniformColor3(shader.locColor, effect.getColor());
-                shader.setUniform(shader.locModelViewMatrix, modelViewStack.current());
+                shader.setUniform(shader.locModelViewMatrix, effectMatrix);
                 shader.setUniform(shader.locTime, effect.getTime());
                 shader.setUniform(shader.locMaxRadius, visualRadius);
                 shader.setUniform(shader.locExpansionSpeed, visualRadius / Math.max(effect
                         .getDuration(), 0.001f));
 
                 GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
-
-                modelViewStack.pop();
             }
 
             vao.unbind();

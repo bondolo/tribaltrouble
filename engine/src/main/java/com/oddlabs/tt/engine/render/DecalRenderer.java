@@ -9,6 +9,7 @@ import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import com.oddlabs.util.Color;
+import org.joml.Matrix4fc;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -140,17 +141,17 @@ public final class DecalRenderer implements AutoCloseable {
     }
 
     private int setupCount = 0;
-    private ScopedState shaderState;
-    private ScopedState blendState;
-    private ScopedState depthState;
-    private ScopedState cullState;
+    private ScopedState shaderState = null;
+    private ScopedState blendState = null;
+    private ScopedState depthState = null;
+    private ScopedState cullState = null;
 
     public ScopedState setup(RenderContext context, float worldSize, Texture heightTexture,
-            MatrixStack modelViewStack, MatrixStack projectionStack) {
+            Matrix4fc modelView) {
         if (setupCount == 0) {
             shaderState = shader.use();
 
-            shader.setUniform(shader.locModelViewMatrix, modelViewStack.current());
+            shader.setUniform(shader.locModelViewMatrix, modelView);
 
             shader.setUniform(shader.locWorldSize, worldSize);
             shader.setUniform(shader.locDepthBias, 0.08f);

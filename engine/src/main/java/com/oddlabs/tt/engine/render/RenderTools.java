@@ -10,15 +10,6 @@ import com.oddlabs.tt.engine.util.DebugRender;
  */
 public final class RenderTools {
 
-    /**
-     * Translates and rotates the matrix stack to position and orient a model.
-     * The rotation is calculated from the direction vector (dir_x, dir_y).
-     */
-    static void translateAndRotate(float x, float y, float z, float dir_x, float dir_y, MatrixStack stack) {
-        float angle = (float) Math.toDegrees(Math.atan2(dir_y, dir_x));
-        stack.translate(x, y, z).rotate(angle, 0f, 0f, 1f);
-    }
-
     public static float getEyeDistanceSquared(BoundingBox box, float camera_x, float camera_y,
             float camera_z) {
         float distx = camera_x - box.getCX();

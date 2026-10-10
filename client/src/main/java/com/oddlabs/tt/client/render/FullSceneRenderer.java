@@ -11,7 +11,6 @@ import com.oddlabs.tt.effects.render.SonicBlastRenderer;
 import com.oddlabs.tt.engine.render.BoundingMode;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.InstancedSpriteRenderer;
-import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.PostProcessor;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.GpuPass;
@@ -63,8 +62,6 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
     private final TreeRenderer tree_renderer;
     private final SpriteSorter sprite_sorter;
     private final RenderQueues render_queues;
-    private final MatrixStack modelViewStack = new MatrixStack();
-    private final MatrixStack projectionStack = new MatrixStack();
     private final Selection selection;
     private final LightningRenderer lightningRenderer;
     private final SonicBlastRenderer sonicBlastRenderer;
@@ -110,9 +107,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
         this.emitterRenderer = new EmitterRenderer();
         this.postProcessor = new PostProcessor(AccessibilitySettings.from(settings), width, height,
                 WindowSettings.from(settings).view_samples);
-        DebugRender.setShaderRenderer(new DebugShaderRenderer(
-                modelViewStack, projectionStack
-        ));
+        DebugRender.setShaderRenderer(new DebugShaderRenderer());
     }
 
     private void drawAxes() {
@@ -215,7 +210,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
                 if (obj instanceof Unit unit) PathfinderDebugRenderer.renderPathTracker(unit.getPathTracker());
             }
         }
-        DebugRender.flush();
+        DebugRender.flush(frustum_state.getModelView());
     }
 
     @Override
@@ -239,8 +234,6 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
                     world.getHeightMap().getSeaLevelMeters(), water);
 
             ambient.updateSoundListener(frustum_state, world.getHeightMap());
-            modelViewStack.current().set(frustum_state.getModelView());
-            projectionStack.current().set(frustum_state.getProjectionMatrix());
 
             if (DebugFlags.line_mode || (cheat != null && cheat.line_mode)) {
                 GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
@@ -271,7 +264,8 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
 
         if (DebugFlags.process_misc) {
             var renderState = element_renderer.getRenderState();
-            emitterRenderer.prepare(render_queues, renderState.getEmitterQueue(), frustum_state, modelViewStack);
+            emitterRenderer.prepare(render_queues, renderState.getEmitterQueue(), frustum_state, frustum_state
+                    .getModelView());
             lightningRenderer.prepare(renderState.getLightningQueue());
             sonicBlastRenderer.prepare(renderState.getSonicBlastQueue());
         }
@@ -283,8 +277,8 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
             if (DebugFlags.draw_sky) {
                 var gpu = context.gpuTimer();
                 gpu.begin(GpuPass.SKY);
-                sky.render(context, frustum_state, modelViewStack.current(), currentTime);
-                seaBottom.render(context, frustum_state, modelViewStack.current());
+                sky.render(context, frustum_state, frustum_state.getModelView(), currentTime);
+                seaBottom.render(context, frustum_state, frustum_state.getModelView());
                 gpu.end();
             }
 
@@ -292,7 +286,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
                 var gpu = context.gpuTimer();
                 gpu.begin(GpuPass.LANDSCAPE);
                 landscape_renderer.prepareAll(frustum_state, false);
-                landscape_renderer.render(context, frustum_state, modelViewStack.current());
+                landscape_renderer.render(context, frustum_state, frustum_state.getModelView());
                 gpu.end();
             }
         }
@@ -307,34 +301,33 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
                 tree_renderer.renderShadows(element_renderer.getRenderState().getDefaultShadowRenderer(), currentTime);
             }
             render_queues.renderShadows(context, (float) world.getHeightMap().getMetersPerWorld(),
-                    landscape_renderer.getHeightMapVisual().getHeightTexture(), modelViewStack, projectionStack);
+                    landscape_renderer.getHeightMapVisual().getHeightTexture(), frustum_state.getModelView());
             gpu.end();
         }
 
         if (DebugFlags.process_trees) {
             gpu.begin(GpuPass.TREES);
-            tree_renderer.render(context, frustum_state, modelViewStack.current(), currentTime);
+            tree_renderer.render(context, frustum_state, frustum_state.getModelView(), currentTime);
             gpu.end();
         }
         if (DebugFlags.process_misc) {
             gpu.begin(GpuPass.UNITS);
-            render_queues.renderAll(context, frustum_state, projectionStack);
+            render_queues.renderAll(context, frustum_state);
             gpu.end();
 
             gpu.begin(GpuPass.TREES);
-            treeSpriteRenderer.renderAll(context, frustum_state, projectionStack);
+            treeSpriteRenderer.renderAll(context, frustum_state);
             gpu.end();
 
             gpu.begin(GpuPass.PLANTS);
-            render_queues.renderPlants(context, frustum_state, projectionStack);
+            render_queues.renderPlants(context, frustum_state);
             gpu.end();
 
             render_queues.renderNoDetail();
         }
 
         if (gui_root.getDelegate() instanceof Delegate delegate) {
-            delegate.render3D(context, landscape_renderer, render_queues, frustum_state, modelViewStack,
-                    projectionStack);
+            delegate.render3D(context, landscape_renderer, render_queues, frustum_state, frustum_state.getModelView());
         }
 
         if (DebugFlags.debugRenderingEnabled()) {
@@ -346,7 +339,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
         if (DebugFlags.draw_water) {
             var gpu = context.gpuTimer();
             gpu.begin(GpuPass.WATER);
-            water.render(context, frustum_state, modelViewStack.current(), landscape_renderer.getVisiblePatches(),
+            water.render(context, frustum_state, frustum_state.getModelView(), landscape_renderer.getVisiblePatches(),
                     currentTime);
             gpu.end();
         }
@@ -360,7 +353,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
         var gpu = context.gpuTimer();
         gpu.begin(GpuPass.EFFECTS);
         if (DebugFlags.process_misc) {
-            render_queues.renderBlends(context, frustum_state, projectionStack);
+            render_queues.renderBlends(context, frustum_state);
         }
 
         try (var _ = context.withDrawBuffers(false)) {
@@ -368,17 +361,17 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
                 postProcessor.copyDepthBuffer();
             }
 
-            lightningRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack);
-            emitterRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack, postProcessor
+            lightningRenderer.render(context, render_queues, frustum_state, frustum_state.getModelView());
+            emitterRenderer.render(context, render_queues, frustum_state, frustum_state.getModelView(), postProcessor
                     .getDepthCopyTexture());
-            sonicBlastRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack);
+            sonicBlastRenderer.render(context, render_queues, frustum_state, frustum_state.getModelView());
         }
         gpu.end();
     }
 
     private void renderOverlays(RenderContext context, CameraState frustum_state) {
         renderRallyPoint(context, frustum_state);
-        render_queues.getInstancedRenderer().renderAll(context, frustum_state, projectionStack);
+        render_queues.getInstancedRenderer().renderAll(context, frustum_state);
 
         assert ShaderProgram.activeShader() == null : "Shader still active=" + ShaderProgram.activeShader();
 

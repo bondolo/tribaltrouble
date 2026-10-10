@@ -2,7 +2,7 @@ package com.oddlabs.tt.effects.render;
 
 
 import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.engine.render.MatrixStack;
+import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.ShadowListRenderer;
 import com.oddlabs.tt.engine.render.Texture;
@@ -36,13 +36,12 @@ public final class CrackDecalRenderer extends ShadowListRenderer {
 
     @Override
     public void renderShadows(RenderContext context, RenderQueues queues,
-            float worldSize, Texture heightTexture, MatrixStack modelViewStack,
-            MatrixStack projectionStack) {
+            float worldSize, Texture heightTexture, Matrix4fc modelView) {
         if (crack_list.isEmpty()) {
             return;
         }
 
-        try (var _ = setupShadows(context, queues, worldSize, heightTexture, modelViewStack, projectionStack)) {
+        try (var _ = setupShadows(context, queues, worldSize, heightTexture, modelView)) {
             setPattern(VisualPattern.NONE);
             bindShadowTexture(crackTexture);
             while (!crack_list.isEmpty()) {

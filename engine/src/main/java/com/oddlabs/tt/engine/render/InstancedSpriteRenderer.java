@@ -143,8 +143,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         batch.addInstance(spriteIndex, boneBaseOffset, modelMatrix, color, decalColor);
     }
 
-    public void renderAll(RenderContext context, CameraState cameraState,
-            MatrixStack projectionStack) {
+    public void renderAll(RenderContext context, CameraState cameraState) {
         if (batches.isEmpty()) return;
 
         if (boneMatrixTexels > 0) {
@@ -211,7 +210,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
     /** Manages grouped instance buffer data and draw call submission for identical batch keys. */
     public static final class RenderBatch implements AutoCloseable {
         private final BatchKey key;
-        private final InstanceGroup[] groups;
+        private final @Nullable InstanceGroup[] groups;
 
         // mat4 (16) + color (4) + decalColor (4) + boneBaseOffset (1)
         private static final int FLOATS_PER_INSTANCE = 16 + 4 + 4 + 1;
@@ -265,7 +264,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                     if (boneIndicesVBO != null) {
                         boneIndicesVBO.bind();
                         GL20.glEnableVertexAttribArray(3);
-                        GL30.glVertexAttribIPointer(3, 4, GL11.GL_UNSIGNED_BYTE, 0, (long) sprite.bone_indices_offset);
+                        GL30.glVertexAttribIPointer(3, 4, GL11.GL_UNSIGNED_BYTE, 0, sprite.bone_indices_offset);
                     }
                     if (boneWeightsVBO != null) {
                         boneWeightsVBO.bind();

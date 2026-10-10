@@ -7,6 +7,7 @@ import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Utils;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -225,22 +226,19 @@ public final class RenderQueues implements AutoCloseable {
         }
     }
 
-    public void renderAll(RenderContext context, CameraState camera_state,
-            MatrixStack projectionStack) {
+    public void renderAll(RenderContext context, CameraState camera_state) {
         sprite_renderers.forEach(SpriteRenderer::renderAll);
-        spriteRenderer.renderAll(context, camera_state, projectionStack);
+        spriteRenderer.renderAll(context, camera_state);
     }
 
-    public void renderPlants(RenderContext context, CameraState camera_state,
-            MatrixStack projectionStack) {
+    public void renderPlants(RenderContext context, CameraState camera_state) {
         plant_renderers.forEach(SpriteRenderer::renderAll);
-        spriteRenderer.renderAll(context, camera_state, projectionStack);
+        spriteRenderer.renderAll(context, camera_state);
     }
 
-    public void renderBlends(RenderContext context, CameraState camera_state,
-            MatrixStack projectionStack) {
+    public void renderBlends(RenderContext context, CameraState camera_state) {
         blend_sprite_renderers.forEach(SpriteRenderer::renderAll);
-        spriteRenderer.renderAll(context, camera_state, projectionStack);
+        spriteRenderer.renderAll(context, camera_state);
     }
 
     public void renderNoDetail() {
@@ -250,12 +248,11 @@ public final class RenderQueues implements AutoCloseable {
     }
 
     public void renderShadows(RenderContext context, float worldSize, Texture heightTexture,
-            MatrixStack modelViewStack, MatrixStack projectionStack) {
+            Matrix4fc modelView) {
         decalRenderer.clear();
-        try (var _ = decalRenderer.setup(context, worldSize, heightTexture, modelViewStack, projectionStack)) {
+        try (var _ = decalRenderer.setup(context, worldSize, heightTexture, modelView)) {
             for (ShadowListRenderer shadowListRenderer : shadow_renderer_lookup) {
-                shadowListRenderer.renderShadows(context, this, worldSize, heightTexture, modelViewStack,
-                        projectionStack);
+                shadowListRenderer.renderShadows(context, this, worldSize, heightTexture, modelView);
             }
         }
     }

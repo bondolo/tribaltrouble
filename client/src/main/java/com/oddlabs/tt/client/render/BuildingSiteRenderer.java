@@ -6,6 +6,7 @@ import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
+import org.joml.Matrix4fc;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -26,11 +27,11 @@ public final class BuildingSiteRenderer extends ShadowRenderer {
     }
 
     public void renderSites(RenderContext context, RenderQueues queues,
-            LandscapeRenderer renderer, MatrixStack modelViewStack,
-            MatrixStack projectionStack, List<? extends Target> targets, float center_x,
+            LandscapeRenderer renderer, Matrix4fc modelView,
+            List<? extends Target> targets, float center_x,
             float center_y, float max_radius) {
         try (var _ = setupShadows(context, queues, (float) renderer.getHeightMap().getMetersPerWorld(),
-                renderer.getHeightMapVisual().getHeightTexture(), modelViewStack, projectionStack)) {
+                renderer.getHeightMapVisual().getHeightTexture(), modelView)) {
             bindShadowTexture(green);
             float radius_sqr = max_radius * max_radius;
             for (Target target : targets) {

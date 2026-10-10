@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.engine.render.MatrixStack;
+import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.Sprite;
 import com.oddlabs.tt.engine.render.SpriteList;
 import com.oddlabs.tt.engine.render.state.BlendMode;
@@ -24,7 +24,7 @@ public final class PlacingRenderer implements AutoCloseable {
     private final Map<SpriteList, VertexArray> vaos = new WeakHashMap<>();
 
     public void renderGhost(RenderContext context, Sprite sprite, SpriteList spriteList,
-            Color.Linear color, Color.Linear teamColor, MatrixStack modelViewStack) {
+            Color.Linear color, Color.Linear teamColor, Matrix4fc modelView) {
 
         VertexArray vao = vaos.computeIfAbsent(spriteList, list -> {
             VertexArray newVao = new VertexArray();
@@ -78,7 +78,7 @@ public final class PlacingRenderer implements AutoCloseable {
             shader.setUniform(shader.locAlphaTestValue, 0.5f);
             shader.setUniform(shader.locColor, color);
             shader.setUniform(shader.locDecalColor, teamColor);
-            shader.setUniform(shader.locModelViewMatrix, modelViewStack.current());
+            shader.setUniform(shader.locModelViewMatrix, modelView);
 
             try (var _ = context.withCullMode(CullMode.BACK)) {
                 // Pass 1: Depth Prime (Write Depth, No Color)

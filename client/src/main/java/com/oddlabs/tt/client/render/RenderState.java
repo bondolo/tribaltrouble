@@ -19,7 +19,6 @@ import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DecalRenderer;
 import com.oddlabs.tt.engine.render.ElementSceneContext;
 import com.oddlabs.tt.engine.render.LODObject;
-import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.ModelState;
 import com.oddlabs.tt.engine.render.ModelVisitor;
 import com.oddlabs.tt.engine.render.WaveAnimation;
@@ -87,7 +86,6 @@ public final class RenderState implements SceneContext {
     private final Picker picker;
     private final @Nullable Selection selection;
     private final Player local_player;
-    private final MatrixStack model_view_stack = new MatrixStack();
     private final Matrix4f emitterTransform = new Matrix4f();
     private final AudioImplementation audio;
     private final IdentityHashMap<Model, VisualModel> visualModels = new IdentityHashMap<>();
@@ -212,9 +210,6 @@ public final class RenderState implements SceneContext {
         return render_queues;
     }
 
-    MatrixStack getModelViewStack() {
-        return model_view_stack;
-    }
 
     public void setVisibleOverride(boolean override) {
         this.visible_override = override;
@@ -232,7 +227,6 @@ public final class RenderState implements SceneContext {
         this.camera = camera_state;
         render_state_cache.clear();
         attached_state_cache.clear();
-        model_view_stack.clear().set(camera_state.getModelView());
         // Clear queues for new frame
         emitter_queue.clear();
         lightning_queue.clear();

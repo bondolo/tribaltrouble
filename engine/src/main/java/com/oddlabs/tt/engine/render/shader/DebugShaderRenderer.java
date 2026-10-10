@@ -1,10 +1,9 @@
 package com.oddlabs.tt.engine.render.shader;
 
-import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import org.lwjgl.opengl.GL11;
+import org.joml.Matrix4fc;
 
 /**
  * Renders debug graphics.
@@ -13,12 +12,12 @@ public final class DebugShaderRenderer extends ShaderRenderer {
 
     private float pointSize = 1.0f;
 
-    public DebugShaderRenderer(MatrixStack modelViewStack, MatrixStack projectionStack) {
-        this(new DebugMeshShader(), modelViewStack, projectionStack);
+    public DebugShaderRenderer() {
+        this(new DebugMeshShader());
     }
 
-    DebugShaderRenderer(DebugMeshShader shader, MatrixStack modelViewStack, MatrixStack projectionStack) {
-        super(shader, modelViewStack, projectionStack);
+    DebugShaderRenderer(DebugMeshShader shader) {
+        super(shader);
     }
 
     public void setPointSize(float size) {
@@ -28,12 +27,12 @@ public final class DebugShaderRenderer extends ShaderRenderer {
     /**
      * Begins a new drawing sequence.
      *
-     * @param glMode The OpenGL primitive mode (e.g., GL11.GL_LINES, GL11.GL_TRIANGLES).
+     * @param glMode The OpenGL primitive mode (e.g., GL11.GL_LINES, GL11.GL_POINTS).
+     * @param modelView The view matrix for transformation.
      */
     @Override
-    public void begin(int glMode) {
-        // State is managed in the flush() or render call now.
-        super.begin(glMode);
+    public void begin(int glMode, Matrix4fc modelView) {
+        super.begin(glMode, modelView);
     }
 
     /**
@@ -68,26 +67,6 @@ public final class DebugShaderRenderer extends ShaderRenderer {
         try (var _ = context.withDepthMode(DepthMode.NONE); var _ = context.withBlendMode(
                 BlendMode.ALPHA)) {
             flush(pointSize);
-        }
-    }
-
-    public void drawAxes(float center, float z, float[] xAxisColor, float[] yAxisColor,
-            float[] zAxisColor) {
-        begin(GL11.GL_LINES);
-        try {
-            // X axis - red
-            vertex(center, center, z, xAxisColor);
-            vertex(center + 10, center, z, xAxisColor);
-
-            // Y axis - green
-            vertex(center, center, z, yAxisColor);
-            vertex(center, center + 10, z, yAxisColor);
-
-            // Z axis - blue
-            vertex(center, center, z, zAxisColor);
-            vertex(center, center, z + 10, zAxisColor);
-        } finally {
-            end();
         }
     }
 }

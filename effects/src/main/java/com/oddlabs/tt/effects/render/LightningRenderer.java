@@ -6,7 +6,6 @@ import com.oddlabs.tt.effects.particle.StretchParticle;
 import com.oddlabs.tt.engine.render.BoundingMode;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.RenderTools;
 import com.oddlabs.tt.engine.render.shader.VertexLayout;
@@ -84,7 +83,7 @@ public final class LightningRenderer implements AutoCloseable {
     }
 
     public void render(RenderContext context, RenderQueues render_queues, CameraState state,
-            MatrixStack modelViewStack, MatrixStack projectionStack) {
+            Matrix4fc modelView) {
         if (activeLightnings.isEmpty()) return;
 
         // Reset offset and orphan at start of frame to prevent flickering
@@ -94,8 +93,7 @@ public final class LightningRenderer implements AutoCloseable {
         try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ADDITIVE); var _ = context.withDepthMode(
                 DepthMode.READ_ONLY); var _ = context.withCullMode(CullMode.NONE)) {
 
-            Matrix4fc mv = modelViewStack.current();
-            shader.setUniform(shader.locModelViewMatrix, mv);
+            shader.setUniform(shader.locModelViewMatrix, modelView);
 
             shader.setUniform(shader.locTexture0, 0);
 

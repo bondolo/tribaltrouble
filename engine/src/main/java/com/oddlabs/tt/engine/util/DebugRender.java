@@ -2,6 +2,7 @@ package com.oddlabs.tt.engine.util;
 
 import com.oddlabs.tt.engine.render.shader.DebugShaderRenderer;
 import com.oddlabs.util.Color;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
@@ -51,8 +52,10 @@ public final class DebugRender {
     /**
      * Flushes the batched debug primitives to the renderer.
      * Should be called at the end of the debug rendering phase.
+     *
+     * @param modelView The view matrix for transformation.
      */
-    public static void flush() {
+    public static void flush(Matrix4fc modelView) {
         if (shaderRenderer == null) {
             linesBuffer.clear();
             pointsBuffer.clear();
@@ -60,7 +63,7 @@ public final class DebugRender {
         }
 
         if (!linesBuffer.isEmpty()) {
-            shaderRenderer.begin(GL11.GL_LINES);
+            shaderRenderer.begin(GL11.GL_LINES, modelView);
             try {
                 for (int i = 0; i < linesBuffer.size(); i += 6) {
                     shaderRenderer.vertex(
@@ -76,7 +79,7 @@ public final class DebugRender {
 
         if (!pointsBuffer.isEmpty()) {
             shaderRenderer.setPointSize(currentPointSize);
-            shaderRenderer.begin(GL11.GL_POINTS);
+            shaderRenderer.begin(GL11.GL_POINTS, modelView);
             try {
                 for (int i = 0; i < pointsBuffer.size(); i += 6) {
                     shaderRenderer.vertex(

@@ -1,22 +1,24 @@
 package com.oddlabs.tt.engine.render.shader;
 
-import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.vbo.VertexArray;
+import org.joml.Matrix4fc;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
 import java.nio.FloatBuffer;
+import java.util.Objects;
 
 /**
  * Renders geometry using a shader program abstracting away the OpenGL VBO and shader setup.
  */
-public class ShaderRenderer implements AutoCloseable {
+class ShaderRenderer implements AutoCloseable {
     private static final int FLOATS_PER_VERTEX = 12; // pos(3) + normal(3) + color(4) + uv(2)
     private static final int INITIAL_VERTEX_CAPACITY = 1024;
 
     private final DebugMeshShader shader;
-    private final MatrixStack modelViewStack;
+    private @Nullable Matrix4fc modelView;
     private final VertexArray vao = new VertexArray();
 
     private final FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(
@@ -25,10 +27,8 @@ public class ShaderRenderer implements AutoCloseable {
     private int vertexCount = 0;
     private int mode = GL11.GL_TRIANGLES;
 
-    ShaderRenderer(DebugMeshShader shader, MatrixStack modelViewStack,
-            MatrixStack projectionStack) {
+    ShaderRenderer(DebugMeshShader shader) {
         this.shader = shader;
-        this.modelViewStack = modelViewStack;
 
         vao.bind();
         this.vboHandle = GL15.glGenBuffers();
@@ -46,14 +46,11 @@ public class ShaderRenderer implements AutoCloseable {
         vao.unbind();
     }
 
-    protected final MatrixStack getModelViewStack() {
-        return modelViewStack;
-    }
-
-    public void begin(int glMode) {
+    public void begin(int glMode, Matrix4fc modelView) {
         vertexBuffer.clear();
         vertexCount = 0;
         this.mode = glMode;
+        this.modelView = modelView;
     }
 
     public void vertex(float x, float y, float z,
@@ -91,7 +88,7 @@ public class ShaderRenderer implements AutoCloseable {
         GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, vertexBuffer);
 
         try (var _ = shader.use()) {
-            shader.setUniform(shader.locModelViewMatrix, modelViewStack.current());
+            shader.setUniform(shader.locModelViewMatrix, Objects.requireNonNull(modelView, "modelView must be set"));
             shader.setUniform(shader.locEnableLighting, false);
             shader.setUniform(shader.locEnableTexture, false);
             shader.setUniform(shader.locAlphaCutoff, 0.0f);

@@ -6,8 +6,8 @@ import com.oddlabs.tt.effects.particle.Particle;
 import com.oddlabs.tt.engine.render.BoundingMode;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.PolyDetail;
+import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.SpriteKey;
@@ -173,9 +173,9 @@ public final class EmitterRenderer implements AutoCloseable {
     }
 
     public void prepare(RenderQueues render_queues, Queue<? extends Emitter<?>> emitters,
-            CameraState state, MatrixStack modelViewStack) {
+            CameraState state, Matrix4fc modelView) {
         clear();
-        cachedViewMatrix.set(modelViewStack.current());
+        cachedViewMatrix.set(modelView);
         if (DebugFlags.draw_particles)
             for (Emitter<?> emitter : emitters) {
                 collectParticles(render_queues, emitter, state);
@@ -183,7 +183,7 @@ public final class EmitterRenderer implements AutoCloseable {
     }
 
     public void render(RenderContext context, RenderQueues render_queues, CameraState state,
-            MatrixStack modelViewStack, MatrixStack projectionStack, Texture depthTexture) {
+            Matrix4fc modelView, Texture depthTexture) {
         if (activeGroups.isEmpty()) return;
 
         // Reset offset and orphan at start of frame to prevent flickering
@@ -194,7 +194,7 @@ public final class EmitterRenderer implements AutoCloseable {
         try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ALPHA); var _ = context.withDepthMode(
                 DepthMode.READ_ONLY)) {
 
-            shader.setUniform(shader.locModelViewMatrix, modelViewStack.current());
+            shader.setUniform(shader.locModelViewMatrix, modelView);
 
             // Bind global effect texture array to unit 2
             context.setTexture(2, render_queues.getEffectTextureArray().getHandle(),
