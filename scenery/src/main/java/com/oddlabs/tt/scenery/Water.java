@@ -7,8 +7,8 @@ import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.HeightMapVisual;
-import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.PatchMesh;
+import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
@@ -80,7 +80,6 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
 
     private final Terrain terrain;
     private final Sky sky;
-    private final MatrixStack modelViewStack;
     private final HeightMap heightMap;
     private final HeightMapVisual heightMapVisual;
 
@@ -113,8 +112,7 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
     private final float[] waveLengths;
     private final float waveSpeed;
 
-    public Water(HeightMapVisual heightMapVisual, HeightMap heightmap, Terrain terrain, Sky sky,
-            MatrixStack modelViewStack) {
+    public Water(HeightMapVisual heightMapVisual, HeightMap heightmap, Terrain terrain, Sky sky) {
         this.heightMapVisual = heightMapVisual;
         this.heightMap = heightmap;
         this.terrain = terrain;
@@ -153,7 +151,6 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
         this.ocean = Resources.findResource(new OceanTextures(terrain));
 
         this.sky = sky;
-        this.modelViewStack = modelViewStack;
 
         skyWaterVao.bind();
         setupWaterAttributes(sky.getWaterVertices());
@@ -250,7 +247,7 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
     }
 
 
-    public void render(RenderContext context, CameraState state, Collection<
+    public void render(RenderContext context, CameraState state, Matrix4fc modelView, Collection<
             LandscapeLeaf> visiblePatches, float currentTime) {
         updateAnimation(currentTime);
 
@@ -259,7 +256,7 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
 
             context.setBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-            waterShader.setUniform(waterShader.locModelViewMatrix, modelViewStack.current());
+            waterShader.setUniform(waterShader.locModelViewMatrix, modelView);
 
             waterShader.setUniform(waterShader.locCameraPos, state.getCurrentX(), state.getCurrentY(), state
                     .getCurrentZ());
@@ -326,11 +323,6 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
 
             context.setActiveTexture(0);
         }
-    }
-
-    public void render(RenderContext context, CameraState state, Collection<
-            LandscapeLeaf> visiblePatches) {
-        render(context, state, visiblePatches, lastTime);
     }
 
     private void updateAnimation(float currentTime) {

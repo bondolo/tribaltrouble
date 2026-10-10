@@ -7,11 +7,11 @@ import com.oddlabs.tt.engine.render.BoundingMode;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.InstancedSpriteRenderer;
-import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderTools;
 import com.oddlabs.tt.engine.render.Sprite;
 import com.oddlabs.tt.engine.render.SpriteList;
 import com.oddlabs.tt.engine.render.SubSceneRenderer;
+import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.WaveAnimation;
 import com.oddlabs.tt.engine.render.state.RenderContext;
@@ -182,8 +182,8 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SubSceneRe
         }
     }
 
-    public void render(RenderContext context, CameraState state, MatrixStack modelViewStack,
-            MatrixStack projectionStack, float currentTime) {
+    public void render(RenderContext context, CameraState state, Matrix4fc modelView,
+            float currentTime) {
         if (!state.inNoDetailMode()) {
             wave_animation.setTime(currentTime);
         }
@@ -293,9 +293,8 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SubSceneRe
     }
 
     @Override
-    public void render(RenderContext context, CameraState state, MatrixStack modelViewStack,
-            MatrixStack projectionStack) {
-        render(context, state, modelViewStack, projectionStack, 0f);
+    public void render(RenderContext context, CameraState state, Matrix4fc modelView) {
+        render(context, state, modelView, 0f);
     }
 
     @Override

@@ -3,8 +3,8 @@ package com.oddlabs.tt.scenery;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.tt.engine.image.GLByteImage;
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.SubSceneRenderer;
+import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
@@ -173,12 +173,12 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
         skyVAO.unbind();
     }
 
-    public void render(RenderContext context, CameraState state, MatrixStack modelView,
-            MatrixStack projection, float currentTime) {
+    public void render(RenderContext context, CameraState state, Matrix4fc modelView,
+            float currentTime) {
         try (var _ = skyShader.use(); var _ = context.withBlendMode(BlendMode.NONE); var _ = context.withDepthMode(
                 DepthMode.READ_WRITE); var _ = context.withCullMode(CullMode.BACK)) {
 
-            skyShader.setUniform(skyShader.locModelViewMatrix, modelView.current());
+            skyShader.setUniform(skyShader.locModelViewMatrix, modelView);
             skyShader.setUniform(skyShader.locSkyColor, skyColor);
             skyShader.setUniform(skyShader.locDomeCenter, originX, originY, originZ);
             skyShader.setUniform(skyShader.locCloudShadow, cloudShadow);
@@ -213,9 +213,8 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
     }
 
     @Override
-    public void render(RenderContext context, CameraState state, MatrixStack modelView,
-            MatrixStack projection) {
-        render(context, state, modelView, projection, 0.0f);
+    public void render(RenderContext context, CameraState state, Matrix4fc modelView) {
+        render(context, state, modelView, 0.0f);
     }
 
 

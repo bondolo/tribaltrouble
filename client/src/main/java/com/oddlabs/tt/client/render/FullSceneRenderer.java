@@ -100,7 +100,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
         this.seaBottom = new SeaBottom(world_info.landscapeData().terrain(),
                 world_info.detail(), world_info.detailNormal(), sky.getRingMesh());
         this.water = new Water(landscape_renderer.getHeightMapVisual(), world.getHeightMap(), world_info.landscapeData()
-                .terrain(), sky, modelViewStack);
+                .terrain(), sky);
         this.landscape_renderer.setWater(this.water);
         this.lightningRenderer = new LightningRenderer();
         this.sonicBlastRenderer = new SonicBlastRenderer();
@@ -280,8 +280,8 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
             if (DebugFlags.draw_sky) {
                 var gpu = context.gpuTimer();
                 gpu.begin(GpuPass.SKY);
-                sky.render(context, frustum_state, modelViewStack, projectionStack, currentTime);
-                seaBottom.render(context, frustum_state, modelViewStack, projectionStack);
+                sky.render(context, frustum_state, modelViewStack.current(), currentTime);
+                seaBottom.render(context, frustum_state, modelViewStack.current());
                 gpu.end();
             }
 
@@ -289,7 +289,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
                 var gpu = context.gpuTimer();
                 gpu.begin(GpuPass.LANDSCAPE);
                 landscape_renderer.prepareAll(frustum_state, false);
-                landscape_renderer.render(context, frustum_state, modelViewStack, projectionStack);
+                landscape_renderer.render(context, frustum_state, modelViewStack.current());
                 gpu.end();
             }
         }
@@ -310,7 +310,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
 
         if (DebugFlags.process_trees) {
             gpu.begin(GpuPass.TREES);
-            tree_renderer.render(context, frustum_state, modelViewStack, projectionStack, currentTime);
+            tree_renderer.render(context, frustum_state, modelViewStack.current(), currentTime);
             gpu.end();
         }
         if (DebugFlags.process_misc) {
@@ -343,7 +343,8 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
         if (DebugFlags.draw_water) {
             var gpu = context.gpuTimer();
             gpu.begin(GpuPass.WATER);
-            water.render(context, frustum_state, landscape_renderer.getVisiblePatches(), currentTime);
+            water.render(context, frustum_state, modelViewStack.current(), landscape_renderer.getVisiblePatches(),
+                    currentTime);
             gpu.end();
         }
     }

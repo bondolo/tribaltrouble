@@ -2,8 +2,8 @@ package com.oddlabs.tt.scenery;
 
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.SubSceneRenderer;
+import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
@@ -53,12 +53,11 @@ public final class SeaBottom implements SubSceneRenderer, AutoCloseable {
     }
 
     @Override
-    public void render(RenderContext context, CameraState state,
-            MatrixStack modelView, MatrixStack projection) {
+    public void render(RenderContext context, CameraState state, Matrix4fc modelView) {
         try (var _ = seaBottomShader.use(); var _ = context.withBlendMode(BlendMode.NONE); var _ = context
                 .withDepthMode(DepthMode.READ_WRITE); var _ = context.withCullMode(CullMode.BACK)) {
 
-            seaBottomShader.setUniform(seaBottomShader.locModelViewMatrix, modelView.current());
+            seaBottomShader.setUniform(seaBottomShader.locModelViewMatrix, modelView);
             seaBottomShader.setUniform(seaBottomShader.locBaseColor, seaBottomColor);
 
             if (DebugFlags.draw_detail) {

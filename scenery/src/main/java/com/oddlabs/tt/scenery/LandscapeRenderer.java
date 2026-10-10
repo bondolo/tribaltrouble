@@ -6,10 +6,10 @@ import com.oddlabs.tt.engine.render.BoundingMode;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.HeightMapVisual;
-import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.PatchMesh;
 import com.oddlabs.tt.engine.render.RenderTools;
 import com.oddlabs.tt.engine.render.SubSceneRenderer;
+import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
@@ -144,8 +144,7 @@ public final class LandscapeRenderer implements SubSceneRenderer, Animated, Auto
     }
 
     @Override
-    public void render(RenderContext context, CameraState state, MatrixStack modelViewStack,
-            MatrixStack projectionStack) {
+    public void render(RenderContext context, CameraState state, Matrix4fc modelView) {
         try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.NONE); var _ = context.withDepthMode(
                 DepthMode.READ_WRITE); var _ = context.withCullMode(CullMode.NONE)) {
 
