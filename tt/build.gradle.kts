@@ -27,6 +27,7 @@ application {
         "-Dorg.lwjgl.util.Debug=true",
         "-Dorg.lwjgl.util.DebugLoader=true",
         "-Dcom.oddlabs.tt.developer=true",
+        "-Dcom.oddlabs.tt.frametiming=true",
         "-Xms256m", "-Xmx512m"
 //        , "-javaagent:/Users/mike/.m2/repository/org/lwjglx/lwjglx-debug/1.1.0/lwjglx-debug-1.1.0.jar=validate;trace;output=trace.log"
     )

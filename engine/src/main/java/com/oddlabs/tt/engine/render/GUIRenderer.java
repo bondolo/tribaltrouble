@@ -244,6 +244,12 @@ public final class GUIRenderer implements AutoCloseable {
     private void putQuad(float x, float y, float w, float h, float u1, float v1, float u2, float v2, float texIndex,
             float tintR, float tintG, float tintB, float tintA) {
         Matrix4f mat = matrixStack.current();
+        float m00 = mat.m00();
+        float m10 = mat.m10();
+        float m30 = mat.m30();
+        float m01 = mat.m01();
+        float m11 = mat.m11();
+        float m31 = mat.m31();
 
         float r = tintR * currentModulation.r();
         float g = tintG * currentModulation.g();
@@ -257,30 +263,30 @@ public final class GUIRenderer implements AutoCloseable {
         float y2 = y + h;
 
         // P1 (x1, y1)
-        vertexBuffer.putFloat(mat.m00() * x1 + mat.m10() * y1 + mat.m30())
-                .putFloat(mat.m01() * x1 + mat.m11() * y1 + mat.m31())
-                .putFloat(mat.m02() * x1 + mat.m12() * y1 + mat.m32())
+        vertexBuffer.putFloat(m00 * x1 + m10 * y1 + m30)
+                .putFloat(m01 * x1 + m11 * y1 + m31)
+                .putFloat(0.0f)
                 .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
                 .putFloat(u1).putFloat(v1).putFloat(texIndex);
 
         // P2 (x2, y1)
-        vertexBuffer.putFloat(mat.m00() * x2 + mat.m10() * y1 + mat.m30())
-                .putFloat(mat.m01() * x2 + mat.m11() * y1 + mat.m31())
-                .putFloat(mat.m02() * x2 + mat.m12() * y1 + mat.m32())
+        vertexBuffer.putFloat(m00 * x2 + m10 * y1 + m30)
+                .putFloat(m01 * x2 + m11 * y1 + m31)
+                .putFloat(0.0f)
                 .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
                 .putFloat(u2).putFloat(v1).putFloat(texIndex);
 
         // P3 (x2, y2)
-        vertexBuffer.putFloat(mat.m00() * x2 + mat.m10() * y2 + mat.m30())
-                .putFloat(mat.m01() * x2 + mat.m11() * y2 + mat.m31())
-                .putFloat(mat.m02() * x2 + mat.m12() * y2 + mat.m32())
+        vertexBuffer.putFloat(m00 * x2 + m10 * y2 + m30)
+                .putFloat(m01 * x2 + m11 * y2 + m31)
+                .putFloat(0.0f)
                 .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
                 .putFloat(u2).putFloat(v2).putFloat(texIndex);
 
         // P4 (x1, y2)
-        vertexBuffer.putFloat(mat.m00() * x1 + mat.m10() * y2 + mat.m30())
-                .putFloat(mat.m01() * x1 + mat.m11() * y2 + mat.m31())
-                .putFloat(mat.m02() * x1 + mat.m12() * y2 + mat.m32())
+        vertexBuffer.putFloat(m00 * x1 + m10 * y2 + m30)
+                .putFloat(m01 * x1 + m11 * y2 + m31)
+                .putFloat(0.0f)
                 .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
                 .putFloat(u1).putFloat(v2).putFloat(texIndex);
 
