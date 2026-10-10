@@ -91,16 +91,16 @@ public final class Arrow extends GUIObject {
         boolean inNoDetail = gui_root.getDelegate() instanceof CameraDelegate<?> cam && cam.getCamera().getState()
                 .inNoDetailMode();
         if (show_always || inNoDetail || t < real_t) {
-            renderer.getMatrixStack().push();
-            renderer.getMatrixStack().translate(screen_width / 2f + dx * t, screen_height / 2f + dy * t, 0f);
-            renderer.getMatrixStack().rotate(angle, 0f, 0f, 1f);
-            float val = (gui_root.getTime() % SECONDS_PER_FLASH) / (SECONDS_PER_FLASH
-                    * .5f);
-            if (val > 1f)
-                val = 2f - val;
-            val = COLOR_DELTA * val;
-            renderer.drawIcon(arrowQuad, -headX, -headY, color.alpha(1f - val));
-            renderer.getMatrixStack().pop();
+            try (var _ = renderer.withTransform()) {
+                renderer.translate(screen_width / 2f + dx * t, screen_height / 2f + dy * t);
+                renderer.rotate(angle);
+                float val = (gui_root.getTime() % SECONDS_PER_FLASH) / (SECONDS_PER_FLASH
+                        * .5f);
+                if (val > 1f)
+                    val = 2f - val;
+                val = COLOR_DELTA * val;
+                renderer.drawIcon(arrowQuad, -headX, -headY, color.alpha(1f - val));
+            }
         }
     }
 }

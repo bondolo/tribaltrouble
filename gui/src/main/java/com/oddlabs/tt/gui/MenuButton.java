@@ -45,24 +45,24 @@ public final class MenuButton extends ButtonObject {
         float time = (getTime() - start_hover_time) % SECONDS_PER_HOVER_CYCLE;
         float cycle_position = time / SECONDS_PER_HOVER_CYCLE;
         float scale = 1f + HOVER_SCALE_FACTOR * (float) Math.sin(cycle_position * 2 * Math.PI);
-        renderer.getMatrixStack().scale(scale, scale, 1f);
+        renderer.scale(scale, scale);
     }
 
     @Override
     protected void renderGeometry(GUIRenderer renderer) {
-        renderer.getMatrixStack().push()
-                .translate(getWidth() / 2f, getHeight() / 2f, 0);
-        Color c;
-        if (isActive()) {
-            c = color_active;
-            scaleHovered(renderer);
-        } else c = isDisabled()
-                ? color_normal.desaturate(0.3f).mul(0.5f).alpha(color_normal.a() * 0.8f)
-                : color_normal;
+        try (var _ = renderer.withTransform()) {
+            renderer.translate(getWidth() / 2f, getHeight() / 2f);
+            Color c;
+            if (isActive()) {
+                c = color_active;
+                scaleHovered(renderer);
+            } else c = isDisabled()
+                    ? color_normal.desaturate(0.3f).mul(0.5f).alpha(color_normal.a() * 0.8f)
+                    : color_normal;
 
-        TextLineRenderer.render(renderer, getFont(), text, -getWidth() / 2f, -getHeight() / 2f,
-                Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, c);
-        renderer.getMatrixStack().pop();
+            TextLineRenderer.render(renderer, getFont(), text, -getWidth() / 2f, -getHeight() / 2f,
+                    Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, c);
+        }
     }
 
     @Override

@@ -136,23 +136,25 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
             return;
         }
 
-        if (!(this instanceof GUIRoot)) {
-            renderer.getMatrixStack().push();
-            renderer.getMatrixStack().translate(getX(), getY(), 0);
+        boolean transformed = !(this instanceof GUIRoot);
+        if (transformed) {
+            renderer.pushTransform();
+            renderer.translate(getX(), getY());
         }
+        try {
+            renderGeometry(renderer);
 
-        renderGeometry(renderer);
+            R current = children.getLast();
+            while (current != null) {
+                current.render(renderer, clip_left, clip_right, clip_bottom, clip_top);
+                current = current.getPrior();
+            }
 
-        R current = children.getLast();
-        while (current != null) {
-            current.render(renderer, clip_left, clip_right, clip_bottom, clip_top);
-            current = current.getPrior();
-        }
-
-        postRender(renderer);
-
-        if (!(this instanceof GUIRoot)) {
-            renderer.getMatrixStack().pop();
+            postRender(renderer);
+        } finally {
+            if (transformed) {
+                renderer.popTransform();
+            }
         }
     }
 

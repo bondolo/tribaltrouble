@@ -310,14 +310,9 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     @Override
     protected void render(GUIRenderer renderer, float clip_left, float clip_right, float clip_bottom,
             float clip_top) {
-        renderer.getMatrixStack().push();
-        renderer.getMatrixStack().scale(scale_x, scale_y, 1f);
-        renderer.pushModulation(mapColor);
-        try {
+        try (var _ = renderer.withTransform(); var _ = renderer.withModulation(mapColor)) {
+            renderer.scale(scale_x, scale_y);
             super.render(renderer, clip_left, clip_right, clip_bottom, clip_top);
-        } finally {
-            renderer.popModulation();
-            renderer.getMatrixStack().pop();
         }
     }
 

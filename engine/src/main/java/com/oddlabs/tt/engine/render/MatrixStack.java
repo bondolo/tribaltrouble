@@ -8,23 +8,23 @@ import org.jspecify.annotations.Nullable;
 /**
  * Maintains a stack of transformation matrix that are applied to the drawing.
  */
-public final class MatrixStack {
+final class MatrixStack {
     private static final int DEFAULT_CAPACITY = 32;
 
     private Matrix4f[] stack = new Matrix4f[DEFAULT_CAPACITY];
     private int top = 0;
 
-    public interface TopListener {
+    interface TopListener {
         void topChanging(Matrix4fc matrix);
     }
 
     private final @Nullable TopListener topListener;
 
-    public MatrixStack() {
+    MatrixStack() {
         this(null);
     }
 
-    public MatrixStack(@Nullable TopListener topListener) {
+    MatrixStack(@Nullable TopListener topListener) {
         for (int i = 0; i < stack.length; i++) {
             stack[i] = new Matrix4f();
         }

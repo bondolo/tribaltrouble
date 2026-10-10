@@ -4,6 +4,7 @@ import com.oddlabs.tt.engine.render.shader.VertexLayout;
 import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
+import com.oddlabs.tt.engine.render.state.ScopedState;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import com.oddlabs.util.Color;
@@ -361,8 +362,45 @@ public final class GUIRenderer implements AutoCloseable {
         }
     }
 
-    public MatrixStack getMatrixStack() {
-        return matrixStack;
+    public void pushTransform() {
+        matrixStack.push();
+    }
+
+    public void popTransform() {
+        matrixStack.pop();
+    }
+
+    public void translate(float x, float y) {
+        matrixStack.translate(x, y, 0f);
+    }
+
+    public void scale(float sx, float sy) {
+        matrixStack.scale(sx, sy, 1f);
+    }
+
+    public void rotate(float angle) {
+        matrixStack.rotate(angle, 0f, 0f, 1f);
+    }
+
+    public ScopedState withTransform() {
+        pushTransform();
+        return this::popTransform;
+    }
+
+    public ScopedState withTranslation(float x, float y) {
+        pushTransform();
+        translate(x, y);
+        return this::popTransform;
+    }
+
+    public ScopedState withModulation(Color.Linear modulation) {
+        pushModulation(modulation);
+        return this::popModulation;
+    }
+
+    public ScopedState withClip(float x, float y, float w, float h) {
+        pushClip(x, y, w, h);
+        return this::popClip;
     }
 
     @Override
