@@ -237,7 +237,7 @@ public final class Server implements ConnectionListenerInterface<Object> {
     private short locateAvailableSlot() {
         return (short) IntStream.range(0, players.length)
                 .filter(i -> slot_handler.getType(players[i]) == slot_handler.getOpenType())
-                .findFirst().orElse( -1);
+                .findFirst().orElse(-1);
     }
 
     @Override

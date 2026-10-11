@@ -2,10 +2,8 @@ package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
-import com.oddlabs.tt.simulation.model.Model;
 
 import com.oddlabs.tt.audio.AudioManager;
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.event.LocalEventQueue;
@@ -20,6 +18,8 @@ import com.oddlabs.tt.client.render.FullSceneRenderer;
 import com.oddlabs.tt.client.render.Picker;
 import com.oddlabs.tt.client.resource.RacesAssetsLoader;
 import com.oddlabs.tt.client.Peer;
+import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.EmojiType;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.engine.settings.GraphicsSettings;
 import com.oddlabs.tt.engine.render.CameraState;
@@ -32,9 +32,6 @@ import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.procedural.landscape.GeneratedLandscapeData;
-import com.oddlabs.tt.client.render.VisualSoundAccessory;
-import com.oddlabs.tt.client.resource.AssetRegistry;
-import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
@@ -45,42 +42,31 @@ import com.oddlabs.tt.net.ChatMethod;
 import com.oddlabs.tt.net.ChatSender;
 import com.oddlabs.tt.net.InGameChatHistory;
 import com.oddlabs.tt.net.PeerHub;
-import com.oddlabs.tt.net.ServerMessageBundler;
-import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
-import com.oddlabs.tt.simulation.landscape.TreeSupply;
+import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.DistributableTable;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Difficulty;
+import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.RaceData;
-import com.oddlabs.tt.simulation.model.Selectable;
-import com.oddlabs.tt.simulation.model.SupplyModel;
-import com.oddlabs.tt.simulation.model.Target;
-import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.simulation.player.AdvancedAI;
 import com.oddlabs.tt.simulation.player.NativeChieftainAI;
 import com.oddlabs.tt.simulation.player.PassiveAI;
+import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.player.VikingChieftainAI;
 
-import com.oddlabs.tt.audio.AudioFile;
-import com.oddlabs.tt.client.resource.EmojiType;
-import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.tt.simulation.model.SupplyType;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 /**
  * Orchestrates the primary in-game experience, managing the world state, player interactions,
@@ -89,7 +75,6 @@ import java.util.stream.Collectors;
  */
 public final class WorldViewer implements Animated, AutoCloseable {
 
-    private static final String[] GAMESPEED_STRINGS = new String[]{"paused", "slow", "normal", "fast", "ludicrous"};
     private static final Color.Linear PRIVATE_MESSAGE_COLOR = new Color.Standard(0xFF_33_66_FF).linear();
     private static final Color.Linear TEAM_MESSAGE_COLOR = new Color.Standard(0xFF_4C_7F_FF).linear();
 
@@ -140,175 +125,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
         RaceData races_resources = ProgressListener.subTask(0.35f,
                 () -> RacesAssetsLoader.load(render_queues));
         registerHarvestEmojis(render_queues, icons);
-        boolean[] initialized = new boolean[]{false};
-        NotificationListener listener = new NotificationListener() {
-            @Override
-            public void gamespeedChanged(int speed) {
-                gui_root.getInfoPrinter().print(Utils.getBundleString(PeerHub.bundle, "changed_to_"
-                        + GAMESPEED_STRINGS[speed]));
-            }
-
-            @Override
-            public void playerGamespeedChanged() {
-                String result = world.getPlayers().stream()
-                        .filter(p -> World.isValidGamespeed(p.getPreferredGamespeed()))
-                        .map(p -> p.getPlayerInfo().name() + ": " + ServerMessageBundler.getGamespeedString(p
-                                .getPreferredGamespeed()))
-                        .collect(Collectors.joining(", "));
-                if (!result.isEmpty() && isMultiplayer())
-                    gui_root.getInfoPrinter().print(result);
-            }
-
-            @Override
-            public void newAttackNotification(Selectable<?> target) {
-                Player owner = target.getOwner();
-                if (owner == getLocalPlayer())
-                    notification_manager.newAttackNotification(animation_manager_local, target, getLocalPlayer());
-            }
-
-            @Override
-            public void newSelectableNotification(Selectable<?> target) {
-                Player owner = target.getOwner();
-                if (owner == getLocalPlayer())
-                    notification_manager.newSelectableNotification(target, animation_manager_local, getLocalPlayer());
-                if (initialized[0] && target instanceof Building building && landscape_renderer != null) {
-                    landscape_renderer.onStaticModelAdded(building);
-                }
-            }
-
-            @Override
-            public void treeFelled(TreeSupply tree) {
-                audioManager.newAudio(tree.getCX(), tree.getCY(), tree.getCZ(),
-                        AudioRegistry.TREE_FALL[tree.getTreeType().ordinal() % 2]);
-                renderer.onTreeFelled(tree);
-            }
-
-            @Override
-            public void onHarvest(Model model, SupplyType supplyType) {
-                playAudioWithVisual(model, AudioRegistry.getHarvestSound(supplyType),
-                        EmojiType.fromSupply(supplyType));
-            }
-
-            @Override
-            public void onRepair(Model model) {
-                var emoji = ThreadLocalRandom.current().nextBoolean() ? EmojiType.REPAIR_SAW : EmojiType.REPAIR_HAMMER;
-                playAudioWithVisual(model, AudioRegistry.getHarvestSound(SupplyType.WOOD), emoji);
-            }
-
-            @Override
-            public void onBuildingHit(float x, float y, float z) {
-                audioManager.newAudio(x, y, z,
-                        AudioRegistry.BUILDING_HITS[ThreadLocalRandom.current().nextInt(
-                                AudioRegistry.BUILDING_HITS.length)]);
-            }
-
-            @Override
-            public void onUnitDeath(Unit unit, UnitType unitType, Race race) {
-                AudioFile deathSound = switch (unitType) {
-                    case PEON -> AudioRegistry.SFX_DEATH_PEON;
-                    case WARRIOR_ROCK -> (race == Race.VIKINGS)
-                            ? AudioRegistry.SFX_DEATH_VIKING_WARRIORS[0]
-                            : AudioRegistry.SFX_DEATH_NATIVE_WARRIORS[0];
-                    case WARRIOR_IRON, WARRIOR_RUBBER, CHIEFTAIN -> (race == Race.VIKINGS)
-                            ? AudioRegistry.SFX_DEATH_VIKING_WARRIORS[1]
-                            : AudioRegistry.SFX_DEATH_NATIVE_WARRIORS[1];
-                };
-                var params = new AudioParameters(deathSound, AudioRegistry.AUDIO_RANK_DEATH,
-                        AudioRegistry.AUDIO_DISTANCE_DEATH, AudioRegistry.AUDIO_GAIN_DEATH,
-                        AudioRegistry.AUDIO_RADIUS_DEATH);
-                playAudioWithVisual(unit, params, EmojiType.GRAVESTONE);
-            }
-
-            @Override
-            public void onUnitAttack(UnitType unitType, Race race, float x, float y, float z) {
-                AudioFile sound;
-                if (unitType == UnitType.CHIEFTAIN) {
-                    AudioFile[] hits = (race == Race.VIKINGS)
-                            ? AudioRegistry.SFX_VIKING_CHIEFTAIN_HITS
-                            : AudioRegistry.SFX_NATIVE_CHIEFTAIN_HITS;
-                    sound = hits[ThreadLocalRandom.current().nextInt(hits.length)];
-                } else {
-                    sound = AudioRegistry.SFX_IMPACT_MEATS[ThreadLocalRandom.current().nextInt(
-                            AudioRegistry.SFX_IMPACT_MEATS.length)];
-                }
-                var params = new AudioParameters(sound, AudioRegistry.AUDIO_RANK_WEAPON_HIT,
-                        AudioRegistry.AUDIO_DISTANCE_WEAPON_HIT, AudioRegistry.AUDIO_GAIN_WEAPON_HIT,
-                        AudioRegistry.AUDIO_RADIUS_WEAPON_HIT);
-                audioManager.newAudio(x, y, z, params);
-            }
-
-            @Override
-            public void onChickenCluck(Model model) {
-                AudioParameters sound = AudioRegistry.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(
-                        AudioRegistry.CHICKEN_IDLES.length)];
-                playAudioWithVisual(model, sound, EmojiType.CHICKEN_CLUCK);
-            }
-
-            @Override
-            public void onChickenPeck(float x, float y, float z) {
-                audioManager.newAudio(x, y, z, AudioRegistry.CHICKEN_PECK);
-            }
-
-            @Override
-            public void onChickenDeath(Model model) {
-                playAudioWithVisual(model, AudioRegistry.CHICKEN_DEATH, EmojiType.HARVEST_RUBBER);
-            }
-
-            @Override
-            public void registerTarget(Target target) {
-                if (initialized[0]) {
-                    if (target instanceof SupplyModel supplyModel) {
-                        WorldViewer.this.renderer.getRenderState().onSupplySpawn(supplyModel);
-                    } else if (target instanceof TreeSupply tree) {
-                        renderer.onTreeSpawned(tree);
-                    }
-                    if (target instanceof Model model && landscape_renderer != null) {
-                        landscape_renderer.onStaticModelAdded(model);
-                    }
-                }
-            }
-
-            @Override
-            public void unregisterTarget(Target target) {
-                if (target instanceof Selectable<?> selectable)
-                    getSelection().removeFromArmies(selectable);
-            }
-
-            @Override
-            public void onLightningStrike(Model model, float x, float y, float z) {
-                WorldViewer.this.renderer.getRenderState().onLightningStrike(model, x, y, z);
-            }
-
-            @Override
-            public void onSonicBlast(Model model, float targetX, float targetY, float targetZ, float radius,
-                    float duration) {
-                WorldViewer.this.renderer.getRenderState().onSonicBlast(model, targetX, targetY, targetZ, radius,
-                        duration);
-            }
-
-            @Override
-            public void onWeaponThrow(float x, float y, float z) {
-                var params = new AudioParameters(AudioRegistry.SFX_WEAPON_SPEAR, AudioRegistry.AUDIO_RANK_WEAPON_ATTACK,
-                        AudioRegistry.AUDIO_DISTANCE_WEAPON_ATTACK, AudioRegistry.AUDIO_GAIN_WEAPON_ATTACK,
-                        AudioRegistry.AUDIO_RADIUS_WEAPON_ATTACK);
-                audioManager.newAudio(x, y, z, params);
-            }
-
-            @Override
-            public void onModelRemoved(Model model) {
-                WorldViewer.this.renderer.getRenderState().onModelRemoved(model);
-                if (initialized[0] && landscape_renderer != null) {
-                    landscape_renderer.onStaticModelRemoved(model);
-                }
-            }
-
-            @Override
-            public void onHeightEdited(int gridX, int gridY, float height) {
-                if (initialized[0] && landscape_renderer != null) {
-                    landscape_renderer.getHeightMapVisual().editHeight(gridX, gridY, height);
-                }
-            }
-        };
         var player_infos = Arrays.stream(player_slots).map(slot -> (PlayerInfo) slot.getInfo()).toList();
         GeneratedLandscapeData landscapeData = ProgressListener.subTask(0.25f,
                 () -> generator.generate(
@@ -317,11 +133,10 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 () -> LandscapeBaker.bakeWorld(landscapeData));
         camera_state.setFog(world_info.fog_info());
         this.world = ProgressListener.subTask(0.10f,
-                () -> World.newWorld(races_resources, landscape_geometry, listener, world_params,
+                () -> World.newWorld(races_resources, landscape_geometry, NotificationListener.EMPTY, world_params,
                         world_info.landscapeData(), player_infos, AccessibilitySettings.from(engine
                                 .getSettings()).linear_player_colours,
                         RenderConfig.INSERT_PLANTS[GraphicsSettings.from(engine.getSettings()).graphic_detail]));
-        initialized[0] = true;
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);
         engine.setPathfindCountSupplier(world.getUnitGrid()::getAndResetPathfindCount);
@@ -332,6 +147,14 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 world_info, landscape_renderer, picker,
                 selection, audioManager, engine.getSettings(),
                 gui_root.getWidth(), gui_root.getHeight());
+        WorldNotificationHandler notificationHandler = new WorldNotificationHandler(
+                this, engine, gui_root, notification_manager, animation_manager_local,
+                audioManager, ingame_info.isMultiplayer(), renderer, landscape_renderer);
+        world.setNotificationListener(notificationHandler);
+        world.getDistributableTable().getDistributables().stream()
+                .filter(Model.class::isInstance)
+                .map(Model.class::cast)
+                .forEach(landscape_renderer::onStaticModelAdded);
         this.gui_root = gui_root;
         this.gui_root.setCheatIndicator(icons.getCheatIcon(), cheat::isEnabled);
         this.chat_listener = message -> {
@@ -396,6 +219,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     @Override
     public void close() {
+        world.setNotificationListener(NotificationListener.EMPTY);
         engine.setPathfindCountSupplier(null);
         engine.getNetwork().getChatHub().removeListener(in_game_chat_history);
         engine.getNetwork().getChatHub().removeListener(chat_listener);
@@ -585,19 +409,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     public float getTime() {
         return gui_root.getTime();
-    }
-
-    private void playAudioWithVisual(Model model, AudioParameters sound, EmojiType emoji) {
-        audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(), sound);
-        if (AccessibilitySettings.from(engine.getSettings()).sound_emojis) {
-            addVisualSound(model, emoji, sound.distance());
-        }
-    }
-
-    private void addVisualSound(Model model, EmojiType emoji, float audioDistance) {
-        AssetRegistry.getInstance().getEmojiSprite(emoji)
-                .map(sprite -> new VisualSoundAccessory(sprite, emoji.getDuration(), audioDistance))
-                .ifPresent(accessory -> renderer.getRenderState().addAccessory(model, accessory));
     }
 
     private static void registerHarvestEmojis(RenderQueues queues, GUIIcons icons) {

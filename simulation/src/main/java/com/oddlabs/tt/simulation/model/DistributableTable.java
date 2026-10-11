@@ -3,6 +3,8 @@ package com.oddlabs.tt.simulation.model;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -41,5 +43,9 @@ public final class DistributableTable {
 
     public @Nullable Distributable getDistributable(int name) {
         return distributables.get(name);
+    }
+
+    public Collection<Distributable> getDistributables() {
+        return Collections.unmodifiableCollection(distributables.values());
     }
 }

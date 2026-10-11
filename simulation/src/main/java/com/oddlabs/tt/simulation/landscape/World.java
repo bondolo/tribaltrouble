@@ -49,7 +49,7 @@ public final class World implements SimulationClock {
     private final AnimationManager animation_manager_real_time;
 
     private final int max_unit_count;
-    private final NotificationListener notification_listener;
+    private NotificationListener notification_listener;
 
     private final List<Player> players;
     private final SupplyManagers supply_managers;
@@ -228,6 +228,10 @@ public final class World implements SimulationClock {
 
     public NotificationListener getNotificationListener() {
         return notification_listener;
+    }
+
+    public void setNotificationListener(NotificationListener notificationListener) {
+        this.notification_listener = notificationListener;
     }
 
     public WorldParameters getWorldParameters() {

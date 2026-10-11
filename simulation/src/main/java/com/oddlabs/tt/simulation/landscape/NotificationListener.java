@@ -13,6 +13,19 @@ import com.oddlabs.tt.simulation.model.UnitType;
  * target registrations, terrain patch edits, and environmental occurrences.
  */
 public interface NotificationListener {
+
+    /**
+     * No-op placeholder listener used during {@link World} construction and teardown.
+     *
+     * Events fired while the {@link World} is being constructed are absorbed by this listener
+     * to prevent callbacks on an uninitialised handler. Once the real handler is installed via
+     * {@code setNotificationListener()}, missed target registrations are replayed in bulk.
+     * During teardown, {@code close()} restores this listener to prevent stale callbacks
+     * after the {@link World} is disposed.
+     */
+    NotificationListener EMPTY = new NotificationListener() {
+    };
+
     default void newAttackNotification(Selectable<?> target) {
     }
 
