@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
@@ -76,10 +75,6 @@ public final class Server implements ConnectionListenerInterface<Object> {
                 .toArray(PlayerSlot[]::new);
     }
 
-    private Iterator<ClientConnection> getClientIterator() {
-        return connection_to_client.values().iterator();
-    }
-
     private int getNumClients() {
         return connection_to_client.size();
     }
@@ -115,14 +110,9 @@ public final class Server implements ConnectionListenerInterface<Object> {
     }
 
     private int getNumReady() {
-        int count = 0;
-        Iterator<ClientConnection> it = getClientIterator();
-        while (it.hasNext()) {
-            ClientConnection client = it.next();
-            if (slot_handler.isReady(client.getClient().getPlayerSlot()))
-                count++;
-        }
-        return count;
+        return (int) connection_to_client.values().stream()
+                .filter(client -> slot_handler.isReady(client.getClient().getPlayerSlot()))
+                .count();
     }
 
     @Override
@@ -149,13 +139,9 @@ public final class Server implements ConnectionListenerInterface<Object> {
     }
 
     private @Nullable ClientConnection locateClientForSlot(Serializable player_slot) {
-        Iterator<ClientConnection> it = getClientIterator();
-        while (it.hasNext()) {
-            ClientConnection client = it.next();
-            if (client.getClient().getPlayerSlot() == player_slot)
-                return client;
-        }
-        return null;
+        return connection_to_client.values().stream()
+                .filter(client -> client.getClient().getPlayerSlot() == player_slot)
+                .findFirst().orElse(null);
     }
 
     public void resetSlotState(Serializable client_slot, int slot, boolean open) {
@@ -232,42 +218,32 @@ public final class Server implements ConnectionListenerInterface<Object> {
     private void broadcastPlayers(boolean reset_ready) {
         if (reset_ready)
             resetReady();
-        Iterator<ClientConnection> it = getClientIterator();
-        while (it.hasNext()) {
-            ClientConnection client = it.next();
-            client.getClientInterface().setPlayers(players);
-        }
+        connection_to_client.values()
+                .forEach(client -> client.getClientInterface().setPlayers(players));
     }
 
     public void chat(Serializable player_slot, String chat) {
-        Iterator<ClientConnection> it = getClientIterator();
-        while (it.hasNext()) {
-            ClientConnection client = it.next();
-            client.getClientInterface().chat(slot_handler.getSlotIndex(player_slot), chat);
-        }
+        connection_to_client.values()
+                .forEach(client -> client.getClientInterface().chat(slot_handler.getSlotIndex(player_slot), chat));
     }
 
     private void broadcastInits() {
-        Iterator<ClientConnection> it = getClientIterator();
-        while (it.hasNext()) {
-            ClientConnection client = it.next();
+        connection_to_client.values().forEach(client -> {
             int session_id = random.nextInt();
             client.getClientInterface().startGame(session_id);
-        }
+        });
     }
 
     private short locateAvailableSlot() {
-        for (short i = 0; i < players.length; i++) {
-            if (slot_handler.getType(players[i]) == slot_handler.getOpenType())
-                return i;
-        }
-        return (short) -1;
+        return (short) IntStream.range(0, players.length)
+                .filter(i -> slot_handler.getType(players[i]) == slot_handler.getOpenType())
+                .findFirst().orElse( -1);
     }
 
     @Override
     public void incomingConnection(ConnectionListener connection_listener, Object remote_address) {
         IO.println("Incoming host connection from " + remote_address);
-        short available_slot = locateAvailableSlot();
+        var available_slot = locateAvailableSlot();
         if (state != NEGOTIATING || available_slot == -1 ||
                 (remote_address instanceof InetAddress address && !address.isLoopbackAddress()) ||
                 (remote_address instanceof TunnelIdentifier identifier && game != null && game.isRated() &&

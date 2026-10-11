@@ -43,7 +43,7 @@ public final class Client<C, R> implements ARMIEventBroker, GameClientInterface,
 
     private @Nullable WorldGenerator<?> generator = null;
 
-    private PlayerSlot[] player_slots;
+    private PlayerSlot[] player_slots = new PlayerSlot[0];
     private short player_slot = -1;
     private ConfigurationListener<C, R> configuration_listener;
 
