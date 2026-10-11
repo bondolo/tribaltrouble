@@ -106,10 +106,11 @@ public final class Main {
                             );
                             Menu.initNetwork(clientEngine);
                             localInput.init();
+                            boolean wasCrashed = settings.crashed;
                             settings.last_event_log_dir = gamePaths.logDir().toAbsolutePath();
-                            settings.crashed = true;
+                            settings.crashed = true; // Armed on disk for the current run
                             settings.save();
-                            settings.crashed = false;
+                            settings.crashed = wasCrashed; // Restore previous state
                             GUI gui = new GUI(
                                     localInput,
                                     clientEngine.getWindow(),
