@@ -126,7 +126,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
                 default -> "Shader (" + type + ")";
             };
             String[] lines = source.split("\n", -1);
-            var numberedSource = IntStream.rangeClosed(0, lines.length)
+            var numberedSource = IntStream.range(0, lines.length)
                     .mapToObj(i -> String.format("%4d: %s%n", i + 1, lines[i]))
                     .collect(Collectors.joining(""));
             throw new IllegalArgumentException(typeName + " shader compilation failed:\n" + log +

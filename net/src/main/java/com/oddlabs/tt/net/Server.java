@@ -69,7 +69,7 @@ public final class Server implements ConnectionListenerInterface<Object> {
         this.register_server = register_server;
         this.ai_names = ai_names;
         this.random = new Random(System.currentTimeMillis());
-        players = IntStream.rangeClosed(0, MatchmakingServerInterface.MAX_PLAYERS)
+        players = IntStream.range(0, MatchmakingServerInterface.MAX_PLAYERS)
                 .mapToObj(slot_handler::createSlot)
                 .map(PlayerSlot.class::cast)
                 .toArray(PlayerSlot[]::new);
