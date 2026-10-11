@@ -365,10 +365,11 @@ public abstract class Menu extends CameraDelegate<Camera> {
         var matchmakingClient = engine.getNetwork().getMatchmakingClient();
         var chatHub = engine.getNetwork().getChatHub();
         var networkSelector = engine.getNetwork().getSelector();
+        final long deterministicSeed = engine.getEventQueue().getHighPrecisionManager().getTick();
         final Server server = new Server(networkSelector, matchmakingClient, game,
                 address, generator, multiplayer, ai_names,
                 (team, race_val, name) -> new PlayerInfo(team, Race.fromValue(race_val), name),
-                new DefaultPlayerSlotHandler());
+                new DefaultPlayerSlotHandler(), deterministicSeed);
         @SuppressWarnings("unchecked") LoadCallbackFactory<GUIRoot, Screen> starterFactory = (session_id,
                 gen,
                 player_slots, unit_infos,

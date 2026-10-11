@@ -51,14 +51,15 @@ public final class Server implements ConnectionListenerInterface<Object> {
 
     public Server(NetworkSelector network, @Nullable MatchmakingClient matchmaking_client, Game game,
             InetAddress ip, WorldGenerator<?> generator,
-            boolean register_server, String[] ai_names, PlayerSlotHandler slot_handler) {
-        this(network, matchmaking_client, game, ip, generator, register_server, ai_names, null, slot_handler);
+            boolean register_server, String[] ai_names, PlayerSlotHandler slot_handler, long deterministicSeed) {
+        this(network, matchmaking_client, game, ip, generator, register_server, ai_names, null, slot_handler,
+                deterministicSeed);
     }
 
     public Server(NetworkSelector network, @Nullable MatchmakingClient matchmaking_client, Game game,
             InetAddress ip, WorldGenerator<?> generator,
             boolean register_server, String[] ai_names, @Nullable PlayerInfoFactory player_info_factory,
-            PlayerSlotHandler slot_handler) {
+            PlayerSlotHandler slot_handler, long deterministicSeed) {
         this.slot_handler = slot_handler;
         this.player_info_factory = player_info_factory;
         this.local_listener = new SocketConnectionListener(network,
@@ -68,7 +69,7 @@ public final class Server implements ConnectionListenerInterface<Object> {
         this.generator = generator;
         this.register_server = register_server;
         this.ai_names = ai_names;
-        this.random = new Random(System.currentTimeMillis());
+        this.random = new Random(deterministicSeed);
         players = IntStream.range(0, MatchmakingServerInterface.MAX_PLAYERS)
                 .mapToObj(slot_handler::createSlot)
                 .map(PlayerSlot.class::cast)
