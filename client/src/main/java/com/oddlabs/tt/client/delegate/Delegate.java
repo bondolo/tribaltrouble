@@ -60,15 +60,6 @@ public abstract class Delegate extends GUIObject implements InputDelegate {
             CameraState state, Matrix4fc modelView) {
     }
 
-    @Override
-    public void render2D(GUIRenderer renderer) {
-    }
-
-    @Override
-    public boolean keyboardBlocked() {
-        return false;
-    }
-
     protected final void renderBackgroundAlpha(GUIRenderer renderer) {
         renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), BACKGROUND_ALPHA);
     }

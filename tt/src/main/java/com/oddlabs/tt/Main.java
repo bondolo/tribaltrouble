@@ -94,17 +94,17 @@ public final class Main {
 
                 Network network = new Network(new com.oddlabs.net.NetworkSelector(eventQueue.getDeterministic(),
                         eventQueue::getMillis));
-                Peer engine = new Peer(gamePaths, settings, window, eventQueue, network, audioManager);
-                engine.run(
-                        (clientEngine, firstProgress) -> {
+                Peer peer = new Peer(gamePaths, settings, window, eventQueue, network, audioManager);
+                peer.run(
+                        (clientPeer, firstProgress) -> {
                             InputManager inputManager = new InputManager(InputBindingSettings.from(settings));
                             LocalInput localInput = new LocalInput(
-                                    clientEngine.getWindow(), inputManager,
+                                    clientPeer.getWindow(), inputManager,
                                     eventQueue.getDeterministic(),
-                                    clientEngine::shutdown,
-                                    clientEngine.getFramePacer()
+                                    clientPeer::shutdown,
+                                    clientPeer.getFramePacer()
                             );
-                            Menu.initNetwork(clientEngine);
+                            Menu.initNetwork(clientPeer);
                             localInput.init();
                             boolean wasCrashed = settings.crashed;
                             settings.last_event_log_dir = gamePaths.logDir().toAbsolutePath();
@@ -113,26 +113,27 @@ public final class Main {
                             settings.crashed = wasCrashed; // Restore previous state
                             GUI gui = new GUI(
                                     localInput,
-                                    clientEngine.getWindow(),
+                                    clientPeer.getWindow(),
                                     eventQueue,
                                     settings,
-                                    clientEngine::shutdown,
-                                    clientEngine::updateProgress,
-                                    clientEngine::getFPS
+                                    clientPeer::shutdown,
+                                    clientPeer::updateProgress,
+                                    clientPeer::getFPS
                             );
-                            gui.setMovieRecordingStarter(clientEngine::startMovieRecording);
+                            gui.setMovieRecordingStarter(clientPeer::startMovieRecording);
                             gui.setErrorAudioHandler(() -> audioManager.newAudio(0f, 0f, 0f,
                                     AudioRegistry.ERROR_SOUND));
                             gui.setCloseHandler(() -> {
                                 if (gui.getGUIRoot().isShowingModalForm(QuitForm.class)) {
-                                    clientEngine.shutdown();
+                                    clientPeer.shutdown();
                                 } else {
                                     gui.getGUIRoot().addModalForm(new QuitForm(gui.getGUIRoot(),
-                                            clientEngine::shutdown));
+                                            clientPeer::shutdown));
                                 }
                             });
-                            ScreenManager screenManager = new ScreenManager(clientEngine, gui);
-                            Runnable loadTask = Menu.setupMainMenu(clientEngine, gui, firstProgress);
+                            ScreenManager screenManager = new ScreenManager(gui, eventQueue.getManager(),
+                                    clientPeer::updateProgress);
+                            Runnable loadTask = Menu.setupMainMenu(clientPeer, firstProgress, screenManager);
                             return new ClientStartup.Session(screenManager, loadTask);
                         }, args
                 );

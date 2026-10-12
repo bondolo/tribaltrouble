@@ -68,7 +68,7 @@ public final class GUIRoot extends GUIObject {
 
     GUIRoot(GUI gui, Skin skin) {
         this.gui = gui;
-        this.skin = Objects.requireNonNull(skin, "Skin cannot be null");
+        this.skin = skin;
         this.tool_tip = new ToolTipBox(this);
         this.info_printer = new InfoPrinter(this, 4, skin.getEditFont());
         this.status = new Status(gui.getSettings(), gui.getFpsSupplier(), skin.getEditFont());

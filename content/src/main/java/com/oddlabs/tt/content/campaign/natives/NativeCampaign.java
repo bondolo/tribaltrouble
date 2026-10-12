@@ -6,11 +6,13 @@ import com.oddlabs.tt.content.campaign.CampaignDialogForm;
 import com.oddlabs.tt.content.campaign.CampaignIcons;
 import com.oddlabs.tt.content.campaign.CampaignState;
 import com.oddlabs.tt.content.campaign.Island;
+import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.client.Peer;
+import com.oddlabs.tt.client.screen.ScreenManager;
 
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -38,14 +40,21 @@ public final class NativeCampaign extends Campaign {
 
     private transient final NativeCampaignIcons icons;
 
-    public NativeCampaign(GUIRoot gui_root, Peer engine) {
-        this(gui_root, new CampaignState(INITIAL_STATES), engine);
+    public NativeCampaign(Menu menu) {
+        this(menu.getGUIRoot(), menu.getPeer(), menu.getScreenManager());
     }
 
-    public NativeCampaign(GUIRoot gui_root, CampaignState campaign_state, Peer engine) {
-        super(campaign_state, engine);
-        icons = new NativeCampaignIcons("/gui/native_campaign.xml");
+    public NativeCampaign(CampaignState campaign_state, Menu menu) {
+        this(menu.getGUIRoot(), campaign_state, menu.getPeer(), menu.getScreenManager());
+    }
 
+    public NativeCampaign(GUIRoot gui_root, Peer peer, ScreenManager screenManager) {
+        this(gui_root, new CampaignState(INITIAL_STATES), peer, screenManager);
+    }
+
+    public NativeCampaign(GUIRoot gui_root, CampaignState campaign_state, Peer peer, ScreenManager screenManager) {
+        super(campaign_state, peer, screenManager);
+        icons = new NativeCampaignIcons("/gui/native_campaign.xml");
 
         if (getState().getCurrentIsland() == -1) {
             startIsland(gui_root, 0);
@@ -60,7 +69,7 @@ public final class NativeCampaign extends Campaign {
     }
 
     @Override
-    public void islandChosen(GUIRoot gui_root, int number) {
+    protected void islandChosen(GUIRoot gui_root, int number) {
         Form dialog = new CampaignDialogForm(gui_root, islands[number].getHeader(),
                 islands[number].getDescription(),
                 null,
@@ -70,7 +79,7 @@ public final class NativeCampaign extends Campaign {
     }
 
     @Override
-    public CharSequence getCurrentObjective() {
+    protected CharSequence getCurrentObjective() {
         if (getState().getCurrentIsland() != -1) {
             return islands[getState().getCurrentIsland()].getCurrentObjective();
         }
@@ -85,7 +94,7 @@ public final class NativeCampaign extends Campaign {
     }
 
     @Override
-    public void startIsland(GUIRoot gui_root, int number) {
+    protected void startIsland(GUIRoot gui_root, int number) {
         getState().setCurrentIsland(number);
         islands[number].chosen(gui_root);
     }

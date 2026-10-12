@@ -5,8 +5,6 @@ import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.input.InputEvent;
 
-import java.util.Objects;
-
 /**
  * Bridges user interface input events and viewport projection with an active camera.
  */
@@ -15,7 +13,7 @@ public abstract class CameraDelegate<C extends Camera> extends Delegate {
     private C camera;
 
     public CameraDelegate(GUIRoot gui_root, C camera) {
-        this.camera = Objects.requireNonNull(camera);
+        this.camera = camera;
         this.gui_root = gui_root;
     }
 
@@ -24,7 +22,7 @@ public abstract class CameraDelegate<C extends Camera> extends Delegate {
     }
 
     public final void setCamera(C camera) {
-        this.camera = Objects.requireNonNull(camera);
+        this.camera = camera;
     }
 
     public final C getCamera() {
@@ -59,21 +57,6 @@ public abstract class CameraDelegate<C extends Camera> extends Delegate {
     protected void doRemove() {
         super.doRemove();
         getCamera().disable();
-    }
-
-    @Override
-    public boolean renderCursor() {
-        return true;
-    }
-
-    @Override
-    public boolean canScroll() {
-        return false;
-    }
-
-    @Override
-    public boolean forceRender() {
-        return false;
     }
 
     public final void pop() {

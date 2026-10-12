@@ -5,8 +5,6 @@ import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 
-import java.util.Objects;
-
 /**
  * Header button for a sortable column within a MultiColumnComboBox.
  */
@@ -23,7 +21,7 @@ public final class ColumnButton<T> extends RadioButtonGroupElement {
     ColumnButton(Skin skin, RadioButtonGroup group, RowCollection<T> rows, ColumnInfo info,
             int column_index, boolean sorted_descending) {
         super(column_index == 0, group);
-        this.skin = Objects.requireNonNull(skin, "Skin cannot be null");
+        this.skin = skin;
         this.data = skin.getMultiColumnComboBoxData();
         this.rows = rows;
         this.column_index = column_index;

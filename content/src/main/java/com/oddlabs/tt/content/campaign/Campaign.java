@@ -4,7 +4,7 @@ import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.client.trigger.GameOverDelayTrigger;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.client.Peer;
-import com.oddlabs.tt.gui.GUI;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.base.util.Utils;
@@ -24,30 +24,35 @@ public abstract class Campaign {
 
     private final CampaignState state;
     private final AudioManager audioManager;
-    private final Peer engine;
-    private CampaignState[] campaign_states; // for saving
+    private final Peer peer;
+    private final ScreenManager screenManager;
 
-    public Campaign(CampaignState state, Peer engine) {
+    public Campaign(CampaignState state, Peer peer, ScreenManager screenManager) {
         this.state = state;
-        this.engine = engine;
-        this.audioManager = engine.getAudioManager();
+        this.peer = peer;
+        this.screenManager = screenManager;
+        this.audioManager = peer.getAudioManager();
     }
 
     public final CampaignState getState() {
         return state;
     }
 
-    public final AudioManager getAudioManager() {
+    final AudioManager getAudioManager() {
         return audioManager;
     }
 
-    public final Peer getEngine() {
-        return engine;
+    final Peer getPeer() {
+        return peer;
     }
 
-    public final void pushDelegate(GUI gui) {
-        final GUIRoot gui_root = gui.createRoot();
-        engine.getScreenManager().newFade(null, engine.getScreenManager().getScreen().withGUIRoot(gui_root));
+    final ScreenManager getScreenManager() {
+        return screenManager;
+    }
+
+    final void pushDelegate() {
+        final GUIRoot gui_root = screenManager.createRoot();
+        screenManager.fadeToRoot(gui_root);
         gui_root.pushDelegate(new CampaignMapForm(gui_root, Campaign.this));
     }
 
@@ -56,18 +61,17 @@ public abstract class Campaign {
         doDefeated();
     }
 
-    public final void doDefeated() {
+    final void doDefeated() {
         state.setCurrentIsland(state.getPrevIsland());
     }
 
     public final void victory(final WorldViewer viewer) {
         new GameOverDelayTrigger(viewer, viewer.getDelegate().getCamera(), i18n("island_complete"));
-        LoadCampaignBox.loadSavegames(viewer.getEngine(),
+        LoadCampaignBox.loadSavegames(viewer.getPeer(),
                 new DeterministicSerializerLoopbackInterface<CampaignState[]>() {
                     @Override
                     public void loadSucceeded(CampaignState[] campaign_states) {
-                        Campaign.this.campaign_states = campaign_states;
-                        doSave(viewer);
+                        doSave(viewer, campaign_states);
                     }
 
                     @Override
@@ -77,14 +81,21 @@ public abstract class Campaign {
                 });
     }
 
-    private void doSave(final WorldViewer viewer) {
-        for (int i = 0; i < campaign_states.length; i++) {
-            if (campaign_states[i].getName().equals(getState().getName())) {
-                campaign_states[i] = getState();
+    private void doSave(final WorldViewer viewer, CampaignState[] campaign_states) {
+        updateCampaigns(campaign_states, getState());
+
+        LoadCampaignBox.saveSavegames(viewer.getPeer(), campaign_states,
+                (DeterministicSerializerLoopbackInterface<CampaignState[]>) e -> doFailed(e, viewer));
+    }
+
+    private boolean updateCampaigns(CampaignState[] campaigns, CampaignState campaign) {
+        for (int i = 0; i < campaigns.length; i++) {
+            if (campaigns[i].getName().equals(campaign.getName())) {
+                campaigns[i] = campaign;
+                return true;
             }
         }
-        LoadCampaignBox.saveSavegames(viewer.getEngine(), campaign_states,
-                (DeterministicSerializerLoopbackInterface<CampaignState[]>) e -> doFailed(e, viewer));
+        return false;
     }
 
     private void doFailed(Throwable e, WorldViewer viewer) {
@@ -94,9 +105,9 @@ public abstract class Campaign {
 
     public abstract CampaignIcons getIcons();
 
-    public abstract void islandChosen(GUIRoot gui_root, int number);
+    protected abstract void islandChosen(GUIRoot gui_root, int number);
 
-    public abstract CharSequence getCurrentObjective();
+    protected abstract CharSequence getCurrentObjective();
 
-    public abstract void startIsland(GUIRoot gui_root, int number);
+    protected abstract void startIsland(GUIRoot gui_root, int number);
 }

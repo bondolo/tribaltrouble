@@ -7,7 +7,6 @@ import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.util.Color;
 
-import java.util.Objects;
 import java.util.ResourceBundle;
 
 /**
@@ -27,7 +26,7 @@ public final class ProgressBar extends GUIObject {
     private float progress;
 
     public ProgressBar(GUIRoot guiRoot, int width, boolean text_only) {
-        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.skin = guiRoot.getSkin();
         this.text_only = text_only;
         if (text_only) {
             setDim(width, skin.getHeadlineFont().getHeight());

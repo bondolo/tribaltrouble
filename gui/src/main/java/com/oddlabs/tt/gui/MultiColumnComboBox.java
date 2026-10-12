@@ -8,8 +8,6 @@ import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Objects;
-
 /**
  * Multi-column scrollable table with sortable column headers.
  */
@@ -33,7 +31,7 @@ public final class MultiColumnComboBox<T> extends GUIObject implements Scrollabl
 
     public MultiColumnComboBox(GUIRoot gui_root, int height, boolean use_buttons,
             ColumnInfo... column_infos) {
-        this.gui_root = Objects.requireNonNull(gui_root, "gui_root cannot be null");
+        this.gui_root = gui_root;
         this.skin = gui_root.getSkin();
         this.comboBoxData = skin.getMultiColumnComboBoxData();
         this.focus_group = new Group(gui_root);

@@ -119,10 +119,6 @@ public final class NullAudioManager implements AudioManager {
         return new NullAudio();
     }
 
-    @Override
-    public void close() {
-    }
-
     private static final class NullAudio implements Audio {
     }
 

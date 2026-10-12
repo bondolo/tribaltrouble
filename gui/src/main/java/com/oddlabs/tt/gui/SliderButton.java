@@ -6,8 +6,6 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
-import java.util.Objects;
-
 /**
  * Draggable thumb button within a slider control track.
  */
@@ -18,7 +16,7 @@ final class SliderButton extends ButtonObject {
 
     SliderButton(Slider slider, ModeIconQuads button) {
         super(slider.getSkin().getEditFont());
-        this.skin = Objects.requireNonNull(slider.getSkin(), "Skin cannot be null");
+        this.skin = slider.getSkin();
         this.slider = slider;
         this.button = button;
         setDim(button.quad(ModeIconQuads.Mode.NORMAL).getWidth(), button.quad(ModeIconQuads.Mode.NORMAL).getHeight());

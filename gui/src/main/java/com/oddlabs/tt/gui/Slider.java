@@ -27,7 +27,7 @@ public final class Slider extends GUIObject {
     private int value;
 
     public Slider(GUIRoot guiRoot, int width, int min, int max, int init_value) {
-        this.skin = java.util.Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.skin = guiRoot.getSkin();
         this.sliderData = skin.getSliderData();
         cardinality = max - min + 1;
         assert cardinality > 0 && max >= init_value && init_value >= min : "Invalid values. cardinality = "

@@ -8,7 +8,6 @@ import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.content.menu.InGameMainMenu;
 import com.oddlabs.tt.content.menu.InGameMenuHook;
 import com.oddlabs.tt.content.menu.Menu;
-import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
 
 /**
@@ -22,8 +21,8 @@ public final class TutorialInGameInfo implements InGameInfo, InGameMenuHook {
         viewer.getGUIRoot().pushDelegate(new InGameMainMenu(viewer, new StaticCamera(camera.getState())));
     }
 
-    public boolean setNextTutorial(GUIRoot gui_root, int next_tutorial) {
-        if (TutorialForm.checkTutorial(gui_root, next_tutorial)) {
+    public boolean setNextTutorial(int next_tutorial) {
+        if (TutorialForm.checkTutorial(next_tutorial)) {
             this.next_tutorial = next_tutorial;
             return true;
         } else
@@ -69,8 +68,8 @@ public final class TutorialInGameInfo implements InGameInfo, InGameMenuHook {
     @Override
     public void close(WorldViewer viewer) {
         if (next_tutorial != -1)
-            TutorialForm.startTutorial(viewer.getEngine(), viewer.getGUIRoot(), next_tutorial);
+            TutorialForm.startTutorial(viewer.getPeer(), viewer.getGUIRoot(), viewer.getScreenManager(), next_tutorial);
         else
-            Menu.startMenu(viewer.getEngine(), viewer.getGUIRoot().getGUI());
+            Menu.startMenu(viewer.getPeer(), viewer.getScreenManager());
     }
 }

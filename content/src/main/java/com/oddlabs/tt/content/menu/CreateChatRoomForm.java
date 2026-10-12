@@ -36,7 +36,7 @@ public final class CreateChatRoomForm extends Form {
 
     public CreateChatRoomForm(SelectGameMenu menu) {
         super(menu.getGUIRoot());
-        this.client = menu.getMainMenu().getEngine().getNetwork().getMatchmakingClient();
+        this.client = menu.getMainMenu().getPeer().getNetwork().getMatchmakingClient();
 
         // headline
         Label label_headline = new Label(i18n("caption"), getSkin().getHeadlineFont());

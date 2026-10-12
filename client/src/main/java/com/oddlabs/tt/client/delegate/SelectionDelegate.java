@@ -86,7 +86,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
         this.game_camera = (GameCamera) getCamera();
         displayChangedNotify(getGUIRoot().getWidth(), getGUIRoot().getHeight());
         addChild(getViewer().getPanel());
-        var network = viewer.getEngine().getNetwork();
+        var network = viewer.getPeer().getNetwork();
         this.chat_form = new InGameChatForm(viewer.getGUIRoot(), network.getChatHub(), viewer.getInGameChatHistory(),
                 viewer
                         .getChatSender());
@@ -98,10 +98,6 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
         });
         chat_visible = false;
         ((GameCamera) getCamera()).setOwner(this);
-    }
-
-    public InGameChatForm getChatForm() {
-        return chat_form;
     }
 
     @Override
@@ -573,7 +569,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
             float w = maxX - minX;
             float h = maxY - minY;
 
-            float thickness = AccessibilitySettings.from(getViewer().getEngine().getSettings()).high_contrast ? 3.0f
+            float thickness = AccessibilitySettings.from(getViewer().getPeer().getSettings()).high_contrast ? 3.0f
                     : 1.0f;
 
             // Ensure thickness doesn't exceed half dimensions

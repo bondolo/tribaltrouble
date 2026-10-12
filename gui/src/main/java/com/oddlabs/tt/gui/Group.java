@@ -4,8 +4,6 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 
-import java.util.Objects;
-
 /**
  * Composite container for grouping and laying out {@link GUIObject} elements.
  */
@@ -18,8 +16,8 @@ public class Group extends GUIObject {
     }
 
     public Group(GUIRoot guiRoot, boolean can_focus) {
-        this.guiRoot = Objects.requireNonNull(guiRoot, "guiRoot cannot be null");
-        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "skin cannot be null");
+        this.guiRoot = guiRoot;
+        this.skin = guiRoot.getSkin();
         setCanFocus(can_focus);
     }
 

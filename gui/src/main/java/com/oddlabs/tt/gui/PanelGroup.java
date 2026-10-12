@@ -3,8 +3,6 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.gui.event.MouseButtonListener;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
-import java.util.Objects;
-
 /**
  * Container coordinating multiple tabbed panels with switching and focus management.
  */
@@ -22,7 +20,7 @@ public final class PanelGroup extends GUIObject {
     }
 
     public PanelGroup(GUIRoot guiRoot, int selected, Panel... panels) {
-        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.skin = guiRoot.getSkin();
         this.panelData = skin.getPanelData();
         this.focus_group = new Group(guiRoot);
         assert selected < panels.length && panels.length > 0 : "Invalid index selected.";

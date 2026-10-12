@@ -45,15 +45,15 @@ public final class CreatingProfileForm extends Form implements ProfileListener {
         compileCanvas();
         centerPos();
 
-        main_menu.getEngine().getNetwork().getMatchmakingClient().setCreatingProfileListener(this);
-        main_menu.getEngine().getNetwork().getMatchmakingClient().createProfile(nick);
+        main_menu.getPeer().getNetwork().getMatchmakingClient().setCreatingProfileListener(this);
+        main_menu.getPeer().getNetwork().getMatchmakingClient().createProfile(nick);
     }
 
     @Override
     public void success() {
         remove();
         main_menu.setMenuCentered(profiles_form);
-        main_menu.getEngine().getNetwork().getMatchmakingClient().requestProfiles();
+        main_menu.getPeer().getNetwork().getMatchmakingClient().requestProfiles();
     }
 
     @Override

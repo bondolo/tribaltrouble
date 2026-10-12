@@ -109,15 +109,6 @@ public final class ThrowingWeaponVisualModel extends AbstractVisualModel impleme
     }
 
     @Override
-    public void getRelativeTransform(Matrix4f dest, Model parent) {
-    }
-
-    @Override
-    public @Nullable SpriteKey getSpriteRenderer() {
-        return null;
-    }
-
-    @Override
     public void close() {
         super.close();
         if (audioPlayer != null) {

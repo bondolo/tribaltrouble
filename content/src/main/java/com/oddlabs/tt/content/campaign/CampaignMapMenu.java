@@ -4,12 +4,13 @@ import com.oddlabs.tt.content.form.OptionsMenu;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.client.Peer;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.QuestionForm;
 import com.oddlabs.tt.gui.GUIImage;
 import com.oddlabs.tt.gui.GUIObject;
-import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MenuButton;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
@@ -24,16 +25,22 @@ import org.jspecify.annotations.Nullable;
  */
 final class CampaignMapMenu extends Form {
     private static final Color.Linear DARK_GLASS = Color.Linear.BLACK.alpha(0.345f);
-    private final Peer engine;
+    private final Peer peer;
+    private final ScreenManager screenManager;
     private final GUIImage overlay;
     private final GUIImage logo;
     private final MenuButton resumeButton;
 
     private @Nullable Form current_menu;
 
-    CampaignMapMenu(GUIRoot gui_root, Peer engine) {
+    CampaignMapMenu(GUIRoot gui_root, Campaign campaign) {
+        this(gui_root, campaign.getPeer(), campaign.getScreenManager());
+    }
+
+    CampaignMapMenu(GUIRoot gui_root, Peer peer, ScreenManager screenManager) {
         super(gui_root);
-        this.engine = engine;
+        this.peer = peer;
+        this.screenManager = screenManager;
 
         int width = gui_root.getWidth();
         int height = gui_root.getHeight();
@@ -51,7 +58,7 @@ final class CampaignMapMenu extends Form {
         logo.setPos(0, height - logoHeight);
         addChild(logo);
 
-        resumeButton = new MenuButton(gui_root, Menu.i18n("resume"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
+        resumeButton = new MenuButton(getGUIRoot(), Menu.i18n("resume"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(resumeButton);
         resumeButton.addMouseClickListener((_, _, _, _) -> cancel());
 
@@ -114,7 +121,7 @@ final class CampaignMapMenu extends Form {
         MenuButton options = new MenuButton(getGUIRoot(), Menu.i18n("options"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(options);
         options.addMouseClickListener((_, _, _, _) -> setMenuCentered(
-                new OptionsMenu(getGUIRoot(), engine))
+                new OptionsMenu(getGUIRoot(), peer))
         );
     }
 
@@ -124,15 +131,15 @@ final class CampaignMapMenu extends Form {
         addChild(abort);
         abort.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuestionForm(getGUIRoot(), Menu.i18n(
                 "end_game_confirm"),
-                (_, _, _, _) -> CampaignMapForm.closeCampaign(engine, getGUIRoot().getGUI())))
+                (_, _, _, _) -> CampaignMapForm.closeCampaign(peer, screenManager)))
         );
     }
 
     private void addExitButton() {
         MenuButton exit = new MenuButton(getGUIRoot(), Menu.i18n("quit"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(exit);
-        exit.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuitForm(getGUIRoot(), getGUIRoot().getGUI()
-                .getShutdownHandler())));
+        exit.addMouseClickListener((_, _, _, _) -> getGUIRoot().addModalForm(new QuitForm(getGUIRoot(), getGUIRoot()
+                .getGUI().getShutdownHandler())));
     }
 
     private void layoutButtons() {

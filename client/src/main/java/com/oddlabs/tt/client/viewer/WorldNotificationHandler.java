@@ -42,7 +42,7 @@ final class WorldNotificationHandler implements NotificationListener {
     private static final List<String> GAMESPEED_NAMES = List.of("paused", "slow", "normal", "fast", "ludicrous");
 
     private final WorldViewer viewer;
-    private final Peer engine;
+    private final Peer peer;
     private final com.oddlabs.tt.gui.GUIRoot guiRoot;
     private final NotificationManager notificationManager;
     private final AnimationManager animationManager;
@@ -52,7 +52,7 @@ final class WorldNotificationHandler implements NotificationListener {
     private final LandscapeRenderer landscapeRenderer;
 
     WorldNotificationHandler(WorldViewer viewer,
-            Peer engine,
+            Peer peer,
             com.oddlabs.tt.gui.GUIRoot guiRoot,
             NotificationManager notificationManager,
             AnimationManager animationManager,
@@ -61,7 +61,7 @@ final class WorldNotificationHandler implements NotificationListener {
             FullSceneRenderer renderer,
             LandscapeRenderer landscapeRenderer) {
         this.viewer = viewer;
-        this.engine = engine;
+        this.peer = peer;
         this.guiRoot = guiRoot;
         this.notificationManager = notificationManager;
         this.animationManager = animationManager;
@@ -237,7 +237,7 @@ final class WorldNotificationHandler implements NotificationListener {
 
     private void playAudioWithVisual(Model model, AudioParameters sound, EmojiType emoji) {
         audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(), sound);
-        if (AccessibilitySettings.from(engine.getSettings()).sound_emojis) {
+        if (AccessibilitySettings.from(peer.getSettings()).sound_emojis) {
             addVisualSound(model, emoji, sound.distance());
         }
     }

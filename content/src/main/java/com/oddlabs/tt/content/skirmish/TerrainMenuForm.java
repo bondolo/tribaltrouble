@@ -12,7 +12,7 @@ public final class TerrainMenuForm extends Form implements TerrainMenuListener {
 
     public TerrainMenuForm(Menu main_menu) {
         super(main_menu.getGUIRoot());
-        terrain = new TerrainMenu(main_menu.getGUIRoot(), main_menu.getEngine(), main_menu, false, this);
+        terrain = new TerrainMenu(main_menu, false, this);
         addChild(terrain);
         terrain.place();
         compileCanvas();

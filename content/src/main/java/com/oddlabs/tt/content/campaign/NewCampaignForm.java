@@ -134,7 +134,7 @@ final class NewCampaignForm extends Form implements DeterministicSerializerLoopb
 
         compileCanvas();
         centerPos();
-        LoadCampaignBox.loadSavegames(main_menu.getEngine(), this);
+        LoadCampaignBox.loadSavegames(main_menu.getPeer(), this);
     }
 
     @Override
@@ -175,11 +175,11 @@ final class NewCampaignForm extends Form implements DeterministicSerializerLoopb
         Race chosenRace = race_pulldown.getChosenItem().map(PulldownItem::getAttachment).orElse(Race.VIKINGS);
         switch (chosenRace) {
             case VIKINGS -> {
-                campaign = new VikingCampaign(gui_root, main_menu.getEngine());
+                campaign = new VikingCampaign(main_menu);
                 campaign.getState().setRace(Race.VIKINGS);
             }
             case NATIVES -> {
-                campaign = new NativeCampaign(gui_root, main_menu.getEngine());
+                campaign = new NativeCampaign(main_menu);
                 campaign.getState().setRace(Race.NATIVES);
             }
             default -> throw new IllegalArgumentException();
@@ -191,7 +191,7 @@ final class NewCampaignForm extends Form implements DeterministicSerializerLoopb
                 Difficulty.NORMAL);
         campaign.getState().setDifficulty(difficulty);
         new_states[new_states.length - 1] = campaign.getState();
-        LoadCampaignBox.saveSavegames(main_menu.getEngine(), new_states, this);
+        LoadCampaignBox.saveSavegames(main_menu.getPeer(), new_states, this);
         remove();
     }
 

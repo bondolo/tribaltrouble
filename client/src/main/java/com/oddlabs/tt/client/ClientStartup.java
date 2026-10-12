@@ -27,11 +27,11 @@ public interface ClientStartup {
     }
 
     /**
-     * Initializes the client after the engine and window/GL context are initialized.
+     * Initializes the client after the peer and window/GL context are initialized.
      *
-     * @param engine the active client engine
+     * @param peer the active client peer
      * @param firstProgress whether this is the initial application load
      * @return client session holding the GUI and load task
      */
-    Session init(Peer engine, boolean firstProgress);
+    Session init(Peer peer, boolean firstProgress);
 }

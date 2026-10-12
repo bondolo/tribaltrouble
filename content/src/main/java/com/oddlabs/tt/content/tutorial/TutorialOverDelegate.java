@@ -92,7 +92,7 @@ public final class TutorialOverDelegate extends CameraDelegate<StaticCamera> imp
 
         @Override
         public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            if (tutorial_info.setNextTutorial(viewer.getGUIRoot(), tutorial_number))
+            if (tutorial_info.setNextTutorial(tutorial_number))
                 viewer.close();
         }
     }

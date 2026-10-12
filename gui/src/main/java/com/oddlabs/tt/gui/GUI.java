@@ -10,7 +10,6 @@ import com.oddlabs.tt.window.Window;
 import com.oddlabs.tt.window.WindowSettings;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 
@@ -24,7 +23,7 @@ public final class GUI implements AutoCloseable {
     private final LocalEventQueue eventQueue;
     private final Settings settings;
     private final Runnable shutdownHandler;
-    private final @Nullable Consumer<GUI> progressUpdater;
+    private final @Nullable Runnable progressUpdater;
     private final DoubleSupplier fpsSupplier;
     private @Nullable Runnable movieRecordingStarter;
     private final GUIRenderer guiRenderer = new GUIRenderer();
@@ -33,7 +32,7 @@ public final class GUI implements AutoCloseable {
     private @Nullable Runnable errorAudioHandler;
 
     public GUI(LocalInput localInput, Skin skin, Window window, LocalEventQueue eventQueue, Settings settings,
-            Runnable shutdownHandler, @Nullable Consumer<GUI> progressUpdater, DoubleSupplier fpsSupplier) {
+            Runnable shutdownHandler, @Nullable Runnable progressUpdater, DoubleSupplier fpsSupplier) {
         this.localInput = localInput;
         this.skin = skin;
         this.window = window;
@@ -46,13 +45,13 @@ public final class GUI implements AutoCloseable {
     }
 
     public GUI(LocalInput localInput, Window window, LocalEventQueue eventQueue, Settings settings,
-            Runnable shutdownHandler, @Nullable Consumer<GUI> progressUpdater, DoubleSupplier fpsSupplier) {
+            Runnable shutdownHandler, @Nullable Runnable progressUpdater, DoubleSupplier fpsSupplier) {
         this(localInput, new Skin("/gui/gui_skin.xml"), window, eventQueue, settings, shutdownHandler, progressUpdater,
                 fpsSupplier);
     }
 
     public GUI(LocalInput localInput, Window window, LocalEventQueue eventQueue, Settings settings,
-            Runnable shutdownHandler, @Nullable Consumer<GUI> progressUpdater) {
+            Runnable shutdownHandler, @Nullable Runnable progressUpdater) {
         this(localInput, window, eventQueue, settings, shutdownHandler, progressUpdater, () -> 0.0);
     }
 
@@ -145,7 +144,7 @@ public final class GUI implements AutoCloseable {
 
     public void updateProgress() {
         if (progressUpdater != null) {
-            progressUpdater.accept(this);
+            progressUpdater.run();
         }
     }
 
@@ -165,7 +164,7 @@ public final class GUI implements AutoCloseable {
     }
 
     public void setRoot(GUIRoot root) {
-        this.currentRoot = Objects.requireNonNull(root, "root cannot be null");
+        this.currentRoot = root;
     }
 
     public GUIRenderer getRenderer() {

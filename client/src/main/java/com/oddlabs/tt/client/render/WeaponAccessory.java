@@ -159,8 +159,4 @@ final class WeaponAccessory implements StaticAccessory {
         }
     }
 
-    @Override
-    public int getAnimation() {
-        return 0;
-    }
 }

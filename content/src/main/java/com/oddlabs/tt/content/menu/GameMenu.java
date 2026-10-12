@@ -39,6 +39,7 @@ import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.client.viewer.ChatCommand;
 import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.client.Peer;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -114,8 +115,8 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
     private final SelectGameMenu owner;
     private final GUIRoot gui_root;
     private final int local_player_slot;
-    private final WorldGenerator<?> generator;
-    private final Peer engine;
+    private final Peer peer;
+    private final ScreenManager screenManager;
     private final GameNetwork<GUIRoot, Screen> game_network;
     private final Game game;
     private final boolean rated;
@@ -127,13 +128,13 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
     @SuppressWarnings("unchecked")
     public GameMenu(GameNetwork<GUIRoot, Screen> game_network,
             SelectGameMenu owner,
-            Game game, WorldGenerator<?> generator, int player_slot, int compare_width, int compare_height,
-            int button_width) {
+            Game game, int player_slot, int compare_width, int compare_height,
+            int button_width, ScreenManager screenManager) {
         super(owner.getGUIRoot(), i18n("game"));
         this.owner = owner;
         this.gui_root = owner.getGUIRoot();
-        this.engine = owner.getMainMenu().getEngine();
-        this.generator = generator;
+        this.peer = owner.getMainMenu().getPeer();
+        this.screenManager = screenManager;
         this.game_network = game_network;
         this.local_player_slot = player_slot;
         this.rated = game.isRated();
@@ -218,7 +219,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
     private void adjustPlayerSlot(int player_slot) {
         if (updating)
             return;
-        PlayerSlot player = (PlayerSlot) game_network.getClient().getPlayers()[player_slot];
+        PlayerSlot player = game_network.getClient().getPlayers()[player_slot];
         SlotOption option = slot_buttons[player_slot].getMenu().getChosenItem().map(PulldownItem::getAttachment).orElse(
                 SlotOption.OPEN);
         Race race = race_buttons[player_slot].getMenu().getChosenItem().map(PulldownItem::getAttachment).orElse(
@@ -480,7 +481,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
             ratings[index].place(ready_mark, RIGHT_MID);
         }
         String player_str = i18n("player", Integer.toString(index + 1));
-        var color = AccessibilitySettings.from(engine.getSettings()).linear_player_colours[index];
+        var color = AccessibilitySettings.from(peer.getSettings()).linear_player_colours[index];
         Label label = new Label(player_str, font).setColor(color);
         group.addChild(label);
         label.place(pulldown_button, LEFT_MID);
@@ -491,13 +492,13 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
     @Override
     protected void doAdd() {
         super.doAdd();
-        engine.getNetwork().getChatHub().addListener(this);
+        peer.getNetwork().getChatHub().addListener(this);
     }
 
     @Override
     protected void doRemove() {
         super.doRemove();
-        engine.getNetwork().getChatHub().removeListener(this);
+        peer.getNetwork().getChatHub().removeListener(this);
     }
 
     @Override
@@ -510,7 +511,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
     @Override
     public void gameStarted(LoadCallback<GUIRoot, Screen> loadCallback) {
         setDisabled(true);
-        ProgressForm.setProgressForm(game_network.getClient().getNetwork(), engine.getScreenManager(), engine
+        ProgressForm.setProgressForm(game_network.getClient().getNetwork(), screenManager, peer
                 .getAudioManager(),
                 loadCallback);
     }
@@ -627,7 +628,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
             String chat = text.toString();
             if (!chat.isEmpty()) {
                 chat_line.clear();
-                var matchmakingClient = engine.getNetwork().getMatchmakingClient();
+                var matchmakingClient = peer.getNetwork().getMatchmakingClient();
                 if (!ChatCommand.filterCommand(gui_root.getInfoPrinter(), matchmakingClient, chat))
                     game_network.getClient().getServerInterface().chat(chat);
             }

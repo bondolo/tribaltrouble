@@ -32,7 +32,7 @@ public final class PlayerSlot implements Serializable {
     private int rating;
     private boolean ready;
     private @Nullable PlayerInfo player_info;
-    private TunnelAddress address;
+    private @Nullable TunnelAddress address;
     private int ai_difficulty = AI_NONE;
 
     public PlayerSlot(int slot) {
@@ -55,7 +55,7 @@ public final class PlayerSlot implements Serializable {
         this.ai_difficulty = ai_difficulty;
     }
 
-    public void setAddress(TunnelAddress address) {
+    public void setAddress(@Nullable TunnelAddress address) {
         this.address = address;
     }
 
@@ -71,7 +71,7 @@ public final class PlayerSlot implements Serializable {
         this.player_info = player_info;
     }
 
-    public Serializable getInfo() {
+    public @Nullable Serializable getInfo() {
         return player_info;
     }
 
@@ -79,7 +79,7 @@ public final class PlayerSlot implements Serializable {
         return ready;
     }
 
-    public TunnelAddress getAddress() {
+    public @Nullable TunnelAddress getAddress() {
         return address;
     }
 

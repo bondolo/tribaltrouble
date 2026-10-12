@@ -3,6 +3,7 @@ package com.oddlabs.tt.content.menu;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.camera.Camera;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MenuButton;
 import com.oddlabs.tt.content.campaign.CampaignForm;
@@ -13,14 +14,14 @@ import com.oddlabs.tt.content.tutorial.TutorialForm;
  * The game main menu
  */
 public final class MainMenu extends Menu {
-    public MainMenu(GUIRoot gui_root, Camera camera, Peer engine) {
-        super(gui_root, camera, engine);
+    public MainMenu(GUIRoot gui_root, Camera camera, Peer peer, ScreenManager screenManager) {
+        super(gui_root, camera, peer, screenManager);
         reload();
     }
 
     private void addGameTypeButtons() {
         MenuButton tutorial = new MenuButton(getGUIRoot(), Menu.i18n("tutorial"), COLOR_NORMAL, COLOR_ACTIVE);
-        tutorial.addMouseClickListener((_, _, _, _) -> setMenu(new TutorialForm(getGUIRoot(), engine)));
+        tutorial.addMouseClickListener((_, _, _, _) -> setMenu(new TutorialForm(MainMenu.this)));
         addChild(tutorial);
 
         MenuButton campaign_menu = new MenuButton(getGUIRoot(), Menu.i18n("campaign"), COLOR_NORMAL, COLOR_ACTIVE);
@@ -35,10 +36,10 @@ public final class MainMenu extends Menu {
             MenuButton multi_player = new MenuButton(getGUIRoot(), Menu.i18n("multiplayer"), COLOR_NORMAL,
                     COLOR_ACTIVE);
             multi_player.addMouseClickListener((_, _, _, _) -> {
-                if (engine.getNetwork().getMatchmakingClient().isConnected()) {
+                if (peer.getNetwork().getMatchmakingClient().isConnected()) {
                     new SelectGameMenu(MainMenu.this);
                 } else {
-                    engine.getNetwork().getMatchmakingClient().close();
+                    peer.getNetwork().getMatchmakingClient().close();
                     new LoginForm(MainMenu.this);
                 }
             });
@@ -54,7 +55,7 @@ public final class MainMenu extends Menu {
 
         addExitButton();
 
-        if (engine.getNetwork().getMatchmakingClient().isConnected()) {
+        if (peer.getNetwork().getMatchmakingClient().isConnected()) {
             new SelectGameMenu(this);
         }
     }

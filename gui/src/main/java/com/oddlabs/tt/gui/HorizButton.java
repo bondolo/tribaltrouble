@@ -3,8 +3,6 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
-import java.util.Objects;
-
 /**
  * Push button rendered with horizontal cap and fill quads.
  */
@@ -13,7 +11,7 @@ public class HorizButton extends ButtonObject {
 
     public HorizButton(GUIRoot guiRoot, String caption, int width) {
         super(guiRoot.getSkin().getButtonFont());
-        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.skin = guiRoot.getSkin();
         setDim(width, skin.getHorizButtonPressed().getHeight());
         Label label = new Label(caption, getFont());
         label.setPos((width - label.getWidth()) / 2,

@@ -1,15 +1,16 @@
 package com.oddlabs.tt.net;
 
 
+import org.jspecify.annotations.Nullable;
+
 /** Network pairing holding a server and client instance. */
 public final class GameNetwork<C, R> {
-    private final Server server;
+    private final @Nullable Server server;
     private final Client<C, R> client;
 
-    public GameNetwork(Server server, Client<C, R> client) {
+    public GameNetwork(@Nullable Server server, Client<C, R> client) {
         this.server = server;
         this.client = client;
-        assert client != null;
     }
 
     public void closeServer() {

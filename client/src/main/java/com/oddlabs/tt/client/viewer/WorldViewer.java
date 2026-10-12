@@ -1,6 +1,5 @@
 package com.oddlabs.tt.client.viewer;
 
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
 
 import com.oddlabs.tt.audio.AudioManager;
@@ -18,6 +17,7 @@ import com.oddlabs.tt.client.render.FullSceneRenderer;
 import com.oddlabs.tt.client.render.Picker;
 import com.oddlabs.tt.client.resource.RacesAssetsLoader;
 import com.oddlabs.tt.client.Peer;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.EmojiType;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
@@ -78,7 +78,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
     private static final Color.Linear PRIVATE_MESSAGE_COLOR = new Color.Standard(0xFF_33_66_FF).linear();
     private static final Color.Linear TEAM_MESSAGE_COLOR = new Color.Standard(0xFF_4C_7F_FF).linear();
 
-    private final Peer engine;
+    private final Peer peer;
+    private final ScreenManager screenManager;
     private final GameCamera camera;
     private final GUIIcons icons;
     private final ActionButtonPanel panel;
@@ -87,7 +88,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
     private final GUIRoot gui_root;
     private final NotificationManager notification_manager;
     private final InGameInfo ingame_info;
-    private final NetworkSelector network;
     private final Selection selection;
     private final World world;
     private final Picker picker;
@@ -97,22 +97,22 @@ public final class WorldViewer implements Animated, AutoCloseable {
     private final WorldParameters world_params;
     private final AnimationManager animation_manager_local;
     private final Cheat cheat;
-    private final AudioManager audioManager;
     private final ChatListener chat_listener;
     private final ChatSender chat_sender;
     private final InGameChatHistory in_game_chat_history;
 
     public WorldViewer(final GUIRoot gui_root,
-            Peer engine,
+            Peer peer,
             WorldParameters world_params, InGameInfo ingame_info, WorldGenerator<GeneratedLandscapeData> generator,
             PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot,
-            SessionID session_id) {
-        this.engine = engine;
+            SessionID session_id, ScreenManager screenManager) {
+        this.peer = peer;
+        this.screenManager = screenManager;
         this.world_params = world_params;
         this.ingame_info = ingame_info;
-        this.network = engine.getNetwork().getSelector();
+        var network = peer.getNetwork().getSelector();
         this.cheat = new Cheat(!ingame_info.isMultiplayer());
-        this.audioManager = engine.getAudioManager();
+        var audioManager = peer.getAudioManager();
         this.animation_manager_local = new AnimationManager();
         this.icons = new GUIIcons();
         final CameraState camera_state = new CameraState();
@@ -134,21 +134,21 @@ public final class WorldViewer implements Animated, AutoCloseable {
         camera_state.setFog(world_info.fog_info());
         this.world = ProgressListener.subTask(0.10f,
                 () -> World.newWorld(races_resources, landscape_geometry, NotificationListener.EMPTY, world_params,
-                        world_info.landscapeData(), player_infos, AccessibilitySettings.from(engine
+                        world_info.landscapeData(), player_infos, AccessibilitySettings.from(peer
                                 .getSettings()).linear_player_colours,
-                        RenderConfig.INSERT_PLANTS[GraphicsSettings.from(engine.getSettings()).graphic_detail]));
+                        RenderConfig.INSERT_PLANTS[GraphicsSettings.from(peer.getSettings()).graphic_detail]));
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);
-        engine.setPathfindCountSupplier(world.getUnitGrid()::getAndResetPathfindCount);
+        peer.setPathfindCountSupplier(world.getUnitGrid()::getAndResetPathfindCount);
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
         this.picker = new Picker(animation_manager_local, local_player, gui_root, render_queues, landscape_renderer,
                 selection, audioManager, icons);
         this.renderer = new FullSceneRenderer(cheat, local_player, render_queues,
                 world_info, landscape_renderer, picker,
-                selection, audioManager, engine.getSettings(),
+                selection, audioManager, peer.getSettings(),
                 gui_root.getWidth(), gui_root.getHeight());
         WorldNotificationHandler notificationHandler = new WorldNotificationHandler(
-                this, engine, gui_root, notification_manager, animation_manager_local,
+                this, peer, gui_root, notification_manager, animation_manager_local,
                 audioManager, ingame_info.isMultiplayer(), renderer, landscape_renderer);
         world.setNotificationListener(notificationHandler);
         world.getDistributableTable().getDistributables().stream()
@@ -167,16 +167,16 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 }
             }
         };
-        engine.getNetwork().getChatHub().addListener(chat_listener);
+        peer.getNetwork().getChatHub().addListener(chat_listener);
         this.peerhub = new PeerHub(animation_manager_local, ingame_info.isMultiplayer(), ingame_info.isRated(),
                 local_player, player_slots, network, notification_manager,
-                engine.getNetwork().getMatchmakingClient(), engine.getNetwork().getChatHub(),
+                peer.getNetwork().getMatchmakingClient(), peer.getNetwork().getChatHub(),
                 world.getDistributableTable(), session_id,
                 new ViewerStallHandler(this));
         this.peerhub.setIgnoreFilter(ChatCommand::isIgnoring);
         this.in_game_chat_history = new InGameChatHistory();
-        engine.getNetwork().getChatHub().addListener(in_game_chat_history);
-        var matchmakingClient = engine.getNetwork().getMatchmakingClient();
+        peer.getNetwork().getChatHub().addListener(in_game_chat_history);
+        var matchmakingClient = peer.getNetwork().getMatchmakingClient();
         Map<String, ChatMethod> commands = Map.of("iamacheater", (_, _, _) -> cheat.enable());
         this.chat_sender = new InGameChatSender(gui_root.getInfoPrinter(), matchmakingClient, commands, peerhub);
         this.camera = new GameCamera(this, camera_state);
@@ -196,8 +196,12 @@ public final class WorldViewer implements Animated, AutoCloseable {
         return in_game_chat_history;
     }
 
-    public Peer getEngine() {
-        return engine;
+    public Peer getPeer() {
+        return peer;
+    }
+
+    public ScreenManager getScreenManager() {
+        return screenManager;
     }
 
     public GUIIcons getIcons() {
@@ -205,7 +209,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
     }
 
     public AudioManager getAudioManager() {
-        return audioManager;
+        return peer.getAudioManager();
     }
 
     public AnimationManager getAnimationManagerLocal() {
@@ -220,9 +224,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
     @Override
     public void close() {
         world.setNotificationListener(NotificationListener.EMPTY);
-        engine.setPathfindCountSupplier(null);
-        engine.getNetwork().getChatHub().removeListener(in_game_chat_history);
-        engine.getNetwork().getChatHub().removeListener(chat_listener);
+        peer.setPathfindCountSupplier(null);
+        peer.getNetwork().getChatHub().removeListener(in_game_chat_history);
+        peer.getNetwork().getChatHub().removeListener(chat_listener);
         gui_root.getAnimationManager().removeAnimation(this);
         peerhub.close();
         ingame_info.close(this);
@@ -337,10 +341,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     public World getWorld() {
         return world;
-    }
-
-    public NetworkSelector getNetwork() {
-        return network;
     }
 
     public Selection getSelection() {

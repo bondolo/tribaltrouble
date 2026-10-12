@@ -73,9 +73,9 @@ final class CampaignInGameInfo implements InGameInfo, InGameMenuHook {
     @Override
     public void close(WorldViewer viewer) {
         if (campaign.getState().getIslandState(0) != CampaignState.ISLAND_COMPLETED) {
-            Menu.startMenu(viewer.getEngine(), viewer.getGUIRoot().getGUI());
+            Menu.startMenu(viewer.getPeer(), viewer.getScreenManager());
         } else {
-            campaign.pushDelegate(viewer.getGUIRoot().getGUI());
+            campaign.pushDelegate();
         }
     }
 

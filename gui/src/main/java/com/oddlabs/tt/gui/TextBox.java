@@ -7,8 +7,6 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.util.Color;
 
-import java.util.Objects;
-
 /**
  * Multi-line scrollable text display and container.
  */
@@ -22,7 +20,7 @@ public class TextBox extends TextField implements Scrollable, Clipped {
 
     public TextBox(GUIRoot guiRoot, int width, int height, Font font, int max_codepoints) {
         super(font, max_codepoints);
-        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.skin = guiRoot.getSkin();
         this.editBox = skin.getEditBox();
         setDim(width, height);
         setCanFocus(true);

@@ -15,6 +15,7 @@ import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.event.Deterministic;
 import com.oddlabs.util.DeterministicSerializer;
 import com.oddlabs.util.DeterministicSerializerLoopbackInterface;
 import org.jspecify.annotations.Nullable;
@@ -55,10 +56,12 @@ final class LoadCampaignBox extends GUIObject implements DeterministicSerializer
 
     private final MultiColumnComboBox<CampaignState> list_box;
     private final GUIRoot gui_root;
-    private final Peer engine;
+    private final Deterministic deterministic;
+    private final Path dataDir;
 
-    LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener, Peer engine) {
-        this.engine = engine;
+    LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener, Deterministic deterministic, Path dataDir) {
+        this.deterministic = deterministic;
+        this.dataDir = dataDir;
         this.gui_root = gui_root;
         list_box = new MultiColumnComboBox<>(
                 gui_root,
@@ -75,24 +78,37 @@ final class LoadCampaignBox extends GUIObject implements DeterministicSerializer
         refresh();
     }
 
-    static <T> void saveSavegames(
-            Peer engine, CampaignState[] states,
+    LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener, Peer peer) {
+        this(gui_root, listener, peer.getEventQueue().getDeterministic(), peer.getGamePaths().dataDir());
+    }
+
+    static <T> void saveSavegames(Deterministic deterministic, Path dataDir, CampaignState[] states,
             DeterministicSerializerLoopbackInterface<T> callback) {
-        DeterministicSerializer.save(engine.getEventQueue().getDeterministic(), states,
-                getSaveSavegamesFile(engine), callback);
+        DeterministicSerializer.save(deterministic, states,
+                getSaveSavegamesFile(dataDir), callback);
     }
 
-    private static Path getSaveSavegamesFile(Peer engine) {
-        return engine.getGamePaths().dataDir().resolve(SAVEGAMES_FILE_NAME);
+    static <T> void saveSavegames(Peer peer, CampaignState[] states,
+            DeterministicSerializerLoopbackInterface<T> callback) {
+        saveSavegames(peer.getEventQueue().getDeterministic(), peer.getGamePaths().dataDir(), states, callback);
     }
 
-    static <T> void loadSavegames(Peer engine, DeterministicSerializerLoopbackInterface<T> callback) {
-        DeterministicSerializer.load(engine.getEventQueue().getDeterministic(), getLoadSavegamesFile(engine),
+    private static Path getSaveSavegamesFile(Path dataDir) {
+        return dataDir.resolve(SAVEGAMES_FILE_NAME);
+    }
+
+    static <T> void loadSavegames(Deterministic deterministic, Path dataDir, DeterministicSerializerLoopbackInterface<
+            T> callback) {
+        DeterministicSerializer.load(deterministic, getLoadSavegamesFile(dataDir),
                 callback, CLASS_ALIASES);
     }
 
-    private static Path getLoadSavegamesFile(Peer engine) {
-        Path file = getSaveSavegamesFile(engine);
+    static <T> void loadSavegames(Peer peer, DeterministicSerializerLoopbackInterface<T> callback) {
+        loadSavegames(peer.getEventQueue().getDeterministic(), peer.getGamePaths().dataDir(), callback);
+    }
+
+    private static Path getLoadSavegamesFile(Path dataDir) {
+        Path file = getSaveSavegamesFile(dataDir);
         return !Files.isReadable(file) ? Utils.getInstallDir().resolve(SAVEGAMES_FILE_NAME) : file;
     }
 
@@ -107,7 +123,7 @@ final class LoadCampaignBox extends GUIObject implements DeterministicSerializer
 
     public void refresh() {
         list_box.clear();
-        LoadCampaignBox.loadSavegames(engine, this);
+        LoadCampaignBox.loadSavegames(deterministic, dataDir, this);
     }
 
     private void fillSlots(CampaignState[] campaign_states) {

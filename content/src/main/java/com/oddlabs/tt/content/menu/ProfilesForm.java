@@ -114,7 +114,7 @@ public final class ProfilesForm extends Form {
 
     @Override
     protected void doCancel() {
-        main_menu.getEngine().getNetwork().getMatchmakingClient().close();
+        main_menu.getPeer().getNetwork().getMatchmakingClient().close();
     }
 
     public void receivedProfiles(Profile[] profiles, String last_nick) {
@@ -137,7 +137,7 @@ public final class ProfilesForm extends Form {
     }
 
     private void join(String nick) {
-        main_menu.getEngine().getNetwork().getMatchmakingClient().setProfile(nick);
+        main_menu.getPeer().getNetwork().getMatchmakingClient().setProfile(nick);
         main_menu.setMenuCentered(game_menu);
     }
 
@@ -150,8 +150,8 @@ public final class ProfilesForm extends Form {
             } else {
                 String confirm_str = i18n("confirm_delete", nick);
                 confirm_delete_form = new QuestionForm(gui_root, confirm_str, (_, _, _, _) -> {
-                    main_menu.getEngine().getNetwork().getMatchmakingClient().deleteProfile(nick);
-                    main_menu.getEngine().getNetwork().getMatchmakingClient().requestProfiles();
+                    main_menu.getPeer().getNetwork().getMatchmakingClient().deleteProfile(nick);
+                    main_menu.getPeer().getNetwork().getMatchmakingClient().requestProfiles();
                 });
                 gui_root.addModalForm(confirm_delete_form);
             }

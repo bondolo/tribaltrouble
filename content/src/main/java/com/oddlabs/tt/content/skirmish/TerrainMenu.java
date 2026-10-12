@@ -36,7 +36,6 @@ import com.oddlabs.tt.gui.PulldownMenu;
 import com.oddlabs.tt.gui.Slider;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.gui.event.ValueListener;
-import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.ServerMessageBundler;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
@@ -51,6 +50,7 @@ import org.jspecify.annotations.Nullable;
 import java.math.BigInteger;
 import java.util.ResourceBundle;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.IntStream;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_RIGHT;
@@ -107,7 +107,7 @@ public final class TerrainMenu extends Group {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final Peer engine;
+    private final Peer peer;
     private final AudioManager audioManager;
     private final @Nullable Menu main_menu;
     private final @Nullable TerrainMenuListener owner;
@@ -133,14 +133,18 @@ public final class TerrainMenu extends Group {
     private final NetworkSelector network;
     private int seed;
 
+    public TerrainMenu(Menu main_menu, boolean multiplayer, @Nullable TerrainMenuListener owner) {
+        this(main_menu.getGUIRoot(), main_menu.getPeer(), main_menu, multiplayer, owner);
+    }
+
     @SuppressWarnings("unchecked")
-    public TerrainMenu(GUIRoot gui_root, Peer engine,
+    public TerrainMenu(GUIRoot gui_root, Peer peer,
             @Nullable Menu main_menu, boolean multiplayer, @Nullable TerrainMenuListener owner) {
         super(gui_root);
-        this.engine = engine;
-        this.network = engine.getNetwork().getSelector();
+        this.peer = peer;
+        this.network = peer.getNetwork().getSelector();
         this.gui_root = gui_root;
-        this.audioManager = engine.getAudioManager();
+        this.audioManager = peer.getAudioManager();
         this.main_menu = main_menu;
         this.multiplayer = multiplayer;
         this.owner = owner;
@@ -160,7 +164,7 @@ public final class TerrainMenu extends Group {
         editline_name = new EditLine(gui_root, 180, Game.MAX_LENGTH);
         if (multiplayer) {
             standard.addChild(label_name);
-            var matchmakingClient = engine.getNetwork().getMatchmakingClient();
+            var matchmakingClient = peer.getNetwork().getMatchmakingClient();
             var profile = matchmakingClient.getProfile();
             String nick = profile != null ? profile.getNick() : "Player";
             String default_name = i18n("default_name", nick);
@@ -171,7 +175,7 @@ public final class TerrainMenu extends Group {
         cb_rated = new CheckBox(gui_root, false, i18n("rated_game"), rated_tip);
         if (multiplayer) {
             standard.addChild(cb_rated);
-            var matchmakingClient = engine.getNetwork().getMatchmakingClient();
+            var matchmakingClient = peer.getNetwork().getMatchmakingClient();
             var profile = matchmakingClient.getProfile();
             cb_rated.setDisabled(profile == null || profile.getWins() < GameSession.MIN_WINS_FOR_RANKING);
         }
@@ -351,7 +355,7 @@ public final class TerrainMenu extends Group {
             if (i == 0) {
                 String player_str = i18n("player", Integer.toString(1));
                 labels_players[0] = new Label(player_str, font)
-                        .setColor(AccessibilitySettings.from(engine.getSettings()).linear_player_colours[0]);
+                        .setColor(AccessibilitySettings.from(peer.getSettings()).linear_player_colours[0]);
                 group_race_team.addChild(labels_players[0]);
                 labels_players[0].place();
                 difficulty_pulldown_buttons[0].place(labels_players[0], RIGHT_MID);
@@ -360,7 +364,7 @@ public final class TerrainMenu extends Group {
             } else {
                 String player_str = i18n("player", Integer.toString(i + 1));
                 labels_players[i] = new Label(player_str, font)
-                        .setColor(AccessibilitySettings.from(engine.getSettings()).linear_player_colours[i]);
+                        .setColor(AccessibilitySettings.from(peer.getSettings()).linear_player_colours[i]);
                 group_race_team.addChild(labels_players[i]);
                 labels_players[i].place(labels_players[i - 1], BOTTOM_RIGHT);
                 difficulty_pulldown_buttons[i].place(labels_players[i], RIGHT_MID);
@@ -633,7 +637,7 @@ public final class TerrainMenu extends Group {
             gui_root.addModalForm(new MessageForm(gui_root, min_name));
             return null;
         }
-        float random_start_pos = engine.getEventQueue().getTime() % 1f;
+        float random_start_pos = peer.getEventQueue().getTime() % 1f;
         int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
         byte gamespeed = pm_gamespeed.getChosenItem().map(PulldownItem::getAttachment).map(Gamespeed::getValue)
                 .map(Integer::byteValue).orElse((byte) Game.GAMESPEED_NORMAL);
@@ -694,21 +698,16 @@ public final class TerrainMenu extends Group {
                 ? multiplayer_setup.getWorldParameters() : skirmish_setup.getWorldParameters();
         IslandConfig islandConfig = multiplayer
                 ? multiplayer_setup.getIslandConfig() : skirmish_setup.getIslandConfig();
-        GameNetwork game_network = Menu.startNewGame(engine,
+        var game_network = Menu.startNewGame(peer,
                 gui_root,
+                main_menu.getScreenManager(),
                 menu,
                 parameters,
                 ingame_info,
                 new Menu.DefaultWorldInitAction(),
                 game,
                 islandConfig,
-                new String[]{ai_string + "0",
-                        ai_string + "1",
-                        ai_string + "2",
-                        ai_string + "3",
-                        ai_string + "4",
-                        ai_string + "5"
-                });
+                IntStream.rangeClosed(0, 5).mapToObj(i -> ai_string + i).toArray(String[]::new));
         if (!multiplayer) {
             skirmish_setup.startSkirmishServer(game_network);
             IO.println("Start server");

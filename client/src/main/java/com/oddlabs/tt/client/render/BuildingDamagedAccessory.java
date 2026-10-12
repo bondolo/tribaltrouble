@@ -216,11 +216,6 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
     }
 
     @Override
-    public @Nullable SpriteKey getSpriteRenderer() {
-        return null;
-    }
-
-    @Override
     public LinearEmitter getEmitter() {
         return emitter;
     }

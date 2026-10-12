@@ -16,7 +16,7 @@ public sealed interface Accessory extends AutoCloseable permits StaticAccessory,
      * @return The sprite renderer.
      */
     @Nullable
-    SpriteKey getSpriteRenderer();
+    default SpriteKey getSpriteRenderer() { return null; }
 
     boolean isVisible(Model parent, CameraState camera);
 

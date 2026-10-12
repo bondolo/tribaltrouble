@@ -1,5 +1,7 @@
 package com.oddlabs.tt.content.form;
 
+import com.oddlabs.tt.base.global.Settings;
+import com.oddlabs.tt.client.DisplayModeController;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.settings.GraphicsSettings;
@@ -37,13 +39,18 @@ import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
  */
 public final class GraphicsPanel extends Panel {
     private final Label label_pct;
-    private final Peer engine;
+    private final Window window;
+    private final Settings settings;
+    private final DisplayModeController displayController;
     private final GUIRoot gui_root;
 
-    public GraphicsPanel(GUIRoot gui_root, Form options, Peer engine) {
+    public GraphicsPanel(GUIRoot gui_root, Form options, Window window, Settings settings,
+            DisplayModeController displayController) {
         super(gui_root, AbstractOptionsMenu.i18n("graphics_caption"));
         this.gui_root = gui_root;
-        this.engine = engine;
+        this.window = window;
+        this.settings = settings;
+        this.displayController = displayController;
         var labelFont = getSkin().getEditFont();
 
         // Display mode
@@ -56,9 +63,9 @@ public final class GraphicsPanel extends Panel {
         MultiColumnComboBox<SerializableDisplayMode> mode_list_box = new MultiColumnComboBox<>(gui_root, 200,
                 false, new ColumnInfo("", 150));
 
-        WindowSettings windowSettings = WindowSettings.from(engine.getSettings());
-        GUISettings guiSettings = GUISettings.from(engine.getSettings());
-        GraphicsSettings graphicsSettings = GraphicsSettings.from(engine.getSettings());
+        WindowSettings windowSettings = WindowSettings.from(settings);
+        GUISettings guiSettings = GUISettings.from(settings);
+        GraphicsSettings graphicsSettings = GraphicsSettings.from(settings);
 
         // Fullscreen
         Group group_fullscreen = new Group(gui_root);
@@ -71,7 +78,7 @@ public final class GraphicsPanel extends Panel {
                     gui_root,
                     switch_now -> {
                         if (switch_now) {
-                            engine.toggleFullscreen();
+                            displayController.toggleFullscreen();
                         } else {
                             windowSettings.fullscreen = marked;
                         }
@@ -102,7 +109,6 @@ public final class GraphicsPanel extends Panel {
         slider_ui_scale.addValueListener(value -> {
             guiSettings.ui_scale = value / 1000f;
             updateScaleLabel();
-            var window = engine.getWindow();
             float currentScale = gui_root.getGlobalScale();
             float targetScale = GUIRoot.calculateEffectiveScale(window.getWidth(), window.getHeight(),
                     guiSettings.ui_scale);
@@ -113,7 +119,6 @@ public final class GraphicsPanel extends Panel {
         });
 
         slider_ui_scale.addReleaseListener(() -> {
-            var window = engine.getWindow();
             gui_root.displayChanged(window.getWidth(), window.getHeight());
         });
 
@@ -154,20 +159,19 @@ public final class GraphicsPanel extends Panel {
         mode_list_box.addRowListener(new RowListener<>() {
             @Override
             public void rowDoubleClicked(SerializableDisplayMode mode) {
-                Window window = engine.getWindow();
                 boolean currentIsExclusive = window.isExclusiveFullscreen();
                 boolean targetFullscreen = windowSettings.fullscreen;
                 boolean targetIsExclusive = targetFullscreen && window.isExclusiveFullscreenMode(mode);
 
                 if (currentIsExclusive || targetIsExclusive) {
                     gui_root.addModalForm(new DisplayChangeForm(gui_root, switch_now -> {
-                        engine.switchMode(mode, switch_now);
+                        displayController.switchMode(mode, switch_now);
                         if (switch_now) {
                             gui_root.displayChanged(mode.getWidth(), mode.getHeight());
                         }
                     }));
                 } else {
-                    engine.switchMode(mode, true);
+                    displayController.switchMode(mode, true);
                     gui_root.displayChanged(mode.getWidth(), mode.getHeight());
                 }
             }
@@ -186,10 +190,13 @@ public final class GraphicsPanel extends Panel {
         compileCanvas();
     }
 
+    public GraphicsPanel(GUIRoot gui_root, Form options, Peer peer) {
+        this(gui_root, options, peer.getWindow(), peer.getSettings(), peer);
+    }
+
     private void refreshResolutionList(boolean fullscreen, MultiColumnComboBox<
             SerializableDisplayMode> list_box) {
-        var window = engine.getWindow();
-        var currentMode = engine.getCurrentDisplayMode();
+        var currentMode = window.getDisplayMode();
         List<SerializableDisplayMode> modes = fullscreen ? window.getFullscreenDisplayModes() : window
                 .getWindowedDisplayModes();
 
@@ -214,9 +221,8 @@ public final class GraphicsPanel extends Panel {
     }
 
     public void updateScaleLabel() {
-        var window = engine.getWindow();
         float scale = GUIRoot.calculateEffectiveScale(window.getWidth(), window.getHeight(),
-                GUISettings.from(engine.getSettings()).ui_scale);
+                GUISettings.from(settings).ui_scale);
         label_pct.setText(String.format("%d%%", (int) (scale * 100)));
     }
 }

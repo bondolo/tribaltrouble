@@ -22,7 +22,7 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
 
 /** Form indicating matchmaking connection progress with a cancel option. */
 public final class MatchmakingConnectingForm extends Form implements MatchmakingListener {
-    private final Form parent_form;
+    private final @Nullable Form parent_form;
     private final Menu main_menu;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(MatchmakingConnectingForm.class.getName());
 
@@ -38,7 +38,7 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
         this.parent_form = parent_form;
         this.main_menu = main_menu;
         this.gui_root = main_menu.getGUIRoot();
-        NetworkSelector network = main_menu.getEngine().getNetwork().getSelector();
+        NetworkSelector network = main_menu.getPeer().getNetwork().getSelector();
         Label info_label = new Label(i18n("connecting"), getSkin().getHeadlineFont());
         addChild(info_label);
         HorizButton cancel_button = new CancelButton(gui_root, 120);
@@ -52,8 +52,8 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
         // headline
         compileCanvas();
         centerPos();
-        main_menu.getEngine().getNetwork().setMatchmakingListener(this);
-        main_menu.getEngine().getNetwork().getMatchmakingClient().login(network, login, login_details);
+        main_menu.getPeer().getNetwork().setMatchmakingListener(this);
+        main_menu.getPeer().getNetwork().getMatchmakingClient().login(network, login, login_details);
     }
 
     @Override
@@ -84,7 +84,7 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
     @Override
     public void doRemove() {
         super.doRemove();
-        main_menu.getEngine().getNetwork().setMatchmakingListener(null);
+        main_menu.getPeer().getNetwork().setMatchmakingListener(null);
     }
 
     @Override
@@ -121,6 +121,6 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
 
     @Override
     protected void doCancel() {
-        main_menu.getEngine().getNetwork().getMatchmakingClient().close();
+        main_menu.getPeer().getNetwork().getMatchmakingClient().close();
     }
 }

@@ -5,8 +5,6 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.util.Color;
 
-import java.util.Objects;
-
 /**
  * Interactive tab header button representing a panel within a panel group.
  */
@@ -18,7 +16,7 @@ public final class PanelTab extends GUIObject {
     private final Label label;
 
     PanelTab(GUIRoot guiRoot, CharSequence caption) {
-        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.skin = guiRoot.getSkin();
         this.panelData = skin.getPanelData();
         Font font = skin.getButtonFont();
         label = new Label(caption, font);

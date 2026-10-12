@@ -179,11 +179,6 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
     }
 
     @Override
-    public @Nullable SpriteKey getSpriteRenderer() {
-        return null;
-    }
-
-    @Override
     public LinearEmitter getEmitter() {
         return emitter;
     }

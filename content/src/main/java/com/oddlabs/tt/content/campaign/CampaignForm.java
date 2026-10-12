@@ -82,7 +82,8 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
                 button_load.setDisabled(false);
             }
         };
-        load_campaign_box = new LoadCampaignBox(gui_root, listListener, main_menu.getEngine());
+        load_campaign_box = new LoadCampaignBox(gui_root, listListener, main_menu.getPeer().getEventQueue()
+                .getDeterministic(), main_menu.getPeer().getGamePaths().dataDir());
 
         // Add listener after load_campaign_box is initialized
         button_load.addMouseClickListener((_, _, _, _) -> {
@@ -122,11 +123,11 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
 
     public void load(CampaignState campaign_state) {
         Campaign campaign = campaign_state.getRace() == Race.VIKINGS
-                ? new VikingCampaign(gui_root, campaign_state, main_menu.getEngine())
-                : new NativeCampaign(gui_root, campaign_state, main_menu.getEngine());
+                ? new VikingCampaign(campaign_state, main_menu)
+                : new NativeCampaign(campaign_state, main_menu);
         setDisabled(true);
         if (campaign_state.getIslandState(0) == CampaignState.ISLAND_COMPLETED) {
-            campaign.pushDelegate(gui_root.getGUI());
+            campaign.pushDelegate();
         } else
             campaign.startIsland(gui_root, 0);
     }
@@ -149,7 +150,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
                     new_states[i - offset] = campaign_states[i];
                 }
             }
-            LoadCampaignBox.saveSavegames(main_menu.getEngine(), new_states, this);
+            LoadCampaignBox.saveSavegames(main_menu.getPeer(), new_states, this);
         }
     }
 
@@ -169,7 +170,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
         if (state != null) {
             String confirm_str = i18n("confirm_delete", state.getName());
             gui_root.addModalForm(new QuestionForm(gui_root, confirm_str, (_, _, _, _) -> LoadCampaignBox.loadSavegames(
-                    main_menu.getEngine(), CampaignForm.this)));
+                    main_menu.getPeer(), CampaignForm.this)));
         }
     }
 }

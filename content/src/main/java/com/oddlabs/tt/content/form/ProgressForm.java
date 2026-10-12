@@ -111,7 +111,8 @@ public final class ProgressForm {
         if (audioManager != null) {
             audioManager.stopSources();
         }
-        var gui_root = (mode == Mode.STARTUP) ? screenManager.getGUIRoot() : screenManager.newFade(load_task);
+        var gui_root = (mode == Mode.STARTUP) ? screenManager.getScreen().guiRoot() : screenManager.fadeToDefault(
+                load_task);
         CameraDelegate<NullCamera> delegate = new NullDelegate(gui_root, false);
         gui_root.pushDelegate(delegate);
 
@@ -150,7 +151,7 @@ public final class ProgressForm {
 
         // Force an initial render to show the progress screen immediately
         this.lastUpdateTime = System.nanoTime();
-        screenManager.getEngine().updateProgress();
+        screenManager.updateProgress();
     }
 
     private Runnable getLoadTask() {
@@ -166,12 +167,12 @@ public final class ProgressForm {
         if (progress_bar != null) {
             progress_bar.setProgress(1f);
         }
-        screenManager.getEngine().updateProgress();
-        screenManager.newFade(() -> {
+        screenManager.updateProgress();
+        screenManager.fadeTo(screen, () -> {
             if (audioManager != null) {
                 audioManager.startSources();
             }
-        }, screen);
+        });
     }
 
     private final class FormProgressListener implements ProgressListener {
@@ -185,7 +186,7 @@ public final class ProgressForm {
             long now = System.nanoTime();
             if (now - lastUpdateTime >= THROTTLE_INTERVAL_NANOS) {
                 lastUpdateTime = now;
-                screenManager.getEngine().updateProgress();
+                screenManager.updateProgress();
             }
         }
 

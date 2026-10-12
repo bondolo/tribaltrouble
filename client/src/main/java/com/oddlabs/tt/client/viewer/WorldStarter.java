@@ -7,6 +7,7 @@ import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.screen.DefaultScreen;
 import com.oddlabs.tt.client.screen.Screen;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.procedural.landscape.GeneratedLandscapeData;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
@@ -24,7 +25,8 @@ import java.util.List;
  * and sets up the active gameplay session once loading is complete.
  */
 public final class WorldStarter implements LoadCallback<GUIRoot, Screen> {
-    private final Peer engine;
+    private final Peer peer;
+    private final ScreenManager screenManager;
     private final UnitInfo[] unit_infos;
     private final PlayerSlot[] player_slots;
     private final short player_slot;
@@ -37,8 +39,9 @@ public final class WorldStarter implements LoadCallback<GUIRoot, Screen> {
     public WorldStarter(int session_id, WorldGenerator<GeneratedLandscapeData> generator,
             WorldParameters world_params,
             PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot, InGameInfo ingame_info,
-            @Nullable WorldInitAction initial_action, Peer engine) {
-        this.engine = engine;
+            @Nullable WorldInitAction initial_action, Peer peer, ScreenManager screenManager) {
+        this.peer = peer;
+        this.screenManager = screenManager;
         this.initial_action = initial_action;
         this.session_id = session_id;
         this.world_params = world_params;
@@ -51,7 +54,7 @@ public final class WorldStarter implements LoadCallback<GUIRoot, Screen> {
 
     @Override
     public Screen load(GUIRoot gui_root) {
-        engine.getFramePacer().freezeTime();
+        peer.getFramePacer().freezeTime();
         List<PlayerSlot> player_slot_list = new ArrayList<>();
         List<UnitInfo> unit_info_list = new ArrayList<>();
         short corrected_player_slot = -1;
@@ -66,14 +69,14 @@ public final class WorldStarter implements LoadCallback<GUIRoot, Screen> {
         assert corrected_player_slot != -1;
         PlayerSlot[] player_slots = player_slot_list.toArray(new PlayerSlot[0]);
         UnitInfo[] corrected_unit_infos = unit_info_list.toArray(new UnitInfo[0]);
-        WorldViewer viewer = new WorldViewer(gui_root, engine, world_params, ingame_info, generator, player_slots,
-                corrected_unit_infos, corrected_player_slot, new SessionID(session_id));
+        WorldViewer viewer = new WorldViewer(gui_root, peer, world_params, ingame_info, generator, player_slots,
+                corrected_unit_infos, corrected_player_slot, new SessionID(session_id), screenManager);
         if (initial_action != null)
             initial_action.run(viewer);
         Participant[] participants = getParticipants(viewer, player_slots);
-        if (engine.getNetwork().getMatchmakingClient().isConnected()) {
+        if (peer.getNetwork().getMatchmakingClient().isConnected()) {
             GameSession game_session = new GameSession(session_id, participants, ingame_info.isRated());
-            engine.getNetwork().getMatchmakingClient().getInterface().gameStartedNotify(game_session);
+            peer.getNetwork().getMatchmakingClient().getInterface().gameStartedNotify(game_session);
         }
         System.out.println("PeerHub created (session_id = " + session_id + ") Player list:");
         return new DefaultScreen(gui_root, viewer.getRenderer());

@@ -15,6 +15,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Objects;
 
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -38,17 +39,17 @@ public final class Client<C, R> implements ARMIEventBroker, GameClientInterface,
     private final PlayerSlotHandler slot_handler;
     private final @Nullable ChatHub chat_hub;
     private final NetworkSelector network;
-    private final Runnable cleanup_action;
+    private final @Nullable Runnable cleanup_action;
     private int state = CONNECTING;
 
     private @Nullable WorldGenerator<?> generator = null;
 
     private PlayerSlot[] player_slots = new PlayerSlot[0];
     private short player_slot = -1;
-    private ConfigurationListener<C, R> configuration_listener;
+    private @Nullable ConfigurationListener<C, R> configuration_listener;
 
-    public Client(Runnable cleanup_action, NetworkSelector network,
-            @Nullable MatchmakingClient matchmaking_client, @Nullable ChatHub chat_hub, int host_id,
+    public Client(@Nullable Runnable cleanup_action, NetworkSelector network,
+            MatchmakingClient matchmaking_client, @Nullable ChatHub chat_hub, int host_id,
             @Nullable LoadCallbackFactory<C, R> starter_factory, PlayerSlotHandler slot_handler) {
         this.slot_handler = slot_handler;
         this.cleanup_action = cleanup_action;
@@ -68,7 +69,7 @@ public final class Client<C, R> implements ARMIEventBroker, GameClientInterface,
         }
     }
 
-    private ConfigurationListener<C, R> getConfigurationListener() {
+    private @Nullable ConfigurationListener<C, R> getConfigurationListener() {
         return configuration_listener;
     }
 
@@ -128,7 +129,8 @@ public final class Client<C, R> implements ARMIEventBroker, GameClientInterface,
             return;
         close();
         LoadCallback<C, R> starter = starter_factory != null
-                ? starter_factory.createCallback(session_id, generator, player_slots, unit_infos, player_slot)
+                ? starter_factory.createCallback(session_id, Objects.requireNonNull(generator), player_slots,
+                        unit_infos, player_slot)
                 : null;
         if (starter != null)
             getConfigurationListener().gameStarted(starter);

@@ -3,8 +3,6 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 
-import java.util.Objects;
-
 /**
  * Status indicator diode light.
  */
@@ -13,7 +11,7 @@ public final class Diode extends GUIObject {
     private boolean lit;
 
     public Diode(GUIRoot guiRoot) {
-        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.skin = guiRoot.getSkin();
         var normal = skin.getDiode().get(ModeIconQuads.Mode.NORMAL);
         setDim(normal.getWidth(), normal.getHeight());
         lit = false;

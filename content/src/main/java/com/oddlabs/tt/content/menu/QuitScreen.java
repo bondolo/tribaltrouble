@@ -36,7 +36,7 @@ public final class QuitScreen extends CameraDelegate<Camera> implements Updatabl
         overlay.setPos(0, 0);
         addChild(overlay);
 
-        GUIRoot quit_root = screenManager.newFade();
+        GUIRoot quit_root = screenManager.fadeToDefault();
 
         delay_timer.start();
 

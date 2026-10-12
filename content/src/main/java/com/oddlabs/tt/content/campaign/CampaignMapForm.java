@@ -4,8 +4,8 @@ import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.client.Peer;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.gui.FocusDirection;
-import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIIcon;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -69,7 +69,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                                 i18n("native_campaign_opened"),
                                 null,
                                 Origin.AT_START,
-                                () -> closeCampaign(campaign.getEngine(), gui_root.getGUI()));
+                                () -> closeCampaign(campaign.getPeer(), campaign.getScreenManager()));
                         gui_root.addModalForm(dialog);
                     };
                     CampaignDialogForm dialog = new CampaignDialogForm(gui_root, i18n("viking_header"),
@@ -94,7 +94,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                             i18n("native_campaign_completed"),
                             campaign.getIcons().getFaces()[0],
                             Origin.AT_START,
-                            () -> closeCampaign(campaign.getEngine(), gui_root.getGUI()));
+                            () -> closeCampaign(campaign.getPeer(), campaign.getScreenManager()));
                     gui_root.addModalForm(dialog);
                 }
             }
@@ -219,7 +219,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
 
         if (event.getPhase() == InputPhase.PRESSED) {
             if (event.consumeAction(GameAction.GLOBAL_MENU) || event.consumeAction(GameAction.UI_CANCEL)) {
-                getGUIRoot().addModalForm(new CampaignMapMenu(getGUIRoot(), campaign.getEngine()));
+                getGUIRoot().addModalForm(new CampaignMapMenu(getGUIRoot(), campaign));
                 event.consume();
                 return;
             }
@@ -269,8 +269,8 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
         }
     }
 
-    public static void closeCampaign(Peer engine, GUI gui) {
-        Menu.startMenu(engine, gui);
+    public static void closeCampaign(Peer peer, ScreenManager screenManager) {
+        Menu.startMenu(peer, screenManager);
     }
 
     @Override

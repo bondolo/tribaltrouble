@@ -12,6 +12,7 @@ import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Main menu overlay displayable during gameplay.
@@ -19,10 +20,10 @@ import com.oddlabs.tt.input.InputPhase;
 public final class InGameMainMenu extends Menu {
     private final WorldViewer viewer;
 
-    private Group game_infos;
+    private @Nullable Group game_infos;
 
     public InGameMainMenu(WorldViewer viewer, Camera camera) {
-        super(viewer.getGUIRoot(), camera, viewer.getEngine());
+        super(viewer.getGUIRoot(), camera, viewer.getPeer(), viewer.getScreenManager());
         this.viewer = viewer;
         reload();
     }

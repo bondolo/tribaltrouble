@@ -3,11 +3,13 @@ package com.oddlabs.tt.content.campaign.viking;
 
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.client.Peer;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.content.campaign.Campaign;
 import com.oddlabs.tt.content.campaign.CampaignDialogForm;
 import com.oddlabs.tt.content.campaign.CampaignIcons;
 import com.oddlabs.tt.content.campaign.CampaignState;
 import com.oddlabs.tt.content.campaign.Island;
+import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
@@ -46,14 +48,20 @@ public final class VikingCampaign extends Campaign {
 
     private transient final VikingCampaignIcons icons;
 
-    public VikingCampaign(GUIRoot gui_root, Peer engine) {
-        this(gui_root, new CampaignState(INITIAL_STATES), engine);
+    public VikingCampaign(Menu menu) {
+        this(menu.getGUIRoot(), menu.getPeer(), menu.getScreenManager());
     }
 
-    public VikingCampaign(GUIRoot gui_root,
-            CampaignState campaign_state,
-            Peer engine) {
-        super(campaign_state, engine);
+    public VikingCampaign(CampaignState campaign_state, Menu menu) {
+        this(menu.getGUIRoot(), campaign_state, menu.getPeer(), menu.getScreenManager());
+    }
+
+    public VikingCampaign(GUIRoot gui_root, Peer peer, ScreenManager screenManager) {
+        this(gui_root, new CampaignState(INITIAL_STATES), peer, screenManager);
+    }
+
+    public VikingCampaign(GUIRoot gui_root, CampaignState campaign_state, Peer peer, ScreenManager screenManager) {
+        super(campaign_state, peer, screenManager);
         icons = new VikingCampaignIcons("/gui/viking_campaign.xml");
 
         if (getState().getCurrentIsland() == -1) {
@@ -67,7 +75,7 @@ public final class VikingCampaign extends Campaign {
     }
 
     @Override
-    public void islandChosen(GUIRoot gui_root, int number) {
+    protected void islandChosen(GUIRoot gui_root, int number) {
         Form dialog = new CampaignDialogForm(gui_root, islands[number].getHeader(),
                 islands[number].getDescription(),
                 null,
@@ -77,7 +85,7 @@ public final class VikingCampaign extends Campaign {
     }
 
     @Override
-    public CharSequence getCurrentObjective() {
+    protected CharSequence getCurrentObjective() {
         if (getState().getCurrentIsland() != -1) {
             return islands[getState().getCurrentIsland()].getCurrentObjective();
         }
@@ -92,7 +100,7 @@ public final class VikingCampaign extends Campaign {
     }
 
     @Override
-    public void startIsland(GUIRoot gui_root, int number) {
+    protected void startIsland(GUIRoot gui_root, int number) {
         getState().setCurrentIsland(number);
         islands[number].chosen(gui_root);
     }

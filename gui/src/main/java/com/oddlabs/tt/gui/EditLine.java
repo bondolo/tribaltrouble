@@ -45,7 +45,7 @@ public class EditLine extends TextField implements Clipped {
 
     public EditLine(GUIRoot guiRoot, int width, int max_codepoints, @Nullable String allowed_chars, Origin alignment) {
         super(guiRoot.getSkin().getEditFont(), max_codepoints);
-        this.skin = java.util.Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.skin = guiRoot.getSkin();
         this.editBox = skin.getEditBox();
         this.allowed_chars = allowed_chars;
         this.alignment = alignment;

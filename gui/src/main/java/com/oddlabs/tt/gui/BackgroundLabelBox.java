@@ -4,8 +4,6 @@ import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 
-import java.util.Objects;
-
 /**
  * Text box container rendered against a styled background panel.
  */
@@ -14,7 +12,7 @@ public final class BackgroundLabelBox extends LabelBox {
 
     public BackgroundLabelBox(GUIRoot guiRoot, CharSequence text, Font font, int width) {
         super(text, font, width);
-        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.skin = guiRoot.getSkin();
     }
 
     @Override

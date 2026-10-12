@@ -7,7 +7,6 @@ import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.matchmaking.Profile;
 import com.oddlabs.matchmaking.RankingEntry;
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.content.form.GameInfoForm;
 import com.oddlabs.tt.gui.MessageForm;
@@ -67,7 +66,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     private static final int PANEL_INDEX_CHAT = 1;
     private static final int PANEL_INDEX_HIGHSCORE = 2;
 
-    private final Peer engine;
+    private final Peer peer;
     private final Menu main_menu;
     private final ProfilesForm profiles_form;
     private final Panel[] panels = new Panel[3];
@@ -82,7 +81,6 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     private final MultiColumnComboBox<ChatRoomEntry> chat_room_list_box;
     private final List<ChatRoomEntry> chat_rooms = new ArrayList<>();
     private final GUIRoot gui_root;
-    private final NetworkSelector network;
 
     private final MultiColumnComboBox<RankingEntry> ranking_list_box;
 
@@ -96,7 +94,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private GameMenu game_panel;
+    private @Nullable GameMenu game_panel;
     private @Nullable ChatPanel chat_panel;
     private PanelGroup panel_group;
 
@@ -108,8 +106,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
         super(main_menu.getGUIRoot());
         this.main_menu = main_menu;
         this.gui_root = main_menu.getGUIRoot();
-        this.engine = main_menu.getEngine();
-        this.network = engine.getNetwork().getSelector();
+        this.peer = main_menu.getPeer();
 
         var headlineFont = getSkin().getHeadlineFont();
 
@@ -225,7 +222,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
         chat_room_list_panel.compileCanvas();
 
         // Common
-        ChatRoomInfo info = engine.getNetwork().getMatchmakingClient().getChatRoomInfo();
+        ChatRoomInfo info = peer.getNetwork().getMatchmakingClient().getChatRoomInfo();
         if (info != null) {
             chat_panel = createChatRoomPanel(info);
             panels[PANEL_INDEX_CHAT] = chat_panel;
@@ -243,15 +240,15 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
         logout_button.place(AT_END);
         compileCanvas();
 
-        engine.getNetwork().setMatchmakingListener(this);
+        peer.getNetwork().setMatchmakingListener(this);
         updateList(MatchmakingServerInterface.TYPE_GAME);
         updateList(MatchmakingServerInterface.TYPE_CHAT_ROOM_LIST);
         updateList(MatchmakingServerInterface.TYPE_RANKING_LIST);
 
         profiles_form = new ProfilesForm(this);
-        if (engine.getNetwork().getMatchmakingClient().getProfile() == null) {
+        if (peer.getNetwork().getMatchmakingClient().getProfile() == null) {
             main_menu.setMenuCentered(profiles_form);
-            engine.getNetwork().getMatchmakingClient().requestProfiles();
+            peer.getNetwork().getMatchmakingClient().requestProfiles();
         } else {
             main_menu.setMenuCentered(this);
         }
@@ -272,20 +269,20 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     }
 
     private ChatPanel createChatRoomPanel(ChatRoomInfo info) {
-        ChatPanel panel = new ChatPanel(gui_root, engine, info, chat_room_list_panel.getWidth(), chat_room_list_panel
-                .getHeight(), BUTTON_WIDTH_SHORT, new SendChatListener(), (_, _, _, _) -> leaveChatRoom());
-        var chatHub = engine.getNetwork().getChatHub();
+        ChatPanel panel = new ChatPanel(gui_root, peer.getNetwork().getMatchmakingClient(), info, chat_room_list_panel
+                .getWidth(), chat_room_list_panel
+                        .getHeight(), BUTTON_WIDTH_SHORT, new SendChatListener(), (_, _, _, _) -> leaveChatRoom());
+        var chatHub = peer.getNetwork().getChatHub();
         chatHub.setIgnoreFilter(ChatCommand::isIgnoring);
         chatHub.addListener(panel);
         return panel;
     }
 
     @Override
-    public void createGameMenu(GameNetwork<GUIRoot, Screen> game_network, Game game, WorldGenerator<
-            ?> generator,
+    public void createGameMenu(GameNetwork<GUIRoot, Screen> game_network, Game game, WorldGenerator<?> generator,
             int player_slot) {
-        game_panel = new GameMenu(game_network, this, game, generator, player_slot, game_list_panel
-                .getWidth(), game_list_panel.getHeight(), BUTTON_WIDTH);
+        game_panel = new GameMenu(game_network, this, game, player_slot, game_list_panel
+                .getWidth(), game_list_panel.getHeight(), BUTTON_WIDTH, main_menu.getScreenManager());
         setGameMenu(game_panel);
         game_network.getClient().setConfigurationListener(game_panel);
     }
@@ -300,7 +297,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     }
 
     private void updateList(int type) {
-        engine.getNetwork().getMatchmakingClient().requestList(type);
+        peer.getNetwork().getMatchmakingClient().requestList(type);
     }
 
     @Override
@@ -344,7 +341,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     public void joinedChat(ChatRoomInfo info) {
         if (chat_panel != null) {
             chat_panel.connectionLost();
-            engine.getNetwork().getChatHub().removeListener(chat_panel);
+            peer.getNetwork().getChatHub().removeListener(chat_panel);
         }
         chat_panel = createChatRoomPanel(info);
         setPanel(PANEL_INDEX_CHAT, chat_panel);
@@ -354,7 +351,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     protected void doRemove() {
         super.doRemove();
         if (chat_panel != null) {
-            engine.getNetwork().getChatHub().removeListener(chat_panel);
+            peer.getNetwork().getChatHub().removeListener(chat_panel);
         }
     }
 
@@ -449,11 +446,11 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
         leaveChatRoom();
         if (game_panel != null)
             game_panel.cancel();
-        engine.getNetwork().getMatchmakingClient().close();
+        peer.getNetwork().getMatchmakingClient().close();
     }
 
     private void leaveChatRoom() {
-        engine.getNetwork().getMatchmakingClient().leaveChatRoom();
+        peer.getNetwork().getMatchmakingClient().leaveChatRoom();
         if (chat_panel != null)
             chat_panel.connectionLost();
         chat_panel = null;
@@ -461,7 +458,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     }
 
     private void joinGame(@Nullable GameHost selected_game) {
-        var matchmaker = engine.getNetwork().getMatchmakingClient();
+        var matchmaker = peer.getNetwork().getMatchmakingClient();
         if (matchmaker.getProfile() != null) {
             if (selected_game != null) {
                 boolean rated = selected_game.getGame().isRated();
@@ -470,7 +467,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
                     gui_root.addModalForm(new MessageForm(gui_root, min_wins));
                 } else {
                     Game game = selected_game.getGame();
-                    main_menu.joinGame(gui_root.getGUI(), selected_game.getHostID(), game
+                    main_menu.joinGame(selected_game.getHostID(), game
                             .getGamespeed(), game.getMapcode(), this, new MultiplayerInGameInfo(game
                                     .getRandomStartPos(), game.isRated()), game.getMaxUnitCount());
                 }
@@ -479,7 +476,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     }
 
     private void joinRoom(@Nullable ChatRoomEntry chat_room_info) {
-        var matchmaker = engine.getNetwork().getMatchmakingClient();
+        var matchmaker = peer.getNetwork().getMatchmakingClient();
         if (matchmaker.getProfile() != null) {
             if (chat_room_info != null)
                 matchmaker.joinRoom(chat_room_info.getName());
@@ -525,11 +522,10 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     private final class CreateGameListener implements MouseClickListener {
         @Override
         public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            var matchmaker = engine.getNetwork().getMatchmakingClient();
+            var matchmaker = peer.getNetwork().getMatchmakingClient();
             if (matchmaker.getProfile() != null) {
                 Panel panel = new Panel(gui_root, i18n("game"));
-                Group g = new TerrainMenu(gui_root, engine, main_menu, true,
-                        SelectGameMenu.this);
+                Group g = new TerrainMenu(main_menu, true, SelectGameMenu.this);
                 panel.addChild(g);
                 g.place();
                 panel.compileCanvas();
@@ -556,7 +552,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     private final class CreateRoomListener implements MouseClickListener {
         @Override
         public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            var matchmaker = engine.getNetwork().getMatchmakingClient();
+            var matchmaker = peer.getNetwork().getMatchmakingClient();
             if (matchmaker.getProfile() != null) {
                 main_menu.setMenuCentered(new CreateChatRoomForm(SelectGameMenu.this));
             }
@@ -568,7 +564,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
         public void enterPressed(CharSequence text) {
             String chat = text.toString();
             if (!chat.isEmpty()) {
-                var matchmaker = engine.getNetwork().getMatchmakingClient();
+                var matchmaker = peer.getNetwork().getMatchmakingClient();
                 if (!ChatCommand.filterCommand(gui_root.getInfoPrinter(), matchmaker, chat)) {
                     matchmaker.getInterface().sendMessageToRoom(chat);
                 }

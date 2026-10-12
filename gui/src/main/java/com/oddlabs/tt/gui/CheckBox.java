@@ -5,7 +5,6 @@ import com.oddlabs.tt.gui.event.CheckBoxListener;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Toggle button presenting a binary checked or unchecked state with an adjacent label.
@@ -19,7 +18,7 @@ public final class CheckBox extends GUIObject {
 
     public CheckBox(GUIRoot guiRoot, boolean checked, String text, String tool_tip) {
         super(!tool_tip.isEmpty() ? () -> tool_tip : null);
-        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.skin = guiRoot.getSkin();
         this.checked = checked;
         Label label = new Label(text, skin.getEditFont());
         addChild(label);

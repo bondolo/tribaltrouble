@@ -26,6 +26,7 @@ import com.oddlabs.tt.content.form.OptionsMenu;
 import com.oddlabs.tt.content.form.ProgressForm;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.client.Peer;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.client.render.LandscapeBaker;
 import com.oddlabs.tt.client.screen.DefaultScreen;
 import com.oddlabs.tt.client.screen.Screen;
@@ -41,7 +42,6 @@ import com.oddlabs.tt.procedural.landscape.IslandGenerator;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Form;
-import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIImage;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -103,7 +103,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    protected final Peer engine;
+    protected final Peer peer;
+    private final ScreenManager screenManager;
 
     private @Nullable Form current_menu;
     private boolean current_menu_centered;
@@ -111,19 +112,24 @@ public abstract class Menu extends CameraDelegate<Camera> {
     private @Nullable GUIImage overlay;
     private @Nullable GUIImage logo;
 
-    protected Menu(GUIRoot gui_root, Camera camera, Peer engine) {
+    protected Menu(GUIRoot gui_root, Camera camera, Peer peer, ScreenManager screenManager) {
         super(gui_root, camera);
-        this.engine = engine;
+        this.peer = peer;
+        this.screenManager = screenManager;
         setCanFocus(true);
         setFocusCycle(true);
     }
 
-    public final Peer getEngine() {
-        return engine;
+    public final Peer getPeer() {
+        return peer;
+    }
+
+    public ScreenManager getScreenManager() {
+        return screenManager;
     }
 
     protected final NetworkSelector getNetwork() {
-        return engine.getNetwork().getSelector();
+        return peer.getNetwork().getSelector();
     }
 
     private void init() {
@@ -147,7 +153,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
     }
 
     protected final void addDefaultOptionsButton() {
-        addOptionsButton(() -> new OptionsMenu(getGUIRoot(), engine));
+        addOptionsButton(() -> new OptionsMenu(getGUIRoot(), peer));
     }
 
     final void addOptionsButton(FormFactory<?> factory) {
@@ -158,7 +164,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
 
     protected final void addExitButton() {
         MenuButton exit = new MenuButton(getGUIRoot(), i18n("quit"), COLOR_NORMAL, COLOR_ACTIVE);
-        exit.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuitForm(getGUIRoot(), engine::shutdown)));
+        exit.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuitForm(getGUIRoot(), peer::shutdown)));
         addChild(exit);
     }
 
@@ -326,46 +332,45 @@ public abstract class Menu extends CameraDelegate<Camera> {
         }
     }
 
-    public final GameNetwork<GUIRoot, Screen> joinGame(GUI gui, int host_id,
+    public final GameNetwork<GUIRoot, Screen> joinGame(int host_id,
             int gamespeed, String map_code, MultiplayerLobby owner, InGameInfo ingame_info,
             int max_unit_count) {
         GUIRoot gui_root = getGUIRoot();
         WorldParameters world_params = new WorldParameters(gamespeed, map_code, Player.INITIAL_UNIT_COUNT,
                 max_unit_count);
-        var matchmakingClient = engine.getNetwork().getMatchmakingClient();
-        var chatHub = engine.getNetwork().getChatHub();
-        var networkSelector = engine.getNetwork().getSelector();
+        var matchmakingClient = peer.getNetwork().getMatchmakingClient();
+        var chatHub = peer.getNetwork().getChatHub();
+        var networkSelector = peer.getNetwork().getSelector();
         @SuppressWarnings("unchecked") LoadCallbackFactory<GUIRoot, Screen> starterFactory = (session_id,
                 generator,
                 player_slots,
                 unit_infos, player_slot) -> new WorldStarter(session_id,
                         (WorldGenerator<GeneratedLandscapeData>) generator, world_params, player_slots, unit_infos,
                         player_slot, ingame_info,
-                        new DefaultWorldInitAction(), engine);
+                        new DefaultWorldInitAction(), peer, screenManager);
         Client<GUIRoot, Screen> client = new Client<>(null, networkSelector, matchmakingClient, chatHub,
                 host_id,
                 starterFactory,
                 new DefaultPlayerSlotHandler());
         GameNetwork<GUIRoot, Screen> game_network = new GameNetwork<>(null, client);
-        ConnectingForm connecting_form = new ConnectingForm(game_network, getGUIRoot(), owner, engine
-                .getScreenManager(), engine
-                        .getAudioManager());
+        ConnectingForm connecting_form = new ConnectingForm(game_network, getGUIRoot(), owner, screenManager, peer
+                .getAudioManager());
         client.setConfigurationListener(connecting_form);
         gui_root.addModalForm(connecting_form);
         return game_network;
     }
 
     public static GameNetwork<GUIRoot, Screen> startNewGame(
-            Peer engine, GUIRoot gui_root,
+            Peer peer, GUIRoot gui_root, ScreenManager screenManager,
             @Nullable MultiplayerLobby owner, WorldParameters world_params, InGameInfo ingame_info,
             WorldInitAction init_action, @Nullable Game game, IslandConfig islandConfig, String[] ai_names) {
         boolean multiplayer = ingame_info.isMultiplayer();
         WorldGenerator<GeneratedLandscapeData> generator = new IslandGenerator(islandConfig);
         InetAddress address = multiplayer ? null : com.oddlabs.util.Utils.getLoopbackAddress();
-        var matchmakingClient = engine.getNetwork().getMatchmakingClient();
-        var chatHub = engine.getNetwork().getChatHub();
-        var networkSelector = engine.getNetwork().getSelector();
-        final long deterministicSeed = engine.getEventQueue().getHighPrecisionManager().getTick();
+        var matchmakingClient = peer.getNetwork().getMatchmakingClient();
+        var chatHub = peer.getNetwork().getChatHub();
+        var networkSelector = peer.getNetwork().getSelector();
+        final long deterministicSeed = peer.getEventQueue().getHighPrecisionManager().getTick();
         final Server server = new Server(networkSelector, matchmakingClient, game,
                 address, generator, multiplayer, ai_names,
                 (team, race_val, name) -> new PlayerInfo(team, Race.fromValue(race_val), name),
@@ -375,14 +380,14 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 player_slots, unit_infos,
                 player_slot) -> new WorldStarter(
                         session_id, (WorldGenerator<GeneratedLandscapeData>) gen,
-                        world_params, player_slots, unit_infos, player_slot, ingame_info, init_action, engine);
+                        world_params, player_slots, unit_infos, player_slot, ingame_info, init_action, peer,
+                        screenManager);
         Client<GUIRoot, Screen> client = new Client<>(server::close, networkSelector, matchmakingClient,
                 chatHub, -1, starterFactory, new DefaultPlayerSlotHandler());
         GameNetwork<GUIRoot, Screen> game_network = new GameNetwork<>(server, client);
         if (multiplayer) {
-            ConnectingForm connecting_form = new ConnectingForm(game_network, gui_root, owner, engine
-                    .getScreenManager(), engine
-                            .getAudioManager());
+            ConnectingForm connecting_form = new ConnectingForm(game_network, gui_root, owner, screenManager, peer
+                    .getAudioManager());
             client.setConfigurationListener(connecting_form);
             gui_root.addModalForm(connecting_form);
         } else {
@@ -408,8 +413,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
                     ProgressForm.Mode mode = ingame_info.showLoadingHints()
                             ? ProgressForm.Mode.GAME_LOAD
                             : ProgressForm.Mode.TUTORIAL;
-                    ProgressForm.setProgressForm(game_network.getClient().getNetwork(), engine.getScreenManager(),
-                            engine
+                    ProgressForm.setProgressForm(game_network.getClient().getNetwork(), screenManager,
+                            peer
                                     .getAudioManager(), loadCallback,
                             mode);
                 }
@@ -418,29 +423,28 @@ public abstract class Menu extends CameraDelegate<Camera> {
         return game_network;
     }
 
-    public static void startMenu(Peer engine, GUI gui) {
-        setupMainMenu(engine, gui, false);
+    public static void startMenu(Peer peer, ScreenManager screenManager) {
+        setupMainMenu(peer, false, screenManager);
     }
 
     public static @Nullable Runnable setupMainMenu(
-            Peer engine, GUI gui,
-            final boolean first_progress) {
+            Peer peer, final boolean first_progress, ScreenManager screenManager) {
         IslandConfig islandConfig = new IslandConfig(
                 Terrain.NATIVE, 256, LandscapeConfig.LANDSCAPE_HILLS,
                 LandscapeConfig.LANDSCAPE_VEGETATION, LandscapeConfig.LANDSCAPE_RESOURCES,
                 LandscapeConfig.LANDSCAPE_SEED);
         final WorldGenerator<GeneratedLandscapeData> generator = new IslandGenerator(islandConfig);
         ProgressForm.Mode mode = first_progress ? ProgressForm.Mode.STARTUP : ProgressForm.Mode.MENU_RETURN;
-        return ProgressForm.setProgressForm(engine.getNetwork().getSelector(), engine.getScreenManager(), engine
+        return ProgressForm.setProgressForm(peer.getNetwork().getSelector(), screenManager, peer
                 .getAudioManager(), (
-                        GUIRoot gui_root) -> finishMainMenu(engine, gui_root,
-                                first_progress, generator), mode);
+                        GUIRoot gui_root) -> finishMainMenu(peer, gui_root,
+                                first_progress, generator, screenManager), mode);
     }
 
     private static Screen finishMainMenu(
-            Peer engine, GUIRoot gui_root,
-            boolean first_progress, WorldGenerator<GeneratedLandscapeData> generator) {
-        engine.getFramePacer().freezeTime();
+            Peer peer, GUIRoot gui_root,
+            boolean first_progress, WorldGenerator<GeneratedLandscapeData> generator, ScreenManager screenManager) {
+        peer.getFramePacer().freezeTime();
         WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);
         var players = List.of(new PlayerInfo(0, Race.NATIVES, ""));
         GeneratedLandscapeData landscapeData = ProgressListener.subTask(0.40f,
@@ -454,8 +458,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 () -> World.newWorld(null, null,
                         new NotificationListener() {
                         }, world_params, world_info.landscapeData(), players,
-                        AccessibilitySettings.from(engine.getSettings()).linear_player_colours,
-                        RenderConfig.INSERT_PLANTS[GraphicsSettings.from(engine.getSettings()).graphic_detail]));
+                        AccessibilitySettings.from(peer.getSettings()).linear_player_colours,
+                        RenderConfig.INSERT_PLANTS[GraphicsSettings.from(peer.getSettings()).graphic_detail]));
         AnimationManager menuAnimationManager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, menuAnimationManager);
         Player local_player = world.getPlayers().getFirst();
@@ -463,38 +467,39 @@ public abstract class Menu extends CameraDelegate<Camera> {
         var renderer = new FullSceneRenderer(null, local_player,
                 render_queues, world_info,
                 landscape_renderer, new Picker(menuAnimationManager, local_player, gui_root, render_queues,
-                        landscape_renderer, selection, engine.getAudioManager()), selection,
-                engine.getAudioManager(), engine.getSettings(),
+                        landscape_renderer, selection, peer.getAudioManager()), selection,
+                peer.getAudioManager(), peer.getSettings(),
                 gui_root.getWidth(), gui_root.getHeight());
-        engine.getAudioManager().setMusic(AudioRegistry.MUSIC_MENU, 0f);
+        peer.getAudioManager().setMusic(AudioRegistry.MUSIC_MENU, 0f);
         MainMenu main_menu = new MainMenu(gui_root,
-                new MenuCamera(world, gui_root.getAnimationManagerHighPrecision(), menuAnimationManager), engine);
+                new MenuCamera(world, gui_root.getAnimationManagerHighPrecision(), menuAnimationManager), peer,
+                screenManager);
         gui_root.pushDelegate(main_menu);
-        AudioSettings audioSettings = AudioSettings.from(engine.getSettings());
+        AudioSettings audioSettings = AudioSettings.from(peer.getSettings());
         if (first_progress && audioSettings.warning_no_sound
-                && !engine.getEventQueue().getDeterministic().log(engine.getAudioManager() != null)) {
+                && !peer.getEventQueue().getDeterministic().log(peer.getAudioManager() != null)) {
             gui_root.addModalForm(new WarningForm(gui_root, i18n("sound_not_available_caption"), i18n(
                     "sound_not_available_message"),
                     doNotShowAgain -> audioSettings.warning_no_sound = !doNotShowAgain));
         }
-        if (!initNetwork(engine)) {
+        if (!initNetwork(peer)) {
             gui_root.addModalForm(new MessageForm(gui_root, i18n("network_not_available_caption"),
                     i18n("network_not_available_message"),
-                    i18n("quit"), (_, _, _, _) -> engine.shutdown()));
+                    i18n("quit"), (_, _, _, _) -> peer.shutdown()));
         }
         return new DefaultScreen(gui_root, renderer);
     }
 
-    public static boolean initNetwork(Peer engine) {
+    public static boolean initNetwork(Peer peer) {
         boolean is_network_created;
         try {
-            engine.getNetwork().getSelector().initSelector();
+            peer.getNetwork().getSelector().initSelector();
             tryGetLoopbackAddress();
             is_network_created = true;
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to initialize network", e);
             is_network_created = false;
         }
-        return engine.getEventQueue().getDeterministic().log(is_network_created);
+        return peer.getEventQueue().getDeterministic().log(is_network_created);
     }
 }

@@ -5,7 +5,6 @@ import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Row containing columns of comparable GUIObjects within a MultiColumnComboBox.
@@ -24,7 +23,7 @@ public final class Row<T, C extends GUIObject & Comparable<C>> extends GUIObject
     }
 
     public Row(GUIRoot guiRoot, List<C> columns, @Nullable T content_object) {
-        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.skin = guiRoot.getSkin();
         this.comboBoxData = skin.getMultiColumnComboBoxData();
         this.columns = columns;
         this.content_object = content_object;

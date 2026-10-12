@@ -10,7 +10,6 @@ import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.weapon.SonicBlast;
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
@@ -68,15 +67,6 @@ public final class SonicBlastVisualModel extends AbstractVisualModel implements 
     @Override
     public boolean isVisible(Model parent, CameraState camera) {
         return !blast.isDead() || effect != null;
-    }
-
-    @Override
-    public void getRelativeTransform(Matrix4f dest, Model parent) {
-    }
-
-    @Override
-    public @Nullable SpriteKey getSpriteRenderer() {
-        return null;
     }
 
     @Override

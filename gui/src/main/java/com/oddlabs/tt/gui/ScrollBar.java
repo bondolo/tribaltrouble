@@ -8,8 +8,6 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
-import java.util.Objects;
-
 /**
  * Vertical scrollbar control managing stepping, dragging, and proportional paging.
  */
@@ -23,7 +21,7 @@ public final class ScrollBar extends GUIObject {
     private final Scrollable owner;
 
     public ScrollBar(GUIRoot guiRoot, int height, Scrollable owner) {
-        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.skin = guiRoot.getSkin();
         this.scrollBarData = skin.getScrollBarData();
         this.focus_group = new Group(guiRoot);
         this.owner = owner;

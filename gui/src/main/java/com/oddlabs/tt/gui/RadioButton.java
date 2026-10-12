@@ -4,8 +4,6 @@ import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
-import java.util.Objects;
-
 /**
  * Radio button control belonging to a mutually exclusive group.
  */
@@ -15,7 +13,7 @@ public final class RadioButton extends RadioButtonGroupElement {
 
     public RadioButton(GUIRoot guiRoot, boolean marked, RadioButtonGroup group, String text) {
         super(marked, group);
-        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.skin = guiRoot.getSkin();
         Label label = new Label(text, skin.getEditFont());
         label.setPos(skin.getRadioButtonMarked().get(ModeIconQuads.Mode.NORMAL).getWidth(), (skin
                 .getRadioButtonMarked().get(ModeIconQuads.Mode.NORMAL).getHeight() - label.getHeight()) / 2);

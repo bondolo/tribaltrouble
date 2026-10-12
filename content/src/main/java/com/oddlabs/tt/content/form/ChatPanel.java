@@ -1,8 +1,8 @@
 package com.oddlabs.tt.content.form;
 
 import com.oddlabs.matchmaking.ChatRoomUser;
+import com.oddlabs.tt.net.MatchmakingClient;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.viewer.ChatCommand;
 import com.oddlabs.tt.gui.Box;
 import com.oddlabs.tt.gui.ColumnInfo;
@@ -35,7 +35,7 @@ import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
 
 /** UI component displaying live chat room messages and user lists. */
-public class ChatPanel extends Panel implements ChatListener {
+public final class ChatPanel extends Panel implements ChatListener {
     private static final int PULLDOWN_INDEX_MESSAGE = 0;
     private static final int PULLDOWN_INDEX_INFO = 1;
     private static final int PULLDOWN_INDEX_IGNORE = 2;
@@ -45,7 +45,7 @@ public class ChatPanel extends Panel implements ChatListener {
     private final TextBox chat_box;
     private final EditLine chat_line;
     private final GUIRoot gui_root;
-    private final Peer engine;
+    private final MatchmakingClient matchmakingClient;
 
     private final int user_list_width;
 
@@ -59,11 +59,12 @@ public class ChatPanel extends Panel implements ChatListener {
         return Utils.getBundleString(getBundle(), key);
     }
 
-    public ChatPanel(GUIRoot gui_root, Peer engine, ChatRoomInfo info, int compare_width, int compare_height,
+    public ChatPanel(GUIRoot gui_root, MatchmakingClient matchmakingClient, ChatRoomInfo info, int compare_width,
+            int compare_height,
             int button_width, EnterListener chat_listener, MouseClickListener leave_listener) {
         super(gui_root, getI18N("chat"));
         this.gui_root = gui_root;
-        this.engine = engine;
+        this.matchmakingClient = matchmakingClient;
         FormData fdata = skin.getFormData();
         Box pdata = skin.getPanelData().box();
         Box edata = skin.getEditBox();
@@ -165,7 +166,7 @@ public class ChatPanel extends Panel implements ChatListener {
     }
 
     private void refreshMessages() {
-        var messages = engine.getNetwork().getMatchmakingClient().getChatRoomHistory();
+        var messages = matchmakingClient.getChatRoomHistory();
         chat_box.setText(String.join("\n", messages));
         chat_box.setOffsetY(Integer.MAX_VALUE);
     }
@@ -196,10 +197,9 @@ public class ChatPanel extends Panel implements ChatListener {
             ChatRoomUser user = box.getRightClickedRowData();
             String nick = user.getNick();
             switch (item_index) {
-                case PULLDOWN_INDEX_MESSAGE -> gui_root.addModalForm(new PrivateMessageForm(gui_root, engine
-                        .getNetwork()
-                        .getMatchmakingClient(), nick));
-                case PULLDOWN_INDEX_INFO -> engine.getNetwork().getMatchmakingClient().requestInfo(nick);
+                case PULLDOWN_INDEX_MESSAGE -> gui_root.addModalForm(new PrivateMessageForm(gui_root, matchmakingClient,
+                        nick));
+                case PULLDOWN_INDEX_INFO -> matchmakingClient.requestInfo(nick);
                 case PULLDOWN_INDEX_IGNORE -> {
                     if (ChatCommand.isIgnoring(nick))
                         ChatCommand.unignore(gui_root.getInfoPrinter(), nick);
@@ -221,8 +221,7 @@ public class ChatPanel extends Panel implements ChatListener {
 
         @Override
         public void rowDoubleClicked(ChatRoomUser user) {
-            private_message_form = new PrivateMessageForm(gui_root, engine.getNetwork().getMatchmakingClient(), user
-                    .getNick());
+            private_message_form = new PrivateMessageForm(gui_root, matchmakingClient, user.getNick());
             gui_root.addModalForm(private_message_form);
         }
 

@@ -5,8 +5,6 @@ import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Objects;
-
 /**
  * Selectable item in a {@link PulldownMenu}.
  */
@@ -23,7 +21,7 @@ public final class PulldownItem<T> extends ButtonObject {
 
     public PulldownItem(GUIRoot guiRoot, String label_str, @Nullable T attachment) {
         super(guiRoot.getSkin().getPulldownData().font());
-        this.skin = Objects.requireNonNull(guiRoot.getSkin(), "Skin cannot be null");
+        this.skin = guiRoot.getSkin();
         this.itemBox = skin.getPulldownData().pulldownItem();
         this.attachment = attachment;
         label = new Label(label_str, getFont(), 0, Origin.AT_START);

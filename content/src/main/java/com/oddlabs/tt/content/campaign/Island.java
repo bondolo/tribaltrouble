@@ -107,7 +107,7 @@ public abstract class Island {
         };
         IslandConfig islandConfig = new IslandConfig(terrain, meters_per_world, hills, vegetation_amount,
                 supplies_amount, seed);
-        return Menu.startNewGame(campaign.getEngine(), gui_root, null, new WorldParameters(
+        return Menu.startNewGame(campaign.getPeer(), gui_root, campaign.getScreenManager(), null, new WorldParameters(
                 Game.GAMESPEED_NORMAL,
                 "Campaign" + campaign_num, initial_units,
                 Player.DEFAULT_MAX_UNIT_COUNT),
@@ -245,7 +245,7 @@ public abstract class Island {
      */
     protected final StatueScenery[] placeStatues(String name, StatuePlacement... placements) {
         var treasures = AssetRegistry.getInstance().getTreasures();
-        var world = Objects.requireNonNull(getViewer()).getWorld();
+        var world = getViewer().getWorld();
         return Arrays.stream(placements)
                 .map(p -> new StatueScenery(world, p.x(), p.y(), p.dirX(), p.dirY(),
                         p.treasureIndex(), treasures[p.treasureIndex()].bounds(), p.shadowDiameter(), true, name))

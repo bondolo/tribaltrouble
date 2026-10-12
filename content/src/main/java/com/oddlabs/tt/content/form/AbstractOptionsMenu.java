@@ -29,16 +29,16 @@ public abstract class AbstractOptionsMenu extends Form {
 
     private final GeneralPanel generalPanel;
     private final GraphicsPanel graphicsPanel;
-    private final Peer engine;
+    private final Peer peer;
 
-    AbstractOptionsMenu(GUIRoot gui_root, Peer engine) {
+    AbstractOptionsMenu(GUIRoot gui_root, Peer peer) {
         super(gui_root, "");
-        this.engine = engine;
+        this.peer = peer;
         Label label_headline = new Label(i18n("options_caption"), getSkin().getHeadlineFont());
         addChild(label_headline);
 
         generalPanel = new GeneralPanel(gui_root, this::changeGamespeed);
-        graphicsPanel = new GraphicsPanel(gui_root, this, engine);
+        graphicsPanel = new GraphicsPanel(gui_root, this, peer.getWindow(), peer.getSettings(), peer);
 
         PanelGroup panel_group = new PanelGroup(
                 gui_root,
@@ -46,7 +46,7 @@ public abstract class AbstractOptionsMenu extends Form {
                 graphicsPanel,
                 new KeyBindingPanel(gui_root),
                 new AccessibilityPanel(gui_root),
-                new SoundPanel(gui_root, engine.getAudioManager()),
+                new SoundPanel(gui_root, peer.getAudioManager()),
                 new LanguagePanel(gui_root)
         );
         addChild(panel_group);
@@ -97,6 +97,6 @@ public abstract class AbstractOptionsMenu extends Form {
 
     @Override
     protected void closed() {
-        engine.getSettings().save();
+        peer.getSettings().save();
     }
 }

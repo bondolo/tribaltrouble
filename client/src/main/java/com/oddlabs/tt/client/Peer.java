@@ -33,7 +33,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.function.IntSupplier;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
@@ -45,7 +44,7 @@ import java.util.logging.SimpleFormatter;
  * Desktop client peer node coordinating the main game loop, window events, audio updates, simulation pacing, and
  * presentation.
  */
-public final class Peer implements AutoCloseable {
+public final class Peer implements AutoCloseable, DisplayModeController {
     private static final Logger logger = Logger.getLogger(Peer.class.getSimpleName());
     private static final boolean PROFILE = Boolean.getBoolean("com.oddlabs.tt.profile");
 
@@ -66,7 +65,7 @@ public final class Peer implements AutoCloseable {
     private final CameraState frustumState = new CameraState();
     private final RenderHost renderHost;
     private @Nullable IntSupplier pathfindCountSupplier;
-    private @Nullable ScreenManager screenManager;
+    private @Nullable Runnable renderFrameCallback;
 
     private boolean movie_recording_started = false;
 
@@ -131,23 +130,11 @@ public final class Peer implements AutoCloseable {
         this.pathfindCountSupplier = supplier;
     }
 
-    public ScreenManager getScreenManager() {
-        return Objects.requireNonNull(screenManager, "ScreenManager is not initialized");
-    }
-
-    public void setScreenManager(@Nullable ScreenManager screenManager) {
-        this.screenManager = screenManager;
-    }
-
     public void updateProgress() {
-        var manager = screenManager;
-        if (manager != null) {
-            renderHost.updateProgress(() -> renderFrame(manager));
+        var callback = renderFrameCallback;
+        if (callback != null) {
+            renderHost.updateProgress(callback);
         }
-    }
-
-    public void updateProgress(GUI gui) {
-        updateProgress();
     }
 
     private void renderFrame(ScreenManager screenManager) {
@@ -210,6 +197,7 @@ public final class Peer implements AutoCloseable {
                 .log(window.getDisplayMode());
     }
 
+    @Override
     public void toggleFullscreen() {
         try {
             boolean fs = !window.isFullscreen() && !event_queue.getDeterministic().isPlayback();
@@ -222,6 +210,7 @@ public final class Peer implements AutoCloseable {
         }
     }
 
+    @Override
     public void switchMode(SerializableDisplayMode mode, boolean switch_now) {
         if (switch_now) {
             try {
@@ -327,7 +316,7 @@ public final class Peer implements AutoCloseable {
         }
         deterministic.setEnabled(false);
         if (!DebugFlags.frustum_freeze) {
-            CameraState camera = screenManager.getGUIRoot().getDelegate().getCameraState();
+            CameraState camera = screenManager.getScreen().guiRoot().getDelegate().getCameraState();
             screenManager.pickHover(camera != null ? camera : frustumState, gui.getLocalInput().getMouseX(),
                     gui.getLocalInput().getMouseY());
         }
@@ -423,6 +412,7 @@ public final class Peer implements AutoCloseable {
         Runnable load_task = session.loadTask();
         boolean first_frame = true;
         boolean wasActive = window.isActive();
+        renderFrameCallback = () -> renderFrame(screenManager);
         while (!finished) {
             frameTimeRecorder.begin();
 
@@ -493,6 +483,7 @@ public final class Peer implements AutoCloseable {
         }
 
         event_queue.getDeterministic().setEnabled(true);
+        renderFrameCallback = null;
         settings.save();
     }
 

@@ -1062,7 +1062,7 @@ public final class Landscape {
                                 && supplies.getPixel(x + 1, y) > 0
                                 && supplies.getPixel(x, y - 1) > 0
                                 && supplies.getPixel(x, y - 1) > 0 // DO NOT FIX: This is a bug in the original game.
-                                // fixing it alters resource placement and gameplay.
+                        // fixing it alters resource placement and gameplay.
                         ) {
                             place.putPixel(x, y, 1f);
                             // make node neighbourhood inaccessible

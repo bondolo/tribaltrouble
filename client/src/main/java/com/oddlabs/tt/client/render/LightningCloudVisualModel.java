@@ -16,7 +16,6 @@ import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.weapon.LightningCloud;
 import com.oddlabs.util.Color;
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -161,15 +160,6 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
     @Override
     public boolean isVisible(Model parent, CameraState camera) {
         return !cloud.isDead() || !activeLightnings.isEmpty();
-    }
-
-    @Override
-    public void getRelativeTransform(Matrix4f dest, Model parent) {
-    }
-
-    @Override
-    public @Nullable SpriteKey getSpriteRenderer() {
-        return null;
     }
 
     @Override
