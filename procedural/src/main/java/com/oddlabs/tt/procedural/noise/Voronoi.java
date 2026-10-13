@@ -21,7 +21,6 @@ public final class Voronoi {
     public static final int SEED = 2;
 
     private final int size;
-    private final Random random;
     private final Channel dist1;
     private final Channel dist2;
     private final Channel dist3;
@@ -36,8 +35,8 @@ public final class Voronoi {
         this.size = size;
         x_domains = Math.max(1, x_domains);
         y_domains = Math.max(1, y_domains);
-        checkradius = Math.min(Math.max(1, checkradius), Math.max(x_domains, y_domains));
-        random = new Random(seed);
+        checkradius = Math.clamp(checkradius, 1, Math.max(x_domains, y_domains));
+        Random random = new Random(seed);
         dist1 = new Channel(size, size);
         dist2 = new Channel(size, size);
         dist3 = new Channel(size, size);
@@ -137,8 +136,8 @@ public final class Voronoi {
         Channel channel = new Channel(size, size);
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
-                channel.putPixel(x, y, c1 * dist1.getPixel(x, y) + c2 * dist2.getPixel(x, y) + c3 * dist3.getPixel(x,
-                        y));
+                float pixel = c1 * dist1.getPixel(x, y) + c2 * dist2.getPixel(x, y) + c3 * dist3.getPixel(x, y);
+                channel.putPixel(x, y, pixel);
             }
         }
         return channel.dynamicRange();

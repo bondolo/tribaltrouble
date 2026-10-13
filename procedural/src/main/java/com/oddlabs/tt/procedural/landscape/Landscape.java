@@ -33,6 +33,9 @@ public final class Landscape {
     public static final int DETAIL_SIZE = 256;
     public static final int DEFAULT_LANDSCAPE_SEED = 1;
     private static final int STRUCTURE_SEED = 42; // must be constant; otherwise distinct repeating patterns might appear
+    private static final float WORLEY_VORONI_C1 = -1f;
+    private static final float WORLEY_VORONI_C2 = 1f;
+    private static final float WORLEY_VORONI_C3 = 0f;
 
     private static final int NUM_PLANT_TYPES = 4;
 
@@ -47,7 +50,6 @@ public final class Landscape {
     private static final Color VIKING_SOIL_COLOR = new Color.Standard(0xFF_A6_80_59);
     private static final Color VIKING_GRASS_COLOR = new Color.Standard(0xFF_0E_73_00); // Saturated green matching legacy baseline
     private static final Color VIKING_SNOW_COLOR = new Color.Standard(0xFF_F2_F2_F2);
-    private static final Color VIKING_CLIFF_GRASS_TINT = new Color.Standard(0xFF_33_73_00);
 
     // Misc colors
     private static final float DETAIL_GREY = 0.5f;
@@ -57,7 +59,6 @@ public final class Landscape {
             Terrain.VIKING, Color.Standard.BLACK
     ));
     private static final Color BLEND_LIGHTING_COLOR = new Color.Standard(0xFF_FF_E6_99); // 1.0, 0.9, 0.6
-    private static final Color AO_COLOR = new Color.Standard(0xFF_55_4C_66);
 
     private static final Color.Linear NATIVE_DUST_COLOR = new Color.Standard(0xFF_FF_E6_CC).linear();
     private static final Color.Linear VIKING_DUST_COLOR = new Color.Standard(0xFF_A6_80_59).linear();
@@ -106,8 +107,6 @@ public final class Landscape {
     private final int unit_grids_per_world;
     private final int height_scale;
     private final float sea_level_meters;
-    private final int detail_size;
-    private final int structure_size;
     private final float detail_alpha_value;
     private final int features;
     private final float hills;
@@ -169,9 +168,8 @@ public final class Landscape {
         this.access_threshold = access_threshold;
         this.build_threshold = access_threshold / 2f;
         this.sea_level_meters = height_scale * SimulationConfig.SEA_LEVEL;
-        this.detail_size = DETAIL_SIZE;
-        this.structure_size = STRUCTURE_SIZE;
         this.detail_alpha_value = detail_alpha_value;
+        this.random = new Random(seed);
 
         area = size_multiplier * 10000f;
         max_plants = size_multiplier * 64;
@@ -187,37 +185,31 @@ public final class Landscape {
 
         max_rock = max_trees >> 3;
         max_iron = max_trees >> 4;
-        random = new Random(seed);
 
         // generate shared voronoi and noise maps
-        float c1 = -1f;
-        float c2 = 1f;
-        float c3 = 0f;
-        Voronoi voronoi;
-        Channel voronoi4 = new Voronoi(structure_size, 4, 4, 1, 1f, STRUCTURE_SEED).getDistance(c1, c2, c3);
-        voronoi = new Voronoi(structure_size, 8, 8, 1, 1f, STRUCTURE_SEED);
-        Channel voronoi8 = voronoi.getDistance(c1, c2, c3);
-        Channel voronoi8_hit = voronoi.getHitpoint();
-        voronoi = new Voronoi(structure_size, 16, 16, 1, 1f, STRUCTURE_SEED);
-        Channel voronoi16 = voronoi.getDistance(c1, c2, c3);
-        Channel voronoi16_hit = voronoi.getHitpoint();
-        voronoi = new Voronoi(structure_size, 32, 32, 1, 1f, STRUCTURE_SEED);
-        Channel voronoi32 = voronoi.getDistance(c1, c2, c3);
-        Channel voronoi32_hit = voronoi.getHitpoint();
-        Channel noise8 = new Midpoint(structure_size, 3, 0.45f, STRUCTURE_SEED).toChannel();
-        Channel noise256 = new Midpoint(structure_size, 8, 1f, STRUCTURE_SEED).toChannel();
+        Channel voronoi4 = new Voronoi(STRUCTURE_SIZE, 4, 4, 1, 1f, STRUCTURE_SEED)
+                .getDistance(WORLEY_VORONI_C1, WORLEY_VORONI_C2, WORLEY_VORONI_C3);
 
+        Channel voronoi8 = new Voronoi(STRUCTURE_SIZE, 8, 8, 1, 1f, STRUCTURE_SEED)
+                .getDistance(WORLEY_VORONI_C1, WORLEY_VORONI_C2, WORLEY_VORONI_C3);
+
+        Channel voronoi16 = new Voronoi(STRUCTURE_SIZE, 16, 16, 1, 1f, STRUCTURE_SEED)
+                .getDistance(WORLEY_VORONI_C1, WORLEY_VORONI_C2, WORLEY_VORONI_C3);
+
+        Channel voronoi32 = new Voronoi(STRUCTURE_SIZE, 32, 32, 1, 1f, STRUCTURE_SEED)
+                .getDistance(WORLEY_VORONI_C1, WORLEY_VORONI_C2, WORLEY_VORONI_C3);
+
+        Channel noise8 = new Midpoint(STRUCTURE_SIZE, 3, 0.45f, STRUCTURE_SEED).toChannel();
+        Channel noise256 = new Midpoint(STRUCTURE_SIZE, 8, 1f, STRUCTURE_SEED).toChannel();
         StructureLayers[] layers = switch (terrain) {
             case NATIVE -> {
-                var natives = generateStructuresNative(voronoi4, voronoi8, voronoi8_hit, voronoi16, voronoi16_hit,
-                        voronoi32, voronoi32_hit, noise8, noise256);
+                var natives = generateStructuresNative(voronoi4, voronoi8, voronoi16, voronoi32, noise8, noise256);
                 ProgressListener.progress();
                 generateTerrainNative();
                 yield natives;
             }
             case VIKING -> {
-                var vikings = generateStructuresViking(voronoi4, voronoi8, voronoi8_hit, voronoi16, voronoi16_hit,
-                        voronoi32, voronoi32_hit, noise8, noise256);
+                var vikings = generateStructuresViking(voronoi4, voronoi8, voronoi16, voronoi32, noise8, noise256);
                 ProgressListener.progress();
                 generateTerrainViking();
                 yield vikings;
@@ -269,61 +261,58 @@ public final class Landscape {
     // **************
     // * STRUCTURES *
     // **************
-    private StructureLayers[] generateStructuresNative(Channel voronoi4,
-            Channel voronoi8, Channel voronoi8_hit, Channel voronoi16, Channel voronoi16_hit,
-            Channel voronoi32, Channel voronoi32_hit, Channel noise8, Channel noise256) {
+    private StructureLayers[] generateStructuresNative(Channel voronoi4, Channel voronoi8,
+            Channel voronoi16, Channel voronoi32, Channel noise8, Channel noise256) {
         var structures = new StructureLayers[7];
         ProgressListener.progress(1 / 8f);
 
-        structures[0] = Landscape.genSand(structure_size, noise8.copy(), noise256.copy());
+        structures[0] = Landscape.genSand(STRUCTURE_SIZE, noise8.copy(), noise256.copy());
 
-        structures[1] = Landscape.genDirt(structure_size, noise8.copy(), noise256.copy(), voronoi32.copy());
+        structures[1] = Landscape.genDirt(STRUCTURE_SIZE, noise8.copy(), noise256.copy(), voronoi32.copy());
 
-        structures[2] = Landscape.genRubble(structure_size, noise8.copy(), voronoi4.copy(), voronoi8.copy(), voronoi16
-                .copy(), structures[1].diffuse().copy());
+        structures[2] = Landscape.genRubble(STRUCTURE_SIZE, noise8.copy(), voronoi4.copy(), voronoi8.copy(),
+                voronoi16.copy(), structures[1].diffuse().copy());
 
-        structures[4] = Landscape.genGrass(structure_size, NATIVE_GRASS_COLOR, noise8.copy(), noise256.copy());
+        structures[4] = Landscape.genGrass(STRUCTURE_SIZE, NATIVE_GRASS_COLOR, noise8.copy(), noise256.copy());
 
-        structures[3] = Landscape.genRock(structure_size, noise8.copy(), noise256.copy(), voronoi4.copy(), voronoi8
-                .copy(), voronoi16.copy(), structures[2].diffuse.copy(), structures[4].diffuse.copy());
+        structures[3] = Landscape.genRock(STRUCTURE_SIZE, noise8.copy(), noise256.copy(), voronoi4.copy(),
+                voronoi8.copy(), voronoi16.copy(), structures[2].diffuse.copy(), structures[4].diffuse.copy());
 
         structures[5] = Landscape.genBlack();
 
-        structures[6] = Landscape.genSeabottom(terrain, structure_size, noise8.copy(), noise256.copy(), voronoi4.copy(),
-                voronoi8.copy());
+        structures[6] = Landscape.genSeabottom(terrain, STRUCTURE_SIZE);
 
-        StructureLayers structure_detail = Landscape.genDetail(detail_size, detail_alpha_value, STRUCTURE_SEED, noise8
-                .copy());
+        StructureLayers structure_detail = Landscape.genDetail(DETAIL_SIZE, detail_alpha_value, STRUCTURE_SEED,
+                noise8.copy());
         detail = structure_detail.diffuse();
         detail_normal = structure_detail.normal();
         return structures;
     }
 
-    private StructureLayers[] generateStructuresViking(Channel voronoi4,
-            Channel voronoi8, Channel voronoi8_hit, Channel voronoi16, Channel voronoi16_hit,
-            Channel voronoi32, Channel voronoi32_hit, Channel noise8, Channel noise256) {
+    private StructureLayers[] generateStructuresViking(Channel voronoi4, Channel voronoi8,
+            Channel voronoi16, Channel voronoi32,
+            Channel noise8, Channel noise256) {
         var structures = new StructureLayers[7];
         ProgressListener.progress(1 / 8f);
 
-        structures[0] = Landscape.genGravel(structure_size, noise8.copy(), noise256.copy());
+        structures[0] = Landscape.genGravel(STRUCTURE_SIZE, noise8.copy(), noise256.copy());
 
-        structures[1] = Landscape.genSoil(structure_size, noise8.copy(), noise256.copy(), voronoi32.copy());
+        structures[1] = Landscape.genSoil(STRUCTURE_SIZE, noise8.copy(), noise256.copy(), voronoi32.copy());
 
-        structures[3] = Landscape.genGrass(structure_size, VIKING_GRASS_COLOR, noise8.copy(), noise256.copy());
+        structures[3] = Landscape.genGrass(STRUCTURE_SIZE, VIKING_GRASS_COLOR, noise8.copy(), noise256.copy());
         structures[3].diffuse.multiply(.75f, .9f, 1.1f);
 
-        structures[2] = Landscape.genCliff(structure_size, noise8.copy(), noise256.copy(), voronoi4.copy(), voronoi8
-                .copy(), voronoi16.copy(), structures[1].diffuse.copy(), structures[3].diffuse.copy());
+        structures[2] = Landscape.genCliff(STRUCTURE_SIZE, noise8.copy(), noise256.copy(), voronoi4.copy(),
+                voronoi8.copy(), voronoi16.copy(), structures[1].diffuse.copy(), structures[3].diffuse.copy());
 
-        structures[4] = Landscape.genSnow(structure_size, noise8.copy(), noise256.copy());
+        structures[4] = Landscape.genSnow(STRUCTURE_SIZE, noise8.copy(), noise256.copy());
 
         structures[5] = Landscape.genBlack();
 
-        structures[6] = Landscape.genSeabottom(terrain, structure_size, noise8.copy(), noise256.copy(), voronoi4.copy(),
-                voronoi8.copy());
+        structures[6] = Landscape.genSeabottom(terrain, STRUCTURE_SIZE);
 
-        StructureLayers structure_detail = Landscape.genDetail(detail_size, detail_alpha_value, STRUCTURE_SEED, noise8
-                .copy());
+        StructureLayers structure_detail = Landscape.genDetail(DETAIL_SIZE, detail_alpha_value, STRUCTURE_SEED,
+                noise8.copy());
         detail = structure_detail.diffuse();
         detail_normal = structure_detail.normal();
 
@@ -496,8 +485,7 @@ public final class Landscape {
     }
 
     private static StructureLayers genSeabottom(
-            Terrain terrain, int size,
-            Channel noise8, Channel noise256, Channel voronoi4, Channel voronoi8) {
+            Terrain terrain, int size) {
         Color.Standard color = SEA_BOTTOM_COLOR.get(terrain);
         Layer bottom = new Layer(
                 new Channel(size, size).fill(color.r()),
@@ -592,7 +580,7 @@ public final class Landscape {
         Channel cliffs = voronoi.getDistance(-1f, 1f, 0f).brightness(1.25f).multiply(0.33f);
         height.channelAdd(cliffs).dynamicRange();
 
-        // Fist of God (tm)
+        // Fist of God™
         Voronoi voronoi2 = new Voronoi(unit_grids_per_world, 4, 4, 1, 1f, seed);
         if (unit_grids_per_world > 128) {
             height.channelSubtract(voronoi2.getDistance(1f, 0f, 0f).gamma(.5f).multiply(.5f));
@@ -1153,8 +1141,8 @@ public final class Landscape {
         float angle_step = 2f * (float) Math.PI / num_players;
         float radius = 0.35f * unit_grids_per_world;
         int scale = meters_per_world / unit_grids_per_world;
-        int[] location_quarters = new int[2];
-        int[] location_armory = new int[2];
+        int[] location_quarters;
+        int[] location_armory;
         for (int i = 0; i < num_players; i++) {
             int x = (int) (radius * (float) Math.cos(angle) + (unit_grids_per_world >> 1) + 0.5f);
             int y = (int) (radius * (float) Math.sin(angle) + (unit_grids_per_world >> 1) + 0.5f);
