@@ -10,40 +10,25 @@ import java.util.List;
 /**
  * Defines a skirmish match setup composing WorldParameters, IslandConfig, and bot slot configurations.
  */
-public final class SkirmishSetup {
-    private final WorldParameters worldParameters;
-    private final IslandConfig islandConfig;
-    private final List<SkirmishPlayerSlot> player_slots;
-
-    public SkirmishSetup(WorldParameters worldParameters, IslandConfig islandConfig,
-            List<SkirmishPlayerSlot> player_slots) {
-        this.worldParameters = worldParameters;
-        this.islandConfig = islandConfig;
-        this.player_slots = List.copyOf(player_slots);
-    }
-
-    public WorldParameters getWorldParameters() {
-        return worldParameters;
-    }
-
-    public IslandConfig getIslandConfig() {
-        return islandConfig;
-    }
-
-    public List<SkirmishPlayerSlot> getPlayerSlots() {
-        return player_slots;
+public record SkirmishSetup(
+                            WorldParameters worldParameters,
+                            IslandConfig islandConfig,
+                            List<SkirmishPlayerSlot> playerSlots
+) {
+    public SkirmishSetup {
+        playerSlots = List.copyOf(playerSlots);
     }
 
     /**
      * Validates that the skirmish setup has at least two opposing teams.
      */
     public boolean hasEnemyTeams() {
-        if (player_slots.isEmpty()) {
+        if (playerSlots.isEmpty()) {
             return false;
         }
-        int player0Team = player_slots.getFirst().team();
-        for (int i = 1; i < player_slots.size(); i++) {
-            if (player_slots.get(i).team() != player0Team) {
+        int firstTeam = playerSlots.getFirst().team();
+        for (int i = 1; i < playerSlots.size(); i++) {
+            if (playerSlots.get(i).team() != firstTeam) {
                 return true;
             }
         }
@@ -55,7 +40,7 @@ public final class SkirmishSetup {
      */
     public void startSkirmishServer(GameNetwork gameNetwork) {
         var serverInterface = gameNetwork.getClient().getServerInterface();
-        for (SkirmishPlayerSlot slot : player_slots) {
+        for (SkirmishPlayerSlot slot : playerSlots) {
             if (slot.isHuman()) {
                 serverInterface.setPlayerSlot(slot.slotIndex(), PlayerSlot.HUMAN, slot.race().getValue(),
                         slot.team(), true, PlayerSlot.AI_NONE);

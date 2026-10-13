@@ -11,12 +11,12 @@ import org.jspecify.annotations.Nullable;
  */
 public sealed interface Accessory extends AutoCloseable permits StaticAccessory, AnimatedAccessory {
     /**
-     * Returns the sprite to render, or null if this accessory is rendered via other means (e.g. emitters).
-     *
-     * @return The sprite renderer.
+     * {@return The sprite to render, or null if this accessory is rendered via other means (e.g. emitters).}
      */
     @Nullable
-    default SpriteKey getSpriteRenderer() { return null; }
+    default SpriteKey getSpriteRenderer() {
+        return null;
+    }
 
     boolean isVisible(Model parent, CameraState camera);
 

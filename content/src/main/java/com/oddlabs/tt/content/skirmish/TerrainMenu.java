@@ -672,7 +672,7 @@ public final class TerrainMenu extends Group {
             if (multiplayer_setup == null) {
                 return false;
             }
-            game = multiplayer_setup.getGame();
+            game = multiplayer_setup.game();
         } else {
             skirmish_setup = buildSkirmishSetup(terrain, hills, vegetation_amount, supplies_amount);
             if (!skirmish_setup.hasEnemyTeams()) {
@@ -695,9 +695,9 @@ public final class TerrainMenu extends Group {
                 ? new MultiplayerInGameInfo(game.getRandomStartPos(), game.isRated())
                 : new DefaultInGameInfo();
         WorldParameters parameters = multiplayer
-                ? multiplayer_setup.getWorldParameters() : skirmish_setup.getWorldParameters();
+                ? multiplayer_setup.worldParameters() : skirmish_setup.worldParameters();
         IslandConfig islandConfig = multiplayer
-                ? multiplayer_setup.getIslandConfig() : skirmish_setup.getIslandConfig();
+                ? multiplayer_setup.islandConfig() : skirmish_setup.islandConfig();
         var game_network = Menu.startNewGame(peer,
                 gui_root,
                 main_menu.getScreenManager(),
@@ -713,7 +713,7 @@ public final class TerrainMenu extends Group {
             IO.println("Start server");
         } else {
             game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN,
-                    multiplayer_setup.getPlayer0Race().getValue(), multiplayer_setup.getPlayer0Team(),
+                    multiplayer_setup.player0Race().getValue(), multiplayer_setup.player0Team(),
                     false, PlayerSlot.AI_NONE);
         }
         IO.println("Map code: " + label_mapcode.getContents());

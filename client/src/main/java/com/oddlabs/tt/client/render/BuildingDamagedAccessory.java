@@ -16,7 +16,6 @@ import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayDeque;
