@@ -5,6 +5,10 @@ import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
 import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
+import com.oddlabs.tt.simulation.landscape.PlantLocation;
+import com.oddlabs.tt.simulation.landscape.SpawnLocation;
+import com.oddlabs.tt.simulation.landscape.SupplyPlacement;
+import com.oddlabs.tt.simulation.landscape.TreePlacement;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Action;
@@ -123,7 +127,7 @@ class AIDecouplingTest {
                                      float[] heightmap,
                                      boolean[][] accessGrid,
                                      byte[][] buildGrid,
-                                     float[][] startingLocations) implements LandscapeData {
+                                     List<List<SpawnLocation>> startingLocations) implements LandscapeData {
 
         static TestLandscapeData create(int size) {
             float[] heightmap = new float[size * size];
@@ -139,13 +143,15 @@ class AIDecouplingTest {
                 Arrays.fill(row, (byte) 20);
             }
 
-            float[][] startingLocations = new float[2][40];
-            for (int i = 0; i < 20; i++) {
-                startingLocations[0][2 * i] = 10.0f + (i % 5) * 1.5f;
-                startingLocations[0][2 * i + 1] = 10.0f + (i / 5f) * 1.5f;
-
-                startingLocations[1][2 * i] = 40.0f + (i % 5) * 1.5f;
-                startingLocations[1][2 * i + 1] = 40.0f + (i / 5f) * 1.5f;
+            List<List<SpawnLocation>> startingLocations = new ArrayList<>();
+            for (int p = 0; p < 2; p++) {
+                List<SpawnLocation> playerLocations = new ArrayList<>();
+                for (int i = 0; i < 20; i++) {
+                    float baseX = (p == 0) ? 10.0f : 40.0f;
+                    float baseY = (p == 0) ? 10.0f : 40.0f;
+                    playerLocations.add(new SpawnLocation(baseX + (i % 5) * 1.5f, baseY + (i / 5f) * 1.5f));
+                }
+                startingLocations.add(playerLocations);
             }
 
             return new TestLandscapeData(size, heightmap, accessGrid, buildGrid, startingLocations);
@@ -167,28 +173,29 @@ class AIDecouplingTest {
         }
 
         @Override
-        public List<int[]> trees() {
+        public List<TreePlacement> trees() {
             return List.of();
         }
 
         @Override
-        public List<int[]> palmTrees() {
+        public List<TreePlacement> palmTrees() {
             return List.of();
         }
 
         @Override
-        public List<int[]> rocks() {
+        public List<SupplyPlacement> rocks() {
             return List.of();
         }
 
         @Override
-        public List<int[]> iron() {
+        public List<SupplyPlacement> iron() {
             return List.of();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public float[][] plants() {
-            return new float[0][0];
+        public List<PlantLocation>[] plants() {
+            return new ArrayList[0];
         }
     }
 

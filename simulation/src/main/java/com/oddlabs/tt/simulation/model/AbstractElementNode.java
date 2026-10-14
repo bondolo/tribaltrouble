@@ -2,6 +2,8 @@ package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.PlantLocation;
+import com.oddlabs.tt.simulation.landscape.SupplyPlacement;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.util.LinkedList;
@@ -75,44 +77,44 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
         return root;
     }
 
-    public static void buildSupplies(World world, List<int[]> iron_positions, List<
-            int[]> rock_positions, float[][] plants, Terrain terrain,
+    public static void buildSupplies(World world, List<SupplyPlacement> ironPlacements, List<
+            SupplyPlacement> rockPlacements, List<PlantLocation>[] plants, Terrain terrain,
             boolean insertPlants) {
-        buildRockSupplies(world, rock_positions);
-        buildIronSupplies(world, iron_positions);
+        buildRockSupplies(world, rockPlacements);
+        buildIronSupplies(world, ironPlacements);
         if (insertPlants) {
             addPlants(world, plants, terrain);
         }
     }
 
-    private static void buildRockSupplies(World world, List<int[]> positions) {
-        IO.println("num_rocks = " + positions.size());
-        positions.forEach(coords -> {
-            int grid_x = coords[0];
-            int grid_y = coords[1];
+    private static void buildRockSupplies(World world, List<SupplyPlacement> placements) {
+        IO.println("num_rocks = " + placements.size());
+        placements.forEach(placement -> {
+            int grid_x = placement.x();
+            int grid_y = placement.y();
             float x = UnitGrid.coordinateFromGrid(grid_x) + world.getRandom().nextFloat(-.5f, .5f);
             float y = UnitGrid.coordinateFromGrid(grid_y) + world.getRandom().nextFloat(-.5f, .5f);
             new RockSupply(world, grid_x, grid_y, x, y, true);
         });
     }
 
-    private static void buildIronSupplies(World world, List<int[]> positions) {
-        IO.println("num_iron = " + positions.size());
-        positions.forEach(coords -> {
-            int grid_x = coords[0];
-            int grid_y = coords[1];
+    private static void buildIronSupplies(World world, List<SupplyPlacement> placements) {
+        IO.println("num_iron = " + placements.size());
+        placements.forEach(placement -> {
+            int grid_x = placement.x();
+            int grid_y = placement.y();
             float x = UnitGrid.coordinateFromGrid(grid_x) + world.getRandom().nextFloat(-.5f, .5f);
             float y = UnitGrid.coordinateFromGrid(grid_y) + world.getRandom().nextFloat(-.5f, .5f);
             new IronSupply(world, grid_x, grid_y, x, y, true);
         });
     }
 
-    public static void addPlants(World world, float[][] plants,
+    public static void addPlants(World world, List<PlantLocation>[] plants,
             Terrain terrain) {
         int num_plants = 0;
         for (int t = 0; t < plants.length; t++) {
-            num_plants += plants[t].length / 2;
-            for (int p = 0; p < plants[t].length >> 1; p++) {
+            num_plants += plants[t].size();
+            for (PlantLocation placement : plants[t]) {
                 float dir_x = java.util.concurrent.ThreadLocalRandom.current().nextFloat();
                 float dir_y = java.util.concurrent.ThreadLocalRandom.current().nextFloat();
                 float len_sqr = dir_x * dir_x + dir_y * dir_y;
@@ -124,7 +126,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
                     dir_x *= inv_len;
                     dir_y *= inv_len;
                 }
-                new Plants(world, plants[t][2 * p], plants[t][2 * p + 1], dir_x, dir_y,
+                new Plants(world, placement.x(), placement.y(), dir_x, dir_y,
                         terrain, t);
             }
         }

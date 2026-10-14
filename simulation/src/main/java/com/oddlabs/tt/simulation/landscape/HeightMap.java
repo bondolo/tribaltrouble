@@ -102,7 +102,7 @@ public final class HeightMap implements LandscapeEnvironment {
         landscape_leaves[y][x] = leaf;
     }
 
-    public List<int[]> getTrees() {
+    public List<TreePlacement> getTrees() {
         return landscapeData.trees();
     }
 

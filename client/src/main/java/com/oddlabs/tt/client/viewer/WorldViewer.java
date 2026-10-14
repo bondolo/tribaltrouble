@@ -44,6 +44,7 @@ import com.oddlabs.tt.net.InGameChatHistory;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
+import com.oddlabs.tt.simulation.landscape.SpawnLocation;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.DistributableTable;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
@@ -258,7 +259,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         return local_player;
     }
 
-    private void initPlayer(ResourceBundle bundle, float[] starting_location, PlayerSlot slot,
+    private void initPlayer(ResourceBundle bundle, List<SpawnLocation> startingLocations, PlayerSlot slot,
             Player player, UnitInfo unit_info, int initial_gamespeed) {
         if (slot.getType() == PlayerSlot.AI) {
             AI ai = switch (slot.getAIDifficulty()) {
@@ -285,29 +286,34 @@ public final class WorldViewer implements Animated, AutoCloseable {
             player.setPreferredGamespeed(initial_gamespeed);
             int i = 0;
             for (int j = 0; j < unit_info.numPeons(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRaceInfo()
+                SpawnLocation loc = startingLocations.get(i);
+                new Unit(player, loc.x(), loc.y(), null, player.getRaceInfo()
                         .getUnitTemplate(UnitType.PEON));
             }
             for (int j = 0; j < unit_info.numRockWarriors(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRaceInfo()
+                SpawnLocation loc = startingLocations.get(i);
+                new Unit(player, loc.x(), loc.y(), null, player.getRaceInfo()
                         .getUnitTemplate(UnitType.WARRIOR_ROCK));
             }
             for (int j = 0; j < unit_info.numIronWarriors(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRaceInfo()
+                SpawnLocation loc = startingLocations.get(i);
+                new Unit(player, loc.x(), loc.y(), null, player.getRaceInfo()
                         .getUnitTemplate(UnitType.WARRIOR_IRON));
             }
             for (int j = 0; j < unit_info.numRubberWarriors(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRaceInfo()
+                SpawnLocation loc = startingLocations.get(i);
+                new Unit(player, loc.x(), loc.y(), null, player.getRaceInfo()
                         .getUnitTemplate(UnitType.WARRIOR_RUBBER));
             }
             if (unit_info.hasChieftain()) {
+                SpawnLocation loc = startingLocations.get(i);
                 Unit chieftain;
                 if (player.getRaceInfo().getChieftainAI() instanceof VikingChieftainAI)
-                    chieftain = new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player
+                    chieftain = new Unit(player, loc.x(), loc.y(), null, player
                             .getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(bundle,
                                     "chieftain_name"), false);
                 else if (player.getRaceInfo().getChieftainAI() instanceof NativeChieftainAI)
-                    chieftain = new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player
+                    chieftain = new Unit(player, loc.x(), loc.y(), null, player
                             .getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(bundle,
                                     "native_chieftain_name"), false);
                 else
@@ -319,11 +325,11 @@ public final class WorldViewer implements Animated, AutoCloseable {
         }
     }
 
-    private void initPlayers(float[][] starting_locations, PlayerSlot[] slots, List<Player> players,
+    private void initPlayers(List<List<SpawnLocation>> startingLocations, PlayerSlot[] slots, List<Player> players,
             UnitInfo[] unit_infos, int initial_gamespeed) {
         ResourceBundle bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
         for (int i = 0; i < slots.length; i++) {
-            initPlayer(bundle, starting_locations[i], slots[i], players.get(i), unit_infos[i], initial_gamespeed);
+            initPlayer(bundle, startingLocations.get(i), slots[i], players.get(i), unit_infos[i], initial_gamespeed);
         }
     }
 

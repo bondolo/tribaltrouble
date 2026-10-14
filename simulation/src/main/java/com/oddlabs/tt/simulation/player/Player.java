@@ -5,6 +5,7 @@ import com.oddlabs.tt.simulation.model.MagicType;
 
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
+import com.oddlabs.tt.simulation.landscape.SpawnLocation;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
@@ -28,6 +29,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -283,9 +285,10 @@ public final class Player implements PlayerInterface {
         });
     }
 
-    public Player init(float[] starting_location) {
-        this.start_x = starting_location[0];
-        this.start_y = starting_location[1];
+    public Player init(List<SpawnLocation> startingLocations) {
+        SpawnLocation first = startingLocations.get(0);
+        this.start_x = first.x();
+        this.start_y = first.y();
 
         return this;
     }
@@ -320,11 +323,7 @@ public final class Player implements PlayerInterface {
     }
 
     public RaceInfo getRaceInfo() {
-        var res = getWorld().getRaceData();
-        if (null == res) {
-            throw new NullPointerException("Race data not initialized");
-        }
-        return res.getRaceInfo(player_info.race());
+        return Objects.requireNonNull(getWorld().getRaceData()).getRaceInfo(player_info.race());
     }
 
     public SupplyContainer getUnitCountContainer() {

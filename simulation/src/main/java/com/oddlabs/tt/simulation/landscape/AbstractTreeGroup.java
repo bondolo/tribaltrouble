@@ -44,18 +44,18 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
         return num_responding_trees > 0;
     }
 
-    public static AbstractTreeGroup newRoot(World world, List<int[]> tree_positions,
-            List<int[]> palm_tree_positions, Terrain terrain) {
+    public static AbstractTreeGroup newRoot(World world, List<TreePlacement> treePositions,
+            List<TreePlacement> palmTreePositions, Terrain terrain) {
         AbstractTreeGroup root = new TreeGroup(null, 0);
 
         switch (terrain) {
             case NATIVE -> {
-                root.buildTrees(world, TreeType.JUNGLE, 3, 2.3f, tree_positions, 0.25f, 0.75f);
-                root.buildTrees(world, TreeType.PALM, 1, 1.6f, palm_tree_positions, 0.5f, 1f);
+                root.buildTrees(world, TreeType.JUNGLE, 3, 2.3f, treePositions, 0.25f, 0.75f);
+                root.buildTrees(world, TreeType.PALM, 1, 1.6f, palmTreePositions, 0.5f, 1f);
             }
             case VIKING -> {
-                root.buildTrees(world, TreeType.OAK, 3, 2.3f, tree_positions, 0.5f, 1f);
-                root.buildTrees(world, TreeType.PINE, 1, 1.6f, palm_tree_positions, 0.5f, 1f);
+                root.buildTrees(world, TreeType.OAK, 3, 2.3f, treePositions, 0.5f, 1f);
+                root.buildTrees(world, TreeType.PINE, 1, 1.6f, palmTreePositions, 0.5f, 1f);
             }
         }
 
@@ -64,13 +64,13 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
     }
 
     private void buildTrees(final World world, final TreeType tree_type, final int grid_size,
-            final float radius, List<int[]> tree_positions, float scale_factor, float min_size) {
+            final float radius, List<TreePlacement> treePositions, float scale_factor, float min_size) {
         Matrix4f matrix2 = new Matrix4f();
         Vector3f vector = new Vector3f();
-        for (int[] coords : tree_positions) {
+        for (TreePlacement placement : treePositions) {
             final Matrix4f matrix = new Matrix4f();
-            final int center_grid_x = coords[0];
-            final int center_grid_y = coords[1];
+            final int center_grid_x = placement.x();
+            final int center_grid_y = placement.y();
             final float tree_x = UnitGrid.coordinateFromGrid(center_grid_x);
             final float tree_y = UnitGrid.coordinateFromGrid(center_grid_y);
             float rotation = world.getRandom().nextFloat(0f, 360f);

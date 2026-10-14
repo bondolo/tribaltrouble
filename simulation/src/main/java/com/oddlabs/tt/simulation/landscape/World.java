@@ -61,7 +61,7 @@ public final class World implements SimulationClock {
     private final @Nullable RaceData races_resources;
     private final LandscapeBoundsProvider landscape_resources;
     private final Terrain terrain;
-    private final float[][] plantCoordinates;
+    private final List<PlantLocation>[] plantCoordinates;
     private final List<Plants> activePlants = new ArrayList<>();
     private final DistributableTable distributable_table = new DistributableTable();
 
@@ -170,9 +170,10 @@ public final class World implements SimulationClock {
         animation_manager_real_time = new AnimationManager();
         random = new Random(42);
 
+        List<List<SpawnLocation>> startingLocations = landscapeData.startingLocations();
         players = List.of(IntStream.range(0, player_infos.size())
                 .mapToObj(i -> new Player(this, player_infos.get(i), playerColors[i % playerColors.length])
-                        .init(landscapeData.startingLocations()[i])
+                        .init(startingLocations.get(i))
                 ).toArray(Player[]::new));
 
         long time_stop = System.currentTimeMillis();
@@ -180,14 +181,13 @@ public final class World implements SimulationClock {
                 + " sec ********************");
         this.supply_managers = new SupplyManagers(this);
         this.unit_grid = new UnitGrid(world);
-        RegionBuilder.buildRegions(unit_grid, landscapeData.startingLocations()[0][0],
-                landscapeData.startingLocations()[0][1]);
+        SpawnLocation firstSpawn = startingLocations.get(0).get(0);
+        RegionBuilder.buildRegions(unit_grid, firstSpawn.x(), firstSpawn.y());
         this.patch_root = new PatchGroup(this);
         this.tree_root = AbstractTreeGroup.newRoot(this, landscapeData.trees(), landscapeData.palmTrees(), terrain);
         this.element_root = AbstractElementNode.newRoot(world);
-        AbstractElementNode.buildSupplies(this, landscapeData.iron(), landscapeData.rocks(), landscapeData.plants(),
-                terrain,
-                insertPlants);
+        AbstractElementNode.buildSupplies(this, landscapeData.iron(), landscapeData.rocks(), plantCoordinates,
+                terrain, insertPlants);
         activeWorlds.add(new WeakReference<>(this));
     }
 

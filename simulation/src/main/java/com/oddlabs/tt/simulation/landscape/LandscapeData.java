@@ -38,39 +38,39 @@ public interface LandscapeData {
     float[] heightmap();
 
     /**
-     * Returns the coordinates and attributes of standard trees.
+     * Returns the grid coordinates of standard tree placements.
      *
-     * @return the standard trees list
+     * @return the standard tree placements list
      */
-    List<int[]> trees();
+    List<TreePlacement> trees();
 
     /**
-     * Returns the coordinates and attributes of palm trees.
+     * Returns the grid coordinates of palm tree placements.
      *
-     * @return the palm trees list
+     * @return the palm tree placements list
      */
-    List<int[]> palmTrees();
+    List<TreePlacement> palmTrees();
 
     /**
-     * Returns the coordinates of rock supply deposits.
+     * Returns the grid coordinates of rock supply deposits.
      *
-     * @return the rock deposits list
+     * @return the rock supply placements list
      */
-    List<int[]> rocks();
+    List<SupplyPlacement> rocks();
 
     /**
-     * Returns the coordinates of iron supply deposits.
+     * Returns the grid coordinates of iron supply deposits.
      *
-     * @return the iron deposits list
+     * @return the iron supply placements list
      */
-    List<int[]> iron();
+    List<SupplyPlacement> iron();
 
     /**
-     * Returns the coordinates of cosmetic ground vegetation.
+     * Returns the world coordinates of cosmetic ground vegetation, indexed by plant type.
      *
-     * @return the cosmetic plant coordinates
+     * @return the plant placements indexed by type, then by placement
      */
-    float[][] plants();
+    List<PlantLocation>[] plants();
 
     /**
      * Returns the movement accessibility grid.
@@ -87,9 +87,9 @@ public interface LandscapeData {
     byte[][] buildGrid();
 
     /**
-     * Returns the starting player coordinate pairs.
+     * Returns the per-player spawn locations for initial units.
      *
-     * @return the starting locations array
+     * @return the starting locations list indexed by player, then by unit
      */
-    float[][] startingLocations();
+    List<List<SpawnLocation>> startingLocations();
 }

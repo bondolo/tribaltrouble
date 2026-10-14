@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
+import com.oddlabs.tt.simulation.landscape.TreePlacement;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
@@ -18,14 +19,14 @@ public final class RubberGroup {
 
     public RubberGroup(World world) {
         this.world = world;
-        int[] group_position = getGroupPosition();
+        TreePlacement group_position = getGroupPosition();
         if (group_position != null) {
             int num_supplies = world.getRandom().nextInt(MIN_CHICKENS_PER_GROUP,
                     MAX_CHICKENS_PER_GROUP + 1);
-            Target[] supply_positions = world.getUnitGrid().findGridTargets(group_position[0], group_position[1],
+            var supply_positions = world.getUnitGrid().findGridTargets(group_position.x(), group_position.y(),
                     num_supplies, true);
-            float spawn_x = UnitGrid.coordinateFromGrid(group_position[0]);
-            float spawn_y = UnitGrid.coordinateFromGrid(group_position[1]);
+            float spawn_x = UnitGrid.coordinateFromGrid(group_position.x());
+            float spawn_y = UnitGrid.coordinateFromGrid(group_position.y());
             for (int i = 0; i < num_supplies; i++) {
                 Target target = supply_positions[i];
                 if (target == null) continue;
@@ -40,19 +41,19 @@ public final class RubberGroup {
         }
     }
 
-    private int @Nullable [] getGroupPosition() {
-        List<int[]> tree_positions = world.getHeightMap().getTrees();
-        if (tree_positions.isEmpty()) {
+    private @Nullable TreePlacement getGroupPosition() {
+        List<TreePlacement> treePositions = world.getHeightMap().getTrees();
+        if (treePositions.isEmpty()) {
             return null;
         }
-        int start_index = world.getRandom().nextInt(tree_positions.size());
-        int index = (start_index + 1) % tree_positions.size();
-        while (index != start_index) {
-            int[] coords = tree_positions.get(index);
-            Occupant occ = world.getUnitGrid().getOccupant(coords[0], coords[1]);
+        int startIndex = world.getRandom().nextInt(treePositions.size());
+        int index = (startIndex + 1) % treePositions.size();
+        while (index != startIndex) {
+            TreePlacement placement = treePositions.get(index);
+            Occupant occ = world.getUnitGrid().getOccupant(placement.x(), placement.y());
             if (occ instanceof TreeSupply)
-                return coords;
-            index = (index + 1) % tree_positions.size();
+                return placement;
+            index = (index + 1) % treePositions.size();
         }
         return null;
     }

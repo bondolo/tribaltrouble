@@ -1321,9 +1321,20 @@ public final class Channel {
         return this;
     }
 
+    @FunctionalInterface
+    public interface BiIntFunction<R> {
+        R apply(int x, int y);
+    }
+
+    private static final BiIntFunction<int[]> INT_ARRAY_BUILDER = (x, y) -> new int[]{x, y};
+
     public int[] find(int radius, int x_start, int y_start, float value) {
+        return find(radius, x_start, y_start, value, INT_ARRAY_BUILDER);
+    }
+
+    public <R> R find(int radius, int x_start, int y_start, float value, BiIntFunction<R> builder) {
         if (pixels[y_start * width + x_start] == value)
-            return new int[]{x_start, y_start};
+            return builder.apply(x_start, y_start);
         int r = 1;
         while (r <= radius) {
             int x = x_start - r;
@@ -1331,27 +1342,31 @@ public final class Channel {
             for (int i = 0; i < 2 * r - 1; i++) {
                 int y_i = y_start - r + 1 + i;
                 if (getPixelWrap(x, y_i) == value)
-                    return new int[]{(x % width + width) % width, (y_i % height + height) % height};
+                    return builder.apply((x % width + width) % width, (y_i % height + height) % height);
                 if (getPixelWrap(x2, y_i) == value)
-                    return new int[]{(x2 % width + width) % width, (y_i % height + height) % height};
+                    return builder.apply((x2 % width + width) % width, (y_i % height + height) % height);
             }
             int y = y_start - r;
             int y2 = y_start + r;
             for (int i = 0; i < 2 * r + 1; i++) {
                 int x_i = x_start - r + i;
                 if (getPixelWrap(x_i, y) == value)
-                    return new int[]{(x_i % width + width) % width, (y % height + height) % height};
+                    return builder.apply((x_i % width + width) % width, (y % height + height) % height);
                 if (getPixelWrap(x_i, y2) == value)
-                    return new int[]{(x_i % width + width) % width, (y2 % height + height) % height};
+                    return builder.apply((x_i % width + width) % width, (y2 % height + height) % height);
             }
             r++;
         }
-        return new int[]{-1, -1};
+        return builder.apply(-1, -1);
     }
 
     public int[] findNoWrap(int radius, int x_start, int y_start, float value) {
+        return findNoWrap(radius, x_start, y_start, value, INT_ARRAY_BUILDER);
+    }
+
+    public <R> R findNoWrap(int radius, int x_start, int y_start, float value, BiIntFunction<R> builder) {
         if (pixels[y_start * width + x_start] == value)
-            return new int[]{x_start, y_start};
+            return builder.apply(x_start, y_start);
         int r = 1;
         while (r <= radius) {
             int x = x_start - r;
@@ -1359,30 +1374,34 @@ public final class Channel {
             for (int i = 0; i < 2 * r - 1; i++) {
                 int y_i = y_start - r + 1 + i;
                 if (x >= 0 && x < width && y_i >= 0 && y_i < height && pixels[y_i * width + x] == value)
-                    return new int[]{x, y_i};
+                    return builder.apply(x, y_i);
                 if (x2 >= 0 && x2 < width && y_i >= 0 && y_i < height && pixels[y_i * width + x2] == value)
-                    return new int[]{x2, y_i};
+                    return builder.apply(x2, y_i);
             }
             int y = y_start - r;
             int y2 = y_start + r;
             for (int i = 0; i < 2 * r + 1; i++) {
                 int x_i = x_start - r + i;
                 if (x_i >= 0 && x_i < width && y >= 0 && y < height && pixels[y * width + x_i] == value)
-                    return new int[]{x_i, y};
+                    return builder.apply(x_i, y);
                 if (x_i >= 0 && x_i < width && y2 >= 0 && y2 < height && pixels[y2 * width + x_i] == value)
-                    return new int[]{x_i, y2};
+                    return builder.apply(x_i, y2);
             }
             r++;
         }
-        return new int[]{-1, -1};
+        return builder.apply(-1, -1);
     }
 
     public int[] findFirst(float value) {
+        return findFirst(value, INT_ARRAY_BUILDER);
+    }
+
+    public <R> R findFirst(float value, BiIntFunction<R> builder) {
         for (int i = 0; i < pixels.length; i++) {
             if (pixels[i] == value)
-                return new int[]{i % width, i / width};
+                return builder.apply(i % width, i / width);
         }
-        return new int[]{-1, -1};
+        return builder.apply(-1, -1);
     }
 
     public void matching(Predicate<Float> predicate, Consumer<int[]> consumer) {
@@ -1392,6 +1411,20 @@ public final class Channel {
             }
         }
     }
+
+    @FunctionalInterface
+    public interface BiIntConsumer {
+        void accept(int x, int y);
+    }
+
+    public void matching(Predicate<Float> predicate, BiIntConsumer consumer) {
+        for (int i = 0; i < pixels.length; i++) {
+            if (predicate.test(pixels[i])) {
+                consumer.accept(i % width, i / width);
+            }
+        }
+    }
+
 
     public Channel bump(Channel bumpmap, float lx, float ly, float shadow, float light,
             float ambient) {

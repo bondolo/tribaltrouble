@@ -11,18 +11,24 @@ import com.oddlabs.tt.procedural.shape.Hill;
 import com.oddlabs.tt.simulation.SimulationConfig;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
+import com.oddlabs.tt.simulation.landscape.Placement;
+import com.oddlabs.tt.simulation.landscape.SupplyPlacement;
+import com.oddlabs.tt.simulation.landscape.TreePlacement;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.util.Color;
 import com.oddlabs.util.Utils;
 
+import com.oddlabs.tt.simulation.landscape.PlantLocation;
+import com.oddlabs.tt.simulation.landscape.SpawnLocation;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 /**
  * Manages the procedural generation, state, and properties of the game's landscape.
@@ -124,9 +130,14 @@ public final class Landscape {
     private final Terrain terrain;
 
     private byte[][] build;
-    private float[][] player_locations;
+    private List<List<SpawnLocation>> player_locations;
     private int[][] supply_locations;
-    private float[][] plants;
+
+    // generate plant maps
+    @SuppressWarnings("unchecked")
+    private List<PlantLocation>[] plants = IntStream.range(0, NUM_PLANT_TYPES)
+            .mapToObj(i -> new ArrayList<PlantLocation>())
+            .toArray(List[]::new);
 
     public Landscape(int num_players, IslandConfig config, float detail_alpha_value,
             int initial_unit_count, float random_start_pos) {
@@ -1006,8 +1017,6 @@ public final class Landscape {
         alpha_maps[5] = shadow;
         ProgressListener.progress(1 / 14f);
 
-        // generate plant maps
-        plants = new float[NUM_PLANT_TYPES][max_plants << 1];
         tree_channel.channelBrightest(palmtree_channel).brightness(.5f);
         noise.scaleFast(noise.width >> 1, noise.height >> 1).tileDouble();
 
@@ -1090,8 +1099,9 @@ public final class Landscape {
                     if (val <= upper_bound && val > lower_bound && place.getPixel(x, y) < 2 && random.nextFloat()
                             < .25) {
                         // place plant
-                        plants[plant_type][2 * i] = meters_per_height_unit * (x + random.nextFloat());
-                        plants[plant_type][2 * i + 1] = meters_per_height_unit * (y + random.nextFloat());
+                        plants[plant_type].add(new PlantLocation(
+                                meters_per_height_unit * (x + random.nextFloat()),
+                                meters_per_height_unit * (y + random.nextFloat())));
 
                         place.putPixelWrap(x, y, place.getPixel(x, y) + 1f);
 
@@ -1134,7 +1144,7 @@ public final class Landscape {
         if (DEBUG) buildmap.toLayer().saveAsPNG("buildmap");
         if (DEBUG) buildmap_debug.toLayer().saveAsPNG("buildmap_debug");
         // find initial starting locations
-        player_locations = new float[num_players][2 * initial_unit_count];
+        player_locations = new ArrayList<>(num_players);
         supply_locations = new int[num_players][2];
         float angle = 0.5f * (float) Math.PI;
         angle += random_start_pos * (float) Math.PI * 2; // random start for multiplayer games
@@ -1169,19 +1179,19 @@ public final class Landscape {
                     location_quarters[1], 1f);
             supply_locations[i][0] = location_armory[0];
             supply_locations[i][1] = location_armory[1];
-            int[] location_unit = new int[2];
+            List<SpawnLocation> playerSpawnLocations = new ArrayList<>(initial_unit_count);
             for (int u = 0; u < initial_unit_count; u++) {
-                location_unit = access.find((unit_grids_per_world >> 1), location_unit_start[0], location_unit_start[1],
+                int[] location_unit = access.find((unit_grids_per_world >> 1), location_unit_start[0],
+                        location_unit_start[1],
                         1f);
                 access.putPixelWrap(location_unit[0], location_unit[1], 0f);
-                player_locations[i][2 * u] = (location_unit[0] * scale);
-                player_locations[i][2 * u + 1] = (location_unit[1] * scale);
+                playerSpawnLocations.add(new SpawnLocation(location_unit[0] * scale, location_unit[1] * scale));
             }
+            player_locations.add(playerSpawnLocations);
         }
 
         // shuffle player starting locations
-        List<float[]> player_locations_list = Arrays.asList(player_locations);
-        Collections.shuffle(player_locations_list, random);
+        Collections.shuffle(player_locations, random);
     }
 
 
@@ -1220,34 +1230,34 @@ public final class Landscape {
         return build;
     }
 
-    public List<int[]> getTrees() {
-        return getPositions(trees);
+    public List<TreePlacement> getTrees() {
+        return getPositions(trees, TreePlacement::new);
     }
 
-    public List<int[]> getPalmtrees() {
-        return getPositions(palmtrees);
+    public List<TreePlacement> getPalmtrees() {
+        return getPositions(palmtrees, TreePlacement::new);
     }
 
-    public List<int[]> getRock() {
-        return getPositions(rock);
+    public List<SupplyPlacement> getRock() {
+        return getPositions(rock, SupplyPlacement::new);
     }
 
-    public List<int[]> getIron() {
-        return getPositions(iron);
+    public List<SupplyPlacement> getIron() {
+        return getPositions(iron, SupplyPlacement::new);
     }
 
-    private List<int[]> getPositions(Channel channel) {
+    private <P extends Placement> List<P> getPositions(Channel channel, Channel.BiIntFunction<P> function) {
         int count = channel.count(1f);
-        List<int[]> list = new ArrayList<>(count);
-        channel.matching(p -> p == 1f, list::add);
+        List<P> list = new ArrayList<>(count);
+        channel.matching(p -> p == 1f, (x, y) -> list.add(function.apply(x, y)));
         return list;
     }
 
-    public float[][] getPlants() {
+    public List<PlantLocation>[] getPlants() {
         return plants;
     }
 
-    public float[][] getStartingLocations() {
+    public List<List<SpawnLocation>> getStartingLocations() {
         return player_locations;
     }
 

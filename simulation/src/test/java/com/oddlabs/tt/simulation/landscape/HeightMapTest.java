@@ -3,6 +3,7 @@ package com.oddlabs.tt.simulation.landscape;
 import com.oddlabs.tt.simulation.model.Terrain;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,28 +25,29 @@ final class HeightMapTest {
         }
 
         @Override
-        public List<int[]> trees() {
+        public List<TreePlacement> trees() {
             return List.of();
         }
 
         @Override
-        public List<int[]> palmTrees() {
+        public List<TreePlacement> palmTrees() {
             return List.of();
         }
 
         @Override
-        public List<int[]> rocks() {
+        public List<SupplyPlacement> rocks() {
             return List.of();
         }
 
         @Override
-        public List<int[]> iron() {
+        public List<SupplyPlacement> iron() {
             return List.of();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public float[][] plants() {
-            return new float[0][0];
+        public List<PlantLocation>[] plants() {
+            return new ArrayList[0];
         }
 
         @Override
@@ -59,8 +61,8 @@ final class HeightMapTest {
         }
 
         @Override
-        public float[][] startingLocations() {
-            return new float[0][0];
+        public List<List<SpawnLocation>> startingLocations() {
+            return List.of();
         }
     }
 

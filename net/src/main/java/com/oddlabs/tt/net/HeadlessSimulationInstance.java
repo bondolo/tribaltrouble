@@ -6,6 +6,7 @@ import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
 import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
+import com.oddlabs.tt.simulation.landscape.SpawnLocation;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.RaceData;
@@ -170,7 +171,7 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
      * Initializes initial unit armies and starting speed for players.
      */
     public static void initPlayers(
-            float[][] startingLocations,
+            List<List<SpawnLocation>> startingLocations,
             PlayerSlot[] playerSlots,
             List<Player> players,
             UnitInfo[] unitInfos,
@@ -178,29 +179,30 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
         for (short i = 0; i < players.size(); i++) {
             Player player = players.get(i);
             UnitInfo unitInfo = unitInfos[i];
-            float[] startingLocation = startingLocations[i];
+            List<SpawnLocation> startingLocation = startingLocations.get(i);
 
             player.setPreferredGamespeed(initialGamespeed);
             var raceInfo = player.getRaceInfo();
-            if (raceInfo == null) {
-                continue;
-            }
 
             int idx = 0;
             for (int j = 0; j < unitInfo.numPeons(); j++, idx++) {
-                new Unit(player, startingLocation[2 * idx], startingLocation[2 * idx + 1], null,
+                SpawnLocation loc = startingLocation.get(idx);
+                new Unit(player, loc.x(), loc.y(), null,
                         raceInfo.getUnitTemplate(UnitType.PEON));
             }
             for (int j = 0; j < unitInfo.numRockWarriors(); j++, idx++) {
-                new Unit(player, startingLocation[2 * idx], startingLocation[2 * idx + 1], null,
+                SpawnLocation loc = startingLocation.get(idx);
+                new Unit(player, loc.x(), loc.y(), null,
                         raceInfo.getUnitTemplate(UnitType.WARRIOR_ROCK));
             }
             for (int j = 0; j < unitInfo.numIronWarriors(); j++, idx++) {
-                new Unit(player, startingLocation[2 * idx], startingLocation[2 * idx + 1], null,
+                SpawnLocation loc = startingLocation.get(idx);
+                new Unit(player, loc.x(), loc.y(), null,
                         raceInfo.getUnitTemplate(UnitType.WARRIOR_IRON));
             }
             for (int j = 0; j < unitInfo.numRubberWarriors(); j++, idx++) {
-                new Unit(player, startingLocation[2 * idx], startingLocation[2 * idx + 1], null,
+                SpawnLocation loc = startingLocation.get(idx);
+                new Unit(player, loc.x(), loc.y(), null,
                         raceInfo.getUnitTemplate(UnitType.WARRIOR_RUBBER));
             }
         }

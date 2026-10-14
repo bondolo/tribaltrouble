@@ -2,6 +2,10 @@ package com.oddlabs.tt.procedural.landscape;
 
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
+import com.oddlabs.tt.simulation.landscape.PlantLocation;
+import com.oddlabs.tt.simulation.landscape.SpawnLocation;
+import com.oddlabs.tt.simulation.landscape.SupplyPlacement;
+import com.oddlabs.tt.simulation.landscape.TreePlacement;
 import com.oddlabs.tt.simulation.model.Terrain;
 
 import java.util.List;
@@ -36,27 +40,27 @@ public record GeneratedLandscapeData(IslandConfig config,
     }
 
     @Override
-    public List<int[]> trees() {
+    public List<TreePlacement> trees() {
         return landscape.getTrees();
     }
 
     @Override
-    public List<int[]> palmTrees() {
+    public List<TreePlacement> palmTrees() {
         return landscape.getPalmtrees();
     }
 
     @Override
-    public List<int[]> rocks() {
+    public List<SupplyPlacement> rocks() {
         return landscape.getRock();
     }
 
     @Override
-    public List<int[]> iron() {
+    public List<SupplyPlacement> iron() {
         return landscape.getIron();
     }
 
     @Override
-    public float[][] plants() {
+    public List<PlantLocation>[] plants() {
         return landscape.getPlants();
     }
 
@@ -71,7 +75,7 @@ public record GeneratedLandscapeData(IslandConfig config,
     }
 
     @Override
-    public float[][] startingLocations() {
+    public List<List<SpawnLocation>> startingLocations() {
         return landscape.getStartingLocations();
     }
 }
