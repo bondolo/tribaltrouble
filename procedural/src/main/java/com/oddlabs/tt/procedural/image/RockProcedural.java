@@ -2,7 +2,6 @@ package com.oddlabs.tt.procedural.image;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
 import com.oddlabs.tt.procedural.noise.Midpoint;
 import com.oddlabs.tt.procedural.noise.Voronoi;
 
@@ -11,6 +10,7 @@ import com.oddlabs.tt.procedural.noise.Voronoi;
  */
 public final class RockProcedural {
     public static final int TEXTURE_SIZE = 128;
+    private static final int SEED = 1;
 
     /**
      * Record holding rock diffuse and normal map layers.
@@ -25,7 +25,7 @@ public final class RockProcedural {
      * Generates the rock diffuse and normal map layers.
      */
     public static RockLayers generate() {
-        int seed = LandscapeConfig.LANDSCAPE_SEED;
+        int seed = SEED;
         Channel voronoi4 = new Voronoi(TEXTURE_SIZE, 4, 4, 1, 1f, seed).getDistance(0f, -1f, 1f);
         Channel voronoi8 = new Voronoi(TEXTURE_SIZE, 8, 8, 1, 1f, seed).getDistance(0f, -1f, 1f);
         Channel voronoi16 = new Voronoi(TEXTURE_SIZE, 16, 16, 1, 1f, seed).getDistance(0f, -1f, 1f);

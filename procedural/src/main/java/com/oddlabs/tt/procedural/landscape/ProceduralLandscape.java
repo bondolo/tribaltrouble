@@ -32,6 +32,7 @@ import java.util.stream.IntStream;
 public final class ProceduralLandscape implements Landscape {
     private static final boolean DEBUG = false;
     private static final int NUM_PLANT_TYPES = 4;
+    private static final int VEGETATION_NOISE_SEED = 1;
 
     private record GenerationContext(
             Terrain terrain,
@@ -190,7 +191,7 @@ public final class ProceduralLandscape implements Landscape {
         if (DEBUG) heightMap.toLayer().saveAsPNG("height");
         ProgressListener.progress();
         Channel grass_alpha = generateGrassAlpha(ctx.unitGridsPerWorld,
-                LandscapeConfig.LANDSCAPE_SEED, heightMap, slope, relheight, ctx.vegetationAmount, ctx.accessThreshold);
+                VEGETATION_NOISE_SEED, heightMap, slope, relheight, ctx.vegetationAmount, ctx.accessThreshold);
         ProgressListener.progress();
         UnitLocations unitLocations = generateUnitLocations(ctx, initial_unit_count, random_start_pos, access,
                 this.build);

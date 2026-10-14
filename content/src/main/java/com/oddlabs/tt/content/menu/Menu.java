@@ -56,7 +56,6 @@ import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.LoadCallbackFactory;
 import com.oddlabs.tt.net.Server;
-import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
@@ -96,6 +95,12 @@ public abstract class Menu extends CameraDelegate<Camera> {
     private static final int OVERLAY_IMAGE_WIDTH = 800;
     private static final int OVERLAY_IMAGE_HEIGHT = 600;
     private static final String OVERLAY_TEXTURE_NAME = "/textures/gui/mainmenu";
+
+    private static final int MENU_ISLAND_SIZE = 256;
+    private static final float MENU_ISLAND_HILLS = 1.0f;
+    private static final float MENU_ISLAND_VEGETATION = 2.0f;
+    private static final float MENU_ISLAND_RESOURCES = 0.0f;
+    private static final int MENU_ISLAND_SEED = 1;
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.menu.MainMenu");
 
@@ -430,9 +435,9 @@ public abstract class Menu extends CameraDelegate<Camera> {
     public static @Nullable Runnable setupMainMenu(
             Peer peer, final boolean first_progress, ScreenManager screenManager) {
         IslandConfig islandConfig = new IslandConfig(
-                Terrain.NATIVE, 256, LandscapeConfig.LANDSCAPE_HILLS,
-                LandscapeConfig.LANDSCAPE_VEGETATION, LandscapeConfig.LANDSCAPE_RESOURCES,
-                LandscapeConfig.LANDSCAPE_SEED);
+                Terrain.NATIVE, MENU_ISLAND_SIZE, MENU_ISLAND_HILLS,
+                MENU_ISLAND_VEGETATION, MENU_ISLAND_RESOURCES,
+                MENU_ISLAND_SEED);
         final WorldGenerator<Landscape> generator = new IslandGenerator(islandConfig);
         ProgressForm.Mode mode = first_progress ? ProgressForm.Mode.STARTUP : ProgressForm.Mode.MENU_RETURN;
         return ProgressForm.setProgressForm(peer.getNetwork().getSelector(), screenManager, peer

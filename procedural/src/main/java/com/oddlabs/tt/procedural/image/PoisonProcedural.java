@@ -2,7 +2,6 @@ package com.oddlabs.tt.procedural.image;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
 import com.oddlabs.tt.procedural.noise.Midpoint;
 import com.oddlabs.tt.procedural.shape.Hill;
 
@@ -11,6 +10,7 @@ import com.oddlabs.tt.procedural.shape.Hill;
  */
 public final class PoisonProcedural {
     public static final int TEXTURE_SIZE = 128;
+    private static final int SEED = 1;
 
     private PoisonProcedural() {
     }
@@ -19,7 +19,7 @@ public final class PoisonProcedural {
      * Generates a poison bubble effect layer.
      */
     public static Layer generate() {
-        int seed = LandscapeConfig.LANDSCAPE_SEED;
+        int seed = SEED;
 
         Channel blob = new Hill(TEXTURE_SIZE, Hill.Shape.CIRCLE).toChannel();
         Channel noise = new Midpoint(TEXTURE_SIZE, 2, .45f, seed).toChannel();

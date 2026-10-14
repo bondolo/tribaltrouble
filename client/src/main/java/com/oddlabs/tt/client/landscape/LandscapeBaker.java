@@ -7,9 +7,9 @@ import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.engine.render.FBO;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.DistanceFogInfo;
+import com.oddlabs.tt.engine.render.state.SceneLighting;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.engine.vbo.QuadVBO;
-import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.Landscape;
@@ -38,6 +38,9 @@ public final class LandscapeBaker {
     private static final float IDEAL_DETAIL_ALPHA = 0.15f;
     private static final float GRASS_ALPHA_POWER = 0.70f;
 
+    private static final int DETAIL_FADEOUT_BASE_LEVEL = 2;
+    private static final float DETAIL_FADEOUT_FACTOR = 0.75f;
+    private static final float TEXTURE_SCALE = 1.0f / 64.0f;
 
     private LandscapeBaker() {
     }
@@ -67,7 +70,7 @@ public final class LandscapeBaker {
 
     private static Texture createDetail(GLImage detail_image, int base_level) {
         GLImage[] detail_mipmaps = detail_image.buildMipMaps(base_level,
-                LandscapeConfig.LANDSCAPE_DETAIL_FADEOUT_FACTOR, true,
+                DETAIL_FADEOUT_FACTOR, true,
                 false);
         return new Texture(detail_mipmaps, GL11.GL_RGBA8, GL11.GL_LINEAR_MIPMAP_LINEAR,
                 GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
@@ -80,29 +83,34 @@ public final class LandscapeBaker {
     }
 
     public static WorldInfo<Texture> bakeWorld(Landscape landscape) {
+        return bakeWorld(landscape, SceneLighting.CANONICAL);
+    }
+
+    public static WorldInfo<Texture> bakeWorld(Landscape landscape, SceneLighting lighting) {
         IslandConfig config = landscape.config();
 
         Instant time_before = Instant.now();
-        int base_level = LandscapeConfig.LANDSCAPE_DETAIL_FADEOUT_BASE_LEVEL;
-        int detail_mip_level = IDEAL_TEXELS_PER_DETAIL / LandscapeConfig.DETAIL_SIZE - 1;
+        int base_level = DETAIL_FADEOUT_BASE_LEVEL;
+        int detail_mip_level = IDEAL_TEXELS_PER_DETAIL / LandscapeVisualGenerator.DETAIL_SIZE - 1;
         int detail_prefade_level = Math.max(detail_mip_level - base_level, 0);
-        float detailAlpha = IDEAL_DETAIL_ALPHA * (float) Math.pow(LandscapeConfig.LANDSCAPE_DETAIL_FADEOUT_FACTOR,
+        float detailAlpha = IDEAL_DETAIL_ALPHA * (float) Math.pow(DETAIL_FADEOUT_FACTOR,
                 detail_prefade_level);
 
         LandscapeBakingData bakingData = LandscapeVisualGenerator.generate(
                 landscape,
+                lighting,
                 detailAlpha,
                 GRASS_ALPHA_POWER);
         BlendInfo[] blend_infos = bakingData.blendInfos();
         Texture detail = createDetail(new GLIntImage(bakingData.detail()),
-                LandscapeConfig.LANDSCAPE_DETAIL_FADEOUT_BASE_LEVEL);
+                DETAIL_FADEOUT_BASE_LEVEL);
         Texture detailNormal = createDetailNormal(new GLIntImage(bakingData.detailNormal()));
 
         int grid_units = config.metersPerWorld() / HeightMap.METERS_PER_UNIT_GRID;
         int texels_per_grid_unit = clampTexelsPerGridUnit(grid_units, AppConfig.DEFAULT_TEXELS_PER_GRID_UNIT);
         int colormap_size = grid_units * texels_per_grid_unit;
 
-        float textureScale = config.metersPerWorld() * LandscapeConfig.LANDSCAPE_TEXTURE_SCALE;
+        float textureScale = config.metersPerWorld() * TEXTURE_SCALE;
         int grid_width = config.metersPerWorld() / HeightMap.METERS_PER_UNIT_GRID;
         WorldInfo.Maps<Texture> maps;
         try (Texture heightMapTexture = new Texture(landscape.heightmap(), grid_width, grid_width,

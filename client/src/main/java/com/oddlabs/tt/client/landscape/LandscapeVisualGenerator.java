@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.landscape;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.base.util.ProgressListener;
-import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
+import com.oddlabs.tt.engine.render.state.SceneLighting;
 import com.oddlabs.tt.procedural.noise.Midpoint;
 import com.oddlabs.tt.procedural.noise.Voronoi;
 import com.oddlabs.tt.simulation.SimulationConfig;
@@ -21,6 +21,9 @@ import java.util.Map;
  */
 final class LandscapeVisualGenerator {
     private static final boolean DEBUG = false;
+    private static final int STRUCTURE_SIZE = 256;
+    static final int DETAIL_SIZE = 256;
+    private static final int DEFAULT_NOISE_SEED = 1;
     private static final int STRUCTURE_SEED = 42; // must be constant; otherwise distinct repeating patterns might appear
     private static final float WORLEY_VORONI_C1 = -1f;
     private static final float WORLEY_VORONI_C2 = 1f;
@@ -58,7 +61,7 @@ final class LandscapeVisualGenerator {
     }
 
     /**
-     * Generates the baking data required to bake landscape colormaps and detail textures.
+     * Generates the baking data required to bake landscape colormaps and detail textures using canonical scene lighting.
      *
      * @param landscape the landscape containing topography and island configuration
      * @param detailAlphaValue the alpha multiplier for the high-frequency detail layer
@@ -67,6 +70,23 @@ final class LandscapeVisualGenerator {
      */
     static LandscapeBakingData generate(
             Landscape landscape,
+            float detailAlphaValue,
+            float grassAlphaPower) {
+        return generate(landscape, SceneLighting.CANONICAL, detailAlphaValue, grassAlphaPower);
+    }
+
+    /**
+     * Generates the baking data required to bake landscape colormaps and detail textures.
+     *
+     * @param landscape the landscape containing topography and island configuration
+     * @param lighting scene lighting defining light direction for directional hill shading
+     * @param detailAlphaValue the alpha multiplier for the high-frequency detail layer
+     * @param grassAlphaPower the alpha exponent for the grass blending layer
+     * @return the generated visual baking data
+     */
+    static LandscapeBakingData generate(
+            Landscape landscape,
+            SceneLighting lighting,
             float detailAlphaValue,
             float grassAlphaPower) {
         IslandConfig config = landscape.config();
@@ -89,17 +109,17 @@ final class LandscapeVisualGenerator {
         Channel relheight = heightMap.copy().relativeIntensityNormalized(Math.max(1, unitGridsPerWorld >> 5));
 
         // Generate shared voronoi and noise maps
-        Channel voronoi4 = new Voronoi(LandscapeConfig.STRUCTURE_SIZE, 4, 4, 1, 1f, STRUCTURE_SEED)
+        Channel voronoi4 = new Voronoi(STRUCTURE_SIZE, 4, 4, 1, 1f, STRUCTURE_SEED)
                 .getDistance(WORLEY_VORONI_C1, WORLEY_VORONI_C2, WORLEY_VORONI_C3);
-        Channel voronoi8 = new Voronoi(LandscapeConfig.STRUCTURE_SIZE, 8, 8, 1, 1f, STRUCTURE_SEED)
+        Channel voronoi8 = new Voronoi(STRUCTURE_SIZE, 8, 8, 1, 1f, STRUCTURE_SEED)
                 .getDistance(WORLEY_VORONI_C1, WORLEY_VORONI_C2, WORLEY_VORONI_C3);
-        Channel voronoi16 = new Voronoi(LandscapeConfig.STRUCTURE_SIZE, 16, 16, 1, 1f, STRUCTURE_SEED)
+        Channel voronoi16 = new Voronoi(STRUCTURE_SIZE, 16, 16, 1, 1f, STRUCTURE_SEED)
                 .getDistance(WORLEY_VORONI_C1, WORLEY_VORONI_C2, WORLEY_VORONI_C3);
-        Channel voronoi32 = new Voronoi(LandscapeConfig.STRUCTURE_SIZE, 32, 32, 1, 1f, STRUCTURE_SEED)
+        Channel voronoi32 = new Voronoi(STRUCTURE_SIZE, 32, 32, 1, 1f, STRUCTURE_SEED)
                 .getDistance(WORLEY_VORONI_C1, WORLEY_VORONI_C2, WORLEY_VORONI_C3);
 
-        Channel noise8 = new Midpoint(LandscapeConfig.STRUCTURE_SIZE, 3, 0.45f, STRUCTURE_SEED).toChannel();
-        Channel noise256 = new Midpoint(LandscapeConfig.STRUCTURE_SIZE, 8, 1f, STRUCTURE_SEED).toChannel();
+        Channel noise8 = new Midpoint(STRUCTURE_SIZE, 3, 0.45f, STRUCTURE_SEED).toChannel();
+        Channel noise256 = new Midpoint(STRUCTURE_SIZE, 8, 1f, STRUCTURE_SEED).toChannel();
 
         GeneratedStructures structures = switch (terrain) {
             case NATIVE -> {
@@ -119,7 +139,8 @@ final class LandscapeVisualGenerator {
 
         Channel[] alphaMaps = new Channel[7];
         generateAlphas(terrain, unitGridsPerWorld, metersPerHeightUnit, heightScale, vegetationAmount,
-                landscape.accessThreshold(), landscape.buildThreshold(), heightMap, slope, relheight, alphaMaps);
+                landscape.accessThreshold(), landscape.buildThreshold(), heightMap, slope, relheight, lighting,
+                alphaMaps);
         ProgressListener.progress();
 
         BlendInfo[] blendInfos = switch (terrain) {
@@ -156,17 +177,17 @@ final class LandscapeVisualGenerator {
         var structures = new StructureLayers[7];
         ProgressListener.progress(1 / 8f);
 
-        structures[0] = genSand(LandscapeConfig.STRUCTURE_SIZE, noise8.copy(), noise256.copy());
-        structures[1] = genDirt(LandscapeConfig.STRUCTURE_SIZE, noise8.copy(), noise256.copy(), voronoi32.copy());
-        structures[2] = genRubble(LandscapeConfig.STRUCTURE_SIZE, noise8.copy(), voronoi4.copy(), voronoi8.copy(),
+        structures[0] = genSand(STRUCTURE_SIZE, noise8.copy(), noise256.copy());
+        structures[1] = genDirt(STRUCTURE_SIZE, noise8.copy(), noise256.copy(), voronoi32.copy());
+        structures[2] = genRubble(STRUCTURE_SIZE, noise8.copy(), voronoi4.copy(), voronoi8.copy(),
                 voronoi16.copy(), structures[1].diffuse().copy());
-        structures[4] = genGrass(LandscapeConfig.STRUCTURE_SIZE, NATIVE_GRASS_COLOR, noise8.copy(), noise256.copy());
-        structures[3] = genRock(LandscapeConfig.STRUCTURE_SIZE, noise8.copy(), noise256.copy(), voronoi4.copy(),
+        structures[4] = genGrass(STRUCTURE_SIZE, NATIVE_GRASS_COLOR, noise8.copy(), noise256.copy());
+        structures[3] = genRock(STRUCTURE_SIZE, noise8.copy(), noise256.copy(), voronoi4.copy(),
                 voronoi8.copy(), voronoi16.copy(), structures[2].diffuse.copy(), structures[4].diffuse.copy());
         structures[5] = genBlack();
-        structures[6] = genSeabottom(terrain, LandscapeConfig.STRUCTURE_SIZE);
+        structures[6] = genSeabottom(terrain, STRUCTURE_SIZE);
 
-        StructureLayers structureDetail = genDetail(LandscapeConfig.DETAIL_SIZE, detailAlphaValue, STRUCTURE_SEED,
+        StructureLayers structureDetail = genDetail(DETAIL_SIZE, detailAlphaValue, STRUCTURE_SEED,
                 noise8.copy());
         return new GeneratedStructures(structures, structureDetail.diffuse(), structureDetail.normal());
     }
@@ -177,17 +198,17 @@ final class LandscapeVisualGenerator {
         var structures = new StructureLayers[7];
         ProgressListener.progress(1 / 8f);
 
-        structures[0] = genGravel(LandscapeConfig.STRUCTURE_SIZE, noise8.copy(), noise256.copy());
-        structures[1] = genSoil(LandscapeConfig.STRUCTURE_SIZE, noise8.copy(), noise256.copy(), voronoi32.copy());
-        structures[3] = genGrass(LandscapeConfig.STRUCTURE_SIZE, VIKING_GRASS_COLOR, noise8.copy(), noise256.copy());
+        structures[0] = genGravel(STRUCTURE_SIZE, noise8.copy(), noise256.copy());
+        structures[1] = genSoil(STRUCTURE_SIZE, noise8.copy(), noise256.copy(), voronoi32.copy());
+        structures[3] = genGrass(STRUCTURE_SIZE, VIKING_GRASS_COLOR, noise8.copy(), noise256.copy());
         structures[3].diffuse.multiply(.75f, .9f, 1.1f);
-        structures[2] = genCliff(LandscapeConfig.STRUCTURE_SIZE, noise8.copy(), noise256.copy(), voronoi4.copy(),
+        structures[2] = genCliff(STRUCTURE_SIZE, noise8.copy(), noise256.copy(), voronoi4.copy(),
                 voronoi8.copy(), voronoi16.copy(), structures[1].diffuse.copy(), structures[3].diffuse.copy());
-        structures[4] = genSnow(LandscapeConfig.STRUCTURE_SIZE, noise8.copy(), noise256.copy());
+        structures[4] = genSnow(STRUCTURE_SIZE, noise8.copy(), noise256.copy());
         structures[5] = genBlack();
-        structures[6] = genSeabottom(terrain, LandscapeConfig.STRUCTURE_SIZE);
+        structures[6] = genSeabottom(terrain, STRUCTURE_SIZE);
 
-        StructureLayers structureDetail = genDetail(LandscapeConfig.DETAIL_SIZE, detailAlphaValue, STRUCTURE_SEED,
+        StructureLayers structureDetail = genDetail(DETAIL_SIZE, detailAlphaValue, STRUCTURE_SEED,
                 noise8.copy());
         return new GeneratedStructures(structures, structureDetail.diffuse(), structureDetail.normal());
     }
@@ -390,8 +411,8 @@ final class LandscapeVisualGenerator {
 
     private static void generateAlphas(Terrain terrain, int unitGridsPerWorld, int metersPerHeightUnit,
             int heightScale, float vegetationAmount, float accessThreshold, float buildThreshold,
-            Channel height, Channel slope, Channel relheight, Channel[] alphaMaps) {
-        int seed = LandscapeConfig.LANDSCAPE_SEED;
+            Channel height, Channel slope, Channel relheight, SceneLighting lighting, Channel[] alphaMaps) {
+        int seed = DEFAULT_NOISE_SEED;
         Channel alpha0;
         Channel alpha1;
         Channel alpha2;
@@ -436,9 +457,9 @@ final class LandscapeVisualGenerator {
         // Generate shadow and highlight alpha
         Channel shadow = new Channel(unitGridsPerWorld, unitGridsPerWorld);
         Channel highlight = new Channel(unitGridsPerWorld, unitGridsPerWorld);
-        float lx = -LandscapeConfig.LIGHT_DIR_X;
-        float ly = -LandscapeConfig.LIGHT_DIR_Y;
-        float lz = LandscapeConfig.LIGHT_DIR_Z;
+        float lx = -lighting.lightDirection().x();
+        float ly = -lighting.lightDirection().y();
+        float lz = lighting.lightDirection().z();
         float threshold = lz;
         float nz = 2f * metersPerHeightUnit / heightScale;
         float nzlz = nz * lz;

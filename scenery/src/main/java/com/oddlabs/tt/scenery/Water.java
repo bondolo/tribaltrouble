@@ -19,7 +19,6 @@ import com.oddlabs.tt.engine.render.state.WaterUniformsProvider;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
-import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
 import com.oddlabs.tt.procedural.noise.Midpoint;
 import com.oddlabs.tt.procedural.noise.Perlin;
 import com.oddlabs.tt.procedural.noise.Voronoi;
@@ -47,6 +46,9 @@ import java.util.function.Supplier;
  */
 public final class Water implements SubSceneRenderer, WaterUniformsProvider, AutoCloseable {
     private static final int OCEAN_TEXTURE_SIZE = 512;
+    public static final float WATER_REPEAT_RATE = 0.001f;
+    public static final float WATER_DETAIL_REPEAT_RATE = 0.01f;
+    private static final int NOISE_SEED = 2;
 
     public static final int WAVE_COUNT = 3;
     public static final float WAVE_AMPLITUDE_BASE = 0.15f;
@@ -463,15 +465,15 @@ public final class Water implements SubSceneRenderer, WaterUniformsProvider, Aut
 
         // u_waveTime, u_waterRepeatRate, u_waterDetailRepeatRate, _pad2 (4 floats)
         buffer.putFloat(waveTime * waveSpeed);
-        buffer.putFloat(LandscapeConfig.WATER_REPEAT_RATE);
-        buffer.putFloat(LandscapeConfig.WATER_DETAIL_REPEAT_RATE);
+        buffer.putFloat(WATER_REPEAT_RATE);
+        buffer.putFloat(WATER_DETAIL_REPEAT_RATE);
         buffer.putFloat(0f); // _pad2
     }
 
     private record OceanTextures(Terrain terrain) implements Supplier<Texture[]> {
         @Override
         public Texture[] get() {
-            int seed = LandscapeConfig.LANDSCAPE_SEED + 1;
+            int seed = NOISE_SEED;
 
             // water1
             Channel perlin2 = new Perlin(OCEAN_TEXTURE_SIZE, OCEAN_TEXTURE_SIZE, 4, 4, 0.5f, 1, seed,

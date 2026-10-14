@@ -15,7 +15,6 @@ import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
-import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
 import com.oddlabs.tt.procedural.noise.Midpoint;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.Terrain;
@@ -58,6 +57,7 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
     private static final int CLOUD_TEXTURE_SIZE = 512;
     private static final int CLOUD_INNER = 0;
     private static final int CLOUD_OUTER = 1;
+    private static final int CLOUD_NOISE_SEED = 1;
 
     private static final Map<Terrain, float[]> SKYDOME_INITCOLOR = Map.of(
             Terrain.NATIVE, new float[]{0.90f, 0.95f, 1.0f},
@@ -115,14 +115,14 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
     private final float[] speedOuter;
     private final float[] speedInner;
 
-    public Sky(HeightMap heightMap, Terrain terrain) {
-        this(heightMap, terrain, 6000f, 32, 32,
+    public Sky(HeightMap heightMap, Terrain terrain, float radius, int subdivAxis, int subdivHeight) {
+        this(terrain, radius, subdivAxis, subdivHeight,
                 SKYDOME_OUTER_UTILING, SKYDOME_OUTER_VTILING, SKYDOME_INNER_UTILING, SKYDOME_INNER_VTILING,
                 heightMap.getMetersPerWorld() / 2f,
                 heightMap.getMetersPerWorld() / 2f, SKYDOME_HEIGHT);
     }
 
-    private Sky(HeightMap heightMap, Terrain terrain,
+    private Sky(Terrain terrain,
             float radius, int subdiv_axis, int subdiv_height, float outer_utile, float outer_vtile,
             float inner_utile, float inner_vtile, float origin_x, float origin_y, float origin_z) {
         this.terrain = terrain;
@@ -346,7 +346,7 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
     private record CloudTextures(Terrain terrain) implements Supplier<Texture[]> {
         @Override
         public Texture[] get() {
-            int seed = LandscapeConfig.LANDSCAPE_SEED;
+            int seed = CLOUD_NOISE_SEED;
             Channel clouds1 = new Midpoint(CLOUD_TEXTURE_SIZE, 3, 0.55f, seed).toChannel();
             Channel clouds2 = new Midpoint(CLOUD_TEXTURE_SIZE, 2, 0.4f, seed).toChannel();
 

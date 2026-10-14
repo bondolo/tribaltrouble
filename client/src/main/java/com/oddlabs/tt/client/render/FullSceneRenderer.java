@@ -22,6 +22,7 @@ import com.oddlabs.tt.engine.render.shader.DebugShaderRenderer;
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.render.state.GlobalUniforms;
 import com.oddlabs.tt.engine.render.state.RenderContext;
+import com.oddlabs.tt.engine.render.state.SceneLighting;
 import com.oddlabs.tt.scenery.ConcentricRingMesh;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.scenery.SeaBottom;
@@ -51,6 +52,11 @@ import org.lwjgl.opengl.GL11;
  * Primary world renderer coordinating the rendering of landscape, units, buildings, and transient effects.
  */
 public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverProvider {
+    private static final float HORIZON_RADIUS = 6000f;
+    private static final int RING_MESH_SUBDIV_AXIS = 64;
+    private static final int SKY_SUBDIV_AXIS = 32;
+    private static final int SKY_SUBDIV_HEIGHT = 32;
+
     private final Picker picker;
     private final ConcentricRingMesh ringMesh;
     private final Water water;
@@ -95,8 +101,9 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
         this.tree_renderer = new TreeRenderer(cheat, picker.getRespondManager(), treeSpriteRenderer,
                 picker.getAnimationManager(), landscape_renderer);
         this.landscape_renderer = landscape_renderer;
-        this.ringMesh = new ConcentricRingMesh(world.getHeightMap());
-        this.sky = new Sky(world.getHeightMap(), world_info.landscape().terrain());
+        this.ringMesh = new ConcentricRingMesh(world.getHeightMap(), HORIZON_RADIUS, RING_MESH_SUBDIV_AXIS);
+        this.sky = new Sky(world.getHeightMap(), world_info.landscape().terrain(), HORIZON_RADIUS, SKY_SUBDIV_AXIS,
+                SKY_SUBDIV_HEIGHT);
         this.seaBottom = new SeaBottom(world_info.landscape().terrain(),
                 world_info.detail(), world_info.detailNormal(), ringMesh);
         this.water = new Water(landscape_renderer.getHeightMapVisual(), world.getHeightMap(), world_info.landscape()
@@ -231,7 +238,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
 
             float currentTime = gui_root.getTime();
             globalUniforms.update(context, frustum_state, currentTime,
-                    world.getHeightMap().getSeaLevelMeters(), water);
+                    world.getHeightMap().getSeaLevelMeters(), water, SceneLighting.CANONICAL);
 
             ambient.updateSoundListener(frustum_state, world.getHeightMap());
 

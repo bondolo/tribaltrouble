@@ -18,19 +18,12 @@ import java.util.stream.IntStream;
  * Concentric outer ring mesh connecting the island perimeter to the distant horizon.
  */
 public final class ConcentricRingMesh implements AutoCloseable {
-    public static final float DEFAULT_RADIUS = 6000f;
-    public static final int DEFAULT_SUBDIV_AXIS = 64;
-
     private static final int NUM_WATER_RINGS = 6;
     private static final float START_ANGLE = (float) (Math.PI / 4.0);
 
     private final FloatVBO waterVertices;
     private final FloatVBO bottomVertices;
     private final ShortVBO indices;
-
-    public ConcentricRingMesh(LandscapeEnvironment heightMap) {
-        this(heightMap, DEFAULT_RADIUS, DEFAULT_SUBDIV_AXIS);
-    }
 
     public ConcentricRingMesh(LandscapeEnvironment heightMap, float radius, int subdivAxis) {
         float innerRadius = (float) (heightMap.getMetersPerWorld() * Math.sqrt(2) / 2);

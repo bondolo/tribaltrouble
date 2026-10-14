@@ -12,7 +12,6 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
-import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.util.Color;
 import org.lwjgl.opengl.GL11;
@@ -66,7 +65,7 @@ public final class SeaBottom implements SubSceneRenderer, AutoCloseable {
                 context.setTexture(2, detailNormal);
                 seaBottomShader.setUniform(seaBottomShader.locTextureNormal, 2);
                 seaBottomShader.setUniform(seaBottomShader.locDetailScale,
-                        LandscapeConfig.LANDSCAPE_DETAIL_REPEAT_RATE);
+                        LandscapeRenderer.DETAIL_REPEAT_RATE);
             } else {
                 seaBottomShader.setUniform(seaBottomShader.locDetailScale, 0f);
             }

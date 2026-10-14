@@ -17,7 +17,6 @@ import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
-import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
 import com.oddlabs.tt.simulation.landscape.AbstractPatchGroup;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
@@ -45,6 +44,8 @@ import java.util.Set;
  */
 public final class LandscapeRenderer implements SubSceneRenderer, Animated, AutoCloseable {
     private final List<LandscapeLeaf> render_list = new ArrayList<>();
+    static final float DETAIL_REPEAT_RATE = 0.25f;
+
     private final World world;
     private final Texture diffuseMap;
     private final Texture normalMap;
@@ -149,7 +150,7 @@ public final class LandscapeRenderer implements SubSceneRenderer, Animated, Auto
 
             // Set VTF Uniforms
             shader.setUniform(shader.locWorldSize, (float) world.getHeightMap().getMetersPerWorld());
-            shader.setUniform(shader.locDetailScale, LandscapeConfig.LANDSCAPE_DETAIL_REPEAT_RATE);
+            shader.setUniform(shader.locDetailScale, DETAIL_REPEAT_RATE);
             shader.setUniform(shader.locDetailAlphaScale, state.inNoDetailMode() ? 0.0f : 1.0f);
 
             Color.Linear stdColor = SeaBottom.SEA_BOTTOM_COLOR.get(world.getTerrainType());

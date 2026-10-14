@@ -1,7 +1,7 @@
 package com.oddlabs.tt.scenery;
 
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
+import com.oddlabs.tt.engine.render.state.SceneLighting;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeLeaf;
@@ -36,6 +36,8 @@ final class PersistentShadowMap implements AutoCloseable {
     private static final float NEIGHBOR_SEARCH_MARGIN = 25.0f;
     private static final float PLANT_SHADOW_DIAMETER = 1.0f;
     private static final float PLANT_SHADOW_OPACITY = 0.35f;
+    private static final float LIGHT_DIR_X = SceneLighting.CANONICAL.lightDirection().x();
+    private static final float LIGHT_DIR_Y = SceneLighting.CANONICAL.lightDirection().y();
 
     private final float[] pixels = new float[RESOLUTION * RESOLUTION * CHANNELS];
     private final Texture texture;
@@ -202,8 +204,8 @@ final class PersistentShadowMap implements AutoCloseable {
         float offsetScale = 0.5625f * verticalCenter * diameter;
         float posX = model.getPositionX();
         float posY = model.getPositionY();
-        float centerX = posX + LandscapeConfig.LIGHT_DIR_X * offsetScale;
-        float centerY = posY + LandscapeConfig.LIGHT_DIR_Y * offsetScale;
+        float centerX = posX + LIGHT_DIR_X * offsetScale;
+        float centerY = posY + LIGHT_DIR_Y * offsetScale;
 
         float minX = Math.min(centerX - radius, posX) - SHADOW_EXPAND_MARGIN;
         float maxX = Math.max(centerX + radius, posX) + SHADOW_EXPAND_MARGIN;
@@ -286,8 +288,8 @@ final class PersistentShadowMap implements AutoCloseable {
             float verticalCenter, int clipMinPx, int clipMaxPx, int clipMinPy, int clipMaxPy) {
         float radius = 0.5f * diameter;
         float offsetScale = 0.5625f * verticalCenter * diameter;
-        float centerX = posX + LandscapeConfig.LIGHT_DIR_X * offsetScale;
-        float centerY = posY + LandscapeConfig.LIGHT_DIR_Y * offsetScale;
+        float centerX = posX + LIGHT_DIR_X * offsetScale;
+        float centerY = posY + LIGHT_DIR_Y * offsetScale;
 
         float minX = Math.min(centerX - radius, posX) - 1.0f;
         float maxX = Math.max(centerX + radius, posX) + 1.0f;
@@ -352,8 +354,8 @@ final class PersistentShadowMap implements AutoCloseable {
         float radius = 0.5f * diameter;
 
         float offsetScale = 0.5625f * verticalCenter * diameter;
-        float centerX = tree.getPositionX() + LandscapeConfig.LIGHT_DIR_X * offsetScale;
-        float centerY = tree.getPositionY() + LandscapeConfig.LIGHT_DIR_Y * offsetScale;
+        float centerX = tree.getPositionX() + LIGHT_DIR_X * offsetScale;
+        float centerY = tree.getPositionY() + LIGHT_DIR_Y * offsetScale;
 
         float minX = Math.min(centerX - radius, tree.getPositionX()) - margin;
         float maxX = Math.max(centerX + radius, tree.getPositionX()) + margin;

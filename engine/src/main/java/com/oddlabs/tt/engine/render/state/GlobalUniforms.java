@@ -2,7 +2,6 @@ package com.oddlabs.tt.engine.render.state;
 
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.shader.FogShader;
-import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
 import org.jspecify.annotations.Nullable;
 
 import org.lwjgl.BufferUtils;
@@ -18,14 +17,14 @@ public final class GlobalUniforms {
     private final ByteBuffer buffer = BufferUtils.createByteBuffer(UBO_SIZE);
 
     public void update(RenderContext context, CameraState camera, float time, float seaLevel,
-            @Nullable WaterUniformsProvider water) {
-        update(camera, time, seaLevel, water, buffer);
+            @Nullable WaterUniformsProvider water, SceneLighting lighting) {
+        update(camera, time, seaLevel, water, lighting, buffer);
         buffer.flip();
         context.updateGlobalState(buffer);
     }
 
     public void update(CameraState camera, float time, float seaLevel, @Nullable WaterUniformsProvider water,
-            ByteBuffer buffer) {
+            SceneLighting lighting, ByteBuffer buffer) {
         buffer.clear();
 
         // 0: mat4 projection (64)
@@ -87,28 +86,28 @@ public final class GlobalUniforms {
         buffer.position(176); // Ensure position before lighting params
 
         // 176: vec4 u_lightDirection (16)
-        buffer.putFloat(LandscapeConfig.LIGHT_DIR_X);
-        buffer.putFloat(LandscapeConfig.LIGHT_DIR_Y);
-        buffer.putFloat(LandscapeConfig.LIGHT_DIR_Z);
+        buffer.putFloat(lighting.lightDirection().x());
+        buffer.putFloat(lighting.lightDirection().y());
+        buffer.putFloat(lighting.lightDirection().z());
         buffer.putFloat(1.0f);
 
         // 192: vec4 u_globalAmbient (16) - Linearized legacy ambient 0.65f
-        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.r());
-        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.g());
-        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.b());
-        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.a());
+        buffer.putFloat(lighting.ambient().r());
+        buffer.putFloat(lighting.ambient().g());
+        buffer.putFloat(lighting.ambient().b());
+        buffer.putFloat(lighting.ambient().a());
 
         // 208: vec4 u_groundAmbient (16) - Linearized legacy ambient 0.65f
-        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.r());
-        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.g());
-        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.b());
-        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.a());
+        buffer.putFloat(lighting.ambient().r());
+        buffer.putFloat(lighting.ambient().g());
+        buffer.putFloat(lighting.ambient().b());
+        buffer.putFloat(lighting.ambient().a());
 
         // 224: vec4 u_sunColor (16)
-        buffer.putFloat(LandscapeConfig.SUN_COLOR.r());
-        buffer.putFloat(LandscapeConfig.SUN_COLOR.g());
-        buffer.putFloat(LandscapeConfig.SUN_COLOR.b());
-        buffer.putFloat(LandscapeConfig.SUN_COLOR.a());
+        buffer.putFloat(lighting.sun().r());
+        buffer.putFloat(lighting.sun().g());
+        buffer.putFloat(lighting.sun().b());
+        buffer.putFloat(lighting.sun().a());
 
         buffer.position(240); // Ensure position before water params
 
