@@ -17,6 +17,5 @@ dependencies {
     api(project(":engine"))
     compileOnlyApi(libs.jspecify)
 
-    testImplementation(project(":procedural"))
     testRuntimeOnly(project(":assets"))
 }

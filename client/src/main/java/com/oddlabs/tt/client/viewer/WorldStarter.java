@@ -9,7 +9,7 @@ import com.oddlabs.tt.client.screen.DefaultScreen;
 import com.oddlabs.tt.client.screen.Screen;
 import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.procedural.landscape.GeneratedLandscapeData;
+import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.player.Player;
@@ -31,12 +31,12 @@ public final class WorldStarter implements LoadCallback<GUIRoot, Screen> {
     private final PlayerSlot[] player_slots;
     private final short player_slot;
     private final InGameInfo ingame_info;
-    private final WorldGenerator<GeneratedLandscapeData> generator;
+    private final WorldGenerator<Landscape> generator;
     private final WorldParameters world_params;
     private final @Nullable WorldInitAction initial_action;
     private final int session_id;
 
-    public WorldStarter(int session_id, WorldGenerator<GeneratedLandscapeData> generator,
+    public WorldStarter(int session_id, WorldGenerator<Landscape> generator,
             WorldParameters world_params,
             PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot, InGameInfo ingame_info,
             @Nullable WorldInitAction initial_action, Peer peer, ScreenManager screenManager) {

@@ -72,11 +72,11 @@ public final class World implements SimulationClock {
             @Nullable RaceData races_resources,
             @Nullable LandscapeBoundsProvider landscape_resources,
             NotificationListener notification_listener, WorldParameters world_params,
-            LandscapeData landscapeData, List<PlayerInfo> player_infos,
+            Landscape landscape, List<PlayerInfo> player_infos,
             Color.Linear[] playerColors, boolean insertPlants) {
         ProgressListener.progress();
         World world = new World(races_resources, landscape_resources, notification_listener,
-                world_params, landscapeData, player_infos, playerColors, insertPlants);
+                world_params, landscape, player_infos, playerColors, insertPlants);
         ProgressListener.progress();
         ProgressListener.progress(1 / 5f);
         ProgressListener.progress();
@@ -151,12 +151,12 @@ public final class World implements SimulationClock {
     private World(@Nullable RaceData races_resources,
             @Nullable LandscapeBoundsProvider landscape_resources,
             NotificationListener notification_listener,
-            WorldParameters world_params, LandscapeData landscapeData,
+            WorldParameters world_params, Landscape landscape,
             List<PlayerInfo> player_infos, Color.Linear[] playerColors,
             boolean insertPlants) {
         IO.println("****************** Generating landscape ********************");
-        this.terrain = landscapeData.terrain();
-        this.plantCoordinates = landscapeData.plants();
+        this.terrain = landscape.terrain();
+        this.plantCoordinates = landscape.plants();
         this.landscape_resources = landscape_resources != null ? landscape_resources : new LandscapeGeometry();
         this.races_resources = races_resources;
         this.max_unit_count = world_params.maxUnitCount();
@@ -165,12 +165,12 @@ public final class World implements SimulationClock {
         this.worldParameters = world_params;
         long time_start = System.currentTimeMillis();
 
-        world = new HeightMap(this, landscapeData);
+        world = new HeightMap(this, landscape);
         animation_manager_game_time = new AnimationManager();
         animation_manager_real_time = new AnimationManager();
         random = new Random(42);
 
-        List<List<SpawnLocation>> startingLocations = landscapeData.startingLocations();
+        List<List<SpawnLocation>> startingLocations = landscape.startingLocations();
         players = List.of(IntStream.range(0, player_infos.size())
                 .mapToObj(i -> new Player(this, player_infos.get(i), playerColors[i % playerColors.length])
                         .init(startingLocations.get(i))
@@ -184,9 +184,9 @@ public final class World implements SimulationClock {
         SpawnLocation firstSpawn = startingLocations.get(0).get(0);
         RegionBuilder.buildRegions(unit_grid, firstSpawn.x(), firstSpawn.y());
         this.patch_root = new PatchGroup(this);
-        this.tree_root = AbstractTreeGroup.newRoot(this, landscapeData.trees(), landscapeData.palmTrees(), terrain);
+        this.tree_root = AbstractTreeGroup.newRoot(this, landscape.trees(), landscape.palmTrees(), terrain);
         this.element_root = AbstractElementNode.newRoot(world);
-        AbstractElementNode.buildSupplies(this, landscapeData.iron(), landscapeData.rocks(), plantCoordinates,
+        AbstractElementNode.buildSupplies(this, landscape.iron(), landscape.rocks(), plantCoordinates,
                 terrain, insertPlants);
         activeWorlds.add(new WeakReference<>(this));
     }

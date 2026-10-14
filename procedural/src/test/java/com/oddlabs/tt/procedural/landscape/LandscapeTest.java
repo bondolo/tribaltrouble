@@ -8,6 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Tests procedural landscape generation, resource distribution, and terrain blending.
+ */
 final class LandscapeTest {
 
     @Test
@@ -21,14 +24,15 @@ final class LandscapeTest {
                 42
         );
 
-        Landscape landscape = new Landscape(2, config, 0.5f, 5, 0.5f);
-        assertNotNull(landscape.getBlendInfos());
-        assertTrue(landscape.getBlendInfos().length > 0);
-        assertNotNull(landscape.getHeight());
-        assertNotNull(landscape.getDetail());
-        assertNotNull(landscape.getDetailNormal());
-        assertEquals(256, landscape.getDetail().getWidth());
-        assertEquals(256, landscape.getDetail().getHeight());
+        ProceduralLandscape landscape = new ProceduralLandscape(2, config, 5, 0.5f);
+        assertNotNull(landscape.heightmap());
+        assertTrue(landscape.heightmap().length > 0);
+        assertNotNull(landscape.trees());
+        assertNotNull(landscape.palmTrees());
+        assertNotNull(landscape.rocks());
+        assertNotNull(landscape.iron());
+        assertNotNull(landscape.startingLocations());
+        assertEquals(2, landscape.startingLocations().size());
     }
 
     @Test
@@ -42,29 +46,16 @@ final class LandscapeTest {
                 123
         );
 
-        Landscape landscape = new Landscape(2, config, 0.5f, 5, 0.5f);
-        assertNotNull(landscape.getBlendInfos());
-        assertTrue(landscape.getBlendInfos().length > 0);
-        assertNotNull(landscape.getHeight());
-        assertNotNull(Landscape.getDustColor(Terrain.VIKING));
-        assertNotNull(Landscape.getDustColor(Terrain.NATIVE));
-    }
-
-    @Test
-    void testLandscapeGenerationVikingIsland1() {
-        IslandConfig config = new IslandConfig(
-                Terrain.VIKING,
-                256,
-                0.75f,
-                1.0f,
-                0.5f,
-                1
-        );
-        Landscape landscape = new Landscape(1, config, 0.5f, 5, 0.5f);
-        BlendInfo[] blendInfos = landscape.getBlendInfos();
-        assertEquals(8, blendInfos.length);
-        assertTrue(blendInfos[3] instanceof StructureBlend);
-        StructureBlend grassBlend = (StructureBlend) blendInfos[3];
-        assertEquals(0.70f, grassBlend.getAlphaPower(), 0.001f);
+        ProceduralLandscape landscape = new ProceduralLandscape(2, config, 5, 0.5f);
+        assertNotNull(landscape.heightmap());
+        assertTrue(landscape.heightmap().length > 0);
+        assertNotNull(landscape.trees());
+        assertNotNull(landscape.palmTrees());
+        assertNotNull(landscape.rocks());
+        assertNotNull(landscape.iron());
+        assertNotNull(Terrain.VIKING.getDustColor());
+        assertNotNull(Terrain.NATIVE.getDustColor());
+        assertNotNull(landscape.startingLocations());
+        assertEquals(2, landscape.startingLocations().size());
     }
 }

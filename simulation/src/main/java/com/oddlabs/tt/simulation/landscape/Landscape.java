@@ -5,23 +5,34 @@ import com.oddlabs.tt.simulation.model.Terrain;
 import java.util.List;
 
 /**
- * Spatial and topographical data required to construct and simulate the game world.
+ * Spatial and topographical landscape defining the terrain and object placements of the world.
  */
-public interface LandscapeData {
+public interface Landscape {
+
+    /**
+     * Returns the configuration used to generate the island.
+     *
+     * @return the island configuration
+     */
+    IslandConfig config();
 
     /**
      * Returns the terrain type.
      *
      * @return the terrain type
      */
-    Terrain terrain();
+    default Terrain terrain() {
+        return config().terrain();
+    }
 
     /**
      * Returns the dimensions of the world in meters.
      *
      * @return the dimensions of the world in meters
      */
-    int metersPerWorld();
+    default int metersPerWorld() {
+        return config().metersPerWorld();
+    }
 
     /**
      * Returns the sea level altitude in meters.
@@ -92,4 +103,41 @@ public interface LandscapeData {
      * @return the starting locations list indexed by player, then by unit
      */
     List<List<SpawnLocation>> startingLocations();
+
+    /**
+     * Returns the vertical height scaling factor applied to the heightmap.
+     *
+     * @return the vertical height scale
+     */
+    default int heightScale() {
+        return switch (metersPerWorld()) {
+            case 256 -> 32;
+            case 512 -> 48;
+            case 1024 -> 64;
+            default -> 32;
+        };
+    }
+
+    /**
+     * Returns the threshold value for unit accessibility on slopes.
+     *
+     * @return the slope access threshold
+     */
+    default float accessThreshold() {
+        return switch (metersPerWorld()) {
+            case 256 -> 0.05f;
+            case 512 -> 0.0375f;
+            case 1024 -> 0.025f;
+            default -> 0.05f;
+        };
+    }
+
+    /**
+     * Returns the threshold value for building placement on slopes.
+     *
+     * @return the slope build threshold
+     */
+    default float buildThreshold() {
+        return accessThreshold() / 2f;
+    }
 }

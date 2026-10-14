@@ -2,8 +2,8 @@ package com.oddlabs.tt.headless;
 
 import com.oddlabs.tt.net.HeadlessMultiplayerHarness;
 import com.oddlabs.tt.net.HeadlessSimulationInstance;
-import com.oddlabs.tt.procedural.landscape.GeneratedLandscapeData;
 import com.oddlabs.tt.procedural.landscape.IslandGenerator;
+import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -48,14 +48,14 @@ public final class HeadlessMatchRunner {
         }
 
         IslandGenerator generator = new IslandGenerator(config.islandConfig());
-        GeneratedLandscapeData landscapeData = generator.generate(
+        Landscape landscape = generator.generate(
                 numPlayers,
                 config.worldParameters().initialUnitCount(),
                 0.0f
         );
 
         try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.create(
-                landscapeData,
+                landscape,
                 config.worldParameters(),
                 playerSlots,
                 unitInfos,

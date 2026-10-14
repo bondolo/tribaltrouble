@@ -1,8 +1,9 @@
 package com.oddlabs.tt.simulation.player;
 
 import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.IslandConfig;
+import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
-import com.oddlabs.tt.simulation.landscape.LandscapeData;
 import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.PlantLocation;
@@ -123,13 +124,13 @@ class AIDecouplingTest {
         }
     }
 
-    private record TestLandscapeData(int size,
-                                     float[] heightmap,
-                                     boolean[][] accessGrid,
-                                     byte[][] buildGrid,
-                                     List<List<SpawnLocation>> startingLocations) implements LandscapeData {
+    private record TestLandscape(int size,
+                                 float[] heightmap,
+                                 boolean[][] accessGrid,
+                                 byte[][] buildGrid,
+                                 List<List<SpawnLocation>> startingLocations) implements Landscape {
 
-        static TestLandscapeData create(int size) {
+        static TestLandscape create(int size) {
             float[] heightmap = new float[size * size];
             Arrays.fill(heightmap, 5.0f);
 
@@ -154,7 +155,12 @@ class AIDecouplingTest {
                 startingLocations.add(playerLocations);
             }
 
-            return new TestLandscapeData(size, heightmap, accessGrid, buildGrid, startingLocations);
+            return new TestLandscape(size, heightmap, accessGrid, buildGrid, startingLocations);
+        }
+
+        @Override
+        public IslandConfig config() {
+            return new IslandConfig(Terrain.NATIVE, metersPerWorld(), 0.5f, 0.5f, 0.5f, 42);
         }
 
         @Override
@@ -206,7 +212,7 @@ class AIDecouplingTest {
     @BeforeEach
     void setUp() {
         int gridSize = 32;
-        LandscapeData landscapeData = TestLandscapeData.create(gridSize);
+        Landscape landscape = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(0, "1", 5, 20);
 
         List<PlayerInfo> playerInfos = List.of(
@@ -229,7 +235,7 @@ class AIDecouplingTest {
                 boundsProvider,
                 noopListener,
                 worldParams,
-                landscapeData,
+                landscape,
                 playerInfos,
                 playerColors,
                 false

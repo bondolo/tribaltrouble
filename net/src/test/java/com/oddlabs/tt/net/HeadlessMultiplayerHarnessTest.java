@@ -4,7 +4,8 @@ import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.JitterConfig;
 import com.oddlabs.net.TickTimeManager;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.landscape.LandscapeData;
+import com.oddlabs.tt.simulation.landscape.IslandConfig;
+import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.PlantLocation;
 import com.oddlabs.tt.simulation.landscape.SpawnLocation;
 import com.oddlabs.tt.simulation.landscape.SupplyPlacement;
@@ -32,14 +33,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class HeadlessMultiplayerHarnessTest {
 
-    private record TestLandscapeData(
-                                     int size,
-                                     float[] heightmap,
-                                     boolean[][] accessGrid,
-                                     byte[][] buildGrid,
-                                     List<List<SpawnLocation>> startingLocations) implements LandscapeData {
+    private record TestLandscape(
+                                 int size,
+                                 float[] heightmap,
+                                 boolean[][] accessGrid,
+                                 byte[][] buildGrid,
+                                 List<List<SpawnLocation>> startingLocations) implements Landscape {
 
-        static TestLandscapeData create(int size) {
+        static TestLandscape create(int size) {
             float[] heightmap = new float[size * size];
             Arrays.fill(heightmap, 5.0f);
 
@@ -61,7 +62,12 @@ class HeadlessMultiplayerHarnessTest {
                 startingLocations.add(playerLocations);
             }
 
-            return new TestLandscapeData(size, heightmap, accessGrid, buildGrid, startingLocations);
+            return new TestLandscape(size, heightmap, accessGrid, buildGrid, startingLocations);
+        }
+
+        @Override
+        public IslandConfig config() {
+            return new IslandConfig(Terrain.NATIVE, metersPerWorld(), 0.5f, 0.5f, 0.5f, 42);
         }
 
         @Override
@@ -109,7 +115,7 @@ class HeadlessMultiplayerHarnessTest {
     @Test
     void testMultiInstanceHeadlessSession() throws Exception {
         int gridSize = 32; // 2 patches of 16
-        LandscapeData landscapeData = TestLandscapeData.create(gridSize);
+        Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
 
         PlayerSlot[] playerSlots = new PlayerSlot[2];
@@ -179,7 +185,7 @@ class HeadlessMultiplayerHarnessTest {
     @Test
     void testAiPeerHeadlessSession() throws Exception {
         int gridSize = 32;
-        LandscapeData landscapeData = TestLandscapeData.create(gridSize);
+        Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
 
         PlayerSlot[] playerSlots = new PlayerSlot[2];
@@ -227,7 +233,7 @@ class HeadlessMultiplayerHarnessTest {
     @Test
     void testMultiInstanceHeadlessSessionWithJitter() throws Exception {
         int gridSize = 32;
-        LandscapeData landscapeData = TestLandscapeData.create(gridSize);
+        Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
 
         PlayerSlot[] playerSlots = new PlayerSlot[2];
@@ -279,7 +285,7 @@ class HeadlessMultiplayerHarnessTest {
     @Test
     void testAiPeerHeadlessSessionWithLaggyJitter() throws Exception {
         int gridSize = 32;
-        LandscapeData landscapeData = TestLandscapeData.create(gridSize);
+        Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
 
         PlayerSlot[] playerSlots = new PlayerSlot[2];
@@ -325,7 +331,7 @@ class HeadlessMultiplayerHarnessTest {
     @Test
     void testMultiInstanceConcurrentVirtualThreadStepping() throws Exception {
         int gridSize = 32;
-        LandscapeData landscapeData = TestLandscapeData.create(gridSize);
+        Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
 
         PlayerSlot[] playerSlots = new PlayerSlot[2];

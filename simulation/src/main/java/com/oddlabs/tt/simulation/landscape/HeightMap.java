@@ -12,7 +12,7 @@ public final class HeightMap implements LandscapeEnvironment {
     public static final int GRID_UNITS_PER_PATCH = 1 << GRID_UNITS_PER_PATCH_EXP;
 
     private final World world_instance;
-    private final LandscapeData landscapeData;
+    private final Landscape landscape;
     private final int patches_per_world;
     private final int meters_per_patch;
     private final int grid_units_per_world;
@@ -22,10 +22,10 @@ public final class HeightMap implements LandscapeEnvironment {
     private final LandscapeLeaf[][] landscape_leaves;
     private final BitSet below_sea_level;
 
-    public HeightMap(World world_instance, LandscapeData landscapeData) {
+    public HeightMap(World world_instance, Landscape landscape) {
         this.world_instance = world_instance;
-        this.landscapeData = landscapeData;
-        this.grid_units_per_world = (int) Math.sqrt(landscapeData.heightmap().length);
+        this.landscape = landscape;
+        this.grid_units_per_world = (int) Math.sqrt(landscape.heightmap().length);
         patches_per_world = grid_units_per_world / GRID_UNITS_PER_PATCH;
         meters_per_patch = GRID_UNITS_PER_PATCH * METERS_PER_UNIT_GRID;
         inv_meters_per_patch = 1f / meters_per_patch;
@@ -44,11 +44,11 @@ public final class HeightMap implements LandscapeEnvironment {
 
 
     public float[] getHeightData() {
-        return landscapeData.heightmap();
+        return landscape.heightmap();
     }
 
-    public LandscapeData getLandscapeData() {
-        return landscapeData;
+    public Landscape landscape() {
+        return landscape;
     }
 
     public World getWorld() {
@@ -67,7 +67,7 @@ public final class HeightMap implements LandscapeEnvironment {
 
     @Override
     public int getMetersPerWorld() {
-        return landscapeData.metersPerWorld();
+        return landscape.metersPerWorld();
     }
 
     public int getGridUnitsPerPatch() {
@@ -95,7 +95,7 @@ public final class HeightMap implements LandscapeEnvironment {
 
     @Override
     public float getSeaLevelMeters() {
-        return landscapeData.seaLevelMeters();
+        return landscape.seaLevelMeters();
     }
 
     void registerLeaf(int x, int y, LandscapeLeaf leaf) {
@@ -103,11 +103,11 @@ public final class HeightMap implements LandscapeEnvironment {
     }
 
     public List<TreePlacement> getTrees() {
-        return landscapeData.trees();
+        return landscape.trees();
     }
 
     public boolean[][] getAccessGrid() {
-        return landscapeData.accessGrid();
+        return landscape.accessGrid();
     }
 
 
@@ -155,7 +155,7 @@ public final class HeightMap implements LandscapeEnvironment {
         float dx = x_f - x0;
         float dy = y_f - y0;
 
-        float[] heightmap = landscapeData.heightmap();
+        float[] heightmap = landscape.heightmap();
         float h00 = heightmap[y0 * size + x0];
         float h10 = heightmap[y0 * size + x1];
         float h01 = heightmap[y1 * size + x0];
@@ -185,13 +185,13 @@ public final class HeightMap implements LandscapeEnvironment {
     }
 
     public byte getBuildValue(int grid_x, int grid_y) {
-        return landscapeData.buildGrid()[grid_y][grid_x];
+        return landscape.buildGrid()[grid_y][grid_x];
     }
 
     public boolean canBuild(int grid_x, int grid_y, int val) {
         grid_x = wrapGridCoord(grid_x);
         grid_y = wrapGridCoord(grid_y);
-        return landscapeData.buildGrid()[grid_y][grid_x] >= val;
+        return landscape.buildGrid()[grid_y][grid_x] >= val;
     }
 
     public float getWrappedHeight(int grid_x, int grid_y) {
@@ -206,13 +206,13 @@ public final class HeightMap implements LandscapeEnvironment {
     }
 
     public float getHeight(int grid_x, int grid_y) {
-        return landscapeData.heightmap()[grid_y * grid_units_per_world + grid_x];
+        return landscape.heightmap()[grid_y * grid_units_per_world + grid_x];
     }
 
     public void editHeight(int grid_x, int grid_y, float height) {
         final int wrappedX = wrapGridCoord(grid_x);
         final int wrappedY = wrapGridCoord(grid_y);
-        landscapeData.heightmap()[wrappedY * grid_units_per_world + wrappedX] = height;
+        landscape.heightmap()[wrappedY * grid_units_per_world + wrappedX] = height;
 
         int patch_x1 = wrappedX / GRID_UNITS_PER_PATCH;
 

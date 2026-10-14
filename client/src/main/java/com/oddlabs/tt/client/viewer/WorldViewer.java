@@ -23,7 +23,7 @@ import com.oddlabs.tt.client.resource.EmojiType;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.engine.settings.GraphicsSettings;
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.client.render.LandscapeBaker;
+import com.oddlabs.tt.client.landscape.LandscapeBaker;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.client.resource.LandscapeAssetsLoader;
 import com.oddlabs.tt.engine.render.IconQuad;
@@ -31,7 +31,7 @@ import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.procedural.landscape.GeneratedLandscapeData;
+import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
@@ -104,7 +104,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     public WorldViewer(final GUIRoot gui_root,
             Peer peer,
-            WorldParameters world_params, InGameInfo ingame_info, WorldGenerator<GeneratedLandscapeData> generator,
+            WorldParameters world_params, InGameInfo ingame_info, WorldGenerator<Landscape> generator,
             PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot,
             SessionID session_id, ScreenManager screenManager) {
         this.peer = peer;
@@ -127,15 +127,15 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 () -> RacesAssetsLoader.load(render_queues));
         registerHarvestEmojis(render_queues, icons);
         var player_infos = Arrays.stream(player_slots).map(slot -> (PlayerInfo) slot.getInfo()).toList();
-        GeneratedLandscapeData landscapeData = ProgressListener.subTask(0.25f,
+        Landscape landscape = ProgressListener.subTask(0.25f,
                 () -> generator.generate(
                         player_infos.size(), world_params.initialUnitCount(), ingame_info.getRandomStartPosition()));
         WorldInfo<Texture> world_info = ProgressListener.subTask(0.15f,
-                () -> LandscapeBaker.bakeWorld(landscapeData));
+                () -> LandscapeBaker.bakeWorld(landscape));
         camera_state.setFog(world_info.fog_info());
         this.world = ProgressListener.subTask(0.10f,
                 () -> World.newWorld(races_resources, landscape_geometry, NotificationListener.EMPTY, world_params,
-                        world_info.landscapeData(), player_infos, AccessibilitySettings.from(peer
+                        world_info.landscape(), player_infos, AccessibilitySettings.from(peer
                                 .getSettings()).linear_player_colours,
                         RenderConfig.INSERT_PLANTS[GraphicsSettings.from(peer.getSettings()).graphic_detail]));
         this.local_player = world.getPlayers().get(player_slot);
@@ -184,7 +184,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.panel = new ActionButtonPanel(this, camera);
         this.delegate = new SelectionDelegate(this, camera);
         camera.reset(getLocalPlayer().getStartX(), getLocalPlayer().getStartY());
-        initPlayers(world_info.landscapeData().startingLocations(), player_slots, world.getPlayers(), unit_infos,
+        initPlayers(world_info.landscape().startingLocations(), player_slots, world.getPlayers(), unit_infos,
                 world_params.initialGameSpeed());
         gui_root.getAnimationManager().registerAnimation(this);
     }

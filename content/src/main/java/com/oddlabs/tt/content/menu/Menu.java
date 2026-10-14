@@ -27,7 +27,7 @@ import com.oddlabs.tt.content.form.ProgressForm;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.screen.ScreenManager;
-import com.oddlabs.tt.client.render.LandscapeBaker;
+import com.oddlabs.tt.client.landscape.LandscapeBaker;
 import com.oddlabs.tt.client.screen.DefaultScreen;
 import com.oddlabs.tt.client.screen.Screen;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
@@ -56,9 +56,9 @@ import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.LoadCallbackFactory;
 import com.oddlabs.tt.net.Server;
-import com.oddlabs.tt.procedural.landscape.GeneratedLandscapeData;
 import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
+import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
@@ -345,7 +345,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 generator,
                 player_slots,
                 unit_infos, player_slot) -> new WorldStarter(session_id,
-                        (WorldGenerator<GeneratedLandscapeData>) generator, world_params, player_slots, unit_infos,
+                        (WorldGenerator<Landscape>) generator, world_params, player_slots, unit_infos,
                         player_slot, ingame_info,
                         new DefaultWorldInitAction(), peer, screenManager);
         Client<GUIRoot, Screen> client = new Client<>(null, networkSelector, matchmakingClient, chatHub,
@@ -365,7 +365,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
             @Nullable MultiplayerLobby owner, WorldParameters world_params, InGameInfo ingame_info,
             WorldInitAction init_action, @Nullable Game game, IslandConfig islandConfig, String[] ai_names) {
         boolean multiplayer = ingame_info.isMultiplayer();
-        WorldGenerator<GeneratedLandscapeData> generator = new IslandGenerator(islandConfig);
+        WorldGenerator<Landscape> generator = new IslandGenerator(islandConfig);
         InetAddress address = multiplayer ? null : com.oddlabs.util.Utils.getLoopbackAddress();
         var matchmakingClient = peer.getNetwork().getMatchmakingClient();
         var chatHub = peer.getNetwork().getChatHub();
@@ -379,7 +379,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 gen,
                 player_slots, unit_infos,
                 player_slot) -> new WorldStarter(
-                        session_id, (WorldGenerator<GeneratedLandscapeData>) gen,
+                        session_id, (WorldGenerator<Landscape>) gen,
                         world_params, player_slots, unit_infos, player_slot, ingame_info, init_action, peer,
                         screenManager);
         Client<GUIRoot, Screen> client = new Client<>(server::close, networkSelector, matchmakingClient,
@@ -433,7 +433,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 Terrain.NATIVE, 256, LandscapeConfig.LANDSCAPE_HILLS,
                 LandscapeConfig.LANDSCAPE_VEGETATION, LandscapeConfig.LANDSCAPE_RESOURCES,
                 LandscapeConfig.LANDSCAPE_SEED);
-        final WorldGenerator<GeneratedLandscapeData> generator = new IslandGenerator(islandConfig);
+        final WorldGenerator<Landscape> generator = new IslandGenerator(islandConfig);
         ProgressForm.Mode mode = first_progress ? ProgressForm.Mode.STARTUP : ProgressForm.Mode.MENU_RETURN;
         return ProgressForm.setProgressForm(peer.getNetwork().getSelector(), screenManager, peer
                 .getAudioManager(), (
@@ -443,21 +443,21 @@ public abstract class Menu extends CameraDelegate<Camera> {
 
     private static Screen finishMainMenu(
             Peer peer, GUIRoot gui_root,
-            boolean first_progress, WorldGenerator<GeneratedLandscapeData> generator, ScreenManager screenManager) {
+            boolean first_progress, WorldGenerator<Landscape> generator, ScreenManager screenManager) {
         peer.getFramePacer().freezeTime();
         WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);
         var players = List.of(new PlayerInfo(0, Race.NATIVES, ""));
-        GeneratedLandscapeData landscapeData = ProgressListener.subTask(0.40f,
+        Landscape landscape = ProgressListener.subTask(0.40f,
                 () -> generator.generate(players.size(), world_params.initialUnitCount(), 0f));
         WorldInfo<Texture> world_info = ProgressListener.subTask(0.30f,
-                () -> LandscapeBaker.bakeWorld(landscapeData));
+                () -> LandscapeBaker.bakeWorld(landscape));
         RenderQueues render_queues = new RenderQueues();
         ProgressListener.subTask(0.15f,
                 () -> new LandscapeAssetsLoader(render_queues));
         World world = ProgressListener.subTask(0.15f,
                 () -> World.newWorld(null, null,
                         new NotificationListener() {
-                        }, world_params, world_info.landscapeData(), players,
+                        }, world_params, world_info.landscape(), players,
                         AccessibilitySettings.from(peer.getSettings()).linear_player_colours,
                         RenderConfig.INSERT_PLANTS[GraphicsSettings.from(peer.getSettings()).graphic_detail]));
         AnimationManager menuAnimationManager = new AnimationManager();

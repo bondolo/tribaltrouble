@@ -13,7 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 final class HeightMapTest {
 
-    private record TestLandscapeData(float[] heightmap, int metersPerWorld) implements LandscapeData {
+    private record TestLandscape(float[] heightmap, int metersPerWorld) implements Landscape {
+        @Override
+        public IslandConfig config() {
+            return new IslandConfig(Terrain.NATIVE, metersPerWorld(), 0.5f, 0.5f, 0.5f, 42);
+        }
+
         @Override
         public Terrain terrain() {
             return Terrain.NATIVE;
@@ -82,7 +87,7 @@ final class HeightMapTest {
         heightmap[size] = 20f;      // (0,1)
         heightmap[size + 1] = 50f;  // (1,1)
 
-        LandscapeData data = new TestLandscapeData(heightmap, size * HeightMap.METERS_PER_UNIT_GRID);
+        Landscape data = new TestLandscape(heightmap, size * HeightMap.METERS_PER_UNIT_GRID);
         HeightMap map = new HeightMap(null, data);
 
         // Grid unit is 2 meters.

@@ -4,7 +4,7 @@ import com.oddlabs.router.SessionID;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
-import com.oddlabs.tt.simulation.landscape.LandscapeData;
+import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
 import com.oddlabs.tt.simulation.landscape.SpawnLocation;
 import com.oddlabs.tt.simulation.landscape.World;
@@ -68,7 +68,7 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
     public static HeadlessSimulationInstance create(
             int playerIndex,
             WorldParameters worldParams,
-            LandscapeData landscapeData,
+            Landscape landscape,
             PlayerSlot[] playerSlots,
             UnitInfo[] unitInfos,
             com.oddlabs.net.NetworkSelector network,
@@ -93,14 +93,14 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
                 boundsProvider,
                 noopListener,
                 worldParams,
-                landscapeData,
+                landscape,
                 playerInfos,
                 DEFAULT_PLAYER_COLORS,
                 false
         );
 
         initPlayers(
-                landscapeData.startingLocations(),
+                landscape.startingLocations(),
                 playerSlots,
                 world.getPlayers(),
                 unitInfos,

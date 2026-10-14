@@ -1,37 +1,14 @@
 package com.oddlabs.tt.effects.particle;
 
-import com.oddlabs.tt.procedural.landscape.GeneratedLandscapeData;
-import com.oddlabs.tt.procedural.landscape.Landscape;
-import com.oddlabs.tt.simulation.landscape.IslandConfig;
-import com.oddlabs.tt.simulation.landscape.LandscapeData;
-import com.oddlabs.tt.simulation.landscape.NotificationListener;
-import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.util.Color;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit tests for {@link Particle} and {@link LinearParticle}.
  */
-class ParticleTest {
-
-    private static World world;
-
-    @BeforeAll
-    static void setUpWorld() {
-        IslandConfig config = new IslandConfig(Terrain.NATIVE, 256, 0.5f, 0.5f, 0.5f, 42);
-        Landscape landscape = new Landscape(2, config, 0.5f, 5, 0.5f);
-        LandscapeData data = new GeneratedLandscapeData(config, landscape);
-        WorldParameters params = new WorldParameters(0, "test", 0, 10);
-        world = World.newWorld(null, null, new NotificationListener() {
-        }, params, data, List.of(), new Color.Linear[0], false);
-    }
+final class ParticleTest {
 
     @Test
     void testParticleAngle() {

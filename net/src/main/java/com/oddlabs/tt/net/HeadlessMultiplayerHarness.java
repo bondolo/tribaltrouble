@@ -9,7 +9,7 @@ import com.oddlabs.net.TimeManager;
 import com.oddlabs.router.Router;
 import com.oddlabs.router.SessionID;
 import com.oddlabs.tt.base.animation.AnimationManager;
-import com.oddlabs.tt.simulation.landscape.LandscapeData;
+import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
@@ -81,11 +81,11 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
      * Uses {@link TimeManager#DEFAULT} for real-time wall-clock pacing.
      */
     public static HeadlessMultiplayerHarness create(
-            LandscapeData landscapeData,
+            Landscape landscape,
             WorldParameters worldParams,
             PlayerSlot[] playerSlots,
             UnitInfo[] unitInfos) {
-        return create(landscapeData, worldParams, playerSlots, unitInfos, TimeManager.DEFAULT, true);
+        return create(landscape, worldParams, playerSlots, unitInfos, TimeManager.DEFAULT, true);
     }
 
     /**
@@ -93,11 +93,11 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
      * for accelerated headless simulation and automated testing.
      */
     public static HeadlessMultiplayerHarness createVirtual(
-            LandscapeData landscapeData,
+            Landscape landscape,
             WorldParameters worldParams,
             PlayerSlot[] playerSlots,
             UnitInfo[] unitInfos) {
-        return create(landscapeData, worldParams, playerSlots, unitInfos, new TickTimeManager(), true);
+        return create(landscape, worldParams, playerSlots, unitInfos, new TickTimeManager(), true);
     }
 
     /**
@@ -105,19 +105,19 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
      * for testing network synchronization under synthetic delay and burst conditions.
      */
     public static HeadlessMultiplayerHarness createJittered(
-            LandscapeData landscapeData,
+            Landscape landscape,
             WorldParameters worldParams,
             PlayerSlot[] playerSlots,
             UnitInfo[] unitInfos,
             JitterConfig jitterConfig) {
-        return create(landscapeData, worldParams, playerSlots, unitInfos, new JitterTimeManager(jitterConfig), true);
+        return create(landscape, worldParams, playerSlots, unitInfos, new JitterTimeManager(jitterConfig), true);
     }
 
     /**
      * Creates a new multiplayer harness with custom time manager and AI peer support.
      */
     public static HeadlessMultiplayerHarness create(
-            LandscapeData landscapeData,
+            Landscape landscape,
             WorldParameters worldParams,
             PlayerSlot[] playerSlots,
             UnitInfo[] unitInfos,
@@ -144,7 +144,7 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
             HeadlessSimulationInstance instance = HeadlessSimulationInstance.create(
                     i,
                     worldParams,
-                    landscapeData,
+                    landscape,
                     playerSlots,
                     unitInfos,
                     network,

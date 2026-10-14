@@ -20,6 +20,7 @@ module com.oddlabs.tt.client {
     exports com.oddlabs.tt.client.camera;
     exports com.oddlabs.tt.client.delegate;
     exports com.oddlabs.tt.client.gui;
+    exports com.oddlabs.tt.client.landscape;
     exports com.oddlabs.tt.client.render;
     exports com.oddlabs.tt.client.resource;
     exports com.oddlabs.tt.client.screen;

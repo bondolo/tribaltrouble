@@ -96,10 +96,10 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
                 picker.getAnimationManager(), landscape_renderer);
         this.landscape_renderer = landscape_renderer;
         this.ringMesh = new ConcentricRingMesh(world.getHeightMap());
-        this.sky = new Sky(world.getHeightMap(), world_info.landscapeData().terrain());
-        this.seaBottom = new SeaBottom(world_info.landscapeData().terrain(),
+        this.sky = new Sky(world.getHeightMap(), world_info.landscape().terrain());
+        this.seaBottom = new SeaBottom(world_info.landscape().terrain(),
                 world_info.detail(), world_info.detailNormal(), ringMesh);
-        this.water = new Water(landscape_renderer.getHeightMapVisual(), world.getHeightMap(), world_info.landscapeData()
+        this.water = new Water(landscape_renderer.getHeightMapVisual(), world.getHeightMap(), world_info.landscape()
                 .terrain(), sky, ringMesh);
         this.landscape_renderer.setOceanMask(this.water.getOceanMaskTexture());
         this.lightningRenderer = new LightningRenderer();
