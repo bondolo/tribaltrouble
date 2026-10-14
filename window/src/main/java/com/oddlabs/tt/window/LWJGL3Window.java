@@ -398,9 +398,6 @@ public final class LWJGL3Window implements Window {
 
     private void createWindow(SerializableDisplayMode mode, boolean fullscreen) {
         long flags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_RESIZABLE;
-        if (fullscreen) {
-            flags |= SDL_WINDOW_FULLSCREEN;
-        }
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
@@ -439,6 +436,9 @@ public final class LWJGL3Window implements Window {
                     logger.info("createWindow: set borderless desktop fullscreen for mode " + mode);
                 }
             }
+            if (!SDL_SetWindowFullscreen(windowHandle, true)) {
+                logger.warning(() -> "Failed to set fullscreen mode during createWindow: " + SDL_GetError());
+            }
         }
 
         glContext = SDL_GL_CreateContext(windowHandle);
@@ -457,7 +457,18 @@ public final class LWJGL3Window implements Window {
         GL.createCapabilities();
         logger.info("OpenGL Context Created: " + org.lwjgl.opengl.GL11.glGetString(org.lwjgl.opengl.GL11.GL_VERSION));
 
+        // Clear double-buffer to solid black so all window manager placement settles on a clean black screen
+        GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+        SDL_GL_SwapWindow(windowHandle);
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+        SDL_GL_SwapWindow(windowHandle);
+
+        SDL_SyncWindow(windowHandle);
+        processEvents(false, 0);
+
         updateCachedDimensions();
+        updateCachedWindowFlags();
         GL11.glViewport(0, 0, cachedWidth, cachedHeight);
         if (eventListener != null) {
             eventListener.onResized(cachedWidth, cachedHeight);
@@ -930,6 +941,7 @@ public final class LWJGL3Window implements Window {
     public void restore() {
         if (windowHandle != MemoryUtil.NULL) {
             SDL_RestoreWindow(windowHandle);
+            updateCachedWindowFlags();
         }
     }
 
@@ -937,6 +949,7 @@ public final class LWJGL3Window implements Window {
     public void minimize() {
         if (windowHandle != MemoryUtil.NULL) {
             SDL_MinimizeWindow(windowHandle);
+            updateCachedWindowFlags();
         }
     }
 
@@ -944,6 +957,7 @@ public final class LWJGL3Window implements Window {
     public void show() {
         if (windowHandle != MemoryUtil.NULL) {
             SDL_ShowWindow(windowHandle);
+            updateCachedWindowFlags();
         }
     }
 
