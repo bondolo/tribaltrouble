@@ -84,7 +84,7 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
             Landscape landscape,
             WorldParameters worldParams,
             List<PlayerSlot> playerSlots,
-            List<UnitInfo> unitInfos) {
+            List<UnitInfo> unitInfos) throws IOException {
         return create(landscape, worldParams, playerSlots, unitInfos, TimeManager.DEFAULT, true);
     }
 
@@ -96,7 +96,7 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
             Landscape landscape,
             WorldParameters worldParams,
             List<PlayerSlot> playerSlots,
-            List<UnitInfo> unitInfos) {
+            List<UnitInfo> unitInfos) throws IOException {
         return create(landscape, worldParams, playerSlots, unitInfos, new TickTimeManager(), true);
     }
 
@@ -109,7 +109,7 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
             WorldParameters worldParams,
             List<PlayerSlot> playerSlots,
             List<UnitInfo> unitInfos,
-            JitterConfig jitterConfig) {
+            JitterConfig jitterConfig) throws IOException {
         return create(landscape, worldParams, playerSlots, unitInfos, new JitterTimeManager(jitterConfig), true);
     }
 
@@ -122,7 +122,7 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
             List<PlayerSlot> playerSlots,
             List<UnitInfo> unitInfos,
             TimeManager timeManager,
-            boolean allowAiPeers) {
+            boolean allowAiPeers) throws IOException {
         NetworkSelector network = new NetworkSelector(new NotDeterministic(), timeManager);
         Router router = new Router(
                 network,
@@ -248,7 +248,6 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
 
     /**
      * Steps the simulation forward by the given delta time concurrently across virtual threads.
-     * Lockstep phases are coordinated using a {@link Phaser}.
      */
     public void stepConcurrent(float dt) {
         if (network.getTimeManager() instanceof TickTimeManager tickTimeManager) {

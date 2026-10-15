@@ -68,6 +68,28 @@ public final class Settings implements Serializable, PropertiesSerializer, Setti
         this.crashed = crashed;
     }
 
+    /**
+     * Arms the crash tripwire on disk for the current session.
+     *
+     * @param logDir the directory where current run event logs are stored
+     * @return true if the previous run crashed and was restored with safe defaults
+     */
+    public boolean armCrashTripwire(Path logDir) {
+        boolean previouslyCrashed = this.crashed;
+        this.last_event_log_dir = logDir.toAbsolutePath();
+        this.crashed = true;
+        save();
+        return previouslyCrashed;
+    }
+
+    /**
+     * Disarms the crash tripwire on disk upon a clean shutdown.
+     */
+    public void disarmCrashTripwire() {
+        this.crashed = false;
+        save();
+    }
+
     private boolean has_native_campaign = false;
 
     public boolean hasNativeCampaign() {

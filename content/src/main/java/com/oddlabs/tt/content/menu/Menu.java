@@ -55,20 +55,14 @@ import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static com.oddlabs.util.Utils.tryGetLoopbackAddress;
 
 /**
  * Base class for full-screen menus in the game, such as the main menu or the in-game escape menu.
  * It provides common UI elements like the background logo and layout helpers for menu buttons.
  */
 public abstract class Menu extends CameraDelegate<Camera> {
-    private static final Logger logger = Logger.getLogger(Menu.class.getName());
 
     public static final Color COLOR_NORMAL = Color.Standard.WHITE;
     public static final Color COLOR_ACTIVE = new Color.Standard(0xFF_FF_CC_9F);
@@ -365,24 +359,11 @@ public abstract class Menu extends CameraDelegate<Camera> {
                     "sound_not_available_message"),
                     doNotShowAgain -> audioSettings.warning_no_sound = !doNotShowAgain));
         }
-        if (!initNetwork(peer)) {
+        if (!peer.isNetworkAvailable()) {
             gui_root.addModalForm(new MessageForm(gui_root, i18n("network_not_available_caption"),
                     i18n("network_not_available_message"),
                     i18n("quit"), (_, _, _, _) -> peer.shutdown()));
         }
         return new DefaultScreen(gui_root, renderer);
-    }
-
-    public static boolean initNetwork(Peer peer) {
-        boolean is_network_created;
-        try {
-            peer.getNetwork().getSelector().initSelector();
-            tryGetLoopbackAddress();
-            is_network_created = true;
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed to initialize network", e);
-            is_network_created = false;
-        }
-        return peer.getEventQueue().getDeterministic().log(is_network_created);
     }
 }

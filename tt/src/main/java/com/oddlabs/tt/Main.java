@@ -1,22 +1,13 @@
 package com.oddlabs.tt;
 
-import com.oddlabs.tt.audio.AudioProvider;
-import com.oddlabs.tt.audio.AudioSettings;
 import com.oddlabs.tt.base.event.LocalEventQueue;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.GamePaths;
-import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.client.resource.AudioRegistry;
-import com.oddlabs.tt.client.gui.QuitForm;
-import com.oddlabs.tt.input.InputBindingSettings;
-import com.oddlabs.tt.content.menu.Menu;
-import com.oddlabs.tt.client.Peer;
-import com.oddlabs.tt.client.ClientStartup;
-import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.base.global.Settings;
-import com.oddlabs.tt.gui.GUI;
-import com.oddlabs.tt.gui.LocalInput;
-import com.oddlabs.tt.input.InputManager;
-import com.oddlabs.tt.net.Network;
+import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.ClientSessionBuilder;
+import com.oddlabs.tt.client.Peer;
+import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.window.LWJGL3Window;
 import org.lwjgl.sdl.SDLMessageBox;
 
@@ -31,7 +22,6 @@ import static org.lwjgl.sdl.SDLMessageBox.SDL_MESSAGEBOX_ERROR;
  */
 public final class Main {
     private static final Logger logger = Logger.getLogger(Main.class.getName());
-    private static final boolean DEBUG = Boolean.getBoolean("com.oddlabs.tt.developer");
     private static final ResourceBundle bundle = ResourceBundle.getBundle(Main.class.getName());
 
     private static String i18n(String key, Object... args) {
@@ -41,14 +31,14 @@ public final class Main {
     public static void fail(Throwable t) {
         logger.log(Level.SEVERE, "Critical Failure", t);
 
-        if (!DEBUG) {
+        if (!AppConfig.DEVELOPER_MODE) {
             while (t.getCause() != null) {
                 t = t.getCause();
             }
             String error = i18n("error");
             String error_msg;
             try {
-                error_msg = i18n("error_message", t.toString());
+                error_msg = i18n("error_message", t);
             } catch (IllegalArgumentException e) {
                 // Fallback if message formatting fails (e.g. quotes in the exception message)
                 error_msg = "Error: " + t;
@@ -65,7 +55,7 @@ public final class Main {
     }
 
     static void main(String... args) {
-        logger.info("DEBUG mode = " + DEBUG);
+        logger.info("DEVELOPER mode = " + AppConfig.DEVELOPER_MODE);
         String os_name = System.getProperty("os.name");
         logger.info("os.name = '" + os_name + "'");
         String os_arch = System.getProperty("os.arch");
@@ -85,59 +75,12 @@ public final class Main {
             GamePaths gamePaths = new GamePaths();
             Settings settings = new Settings(gamePaths.dataDir());
             settings.load();
-            AudioSettings audioSettings = AudioSettings.from(settings);
-            try (var window = new LWJGL3Window(); var eventQueue = new LocalEventQueue(); var audioManager
-                    = AudioProvider.load(audioSettings, eventQueue.getManager())) {
-                audioManager.setSfxGain(audioSettings.sound_gain)
-                        .setMusicGain(audioSettings.music_gain)
-                        .setSfxEnabled(audioSettings.play_sfx);
-
-                Network network = new Network(new com.oddlabs.net.NetworkSelector(eventQueue.getDeterministic(),
-                        eventQueue::getMillis));
-                Peer peer = new Peer(gamePaths, settings, window, eventQueue, network, audioManager);
-                peer.run(
-                        (clientPeer, firstProgress) -> {
-                            InputManager inputManager = new InputManager(InputBindingSettings.from(settings));
-                            LocalInput localInput = new LocalInput(
-                                    clientPeer.getWindow(), inputManager,
-                                    eventQueue.getDeterministic(),
-                                    clientPeer::shutdown,
-                                    clientPeer.getFramePacer()
-                            );
-                            Menu.initNetwork(clientPeer);
-                            localInput.init();
-                            boolean wasCrashed = settings.isCrashed();
-                            settings.setLastEventLogDir(gamePaths.logDir().toAbsolutePath());
-                            settings.setCrashed(true); // Armed on disk for the current run
-                            settings.save();
-                            settings.setCrashed(wasCrashed); // Restore previous state
-                            GUI gui = new GUI(
-                                    localInput,
-                                    clientPeer.getWindow(),
-                                    eventQueue,
-                                    settings,
-                                    clientPeer::shutdown,
-                                    clientPeer::updateProgress,
-                                    clientPeer::getFPS
-                            );
-                            gui.setMovieRecordingStarter(clientPeer::startMovieRecording);
-                            gui.setErrorAudioHandler(() -> audioManager.newAudio(0f, 0f, 0f,
-                                    AudioRegistry.ERROR_SOUND));
-                            gui.setCloseHandler(() -> {
-                                if (gui.getGUIRoot().isShowingModalForm(QuitForm.class)) {
-                                    clientPeer.shutdown();
-                                } else {
-                                    gui.getGUIRoot().addModalForm(new QuitForm(gui.getGUIRoot(),
-                                            clientPeer::shutdown));
-                                }
-                            });
-                            ScreenManager screenManager = new ScreenManager(gui, eventQueue.getManager(),
-                                    clientPeer::updateProgress);
-                            Runnable loadTask = Menu.setupMainMenu(clientPeer, firstProgress, screenManager);
-                            return new ClientStartup.Session(screenManager, loadTask);
-                        }, args
-                );
+            boolean previousRunCrashed = settings.armCrashTripwire(gamePaths.logDir());
+            try (var window = new LWJGL3Window(); var eventQueue = new LocalEventQueue(); var peer = new Peer(gamePaths,
+                    settings, window, eventQueue, previousRunCrashed)) {
+                peer.run(ClientSessionBuilder.create(Menu::setupMainMenu), args);
             }
+            settings.disarmCrashTripwire();
             status = 0;
         } catch (Throwable t) {
             fail(t);

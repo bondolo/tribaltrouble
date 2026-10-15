@@ -32,7 +32,12 @@ import java.util.SequencedCollection;
 import java.util.Set;
 
 /** Client endpoint for interacting with the matchmaking and chat server. */
-public final class MatchmakingClient implements MatchmakingClientInterface, ConnectionInterface {
+public final class MatchmakingClient implements MatchmakingClientInterface, ConnectionInterface, AutoCloseable {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(MatchmakingClient.class.getName());
+
+    private static String i18n(String key, Object... args) {
+        return Utils.getBundleString(bundle, key, args);
+    }
     private static final String MATCHMAKING_HOST = "127.0.0.1";
 
     private static final int STATE_NOT_CONNECTED = 1;
@@ -57,9 +62,8 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     private @Nullable MatchmakingServerInterface matchmaking_interface;
     private @Nullable MatchmakingServerLoginInterface matchmaking_login_interface;
     private @Nullable TunnelledConnectionListener tunnelled_listener;
-    private TunnelAddress local_address;
-    private String username = Utils.getBundleString(ResourceBundle.getBundle(MatchmakingClient.class.getName()),
-            "player");
+    private @Nullable TunnelAddress local_address;
+    private String username = i18n("player");
     private @Nullable Profile active_profile = null;
     private int state = STATE_NOT_CONNECTED;
     private boolean update_allowed;
@@ -68,8 +72,8 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     private @Nullable ProfileListener create_profile_listener;
     private @Nullable ChatRoomInfo chat_room_info;
 
-    private Login login;
-    private LoginDetails login_details;
+    private @Nullable Login login;
+    private @Nullable LoginDetails login_details;
 
     public MatchmakingClient(Network network) {
         this.network = network;
@@ -439,6 +443,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
         handleError(e);
     }
 
+    @Override
     public void close() {
         //if (state == STATE_NOT_CONNECTED)
         //	return;

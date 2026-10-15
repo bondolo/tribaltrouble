@@ -2,20 +2,22 @@ package com.oddlabs.tt.net;
 
 
 import com.oddlabs.net.NetworkSelector;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public final class Network {
+/**
+ * Top-level network coordinator managing selector ticking, matchmaking, and chat.
+ */
+public final class Network implements AutoCloseable {
     private final NetworkSelector selector;
     private final ChatHub chat_hub = new ChatHub();
     private final MatchmakingClient matchmaking_client = new MatchmakingClient(this);
     private @Nullable MatchmakingListener matchmaking_listener;
 
-    public Network(@NonNull NetworkSelector selector) {
+    public Network(NetworkSelector selector) {
         this.selector = selector;
     }
 
-    public @NonNull NetworkSelector getSelector() {
+    public NetworkSelector getSelector() {
         return selector;
     }
 
@@ -35,8 +37,10 @@ public final class Network {
         return matchmaking_client;
     }
 
-    public void closeMatchmakingClient() {
+    @Override
+    public void close() {
         matchmaking_listener = null;
         matchmaking_client.close();
+        selector.close();
     }
 }

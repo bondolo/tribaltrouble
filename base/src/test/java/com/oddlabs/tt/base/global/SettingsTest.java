@@ -1,16 +1,26 @@
 package com.oddlabs.tt.base.global;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Tests for {@link Settings} persistence, tripwire behavior, and serializer delegation.
+ */
 final class SettingsTest {
 
     public static final class TestSerializer implements PropertiesSerializer {
@@ -138,5 +148,45 @@ final class SettingsTest {
         assertEquals(testPath, loaded.getLastEventLogDir());
         assertEquals(1234, loaded.getLastRevision());
         assertTrue(loaded.isCrashed());
+    }
+
+    @Test
+    void testArmAndDisarmCrashTripwire(@TempDir Path tempDir) throws IOException {
+        Settings settings = new Settings(tempDir);
+        assertFalse(settings.isCrashed());
+
+        Path testLogDir = Path.of("/tmp/logs");
+        boolean wasCrashed = settings.armCrashTripwire(testLogDir);
+        assertFalse(wasCrashed);
+        assertTrue(settings.isCrashed());
+        assertEquals(testLogDir.toAbsolutePath(), settings.getLastEventLogDir());
+
+        Properties diskProps = new Properties();
+        try (InputStream in = Files.newInputStream(tempDir.resolve(AppConfig.SETTINGS_FILE_NAME))) {
+            diskProps.load(in);
+        }
+        assertEquals("true", diskProps.getProperty("crashed"));
+        assertEquals(testLogDir.toAbsolutePath().toString(), diskProps.getProperty("last_event_log_dir"));
+
+        settings.disarmCrashTripwire();
+        assertFalse(settings.isCrashed());
+
+        Properties disarmedProps = new Properties();
+        try (InputStream in = Files.newInputStream(tempDir.resolve(AppConfig.SETTINGS_FILE_NAME))) {
+            disarmedProps.load(in);
+        }
+        assertNull(disarmedProps.getProperty("crashed"));
+    }
+
+    @Test
+    void testArmCrashTripwireWhenPreviouslyCrashed(@TempDir Path tempDir) {
+        Settings settings = new Settings(tempDir);
+        settings.setCrashed(true);
+
+        Path testLogDir = Path.of("/tmp/logs2");
+        boolean wasCrashed = settings.armCrashTripwire(testLogDir);
+        assertTrue(wasCrashed);
+        assertTrue(settings.isCrashed());
+        assertEquals(testLogDir.toAbsolutePath(), settings.getLastEventLogDir());
     }
 }

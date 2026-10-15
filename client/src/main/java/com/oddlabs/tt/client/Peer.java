@@ -1,7 +1,9 @@
 package com.oddlabs.tt.client;
 
 import com.oddlabs.event.Deterministic;
+import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.audio.AudioManager;
+import com.oddlabs.tt.audio.AudioProvider;
 import com.oddlabs.tt.audio.AudioSettings;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.event.LocalEventQueue;
@@ -71,20 +73,36 @@ public final class Peer implements AutoCloseable, DisplayModeController {
 
     private final FrameTimeRecorder frameTimeRecorder;
 
+    private final boolean startSafeMode;
+    private final boolean networkAvailable;
+
     public Peer(
             GamePaths gamePaths,
             Settings settings,
             Window window,
             LocalEventQueue eventQueue,
-            Network network,
-            AudioManager audioManager
-    ) {
+            boolean startSafeMode
+    ) throws IOException {
         this.gamePaths = gamePaths;
         this.settings = settings;
         this.window = window;
         this.event_queue = eventQueue;
-        this.network = network;
-        this.audioManager = audioManager;
+        this.startSafeMode = startSafeMode;
+        this.network = new Network(new NetworkSelector(eventQueue.getDeterministic(), eventQueue::getMillis));
+        boolean networkAvailable;
+        try {
+            com.oddlabs.util.Utils.tryGetLoopbackAddress();
+            networkAvailable = true;
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Failed to initialize network", e);
+            networkAvailable = false;
+        }
+        this.networkAvailable = eventQueue.getDeterministic().log(networkAvailable);
+        AudioSettings audioSettings = AudioSettings.from(settings);
+        this.audioManager = AudioProvider.load(audioSettings, eventQueue.getManager());
+        this.audioManager.setSfxGain(audioSettings.sound_gain)
+                .setMusicGain(audioSettings.music_gain)
+                .setSfxEnabled(audioSettings.play_sfx);
         window.setSettings(WindowSettings.from(settings));
         this.renderHost = new RenderHost(window, settings);
         this.frameTimeRecorder = new FrameTimeRecorder(gamePaths.logDir(), renderHost.getGpuTimer());
@@ -124,6 +142,14 @@ public final class Peer implements AutoCloseable, DisplayModeController {
 
     public FramePacer getFramePacer() {
         return framePacer;
+    }
+
+    public boolean isCrashRecovering() {
+        return startSafeMode;
+    }
+
+    public boolean isNetworkAvailable() {
+        return networkAvailable;
     }
 
     public void setPathfindCountSupplier(@Nullable IntSupplier supplier) {
@@ -375,7 +401,6 @@ public final class Peer implements AutoCloseable, DisplayModeController {
         Locale.setDefault(language);
 
         Path last_event_log_dir = settings.getLastEventLogDir();
-        boolean crashed = settings.isCrashed();
 
         if (!AppConfig.DEVELOPER_MODE && !deterministic.isPlayback()) {
             deleteOldLogs(last_event_log_dir.toFile(), event_log_dir.toFile(), event_logs_dir.toFile());
@@ -388,16 +413,12 @@ public final class Peer implements AutoCloseable, DisplayModeController {
 
         renderHost.runWithContext(() -> {
             try {
-                try {
-                    renderHost.initNative(crashed);
-                } catch (Throwable e) {
-                    throw new IllegalStateException("Failed initializing natives", e);
-                }
-
-                runSession(startup, start_time);
-            } finally {
-                cleanup();
+                renderHost.initNative(startSafeMode);
+            } catch (Throwable e) {
+                throw new IllegalStateException("Failed initializing natives", e);
             }
+
+            runSession(startup, start_time);
         });
     }
 
@@ -537,15 +558,13 @@ public final class Peer implements AutoCloseable, DisplayModeController {
         }
     }
 
-    public void cleanup() {
-        logger.info("Cleaning up engine...");
-        frameTimeRecorder.close();
-        renderHost.cleanup();
-        logger.info("Engine cleanup complete. Exiting");
-    }
-
     @Override
     public void close() {
-        cleanup();
+        logger.info("Cleaning up peer...");
+        frameTimeRecorder.close();
+        renderHost.cleanup();
+        audioManager.close();
+        network.close();
+        logger.info("Peer cleanup complete. Exiting");
     }
 }

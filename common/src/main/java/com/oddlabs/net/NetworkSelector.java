@@ -25,19 +25,20 @@ public final class NetworkSelector implements AutoCloseable {
     private int current_handler_id;
     private final Map<Object, Handler> handler_map = new HashMap<>();
     private @Nullable TaskThread task_thread;
-    private @Nullable Selector selector;
+    private final Selector selector;
     private final Deque<TimedConnection> ping_connections = new ArrayDeque<>();
     private final Deque<TimedConnection> ping_timeouts = new ArrayDeque<>();
 
     private final Deterministic deterministic;
 
-    public NetworkSelector(final Deterministic deterministic) {
+    public NetworkSelector(final Deterministic deterministic) throws IOException {
         this(deterministic, TimeManager.DEFAULT);
     }
 
-    public NetworkSelector(Deterministic deterministic, TimeManager time_manager) {
+    public NetworkSelector(Deterministic deterministic, TimeManager time_manager) throws IOException {
         this.deterministic = deterministic;
         this.time_manager = time_manager;
+        this.selector = Selector.open();
     }
 
     public Deterministic getDeterministic() {
@@ -45,11 +46,6 @@ public final class NetworkSelector implements AutoCloseable {
     }
 
     void asyncConnect(String dns_name, int port, Connection conn) {
-        try {
-            initSelector();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
         DNSTask task = new DNSTask(dns_name, port, conn);
         getTaskThread().addTask(task);
     }
@@ -61,17 +57,7 @@ public final class NetworkSelector implements AutoCloseable {
         return task_thread;
     }
 
-    public void initSelector() throws IOException {
-        if (selector == null)
-            selector = Selector.open();
-    }
-
     Selector getSelector() {
-        try {
-            initSelector();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
         return selector;
     }
 
@@ -214,24 +200,21 @@ public final class NetworkSelector implements AutoCloseable {
             task_thread.close();
             task_thread = null;
         }
-        if (selector != null) {
-            if (selector.isOpen()) {
-                for (SelectionKey key : selector.keys()) {
-                    try {
-                        key.channel().close();
-                    } catch (IOException e) {
-                        java.util.logging.Logger.getLogger(NetworkSelector.class.getName())
-                                .log(java.util.logging.Level.FINE, "Error closing channel", e);
-                    }
-                }
+        if (selector.isOpen()) {
+            for (SelectionKey key : selector.keys()) {
                 try {
-                    selector.close();
+                    key.channel().close();
                 } catch (IOException e) {
                     java.util.logging.Logger.getLogger(NetworkSelector.class.getName())
-                            .log(java.util.logging.Level.FINE, "Error closing selector", e);
+                            .log(java.util.logging.Level.FINE, "Error closing channel", e);
                 }
             }
-            selector = null;
+            try {
+                selector.close();
+            } catch (IOException e) {
+                java.util.logging.Logger.getLogger(NetworkSelector.class.getName())
+                        .log(java.util.logging.Level.FINE, "Error closing selector", e);
+            }
         }
         handler_map.clear();
         ping_connections.clear();

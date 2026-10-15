@@ -148,54 +148,6 @@ public final class HttpRequest {
         }
     }
 
-    /*	private static void testLogin(Deterministic deterministic, HttpResponseParser parser, HttpCallback callback) {
-    		Map parameters = new java.util.HashMap();
-    		parameters.put("reg_key", "K6AA-Y33X-C7ZT-K4TF");
-    		parameters.put("username", "blah");
-    		parameters.put("password", "blah");
-    		doGet(deterministic, new HttpRequestParameters("https://localhost/matchservlet/login", parameters), parser, callback);
-    	}
-
-    	private static void testCreateUser(Deterministic deterministic, HttpResponseParser parser, HttpCallback callback) {
-    		Map parameters = new java.util.HashMap();
-    		parameters.put("reg_key", "K6AA-Y33X-C7ZT-K4TF");
-    		parameters.put("username", "blah");
-    		parameters.put("password", "blah");
-    		parameters.put("email", "blah@blah.com");
-    		doPost(deterministic, new HttpRequestParameters("https://localhost/matchservlet/login", parameters), parser, callback);
-    	}
-
-    	public static final void main(String[] args) throws IOException {
-    		final Deterministic deterministic = new com.oddlabs.event.NotDeterministic();
-    		final HttpResponseParser parser = new HttpResponseParser() {
-    			public final Object parse(InputStream in) throws IOException {
-    				return "OK!";
-    			}
-
-    		};
-    		testCreateUser(deterministic, parser, new DefaultHttpCallback() {
-    			public final void success(Object response) {
-    				testLogin(deterministic, parser, new DefaultHttpCallback() {
-    					public final void success(Object response) {
-    System.out.println("response = " + response);
-    					}
-
-    					public final void error(IOException e) {
-    						System.out.println("e = " + e);
-    					}
-    				});
-    			}
-
-    			public final void error(IOException e) {
-    				System.out.println("e = " + e);
-    			}
-    		});
-    		com.oddlabs.net.NetworkSelector.initSelector();
-    		while (true) {
-    			NetworkSelector.processTasks();
-    		}
-    	}*/
-
     private HttpRequest() {
     }
 }

@@ -131,7 +131,7 @@ public final class RenderHost implements AutoCloseable {
         }
     }
 
-    public void initNative(boolean crashed) throws Exception {
+    public void initNative(boolean safeMode) throws Exception, Error {
         WindowSettings windowSettings = WindowSettings.from(settings);
         try {
             int bpp = 32;
@@ -144,9 +144,9 @@ public final class RenderHost implements AutoCloseable {
             window.setTitle("Tribal Trouble");
 
             SerializableDisplayMode target_mode;
-            int width = crashed ? windowSettings.view_width : windowSettings.new_view_width;
-            int height = crashed ? windowSettings.view_height : windowSettings.new_view_height;
-            int freq = crashed ? windowSettings.view_freq : windowSettings.new_view_freq;
+            int width = safeMode ? windowSettings.view_width : windowSettings.new_view_width;
+            int height = safeMode ? windowSettings.view_height : windowSettings.new_view_height;
+            int freq = safeMode ? windowSettings.view_freq : windowSettings.new_view_freq;
 
             if (width < SerializableDisplayMode.MIN_WIDTH || height < SerializableDisplayMode.MIN_HEIGHT) {
                 try {
