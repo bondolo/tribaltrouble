@@ -9,6 +9,7 @@ import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,8 +31,9 @@ public final class HeadlessMatchRunner {
      * @return summary result containing the winning team and termination metrics
      * @throws TimeoutException if network synchronization fails to complete
      * @throws InterruptedException if interrupted while executing
+     * @throws IOException if network harness initialization fails
      */
-    public HeadlessMatchResult run(HeadlessMatchConfig config) throws TimeoutException, InterruptedException {
+    public HeadlessMatchResult run(HeadlessMatchConfig config) throws TimeoutException, InterruptedException, IOException {
         int numPlayers = config.players().size();
         List<PlayerSlot> playerSlots = new ArrayList<>(numPlayers);
         List<UnitInfo> unitInfos = new ArrayList<>(numPlayers);
