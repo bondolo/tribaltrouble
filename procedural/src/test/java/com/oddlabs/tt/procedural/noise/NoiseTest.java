@@ -28,7 +28,7 @@ final class NoiseTest {
 
     @Test
     void testVoronoi() {
-        Voronoi voronoi = new Voronoi(64, 4, 4, 1, 1f, 42);
+        Voronoi voronoi = new Voronoi(64, 4, 4, 1, 1f, 42, false);
         Channel distance = voronoi.getDistance(-1f, 1f, 0f);
         assertNotNull(distance);
         assertEquals(64, distance.width);

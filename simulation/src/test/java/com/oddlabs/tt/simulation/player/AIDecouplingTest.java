@@ -266,7 +266,7 @@ class AIDecouplingTest {
         tower.place();
         tower.repair(1000);
 
-        new Unit(player, 10, 10, null, player.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK), null);
+        new Unit(player, 10, 10, null, player.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
 
         ai.manTowers(1);
 
@@ -276,8 +276,7 @@ class AIDecouplingTest {
 
     @Test
     void testAttackLandscapeDispatchesThroughPlayerInterface() {
-        Unit warrior = new Unit(player, 15, 15, null, player.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK),
-                null);
+        Unit warrior = new Unit(player, 15, 15, null, player.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
         Target target = world.getUnitGrid().findGridTargets(15, 15, 1, false)[0];
 
         int ordered = AI.attackLandscape(player, recordingInterface, target, 1);
@@ -288,13 +287,13 @@ class AIDecouplingTest {
 
     @Test
     void testVikingChieftainMagicDispatchesThroughPlayerInterface() {
-        Unit chieftain = new Unit(player, 12, 12, null, player.getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN), null);
+        Unit chieftain = new Unit(player, 12, 12, null, player.getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN));
         chieftain.maxMagicEnergy(MagicType.STUN);
 
         // Spawn 5 enemy units close to the chieftain to meet NUM_UNITS_FOR_STUN threshold
         Player enemy = world.getPlayers().get(1);
         for (int i = 0; i < 5; i++) {
-            new Unit(enemy, 12, 12, null, enemy.getRaceInfo().getUnitTemplate(UnitType.PEON), null);
+            new Unit(enemy, 12, 12, null, enemy.getRaceInfo().getUnitTemplate(UnitType.PEON));
         }
 
         ChieftainAI chieftainAI = new VikingChieftainAI();
@@ -308,12 +307,12 @@ class AIDecouplingTest {
     void testNativeChieftainMagicDispatchesThroughPlayerInterface() {
         Player nativePlayer = world.getPlayers().get(1);
         Unit chieftain = new Unit(nativePlayer, 20, 20, null, nativePlayer.getRaceInfo().getUnitTemplate(
-                UnitType.CHIEFTAIN), null);
+                UnitType.CHIEFTAIN));
         chieftain.maxMagicEnergy(MagicType.LIGHTNING_CLOUD);
 
         // Spawn 2 enemy units close to meet NUM_UNITS_FOR_LIGHTNING
         for (int i = 0; i < 2; i++) {
-            new Unit(player, 20, 20, null, player.getRaceInfo().getUnitTemplate(UnitType.PEON), null);
+            new Unit(player, 20, 20, null, player.getRaceInfo().getUnitTemplate(UnitType.PEON));
         }
 
         ChieftainAI chieftainAI = new NativeChieftainAI();

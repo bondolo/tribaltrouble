@@ -11,7 +11,7 @@ public final class RallyPointScenery extends SceneryModel {
 
     public RallyPointScenery(World world, float x, float y, float dir_x, float dir_y,
             Race race, BoundingBox[] bounds) {
-        super(world, x, y, dir_x, dir_y, bounds);
+        super(world, x, y, dir_x, dir_y, bounds, 0f, false, null);
         this.race = race;
     }
 

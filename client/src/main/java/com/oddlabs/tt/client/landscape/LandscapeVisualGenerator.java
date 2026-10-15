@@ -110,13 +110,13 @@ final class LandscapeVisualGenerator {
         Channel relheight = heightMap.copy().relativeIntensityNormalized(Math.max(1, unitGridsPerWorld >> 5));
 
         // Generate shared voronoi and noise maps
-        Channel voronoi4 = new Voronoi(STRUCTURE_SIZE, 4, 4, 1, 1f, STRUCTURE_SEED)
+        Channel voronoi4 = new Voronoi(STRUCTURE_SIZE, 4, 4, 1, 1f, STRUCTURE_SEED, false)
                 .getDistance(WORLEY_VORONI_C1, WORLEY_VORONI_C2, WORLEY_VORONI_C3);
-        Channel voronoi8 = new Voronoi(STRUCTURE_SIZE, 8, 8, 1, 1f, STRUCTURE_SEED)
+        Channel voronoi8 = new Voronoi(STRUCTURE_SIZE, 8, 8, 1, 1f, STRUCTURE_SEED, false)
                 .getDistance(WORLEY_VORONI_C1, WORLEY_VORONI_C2, WORLEY_VORONI_C3);
-        Channel voronoi16 = new Voronoi(STRUCTURE_SIZE, 16, 16, 1, 1f, STRUCTURE_SEED)
+        Channel voronoi16 = new Voronoi(STRUCTURE_SIZE, 16, 16, 1, 1f, STRUCTURE_SEED, false)
                 .getDistance(WORLEY_VORONI_C1, WORLEY_VORONI_C2, WORLEY_VORONI_C3);
-        Channel voronoi32 = new Voronoi(STRUCTURE_SIZE, 32, 32, 1, 1f, STRUCTURE_SEED)
+        Channel voronoi32 = new Voronoi(STRUCTURE_SIZE, 32, 32, 1, 1f, STRUCTURE_SEED, false)
                 .getDistance(WORLEY_VORONI_C1, WORLEY_VORONI_C2, WORLEY_VORONI_C3);
 
         Channel noise8 = new Midpoint(STRUCTURE_SIZE, 3, 0.45f, STRUCTURE_SEED).toChannel();

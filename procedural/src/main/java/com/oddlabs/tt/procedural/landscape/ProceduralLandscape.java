@@ -224,7 +224,7 @@ public final class ProceduralLandscape implements Landscape {
         Channel heightMap = new Mountain(unit_grids_per_world, Utils.powerOf2Log2(unit_grids_per_world) - 6, 0.5f,
                 ctx.seed)
                 .toChannel().multiply(0.67f);
-        Voronoi voronoi = new Voronoi(unit_grids_per_world, 4, 4, 1, 1f, ctx.seed);
+        Voronoi voronoi = new Voronoi(unit_grids_per_world, 4, 4, 1, 1f, ctx.seed, false);
         Channel cliffs = voronoi.getDistance(-1f, 1f, 0f).brightness(1.5f).multiply(0.33f);
         heightMap.channelAdd(cliffs);
 
@@ -281,7 +281,7 @@ public final class ProceduralLandscape implements Landscape {
         heightMap.channelAdd(cliffs).dynamicRange();
 
         // Fist of God™
-        Voronoi voronoi2 = new Voronoi(unit_grids_per_world, 4, 4, 1, 1f, ctx.seed);
+        Voronoi voronoi2 = new Voronoi(unit_grids_per_world, 4, 4, 1, 1f, ctx.seed, false);
         if (unit_grids_per_world > 128) {
             heightMap.channelSubtract(voronoi2.getDistance(1f, 0f, 0f).gamma(.5f).multiply(.5f));
         } else {

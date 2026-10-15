@@ -27,8 +27,9 @@ public final class IronProcedural {
     public static IronLayers generate() {
         int seed = SEED;
 
-        Channel rock_bump = new Voronoi(TEXTURE_SIZE, 8, 8, 1, 1f, seed).getDistance(-1f, 0f, 0f).multiply(.49f);
-        rock_bump.channelAdd(new Voronoi(TEXTURE_SIZE, 8, 8, 1, 1f, seed + 1).getDistance(-1f, 0f, 0f).multiply(.49f));
+        Channel rock_bump = new Voronoi(TEXTURE_SIZE, 8, 8, 1, 1f, seed, false).getDistance(-1f, 0f, 0f).multiply(.49f);
+        rock_bump.channelAdd(new Voronoi(TEXTURE_SIZE, 8, 8, 1, 1f, seed + 1, false).getDistance(-1f, 0f, 0f).multiply(
+                .49f));
         Channel noise = new Midpoint(TEXTURE_SIZE, 7, .4f, seed).toChannel();
         Channel noise2 = new Midpoint(TEXTURE_SIZE, 3, .45f, seed).toChannel();
         rock_bump.channelAdd(noise.copy().multiply(.02f));

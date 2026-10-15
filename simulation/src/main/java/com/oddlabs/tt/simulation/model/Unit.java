@@ -76,12 +76,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
     public Unit(Player owner, float x, float y, @Nullable Target rally_point,
             UnitTemplate unit_template) {
-        this(owner, x, y, rally_point, unit_template, null);
-    }
-
-    public Unit(Player owner, float x, float y, @Nullable Target rally_point,
-            UnitTemplate unit_template, @Nullable String name) {
-        this(owner, x, y, rally_point, unit_template, name, true);
+        this(owner, x, y, rally_point, unit_template, null, true, false);
     }
 
     public Unit(Player owner, float x, float y, @Nullable Target rally_point,

@@ -18,7 +18,7 @@ public final class SmokeProcedural {
      * Generates a stylized smoke puff layer.
      */
     public static Layer generate(int seed, float baseBrightness, float alphaMultiplier) {
-        Channel voronoi = new Voronoi(TEXTURE_SIZE, 4, 4, 1, 1f, seed).getDistance(-1f, 1f, 0f);
+        Channel voronoi = new Voronoi(TEXTURE_SIZE, 4, 4, 1, 1f, seed, false).getDistance(-1f, 1f, 0f);
 
         Channel smoke_alpha = new Ring(TEXTURE_SIZE, TEXTURE_SIZE, new float[][]{{0f, 1f}, {0.4f, 0f}},
                 Ring.Interpolation.SMOOTH).toChannel().gamma(3.0f);

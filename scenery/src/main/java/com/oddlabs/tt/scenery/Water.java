@@ -507,8 +507,8 @@ public final class Water implements SubSceneRenderer, WaterUniformsProvider, Aut
             }
 
             // water2
-            Channel voronoi12 = new Voronoi(OCEAN_TEXTURE_SIZE, 12, 12, 1, 1f, seed).getDistance(1f, 0f, 0f);
-            Channel voronoi24 = new Voronoi(OCEAN_TEXTURE_SIZE, 24, 24, 1, 1f, seed).getDistance(1f, 0f, 0f);
+            Channel voronoi12 = new Voronoi(OCEAN_TEXTURE_SIZE, 12, 12, 1, 1f, seed, false).getDistance(1f, 0f, 0f);
+            Channel voronoi24 = new Voronoi(OCEAN_TEXTURE_SIZE, 24, 24, 1, 1f, seed, false).getDistance(1f, 0f, 0f);
             Channel perturb = new Midpoint(OCEAN_TEXTURE_SIZE, 4, 0.4f, 42).toChannel();
             voronoi12.channelAverage(voronoi24);
             voronoi12.perturb(perturb, 0.025f);

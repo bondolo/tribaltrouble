@@ -26,10 +26,6 @@ public final class Voronoi {
     private final Channel dist3;
     private final Channel hit;
 
-    public Voronoi(int size, int x_domains, int y_domains, int checkradius, float randomness, long seed) {
-        this(size, x_domains, y_domains, checkradius, randomness, seed, false);
-    }
-
     public Voronoi(int size, int x_domains, int y_domains, int checkradius, float randomness, long seed,
             boolean border) {
         this.size = size;

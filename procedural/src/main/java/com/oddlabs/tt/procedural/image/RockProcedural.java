@@ -26,9 +26,9 @@ public final class RockProcedural {
      */
     public static RockLayers generate() {
         int seed = SEED;
-        Channel voronoi4 = new Voronoi(TEXTURE_SIZE, 4, 4, 1, 1f, seed).getDistance(0f, -1f, 1f);
-        Channel voronoi8 = new Voronoi(TEXTURE_SIZE, 8, 8, 1, 1f, seed).getDistance(0f, -1f, 1f);
-        Channel voronoi16 = new Voronoi(TEXTURE_SIZE, 16, 16, 1, 1f, seed).getDistance(0f, -1f, 1f);
+        Channel voronoi4 = new Voronoi(TEXTURE_SIZE, 4, 4, 1, 1f, seed, false).getDistance(0f, -1f, 1f);
+        Channel voronoi8 = new Voronoi(TEXTURE_SIZE, 8, 8, 1, 1f, seed, false).getDistance(0f, -1f, 1f);
+        Channel voronoi16 = new Voronoi(TEXTURE_SIZE, 16, 16, 1, 1f, seed, false).getDistance(0f, -1f, 1f);
         Channel noise8 = new Midpoint(TEXTURE_SIZE, 4, 0.5f, seed).toChannel();
         Channel noise256 = new Midpoint(TEXTURE_SIZE, 8, 0.5f, seed).toChannel();
         Channel perturb = noise8.copy().rotate(90);

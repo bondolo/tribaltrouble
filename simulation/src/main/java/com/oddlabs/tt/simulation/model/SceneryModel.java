@@ -25,16 +25,6 @@ public abstract sealed class SceneryModel extends Model implements Occupant, Mod
     private boolean registeredTarget = false;
 
     protected SceneryModel(World world, float x, float y, float dir_x, float dir_y,
-            BoundsProvider boundsProvider) {
-        this(world, x, y, dir_x, dir_y, boundsProvider, 0f, false, null);
-    }
-
-    protected SceneryModel(World world, float x, float y, float dir_x, float dir_y,
-            BoundingBox[] bounds) {
-        this(world, x, y, dir_x, dir_y, () -> bounds, 0f, false, null);
-    }
-
-    protected SceneryModel(World world, float x, float y, float dir_x, float dir_y,
             BoundsProvider boundsProvider, float shadow_diameter, boolean occupy, @Nullable String name) {
         this(world, x, y, dir_x, dir_y, boundsProvider, shadow_diameter, occupy, name, -1, -1, 0);
     }
