@@ -9,7 +9,7 @@ import com.oddlabs.tt.engine.render.HeightMapVisual;
 import com.oddlabs.tt.engine.render.PatchMesh;
 import com.oddlabs.tt.engine.render.RenderTools;
 import com.oddlabs.tt.engine.render.SubSceneRenderer;
-import org.joml.Matrix4fc;
+import com.oddlabs.tt.engine.render.state.ScenePassContext;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
@@ -144,14 +144,15 @@ public final class LandscapeRenderer implements SubSceneRenderer, Animated, Auto
     }
 
     @Override
-    public void render(RenderContext context, CameraState state, Matrix4fc modelView) {
+    public void render(ScenePassContext pass) {
+        RenderContext context = pass.renderContext();
         try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.NONE); var _ = context.withDepthMode(
                 DepthMode.READ_WRITE); var _ = context.withCullMode(CullMode.NONE)) {
 
             // Set VTF Uniforms
             shader.setUniform(shader.locWorldSize, (float) world.getHeightMap().getMetersPerWorld());
             shader.setUniform(shader.locDetailScale, DETAIL_REPEAT_RATE);
-            shader.setUniform(shader.locDetailAlphaScale, state.inNoDetailMode() ? 0.0f : 1.0f);
+            shader.setUniform(shader.locDetailAlphaScale, pass.inNoDetailMode() ? 0.0f : 1.0f);
 
             Color.Linear stdColor = SeaBottom.SEA_BOTTOM_COLOR.get(world.getTerrainType());
             shader.setUniformColor3(shader.locSeaBottomColor, stdColor);

@@ -2,8 +2,8 @@ package com.oddlabs.tt.scenery;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.tt.engine.image.GLByteImage;
-import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.SubSceneRenderer;
+import com.oddlabs.tt.engine.render.state.ScenePassContext;
 import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.BlendMode;
@@ -167,8 +167,11 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
         skyVAO.unbind();
     }
 
-    public void render(RenderContext context, CameraState state, Matrix4fc modelView,
-            float currentTime) {
+    @Override
+    public void render(ScenePassContext pass) {
+        RenderContext context = pass.renderContext();
+        Matrix4fc modelView = pass.modelView();
+        float currentTime = pass.time();
         try (var _ = skyShader.use(); var _ = context.withBlendMode(BlendMode.NONE); var _ = context.withDepthMode(
                 DepthMode.READ_WRITE); var _ = context.withCullMode(CullMode.BACK)) {
 
@@ -205,12 +208,6 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
             VBO.releaseIndexVBO();
         }
     }
-
-    @Override
-    public void render(RenderContext context, CameraState state, Matrix4fc modelView) {
-        render(context, state, modelView, 0.0f);
-    }
-
 
     public Color.Linear getSkyColor() {
         return skyColor;

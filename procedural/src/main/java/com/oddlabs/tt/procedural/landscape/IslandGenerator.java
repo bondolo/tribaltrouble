@@ -37,7 +37,8 @@ public final class IslandGenerator implements WorldGenerator<Landscape> {
     public Landscape generate(int num_players, int initial_unit_count, float random_start_pos) {
         // Build landscape
         Instant time_before = Instant.now();
-        ProceduralLandscape landscape = new ProceduralLandscape(num_players, config, initial_unit_count, random_start_pos);
+        ProceduralLandscape landscape = new ProceduralLandscape(num_players, config, initial_unit_count,
+                random_start_pos);
         Instant time_after = Instant.now();
         logger.fine(() -> "Landscape created in " + Duration.between(time_before, time_after));
 

@@ -9,6 +9,7 @@ import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.HeightMapVisual;
 import com.oddlabs.tt.engine.render.PatchMesh;
 import com.oddlabs.tt.engine.render.SubSceneRenderer;
+import com.oddlabs.tt.engine.render.state.ScenePassContext;
 import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.BlendMode;
@@ -37,6 +38,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
@@ -95,6 +97,8 @@ public final class Water implements SubSceneRenderer, WaterUniformsProvider, Aut
 
     private final BitSet oceanPatches;
     private final Texture oceanMaskTexture;
+
+    private Collection<LandscapeLeaf> visiblePatches = List.of();
 
     // Non-final to allow resizing
     private FloatVBO instanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 3);
@@ -251,15 +255,16 @@ public final class Water implements SubSceneRenderer, WaterUniformsProvider, Aut
         GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 0, 0L);
     }
 
-
-    @Override
-    public void render(RenderContext context, CameraState state, Matrix4fc modelView) {
-        render(context, state, modelView, java.util.List.of(), 0.0f);
+    public void setVisiblePatches(Collection<LandscapeLeaf> visiblePatches) {
+        this.visiblePatches = visiblePatches;
     }
 
-    public void render(RenderContext context, CameraState state, Matrix4fc modelView, Collection<
-            LandscapeLeaf> visiblePatches, float currentTime) {
-        updateAnimation(currentTime);
+    @Override
+    public void render(ScenePassContext pass) {
+        RenderContext context = pass.renderContext();
+        CameraState state = pass.camera();
+        Matrix4fc modelView = pass.modelView();
+        updateAnimation(pass.time());
 
         try (var _ = waterShader.use(); var _ = context.withBlendMode(BlendMode.ALPHA); var _ = context.withDepthMode(
                 DepthMode.READ_WRITE); var _ = context.withCullMode(CullMode.NONE)) {

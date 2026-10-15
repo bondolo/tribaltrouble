@@ -23,6 +23,7 @@ import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.render.state.GlobalUniforms;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.render.state.SceneLighting;
+import com.oddlabs.tt.engine.render.state.ScenePassContext;
 import com.oddlabs.tt.scenery.ConcentricRingMesh;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.scenery.SeaBottom;
@@ -237,6 +238,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
             context.setViewport(0, 0, frustum_state.getWidth(), frustum_state.getHeight());
 
             float currentTime = gui_root.getTime();
+            var pass = new ScenePassContext(context, frustum_state, frustum_state.getModelView(), currentTime);
             globalUniforms.update(context, frustum_state, currentTime,
                     world.getHeightMap().getSeaLevelMeters(), water, SceneLighting.CANONICAL);
 
@@ -246,10 +248,10 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
                 GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
             }
 
-            renderEnvironment(context, frustum_state, currentTime);
+            renderEnvironment(pass);
             prepareCPU(frustum_state, currentTime);
-            renderOpaqueGeometry(context, frustum_state, gui_root, currentTime);
-            renderWater(context, frustum_state, currentTime);
+            renderOpaqueGeometry(pass, gui_root);
+            renderWater(pass);
             renderTransparents(context, frustum_state);
             renderOverlays(context, frustum_state);
         }
@@ -279,28 +281,31 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
         sprite_sorter.distributeModels();
     }
 
-    private void renderEnvironment(RenderContext context, CameraState frustum_state, float currentTime) {
+    private void renderEnvironment(ScenePassContext pass) {
+        RenderContext context = pass.renderContext();
         try (var _ = context.withDrawBuffers(false)) {
             if (DebugFlags.draw_sky) {
                 var gpu = context.gpuTimer();
                 gpu.begin(GpuPass.SKY);
-                sky.render(context, frustum_state, frustum_state.getModelView(), currentTime);
-                seaBottom.render(context, frustum_state, frustum_state.getModelView());
+                sky.render(pass);
+                seaBottom.render(pass);
                 gpu.end();
             }
 
             if (DebugFlags.process_landscape) {
                 var gpu = context.gpuTimer();
                 gpu.begin(GpuPass.LANDSCAPE);
-                landscape_renderer.prepareAll(frustum_state, false);
-                landscape_renderer.render(context, frustum_state, frustum_state.getModelView());
+                landscape_renderer.prepareAll(pass.camera(), false);
+                landscape_renderer.render(pass);
                 gpu.end();
             }
         }
     }
 
-    private void renderOpaqueGeometry(RenderContext context, CameraState frustum_state, GUIRoot gui_root,
-            float currentTime) {
+    private void renderOpaqueGeometry(ScenePassContext pass, GUIRoot gui_root) {
+        RenderContext context = pass.renderContext();
+        CameraState frustum_state = pass.camera();
+        float currentTime = pass.time();
         var gpu = context.gpuTimer();
         if (DebugFlags.process_shadows && (cheat == null || cheat.draw_shadows)) {
             gpu.begin(GpuPass.SHADOWS);
@@ -314,7 +319,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
 
         if (DebugFlags.process_trees) {
             gpu.begin(GpuPass.TREES);
-            tree_renderer.render(context, frustum_state, frustum_state.getModelView(), currentTime);
+            tree_renderer.render(pass);
             gpu.end();
         }
         if (DebugFlags.process_misc) {
@@ -342,12 +347,12 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
         }
     }
 
-    private void renderWater(RenderContext context, CameraState frustum_state, float currentTime) {
+    private void renderWater(ScenePassContext pass) {
         if (DebugFlags.draw_water) {
-            var gpu = context.gpuTimer();
+            var gpu = pass.renderContext().gpuTimer();
             gpu.begin(GpuPass.WATER);
-            water.render(context, frustum_state, frustum_state.getModelView(), landscape_renderer.getVisiblePatches(),
-                    currentTime);
+            water.setVisiblePatches(landscape_renderer.getVisiblePatches());
+            water.render(pass);
             gpu.end();
         }
     }

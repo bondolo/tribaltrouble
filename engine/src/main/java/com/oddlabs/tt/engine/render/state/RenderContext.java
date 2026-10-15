@@ -8,7 +8,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Manages low-level OpenGL rendering state and hardware pipeline bindings.
  */
-public interface RenderContext extends AutoCloseable {
+public interface RenderContext {
     ScopedValue<RenderContext> CURRENT = ScopedValue.newInstance();
 
     static RenderContext current() {
@@ -16,10 +16,6 @@ public interface RenderContext extends AutoCloseable {
             throw new IllegalStateException("RenderContext is not bound on this thread");
         }
         return CURRENT.get();
-    }
-
-    static RenderContext create() {
-        return new GLRenderContext();
     }
 
     GpuTimer gpuTimer();
@@ -170,11 +166,4 @@ public interface RenderContext extends AutoCloseable {
      * @throws IllegalStateException if a mismatch is found.
      */
     void validate();
-
-    /**
-     * Releases any graphics resources held by this render context.
-     */
-    @Override
-    default void close() {
-    }
 }

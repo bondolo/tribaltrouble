@@ -11,10 +11,9 @@ import com.oddlabs.tt.engine.render.RenderTools;
 import com.oddlabs.tt.engine.render.Sprite;
 import com.oddlabs.tt.engine.render.SpriteList;
 import com.oddlabs.tt.engine.render.SubSceneRenderer;
-import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.WaveAnimation;
-import com.oddlabs.tt.engine.render.state.RenderContext;
+import com.oddlabs.tt.engine.render.state.ScenePassContext;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.model.Shadowable;
@@ -32,7 +31,7 @@ import java.util.Map;
  * Specialized renderer for forest elements, coordinating the efficient
  * drawing of crown and trunk sprite lists using hardware instancing.
  */
-final class TreeRenderer extends TreePicker implements AutoCloseable, SubSceneRenderer, Animated {
+final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoCloseable, Animated {
     private static final float TREE_FALL_DURATION = 3f;
     private static final float TREE_SPAWN_DURATION = 3f;
     private static final float TREE_WAVE_SCALE = 0.035f;
@@ -182,10 +181,10 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SubSceneRe
         }
     }
 
-    public void render(RenderContext context, CameraState state, Matrix4fc modelView,
-            float currentTime) {
-        if (!state.inNoDetailMode()) {
-            wave_animation.setTime(currentTime);
+    @Override
+    public void render(ScenePassContext pass) {
+        if (!pass.inNoDetailMode()) {
+            wave_animation.setTime(pass.time());
         }
 
         if (!DebugFlags.draw_trees || (cheat != null && !cheat.draw_trees)) {
@@ -290,11 +289,6 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SubSceneRe
                 }
             }
         }
-    }
-
-    @Override
-    public void render(RenderContext context, CameraState state, Matrix4fc modelView) {
-        render(context, state, modelView, 0f);
     }
 
     @Override

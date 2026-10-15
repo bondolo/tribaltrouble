@@ -61,7 +61,8 @@ final class LandscapeVisualGenerator {
     }
 
     /**
-     * Generates the baking data required to bake landscape colormaps and detail textures using canonical scene lighting.
+     * Generates the baking data required to bake landscape colormaps and detail textures using canonical scene
+     * lighting.
      *
      * @param landscape the landscape containing topography and island configuration
      * @param detailAlphaValue the alpha multiplier for the high-frequency detail layer

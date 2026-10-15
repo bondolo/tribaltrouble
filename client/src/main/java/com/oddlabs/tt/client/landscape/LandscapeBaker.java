@@ -166,9 +166,8 @@ public final class LandscapeBaker {
             int savedFBO = GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
             int savedDrawBuffer = GL11.glGetInteger(GL30.GL_DRAW_BUFFER0);
 
-            try (FBO fbo = new FBO(colormapSize, colormapSize);
-                 LandscapeBakingShader shader = new LandscapeBakingShader();
-                 QuadVBO quad = new QuadVBO()) {
+            try (FBO fbo = new FBO(colormapSize, colormapSize); LandscapeBakingShader shader
+                    = new LandscapeBakingShader(); QuadVBO quad = new QuadVBO()) {
                 checkGLError("After resource creation");
 
                 int current = 0;
@@ -225,10 +224,11 @@ public final class LandscapeBaker {
 
                             switch (info) {
                                 case StructureBlend(var struct, var norm, _, float alphaPower) -> {
-                                    shader.setUniform(LandscapeBakingShader.Uniforms.MODE, LandscapeBakingShader.Modes.STRUCTURE_BLEND);
+                                    shader.setUniform(LandscapeBakingShader.Uniforms.MODE,
+                                            LandscapeBakingShader.Modes.STRUCTURE_BLEND);
                                     shader.setUniform(LandscapeBakingShader.Uniforms.ALPHA_POWER, alphaPower);
-                                    try (Texture structMap = createStructureMap(new GLIntImage(struct));
-                                         Texture normMap = createNormalMap(new GLIntImage(norm))) {
+                                    try (Texture structMap = createStructureMap(new GLIntImage(struct)); Texture normMap
+                                            = createNormalMap(new GLIntImage(norm))) {
                                         GL13.glActiveTexture(GL13.GL_TEXTURE1);
                                         GL11.glBindTexture(GL11.GL_TEXTURE_2D, structMap.getHandle());
                                         GL13.glActiveTexture(GL13.GL_TEXTURE3);
@@ -237,14 +237,16 @@ public final class LandscapeBaker {
                                     }
                                 }
                                 case BlendLighting(_, Color color) -> {
-                                    shader.setUniform(LandscapeBakingShader.Uniforms.MODE, LandscapeBakingShader.Modes.LIGHTING_BLEND);
+                                    shader.setUniform(LandscapeBakingShader.Uniforms.MODE,
+                                            LandscapeBakingShader.Modes.LIGHTING_BLEND);
                                     shader.setUniform(LandscapeBakingShader.Uniforms.ALPHA_POWER, 1.0f);
                                     Color std = new Color.Standard(color);
                                     shader.setUniform(LandscapeBakingShader.Uniforms.COLOR, std.r(), std.g(), std.b());
                                     quad.render();
                                 }
                                 case BlendOcclusion(_, Color color) -> {
-                                    shader.setUniform(LandscapeBakingShader.Uniforms.MODE, LandscapeBakingShader.Modes.OCCLUSION_BLEND);
+                                    shader.setUniform(LandscapeBakingShader.Uniforms.MODE,
+                                            LandscapeBakingShader.Modes.OCCLUSION_BLEND);
                                     shader.setUniform(LandscapeBakingShader.Uniforms.ALPHA_POWER, 1.0f);
                                     Color std = new Color.Standard(color);
                                     shader.setUniform(LandscapeBakingShader.Uniforms.COLOR, std.r(), std.g(), std.b());

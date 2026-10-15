@@ -12,9 +12,9 @@ import org.joml.Vector3fc;
  * @param sun direct solar illumination color
  */
 public record SceneLighting(
-        Vector3fc lightDirection,
-        Color.Linear ambient,
-        Color.Linear sun) {
+                            Vector3fc lightDirection,
+                            Color.Linear ambient,
+                            Color.Linear sun) {
 
     public static final float DEFAULT_SUN_ELEVATION_DEGREES = 70.0f;
     public static final float DEFAULT_SUN_AZIMUTH_DEGREES = 225.0f;
@@ -25,7 +25,8 @@ public record SceneLighting(
             new Color.Standard(0.65f, 1.0f).linear(),
             new Color.Standard(1.0f, 1.0f).linear());
 
-    public static SceneLighting create(float elevationDegrees, float azimuthDegrees, Color.Linear ambient, Color.Linear sun) {
+    public static SceneLighting create(float elevationDegrees, float azimuthDegrees, Color.Linear ambient,
+            Color.Linear sun) {
         float radElev = (float) Math.toRadians(elevationDegrees);
         float radAzim = (float) Math.toRadians(azimuthDegrees);
         float x = (float) (Math.cos(radElev) * Math.cos(radAzim));

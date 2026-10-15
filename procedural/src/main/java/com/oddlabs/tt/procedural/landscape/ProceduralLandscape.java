@@ -35,44 +35,44 @@ public final class ProceduralLandscape implements Landscape {
     private static final int VEGETATION_NOISE_SEED = 1;
 
     private record GenerationContext(
-            Terrain terrain,
-            int numPlayers,
-            int metersPerWorld,
-            int unitGridsPerWorld,
-            int metersPerHeightUnit,
-            int heightScale,
-            float hills,
-            float vegetationAmount,
-            float suppliesAmount,
-            int seed,
-            float area,
-            int maxTrees,
-            int maxPalmtrees,
-            int maxRock,
-            int maxIron,
-            int maxPlants,
-            float accessThreshold,
-            float buildThreshold,
-            Random random) {
+                                     Terrain terrain,
+                                     int numPlayers,
+                                     int metersPerWorld,
+                                     int unitGridsPerWorld,
+                                     int metersPerHeightUnit,
+                                     int heightScale,
+                                     float hills,
+                                     float vegetationAmount,
+                                     float suppliesAmount,
+                                     int seed,
+                                     float area,
+                                     int maxTrees,
+                                     int maxPalmtrees,
+                                     int maxRock,
+                                     int maxIron,
+                                     int maxPlants,
+                                     float accessThreshold,
+                                     float buildThreshold,
+                                     Random random) {
     }
 
     private record TerrainData(
-            Channel height,
-            Channel slope,
-            Channel relheight,
-            Channel access,
-            byte[][] build,
-            boolean[][] accessGrid) {
+                               Channel height,
+                               Channel slope,
+                               Channel relheight,
+                               Channel access,
+                               byte[][] build,
+                               boolean[][] accessGrid) {
     }
 
     private record UnitLocations(List<List<SpawnLocation>> playerLocations, int[][] supplyLocations) {
     }
 
     private record PlacedSupplies(
-            List<TreePlacement> trees,
-            List<TreePlacement> palmtrees,
-            List<SupplyPlacement> rock,
-            List<SupplyPlacement> iron) {
+                                  List<TreePlacement> trees,
+                                  List<TreePlacement> palmtrees,
+                                  List<SupplyPlacement> rock,
+                                  List<SupplyPlacement> iron) {
     }
 
     private final IslandConfig config;

@@ -2,6 +2,7 @@ package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.tt.base.util.StatCounter;
+import com.oddlabs.tt.engine.render.state.GLRenderContext;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.base.global.Settings;
@@ -29,7 +30,7 @@ public final class RenderHost implements AutoCloseable {
 
     private final Window window;
     private final Settings settings;
-    private final RenderContext renderContext = RenderContext.create();
+    private final GLRenderContext renderContext = new GLRenderContext();
 
     private int lastDisplayW = -1;
     private int lastDisplayH = -1;
