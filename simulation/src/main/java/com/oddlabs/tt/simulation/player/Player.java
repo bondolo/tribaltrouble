@@ -27,10 +27,8 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Represents a player in the game simulation, managing units, buildings, color, and player metrics.
@@ -549,13 +547,6 @@ public final class Player implements PlayerInterface {
         return units;
     }
 
-    public Selectable<?>[][] classifyUnits() {
-        Map<String, List<Selectable<?>>> map = units.getSet().stream()
-                .collect(Collectors.groupingBy(u -> u.getPrimaryController().getKey()));
-        return map.values().stream()
-                .map(list -> list.toArray(Selectable[]::new))
-                .toArray(Selectable[][]::new);
-    }
 
     public void magicCast() {
         magics++;

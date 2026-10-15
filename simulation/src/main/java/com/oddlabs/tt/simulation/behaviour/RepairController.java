@@ -27,10 +27,6 @@ public final class RepairController extends Controller {
         return building;
     }
 
-    @Override
-    public String getKey() {
-        return super.getKey() + building.hashCode();
-    }
 
     @Override
     public void decide() {

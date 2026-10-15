@@ -34,10 +34,6 @@ public final class GatherController<S extends Supply> extends Controller {
         return supplyType;
     }
 
-    @Override
-    public String getKey() {
-        return super.getKey() + supplyType;
-    }
 
     private void gather() {
         resetGiveUpCounter(State.DROPOFF);

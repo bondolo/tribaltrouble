@@ -3,6 +3,9 @@ package com.oddlabs.tt.simulation.behaviour;
 
 import java.util.Arrays;
 
+/**
+ * Base controller managing behavior state machines and give-up counters for selectable units.
+ */
 public abstract sealed class Controller permits AttackController, DefendController, DieController, EnterController,
         GatherController, HarvestController, HuntController, IdleController, MagicController, NullController,
         PlaceBuildingController, RepairController, StunController, TransferUnitController, WalkController {
@@ -42,10 +45,6 @@ public abstract sealed class Controller permits AttackController, DefendControll
         } else {
             return true;
         }
-    }
-
-    public String getKey() {
-        return Integer.toString(getClass().hashCode());
     }
 
     public abstract void decide();

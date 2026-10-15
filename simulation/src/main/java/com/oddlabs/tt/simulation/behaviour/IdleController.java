@@ -6,6 +6,9 @@ import com.oddlabs.tt.simulation.model.AttackScanFilter;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 
+/**
+ * Controller that coordinates idle unit behaviour and scans for nearby enemies.
+ */
 public final class IdleController extends Controller {
     private static final float MIN_SCAN_DELAY = 1f;
     private static final float MAX_SCAN_DELAY = 2f;
@@ -46,11 +49,5 @@ public final class IdleController extends Controller {
             else
                 unit.pushController(new AttackController(unit, s));
         }
-    }
-
-    @Override
-    public String getKey() {
-        return super.getKey() + unit.getAbilities().hasAbilities(Abilities.BUILD) + unit.getAbilities().hasAbilities(
-                Abilities.MAGIC);
     }
 }

@@ -13,6 +13,7 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.behaviour.Controller;
 import com.oddlabs.tt.simulation.behaviour.DefendController;
 import com.oddlabs.tt.simulation.behaviour.GatherController;
 import com.oddlabs.tt.simulation.behaviour.IdleController;
@@ -23,6 +24,8 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.SplittableRandom;
 import java.util.random.RandomGenerator;
 
@@ -45,21 +48,19 @@ public abstract class AI implements Animated {
     private final Player owner;
     private final PlayerInterface playerInterface;
     private final RandomGenerator aiRandom;
-    private int INDEX_IDLE_PEONS;
-    private int INDEX_IDLE_CHIEFTAINS;
-    private int INDEX_IDLE_WARRIORS;
-    private int INDEX_GATHER_TREE_PEONS;
-    private int INDEX_GATHER_ROCK_PEONS;
-    private int INDEX_GATHER_IRON_PEONS;
-    private int INDEX_GATHER_RUBBER_PEONS;
-    private int INDEX_ARMORY;
-    private int INDEX_QUARTERS;
-    private int INDEX_TOWERS;
-    private int INDEX_CONSTRUCTION_SITES;
-    private int INDEX_PLACE_BUILDING_PEONS;
-    private int INDEX_DEFENDING_UNITS;
-
-    private Selectable<?>[][] lists;
+    private final List<Selectable<?>> idlePeons = new ArrayList<>();
+    private final List<Selectable<?>> idleChieftains = new ArrayList<>();
+    private final List<Selectable<?>> idleWarriors = new ArrayList<>();
+    private final List<Selectable<?>> gatherTreePeons = new ArrayList<>();
+    private final List<Selectable<?>> gatherRockPeons = new ArrayList<>();
+    private final List<Selectable<?>> gatherIronPeons = new ArrayList<>();
+    private final List<Selectable<?>> gatherRubberPeons = new ArrayList<>();
+    private final List<Building> armories = new ArrayList<>();
+    private final List<Building> quarters = new ArrayList<>();
+    private final List<Building> towers = new ArrayList<>();
+    private final List<Building> constructionSites = new ArrayList<>();
+    private final List<Selectable<?>> placeBuildingPeons = new ArrayList<>();
+    private final List<Selectable<?>> defendingUnits = new ArrayList<>();
     private boolean armory_under_construction = false;
     private boolean quarters_under_construction = false;
     private boolean tower_under_construction = false;
@@ -135,124 +136,128 @@ public abstract class AI implements Animated {
     }
 
     protected final void reclassify() {
-        lists = getOwner().classifyUnits();
-        classifyIndex(lists);
-    }
+        idlePeons.clear();
+        idleChieftains.clear();
+        idleWarriors.clear();
+        gatherTreePeons.clear();
+        gatherRockPeons.clear();
+        gatherIronPeons.clear();
+        gatherRubberPeons.clear();
+        armories.clear();
+        quarters.clear();
+        towers.clear();
+        constructionSites.clear();
+        placeBuildingPeons.clear();
+        defendingUnits.clear();
 
-    protected final Selectable<?> @Nullable [] getIdlePeons() {
-        return INDEX_IDLE_PEONS == -1 ? null : lists[INDEX_IDLE_PEONS];
-    }
-
-    protected final Selectable<?> @Nullable [] getIdleChieftains() {
-        return INDEX_IDLE_CHIEFTAINS == -1 ? null : lists[INDEX_IDLE_CHIEFTAINS];
-    }
-
-    protected final Selectable<?> @Nullable [] getIdleWarriors() {
-        return INDEX_IDLE_WARRIORS == -1 ? null : lists[INDEX_IDLE_WARRIORS];
-    }
-
-    protected final Selectable<?> @Nullable [] getGatherTreePeons() {
-        return INDEX_GATHER_TREE_PEONS == -1 ? null : lists[INDEX_GATHER_TREE_PEONS];
-    }
-
-    protected final Selectable<?> @Nullable [] getGatherRockPeons() {
-        return INDEX_GATHER_ROCK_PEONS == -1 ? null : lists[INDEX_GATHER_ROCK_PEONS];
-    }
-
-    protected final Selectable<?> @Nullable [] getGatherIronPeons() {
-        return INDEX_GATHER_IRON_PEONS == -1 ? null : lists[INDEX_GATHER_IRON_PEONS];
-    }
-
-    protected final Selectable<?> @Nullable [] getGatherRubberPeons() {
-        return INDEX_GATHER_RUBBER_PEONS == -1 ? null : lists[INDEX_GATHER_RUBBER_PEONS];
-    }
-
-    protected final Selectable<?> @Nullable [] getArmory() {
-        return INDEX_ARMORY == -1 ? null : lists[INDEX_ARMORY];
-    }
-
-    protected final Selectable<?> @Nullable [] getQuarters() {
-        return INDEX_QUARTERS == -1 ? null : lists[INDEX_QUARTERS];
-    }
-
-    protected final Selectable<?> @Nullable [] getTowers() {
-        return INDEX_TOWERS == -1 ? null : lists[INDEX_TOWERS];
-    }
-
-    protected final Selectable<?> @Nullable [] getConstructionSites() {
-        return INDEX_CONSTRUCTION_SITES == -1 ? null : lists[INDEX_CONSTRUCTION_SITES];
-    }
-
-    protected final Selectable<?> @Nullable [] getPlaceBuildingPeons() {
-        return INDEX_PLACE_BUILDING_PEONS == -1 ? null : lists[INDEX_PLACE_BUILDING_PEONS];
-    }
-
-    protected final Selectable<?> @Nullable [] getDefendingUnits() {
-        return INDEX_DEFENDING_UNITS == -1 ? null : lists[INDEX_DEFENDING_UNITS];
-    }
-
-    private void classifyIndex(Selectable<?>[][] lists) {
-        INDEX_IDLE_PEONS = -1;
-        INDEX_IDLE_CHIEFTAINS = -1;
-        INDEX_IDLE_WARRIORS = -1;
-        INDEX_GATHER_TREE_PEONS = -1;
-        INDEX_GATHER_ROCK_PEONS = -1;
-        INDEX_GATHER_IRON_PEONS = -1;
-        INDEX_GATHER_RUBBER_PEONS = -1;
-        INDEX_ARMORY = -1;
-        INDEX_QUARTERS = -1;
-        INDEX_TOWERS = -1;
-        INDEX_CONSTRUCTION_SITES = -1;
-        INDEX_PLACE_BUILDING_PEONS = -1;
-        INDEX_DEFENDING_UNITS = -1;
-        for (int i = 0; i < lists.length; i++) {
-            Selectable<?> s = lists[i][0];
-
-            if (s.getPrimaryController() instanceof IdleController) {
-                if (s.getAbilities().hasAbilities(Abilities.BUILD)) {
-                    INDEX_IDLE_PEONS = i;
-                } else if (s.getAbilities().hasAbilities(Abilities.MAGIC)) {
-                    INDEX_IDLE_CHIEFTAINS = i;
-                } else if (s.getAbilities().hasAbilities(Abilities.ATTACK)) {
-                    INDEX_IDLE_WARRIORS = i;
+        for (Selectable<?> s : owner.getUnits().getSet()) {
+            Controller controller = s.getPrimaryController();
+            switch (controller) {
+                case IdleController _ -> {
+                    if (s.getAbilities().hasAbilities(Abilities.BUILD)) {
+                        idlePeons.add(s);
+                    } else if (s.getAbilities().hasAbilities(Abilities.MAGIC)) {
+                        idleChieftains.add(s);
+                    } else if (s.getAbilities().hasAbilities(Abilities.ATTACK)) {
+                        idleWarriors.add(s);
+                    }
                 }
-            } else if (s.getPrimaryController() instanceof GatherController<?> gc) {
-                SupplyType supply_type = gc.getSupplyType();
-                if (supply_type == SupplyType.WOOD) {
-                    INDEX_GATHER_TREE_PEONS = i;
-                } else if (supply_type == SupplyType.ROCK) {
-                    INDEX_GATHER_ROCK_PEONS = i;
-                } else if (supply_type == SupplyType.IRON) {
-                    INDEX_GATHER_IRON_PEONS = i;
-                } else if (supply_type == SupplyType.RUBBER) {
-                    INDEX_GATHER_RUBBER_PEONS = i;
+                case GatherController<?> gc -> {
+                    SupplyType supply_type = gc.getSupplyType();
+                    var gatherPeons = switch (supply_type) {
+                        case WOOD -> gatherTreePeons;
+                        case IRON -> gatherIronPeons;
+                        case ROCK -> gatherRockPeons;
+                        case RUBBER -> gatherRubberPeons;
+                    };
+                    gatherPeons.add(s);
                 }
-            } else if (s.getPrimaryController() instanceof NullController) {
-                if (s.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
-                    INDEX_ARMORY = i;
-                    armory_under_construction = false;
-                    playerInterface.buildRockWeapons((Building) s, BuildProductionContainer.INFINITE_LIMIT, true);
-                    playerInterface.buildIronWeapons((Building) s, BuildProductionContainer.INFINITE_LIMIT, true);
-                    playerInterface.buildRubberWeapons((Building) s, BuildProductionContainer.INFINITE_LIMIT, true);
-                } else if (s.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
-                    INDEX_QUARTERS = i;
-                    quarters_under_construction = false;
-                } else if (s.getAbilities().hasAbilities(Abilities.ATTACK)) {
-                    INDEX_TOWERS = i;
-                } else {
-                    INDEX_CONSTRUCTION_SITES = i;
+                case NullController _ -> {
+                    Building b = (Building) s;
+                    if (b.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+                        armories.add(b);
+                    } else if (b.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
+                        quarters.add(b);
+                    } else if (b.getAbilities().hasAbilities(Abilities.ATTACK)) {
+                        towers.add(b);
+                    } else {
+                        constructionSites.add(b);
+                    }
                 }
-            } else if (s.getPrimaryController() instanceof PlaceBuildingController) {
-                INDEX_PLACE_BUILDING_PEONS = i;
-            } else if (s.getPrimaryController() instanceof DefendController) {
-                INDEX_DEFENDING_UNITS = i;
+                case PlaceBuildingController _ -> placeBuildingPeons.add(s);
+                case DefendController _ -> defendingUnits.add(s);
+                default -> {
+                }
             }
         }
-        if (INDEX_CONSTRUCTION_SITES == -1 && INDEX_PLACE_BUILDING_PEONS == -1) {
+
+        if (!armories.isEmpty()) {
+            armory_under_construction = false;
+            Building armoryBuilding = armories.getFirst();
+            playerInterface.buildRockWeapons(armoryBuilding, BuildProductionContainer.INFINITE_LIMIT, true);
+            playerInterface.buildIronWeapons(armoryBuilding, BuildProductionContainer.INFINITE_LIMIT, true);
+            playerInterface.buildRubberWeapons(armoryBuilding, BuildProductionContainer.INFINITE_LIMIT, true);
+        }
+        if (!quarters.isEmpty()) {
+            quarters_under_construction = false;
+        }
+        if (constructionSites.isEmpty() && placeBuildingPeons.isEmpty()) {
             armory_under_construction = false;
             quarters_under_construction = false;
             tower_under_construction = false;
         }
+    }
+
+    protected final List<Selectable<?>> getIdlePeons() {
+        return idlePeons;
+    }
+
+    protected final List<Selectable<?>> getIdleChieftains() {
+        return idleChieftains;
+    }
+
+    protected final List<Selectable<?>> getIdleWarriors() {
+        return idleWarriors;
+    }
+
+    protected final List<Selectable<?>> getGatherTreePeons() {
+        return gatherTreePeons;
+    }
+
+    protected final List<Selectable<?>> getGatherRockPeons() {
+        return gatherRockPeons;
+    }
+
+    protected final List<Selectable<?>> getGatherIronPeons() {
+        return gatherIronPeons;
+    }
+
+    protected final List<Selectable<?>> getGatherRubberPeons() {
+        return gatherRubberPeons;
+    }
+
+    protected final List<Building> getArmory() {
+        return armories;
+    }
+
+    protected final List<Building> getQuarters() {
+        return quarters;
+    }
+
+    protected final List<Building> getTowers() {
+        return towers;
+    }
+
+    protected final List<Building> getConstructionSites() {
+        return constructionSites;
+    }
+
+    protected final List<Selectable<?>> getPlaceBuildingPeons() {
+        return placeBuildingPeons;
+    }
+
+    protected final List<Selectable<?>> getDefendingUnits() {
+        return defendingUnits;
     }
 
     protected final boolean armoryUnderConstruction() {
@@ -298,14 +303,12 @@ public abstract class AI implements Animated {
 
     public final void manTowers(int num_towers) {
         reclassify();
-        Selectable<?>[] towers = getTowers();
-        Selectable<?>[] idle_warriors = getIdleWarriors();
-        if (towers == null || idle_warriors == null)
+        if (towers.isEmpty() || idleWarriors.isEmpty())
             return;
 
-        int length = Math.min(idle_warriors.length, towers.length);
+        int length = Math.min(idleWarriors.size(), towers.size());
         for (int i = 0; i < length; i++) {
-            playerInterface.setTarget(Selectable.newArray(idle_warriors[i]), towers[i], Action.DEFAULT, false);
+            playerInterface.setTarget(Selectable.newArray(idleWarriors.get(i)), towers.get(i), Action.DEFAULT, false);
         }
     }
 
