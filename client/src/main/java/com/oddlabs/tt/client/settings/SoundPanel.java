@@ -1,4 +1,4 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.client.settings;
 
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.audio.AudioManager;

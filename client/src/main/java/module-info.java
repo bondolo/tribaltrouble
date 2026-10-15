@@ -25,6 +25,7 @@ module com.oddlabs.tt.client {
     exports com.oddlabs.tt.client.render;
     exports com.oddlabs.tt.client.resource;
     exports com.oddlabs.tt.client.screen;
+    exports com.oddlabs.tt.client.settings;
     exports com.oddlabs.tt.client.trigger;
     exports com.oddlabs.tt.client.viewer;
 

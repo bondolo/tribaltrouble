@@ -1,7 +1,7 @@
 package com.oddlabs.tt.content.campaign;
 
-import com.oddlabs.tt.content.form.OptionsMenu;
-import com.oddlabs.tt.content.form.QuitForm;
+import com.oddlabs.tt.client.settings.OptionsMenu;
+import com.oddlabs.tt.client.gui.QuitForm;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.screen.ScreenManager;

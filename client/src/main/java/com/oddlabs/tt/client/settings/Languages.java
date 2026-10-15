@@ -1,4 +1,4 @@
-package com.oddlabs.tt.content;
+package com.oddlabs.tt.client.settings;
 
 
 import java.util.Collections;

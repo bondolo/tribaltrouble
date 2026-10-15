@@ -1,4 +1,4 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.client.settings;
 
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.gui.Form;

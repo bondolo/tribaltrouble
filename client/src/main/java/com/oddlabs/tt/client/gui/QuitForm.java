@@ -1,4 +1,4 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.QuestionForm;

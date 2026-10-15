@@ -1,4 +1,4 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.client.settings;
 
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.Peer;
@@ -59,7 +59,7 @@ public abstract class AbstractOptionsMenu extends Form {
         HorizButton button_about = new HorizButton(gui_root, i18n("about"), BUTTON_WIDTH);
         button_about.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new CreditsForm(
                 gui_root,
-                gui_root.getGUI().getSettings().last_revision)));
+                gui_root.getGUI().getSettings().getLastRevision())));
         addChild(button_about);
 
         // Place objects

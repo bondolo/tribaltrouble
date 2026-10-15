@@ -1,4 +1,4 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.client.settings;
 
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;

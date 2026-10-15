@@ -352,7 +352,7 @@ public final class Peer implements AutoCloseable, DisplayModeController {
         }
 
         if (eventload || grab_frames) {
-            Path last_event_log_path = settings.last_event_log_dir.resolve(zipped ? "event.log.gz" : "event.log");
+            Path last_event_log_path = settings.getLastEventLogDir().resolve(zipped ? "event.log.gz" : "event.log");
             logger.info("last_event_log_path = " + last_event_log_path);
             event_queue.loadEvents(last_event_log_path, zipped);
         }
@@ -374,8 +374,8 @@ public final class Peer implements AutoCloseable, DisplayModeController {
         IO.println("Using language " + language);
         Locale.setDefault(language);
 
-        Path last_event_log_dir = settings.last_event_log_dir;
-        boolean crashed = settings.crashed;
+        Path last_event_log_dir = settings.getLastEventLogDir();
+        boolean crashed = settings.isCrashed();
 
         if (!AppConfig.DEVELOPER_MODE && !deterministic.isPlayback()) {
             deleteOldLogs(last_event_log_dir.toFile(), event_log_dir.toFile(), event_logs_dir.toFile());

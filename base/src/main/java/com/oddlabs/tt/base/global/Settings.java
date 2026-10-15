@@ -38,11 +38,35 @@ public final class Settings implements Serializable, PropertiesSerializer, Setti
 
     private transient final @Nullable Path game_dir;
 
-    public transient Path last_event_log_dir = Path.of("");
+    private transient Path last_event_log_dir = Path.of("");
     // FIXME: Replace with build version metadata
-    public int last_revision = -1;
+    private int last_revision = -1;
     /** If true then the previous run crashed and we should restore "safe" defaults */
-    public boolean crashed = false;
+    private boolean crashed = false;
+
+    public Path getLastEventLogDir() {
+        return last_event_log_dir;
+    }
+
+    public void setLastEventLogDir(Path last_event_log_dir) {
+        this.last_event_log_dir = last_event_log_dir;
+    }
+
+    public int getLastRevision() {
+        return last_revision;
+    }
+
+    public void setLastRevision(int last_revision) {
+        this.last_revision = last_revision;
+    }
+
+    public boolean isCrashed() {
+        return crashed;
+    }
+
+    public void setCrashed(boolean crashed) {
+        this.crashed = crashed;
+    }
 
     private boolean has_native_campaign = false;
 

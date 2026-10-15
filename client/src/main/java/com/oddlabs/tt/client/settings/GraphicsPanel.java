@@ -1,4 +1,4 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.client.settings;
 
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.client.DisplayModeController;

@@ -1,5 +1,6 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.client.settings;
 
+import com.oddlabs.tt.client.gui.QuitForm;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;

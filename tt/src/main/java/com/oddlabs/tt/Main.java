@@ -6,7 +6,7 @@ import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.GamePaths;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.resource.AudioRegistry;
-import com.oddlabs.tt.content.form.QuitForm;
+import com.oddlabs.tt.client.gui.QuitForm;
 import com.oddlabs.tt.input.InputBindingSettings;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.client.Peer;
@@ -106,11 +106,11 @@ public final class Main {
                             );
                             Menu.initNetwork(clientPeer);
                             localInput.init();
-                            boolean wasCrashed = settings.crashed;
-                            settings.last_event_log_dir = gamePaths.logDir().toAbsolutePath();
-                            settings.crashed = true; // Armed on disk for the current run
+                            boolean wasCrashed = settings.isCrashed();
+                            settings.setLastEventLogDir(gamePaths.logDir().toAbsolutePath());
+                            settings.setCrashed(true); // Armed on disk for the current run
                             settings.save();
-                            settings.crashed = wasCrashed; // Restore previous state
+                            settings.setCrashed(wasCrashed); // Restore previous state
                             GUI gui = new GUI(
                                     localInput,
                                     clientPeer.getWindow(),

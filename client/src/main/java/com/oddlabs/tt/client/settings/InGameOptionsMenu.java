@@ -1,4 +1,4 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.client.settings;
 
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.simulation.landscape.World;

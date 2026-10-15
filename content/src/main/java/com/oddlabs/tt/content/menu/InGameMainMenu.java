@@ -2,7 +2,7 @@ package com.oddlabs.tt.content.menu;
 
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.content.form.InGameOptionsMenu;
+import com.oddlabs.tt.client.settings.InGameOptionsMenu;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.gui.MenuButton;

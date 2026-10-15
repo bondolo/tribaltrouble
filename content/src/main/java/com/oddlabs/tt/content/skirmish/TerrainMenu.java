@@ -7,10 +7,9 @@ import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.procedural.MapCode;
 import com.oddlabs.procedural.MapParameters;
 import java.util.List;
-import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.InGameInfo;
-import com.oddlabs.tt.content.form.AbstractOptionsMenu;
+import com.oddlabs.tt.client.settings.AbstractOptionsMenu;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.content.menu.SelectGameMenu;
 import com.oddlabs.tt.client.match.MatchLauncher;
@@ -109,7 +108,6 @@ public final class TerrainMenu extends Group {
     }
 
     private final Peer peer;
-    private final AudioManager audioManager;
     private final @Nullable Menu main_menu;
     private final @Nullable TerrainMenuListener owner;
 
@@ -145,7 +143,6 @@ public final class TerrainMenu extends Group {
         this.peer = peer;
         this.network = peer.getNetwork().getSelector();
         this.gui_root = gui_root;
-        this.audioManager = peer.getAudioManager();
         this.main_menu = main_menu;
         this.multiplayer = multiplayer;
         this.owner = owner;

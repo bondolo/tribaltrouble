@@ -101,15 +101,42 @@ final class SettingsTest {
 
         Settings settings = new Settings();
         settings.loadFromProperties(initialProps);
-        assertEquals(true, settings.crashed);
+        assertEquals(true, settings.isCrashed());
 
         // Reset to default value (false)
-        settings.crashed = false;
+        settings.setCrashed(false);
 
         Properties savedProps = new Properties();
         settings.saveToProperties(savedProps);
 
         // "crashed" should have been removed because it matches the default, rather than preserved from initialProps
         org.junit.jupiter.api.Assertions.assertNull(savedProps.getProperty("crashed"));
+    }
+
+    @Test
+    void testEncapsulatedFieldsAccessorsAndPersistence() {
+        Settings settings = new Settings();
+        assertEquals(java.nio.file.Path.of(""), settings.getLastEventLogDir());
+        assertEquals(-1, settings.getLastRevision());
+        org.junit.jupiter.api.Assertions.assertFalse(settings.isCrashed());
+
+        java.nio.file.Path testPath = java.nio.file.Path.of("/tmp/test_logs");
+        settings.setLastEventLogDir(testPath);
+        settings.setLastRevision(1234);
+        settings.setCrashed(true);
+
+        assertEquals(testPath, settings.getLastEventLogDir());
+        assertEquals(1234, settings.getLastRevision());
+        assertTrue(settings.isCrashed());
+
+        Properties props = new Properties();
+        settings.saveToProperties(props);
+
+        Settings loaded = new Settings();
+        loaded.loadFromProperties(props);
+
+        assertEquals(testPath, loaded.getLastEventLogDir());
+        assertEquals(1234, loaded.getLastRevision());
+        assertTrue(loaded.isCrashed());
     }
 }
