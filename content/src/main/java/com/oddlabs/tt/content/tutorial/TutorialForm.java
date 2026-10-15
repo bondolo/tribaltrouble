@@ -2,7 +2,7 @@ package com.oddlabs.tt.content.tutorial;
 
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.client.screen.Screen;
-import com.oddlabs.tt.content.menu.MainMenu;
+import com.oddlabs.tt.client.match.MatchLauncher;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.gui.CancelButton;
@@ -178,12 +178,13 @@ public final class TutorialForm extends Form {
         WorldInitAction compound_action = (WorldViewer world_viewer) -> {
             if (initial_action != null)
                 initial_action.run(world_viewer);
-            MainMenu.completeGameSetupHack(world_viewer);
+            MatchLauncher.completeGameSetup(world_viewer);
         };
         var islandConfig = new IslandConfig(Terrain.NATIVE, size, hills, trees, 0f, seed);
         var worldParameters = new WorldParameters(Game.GAMESPEED_NORMAL, "Tutorial"
                 + tutorial_num, initial_unit_count, Player.DEFAULT_MAX_UNIT_COUNT);
-        return MainMenu.startNewGame(peer, gui_root, screenManager, null, worldParameters, ingame_info, compound_action,
+        return MatchLauncher.startNewGame(peer, gui_root, screenManager, null, worldParameters, ingame_info,
+                compound_action,
                 null,
                 islandConfig, new String[]{ai_string + "0", ai_string
                         + "1", ai_string + "2", ai_string + "3", ai_string + "4", ai_string + "5"});

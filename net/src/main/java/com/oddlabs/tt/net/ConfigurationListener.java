@@ -1,15 +1,17 @@
 package com.oddlabs.tt.net;
 
 import com.oddlabs.matchmaking.Game;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
+
+import java.util.List;
 
 /** Listener interface receiving game lobby configuration events. */
 public interface ConfigurationListener<C, R> extends ErrorListener {
     void connected(Client<C, R> client, Game game, WorldGenerator<?> generator, int player_slot);
 
-    void setPlayers(PlayerSlot[] players);
+    void setPlayers(List<PlayerSlot> players);
 
     void gameStarted(LoadCallback<C, R> loadCallback);
 }

@@ -1,4 +1,4 @@
-package com.oddlabs.tt.client.gui;
+package com.oddlabs.tt.client.match;
 
 import com.oddlabs.tt.gui.CancelListener;
 import com.oddlabs.tt.gui.Form;

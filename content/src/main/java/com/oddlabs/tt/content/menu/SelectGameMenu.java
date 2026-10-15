@@ -10,7 +10,8 @@ import com.oddlabs.matchmaking.RankingEntry;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.content.form.GameInfoForm;
 import com.oddlabs.tt.gui.MessageForm;
-import com.oddlabs.tt.content.form.MultiplayerLobby;
+import com.oddlabs.tt.client.match.MatchLauncher;
+import com.oddlabs.tt.client.match.MultiplayerLobby;
 import com.oddlabs.tt.content.skirmish.MultiplayerInGameInfo;
 import com.oddlabs.tt.content.form.ChatPanel;
 import com.oddlabs.tt.client.screen.Screen;
@@ -467,7 +468,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
                     gui_root.addModalForm(new MessageForm(gui_root, min_wins));
                 } else {
                     Game game = selected_game.getGame();
-                    main_menu.joinGame(selected_game.getHostID(), game
+                    MatchLauncher.joinGame(peer, gui_root, main_menu.getScreenManager(), selected_game.getHostID(), game
                             .getGamespeed(), game.getMapcode(), this, new MultiplayerInGameInfo(game
                                     .getRandomStartPos(), game.isRated()), game.getMaxUnitCount());
                 }

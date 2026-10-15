@@ -64,7 +64,6 @@ import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.player.VikingChieftainAI;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -105,7 +104,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
     public WorldViewer(final GUIRoot gui_root,
             Peer peer,
             WorldParameters world_params, InGameInfo ingame_info, WorldGenerator<Landscape> generator,
-            PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot,
+            List<PlayerSlot> player_slots, List<UnitInfo> unit_infos, short player_slot,
             SessionID session_id, ScreenManager screenManager) {
         this.peer = peer;
         this.screenManager = screenManager;
@@ -126,7 +125,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         RaceData races_resources = ProgressListener.subTask(0.35f,
                 () -> RacesAssetsLoader.load(render_queues));
         registerHarvestEmojis(render_queues, icons);
-        var player_infos = Arrays.stream(player_slots).map(slot -> (PlayerInfo) slot.getInfo()).toList();
+        var player_infos = player_slots.stream().map(slot -> (PlayerInfo) slot.getInfo()).toList();
         Landscape landscape = ProgressListener.subTask(0.25f,
                 () -> generator.generate(
                         player_infos.size(), world_params.initialUnitCount(), ingame_info.getRandomStartPosition()));
@@ -325,11 +324,12 @@ public final class WorldViewer implements Animated, AutoCloseable {
         }
     }
 
-    private void initPlayers(List<List<SpawnLocation>> startingLocations, PlayerSlot[] slots, List<Player> players,
-            UnitInfo[] unit_infos, int initial_gamespeed) {
+    private void initPlayers(List<List<SpawnLocation>> startingLocations, List<PlayerSlot> slots, List<Player> players,
+            List<UnitInfo> unitInfos, int initialGamespeed) {
         ResourceBundle bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
-        for (int i = 0; i < slots.length; i++) {
-            initPlayer(bundle, startingLocations.get(i), slots[i], players.get(i), unit_infos[i], initial_gamespeed);
+        for (int i = 0; i < slots.size(); i++) {
+            initPlayer(bundle, startingLocations.get(i), slots.get(i), players.get(i), unitInfos.get(i),
+                    initialGamespeed);
         }
     }
 

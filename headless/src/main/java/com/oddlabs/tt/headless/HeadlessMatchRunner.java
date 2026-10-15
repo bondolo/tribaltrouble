@@ -33,8 +33,8 @@ public final class HeadlessMatchRunner {
      */
     public HeadlessMatchResult run(HeadlessMatchConfig config) throws TimeoutException, InterruptedException {
         int numPlayers = config.players().size();
-        PlayerSlot[] playerSlots = new PlayerSlot[numPlayers];
-        UnitInfo[] unitInfos = new UnitInfo[numPlayers];
+        List<PlayerSlot> playerSlots = new ArrayList<>(numPlayers);
+        List<UnitInfo> unitInfos = new ArrayList<>(numPlayers);
 
         for (int i = 0; i < numPlayers; i++) {
             HeadlessMatchConfig.PlayerConfig playerConfig = config.players().get(i);
@@ -43,8 +43,8 @@ public final class HeadlessMatchRunner {
             slot.setAIDifficulty(playerConfig.aiDifficulty());
             slot.setReady(true);
             slot.setInfo(new PlayerInfo(playerConfig.team(), playerConfig.race(), playerConfig.name()));
-            playerSlots[i] = slot;
-            unitInfos[i] = playerConfig.unitInfo();
+            playerSlots.add(slot);
+            unitInfos.add(playerConfig.unitInfo());
         }
 
         IslandGenerator generator = new IslandGenerator(config.islandConfig());

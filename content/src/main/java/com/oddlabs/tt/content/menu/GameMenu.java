@@ -1,12 +1,11 @@
 package com.oddlabs.tt.content.menu;
 
 import com.oddlabs.matchmaking.Game;
-import java.io.Serializable;
 import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.tt.content.form.GameInfoForm;
 import com.oddlabs.tt.gui.MessageForm;
-import com.oddlabs.tt.content.form.ProgressForm;
+import com.oddlabs.tt.client.match.ProgressForm;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.gui.Box;
@@ -46,10 +45,9 @@ import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.Nullable;
 
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ThreadLocalRandom;
@@ -219,7 +217,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
     private void adjustPlayerSlot(int player_slot) {
         if (updating)
             return;
-        PlayerSlot player = game_network.getClient().getPlayers()[player_slot];
+        PlayerSlot player = game_network.getClient().getPlayers().get(player_slot);
         SlotOption option = slot_buttons[player_slot].getMenu().getChosenItem().map(PulldownItem::getAttachment).orElse(
                 SlotOption.OPEN);
         Race race = race_buttons[player_slot].getMenu().getChosenItem().map(PulldownItem::getAttachment).orElse(
@@ -285,18 +283,14 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
         }
     }
 
-    private int countHumans(PlayerSlot[] players) {
-        int result = 0;
-        for (PlayerSlot player : players) {
-            if (player.getType() == PlayerSlot.HUMAN) {
-                result++;
-            }
-        }
-        return result;
+    private int countHumans(List<PlayerSlot> players) {
+        return (int) players.stream()
+                .filter(player -> player.getType() == PlayerSlot.HUMAN)
+                .count();
     }
 
     @Override
-    public void setPlayers(PlayerSlot[] players) {
+    public void setPlayers(List<PlayerSlot> players) {
         int num_humans = countHumans(players);
         int[] player_slots = new int[num_humans];
         int[] player_ratings = new int[num_humans];
@@ -304,8 +298,8 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
         int human_index = 0;
         updating = true;
         SortedSet<String> new_human_names = new TreeSet<>();
-        for (int i = 0; i < players.length; i++) {
-            PlayerSlot player = players[i];
+        for (int i = 0; i < players.size(); i++) {
+            PlayerSlot player = players.get(i);
             PulldownButton<?> slot_button = slot_buttons[i];
             PulldownButton<?> race_button = race_buttons[i];
             PulldownButton<?> team_button = team_buttons[i];
@@ -367,7 +361,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
             playerLeft(name);
         }
         human_names = new_human_names;
-        setReady(players[local_player_slot].isReady());
+        setReady(players.get(local_player_slot).isReady());
         setStartEnable(players);
         updating = false;
     }
@@ -554,7 +548,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
         }
     }
 
-    private void setStartEnable(PlayerSlot[] players) {
+    private void setStartEnable(List<PlayerSlot> players) {
         start_button.setDisabled(true);
         if (local_player_slot != 0)
             return;
@@ -592,25 +586,21 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
         }
     }
 
-    private static int getNumTeams(PlayerSlot[] players) {
-        Set<Integer> teams = new HashSet<>();
-        for (PlayerSlot current : players) {
-            PlayerInfo info = (PlayerInfo) current.getInfo();
-            if (info != null)
-                teams.add(info.team());
-        }
-        return teams.size();
+    private static int getNumTeams(List<PlayerSlot> players) {
+        return (int) players.stream()
+                .map(PlayerSlot::getInfo)
+                .filter(PlayerInfo.class::isInstance)
+                .map(PlayerInfo.class::cast)
+                .map(PlayerInfo::team)
+                .distinct()
+                .count();
     }
 
     private final class StartListener implements MouseClickListener {
         @Override
         public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             final int MIN_TEAMS = 2;
-            Serializable[] raw_players = game_network.getClient().getPlayers();
-            PlayerSlot[] players = new PlayerSlot[raw_players.length];
-            for (int i = 0; i < raw_players.length; i++) {
-                players[i] = (PlayerSlot) raw_players[i];
-            }
+            List<PlayerSlot> players = game_network.getClient().getPlayers();
             int num_teams = getNumTeams(players);
             if (num_teams < MIN_TEAMS) {
                 String err_msg = i18n("min_teams", Integer.toString(MIN_TEAMS));

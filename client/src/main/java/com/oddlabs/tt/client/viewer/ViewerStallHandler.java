@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.viewer;
 
-import com.oddlabs.tt.client.gui.WaitingForPlayersForm;
+import com.oddlabs.tt.client.match.WaitingForPlayersForm;
 import com.oddlabs.tt.net.StallHandler;
 import org.jspecify.annotations.Nullable;
 

@@ -1,4 +1,4 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.client.match;
 
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.audio.AudioManager;
@@ -19,6 +19,7 @@ import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -83,7 +84,7 @@ public final class ConnectingForm extends Form implements ConfigurationListener<
     }
 
     @Override
-    public void setPlayers(PlayerSlot[] players) {
+    public void setPlayers(List<PlayerSlot> players) {
     }
 
     @Override

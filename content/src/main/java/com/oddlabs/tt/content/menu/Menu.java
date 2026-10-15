@@ -4,7 +4,6 @@ import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.audio.AudioSettings;
 import com.oddlabs.tt.base.animation.AnimationManager;
-import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.camera.Camera;
@@ -14,16 +13,9 @@ import com.oddlabs.tt.client.delegate.FormFactory;
 import com.oddlabs.tt.client.render.FullSceneRenderer;
 import com.oddlabs.tt.client.render.Picker;
 import com.oddlabs.tt.engine.settings.GraphicsSettings;
-import com.oddlabs.tt.client.trigger.GameOverTrigger;
-import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.client.viewer.Selection;
-import com.oddlabs.tt.client.viewer.WorldInitAction;
-import com.oddlabs.tt.client.viewer.WorldStarter;
-import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.content.form.ConnectingForm;
-import com.oddlabs.tt.content.form.MultiplayerLobby;
 import com.oddlabs.tt.content.form.OptionsMenu;
-import com.oddlabs.tt.content.form.ProgressForm;
+import com.oddlabs.tt.client.match.ProgressForm;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.screen.ScreenManager;
@@ -35,7 +27,6 @@ import com.oddlabs.tt.client.resource.LandscapeAssetsLoader;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.procedural.landscape.IslandGenerator;
@@ -51,11 +42,6 @@ import com.oddlabs.tt.gui.WarningForm;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.net.Client;
-import com.oddlabs.tt.net.ConfigurationListener;
-import com.oddlabs.tt.net.GameNetwork;
-import com.oddlabs.tt.net.LoadCallbackFactory;
-import com.oddlabs.tt.net.Server;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
@@ -64,15 +50,12 @@ import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.simulation.player.DefaultPlayerSlotHandler;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -321,111 +304,6 @@ public abstract class Menu extends CameraDelegate<Camera> {
         MenuButton resume = new MenuButton(getGUIRoot(), i18n("resume"), COLOR_NORMAL, COLOR_ACTIVE);
         addChild(resume);
         resume.addMouseClickListener((_, _, _, _) -> pop());
-    }
-
-    public static void completeGameSetupHack(WorldViewer world_viewer) {
-        world_viewer.getGUIRoot().pushDelegate(world_viewer.getDelegate());
-        world_viewer.getAudioManager().setMusic(AssetRegistry.getInstance().getMusic(world_viewer.getLocalPlayer()
-                .getPlayerInfo().race()), 10f);
-    }
-
-    public static final class DefaultWorldInitAction implements WorldInitAction {
-        @Override
-        public void run(WorldViewer viewer) {
-            new GameOverTrigger(viewer);
-            completeGameSetupHack(viewer);
-        }
-    }
-
-    public final GameNetwork<GUIRoot, Screen> joinGame(int host_id,
-            int gamespeed, String map_code, MultiplayerLobby owner, InGameInfo ingame_info,
-            int max_unit_count) {
-        GUIRoot gui_root = getGUIRoot();
-        WorldParameters world_params = new WorldParameters(gamespeed, map_code, Player.INITIAL_UNIT_COUNT,
-                max_unit_count);
-        var matchmakingClient = peer.getNetwork().getMatchmakingClient();
-        var chatHub = peer.getNetwork().getChatHub();
-        var networkSelector = peer.getNetwork().getSelector();
-        @SuppressWarnings("unchecked") LoadCallbackFactory<GUIRoot, Screen> starterFactory = (session_id,
-                generator,
-                player_slots,
-                unit_infos, player_slot) -> new WorldStarter(session_id,
-                        (WorldGenerator<Landscape>) generator, world_params, player_slots, unit_infos,
-                        player_slot, ingame_info,
-                        new DefaultWorldInitAction(), peer, screenManager);
-        Client<GUIRoot, Screen> client = new Client<>(null, networkSelector, matchmakingClient, chatHub,
-                host_id,
-                starterFactory,
-                new DefaultPlayerSlotHandler());
-        GameNetwork<GUIRoot, Screen> game_network = new GameNetwork<>(null, client);
-        ConnectingForm connecting_form = new ConnectingForm(game_network, getGUIRoot(), owner, screenManager, peer
-                .getAudioManager());
-        client.setConfigurationListener(connecting_form);
-        gui_root.addModalForm(connecting_form);
-        return game_network;
-    }
-
-    public static GameNetwork<GUIRoot, Screen> startNewGame(
-            Peer peer, GUIRoot gui_root, ScreenManager screenManager,
-            @Nullable MultiplayerLobby owner, WorldParameters world_params, InGameInfo ingame_info,
-            WorldInitAction init_action, @Nullable Game game, IslandConfig islandConfig, String[] ai_names) {
-        boolean multiplayer = ingame_info.isMultiplayer();
-        WorldGenerator<Landscape> generator = new IslandGenerator(islandConfig);
-        InetAddress address = multiplayer ? null : com.oddlabs.util.Utils.getLoopbackAddress();
-        var matchmakingClient = peer.getNetwork().getMatchmakingClient();
-        var chatHub = peer.getNetwork().getChatHub();
-        var networkSelector = peer.getNetwork().getSelector();
-        final long deterministicSeed = peer.getEventQueue().getHighPrecisionManager().getTick();
-        final Server server = new Server(networkSelector, matchmakingClient, game,
-                address, generator, multiplayer, ai_names,
-                (team, race_val, name) -> new PlayerInfo(team, Race.fromValue(race_val), name),
-                new DefaultPlayerSlotHandler(), deterministicSeed);
-        @SuppressWarnings("unchecked") LoadCallbackFactory<GUIRoot, Screen> starterFactory = (session_id,
-                gen,
-                player_slots, unit_infos,
-                player_slot) -> new WorldStarter(
-                        session_id, (WorldGenerator<Landscape>) gen,
-                        world_params, player_slots, unit_infos, player_slot, ingame_info, init_action, peer,
-                        screenManager);
-        Client<GUIRoot, Screen> client = new Client<>(server::close, networkSelector, matchmakingClient,
-                chatHub, -1, starterFactory, new DefaultPlayerSlotHandler());
-        GameNetwork<GUIRoot, Screen> game_network = new GameNetwork<>(server, client);
-        if (multiplayer) {
-            ConnectingForm connecting_form = new ConnectingForm(game_network, gui_root, owner, screenManager, peer
-                    .getAudioManager());
-            client.setConfigurationListener(connecting_form);
-            gui_root.addModalForm(connecting_form);
-        } else {
-            client.setConfigurationListener(new ConfigurationListener<>() {
-                @Override
-                public void connected(Client<GUIRoot, Screen> client, Game game, WorldGenerator<
-                        ?> generator,
-                        int player_slot) {
-                    assert player_slot == 0 : "player_slot must be 0";
-                }
-
-                @Override
-                public void setPlayers(PlayerSlot[] players) {
-                }
-
-                @Override
-                public void connectionLost() {
-                    gui_root.addModalForm(new MessageForm(gui_root, ConnectingForm.i18n("connection_lost")));
-                }
-
-                @Override
-                public void gameStarted(LoadCallback<GUIRoot, Screen> loadCallback) {
-                    ProgressForm.Mode mode = ingame_info.showLoadingHints()
-                            ? ProgressForm.Mode.GAME_LOAD
-                            : ProgressForm.Mode.TUTORIAL;
-                    ProgressForm.setProgressForm(game_network.getClient().getNetwork(), screenManager,
-                            peer
-                                    .getAudioManager(), loadCallback,
-                            mode);
-                }
-            });
-        }
-        return game_network;
     }
 
     public static void startMenu(Peer peer, ScreenManager screenManager) {

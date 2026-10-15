@@ -24,7 +24,6 @@ import com.oddlabs.tt.simulation.player.PassiveAI;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -69,19 +68,16 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
             int playerIndex,
             WorldParameters worldParams,
             Landscape landscape,
-            PlayerSlot[] playerSlots,
-            UnitInfo[] unitInfos,
+            List<PlayerSlot> playerSlots,
+            List<UnitInfo> unitInfos,
             com.oddlabs.net.NetworkSelector network,
             SessionID sessionId,
             @Nullable String routerAddress,
             int routerPort,
             boolean allowAiPeers) {
-        List<PlayerInfo> playerInfos = new ArrayList<>();
-        for (PlayerSlot slot : playerSlots) {
-            if (slot.getInfo() instanceof PlayerInfo info) {
-                playerInfos.add(info);
-            }
-        }
+        List<PlayerInfo> playerInfos = playerSlots.stream()
+                .map(slot -> (PlayerInfo) slot.getInfo())
+                .toList();
 
         NotificationListener noopListener = new NotificationListener() {
         };
@@ -141,7 +137,7 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
                 allowAiPeers
         );
 
-        PlayerSlot localSlot = playerSlots[playerIndex];
+        PlayerSlot localSlot = playerSlots.get(playerIndex);
         if (localSlot.getType() != PlayerSlot.AI) {
             throw new IllegalArgumentException(
                     "Headless simulation instances require PlayerSlot.AI for the local slot (got "
@@ -172,13 +168,13 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
      */
     public static void initPlayers(
             List<List<SpawnLocation>> startingLocations,
-            PlayerSlot[] playerSlots,
+            List<PlayerSlot> playerSlots,
             List<Player> players,
-            UnitInfo[] unitInfos,
+            List<UnitInfo> unitInfos,
             int initialGamespeed) {
         for (short i = 0; i < players.size(); i++) {
             Player player = players.get(i);
-            UnitInfo unitInfo = unitInfos[i];
+            UnitInfo unitInfo = unitInfos.get(i);
             List<SpawnLocation> startingLocation = startingLocations.get(i);
 
             player.setPreferredGamespeed(initialGamespeed);

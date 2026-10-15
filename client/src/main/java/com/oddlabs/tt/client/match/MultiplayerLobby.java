@@ -1,4 +1,4 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.client.match;
 
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.gui.GUIRoot;

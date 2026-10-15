@@ -83,8 +83,8 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
     public static HeadlessMultiplayerHarness create(
             Landscape landscape,
             WorldParameters worldParams,
-            PlayerSlot[] playerSlots,
-            UnitInfo[] unitInfos) {
+            List<PlayerSlot> playerSlots,
+            List<UnitInfo> unitInfos) {
         return create(landscape, worldParams, playerSlots, unitInfos, TimeManager.DEFAULT, true);
     }
 
@@ -95,8 +95,8 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
     public static HeadlessMultiplayerHarness createVirtual(
             Landscape landscape,
             WorldParameters worldParams,
-            PlayerSlot[] playerSlots,
-            UnitInfo[] unitInfos) {
+            List<PlayerSlot> playerSlots,
+            List<UnitInfo> unitInfos) {
         return create(landscape, worldParams, playerSlots, unitInfos, new TickTimeManager(), true);
     }
 
@@ -107,8 +107,8 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
     public static HeadlessMultiplayerHarness createJittered(
             Landscape landscape,
             WorldParameters worldParams,
-            PlayerSlot[] playerSlots,
-            UnitInfo[] unitInfos,
+            List<PlayerSlot> playerSlots,
+            List<UnitInfo> unitInfos,
             JitterConfig jitterConfig) {
         return create(landscape, worldParams, playerSlots, unitInfos, new JitterTimeManager(jitterConfig), true);
     }
@@ -119,8 +119,8 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
     public static HeadlessMultiplayerHarness create(
             Landscape landscape,
             WorldParameters worldParams,
-            PlayerSlot[] playerSlots,
-            UnitInfo[] unitInfos,
+            List<PlayerSlot> playerSlots,
+            List<UnitInfo> unitInfos,
             TimeManager timeManager,
             boolean allowAiPeers) {
         NetworkSelector network = new NetworkSelector(new NotDeterministic(), timeManager);
@@ -136,8 +136,8 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
         SessionID sessionId = new SessionID(1);
         List<HeadlessSimulationInstance> instanceList = new ArrayList<>();
 
-        for (int i = 0; i < playerSlots.length; i++) {
-            boolean isParticipant = allowAiPeers && playerSlots[i].getType() == PlayerSlot.AI;
+        for (int i = 0; i < playerSlots.size(); i++) {
+            boolean isParticipant = allowAiPeers && playerSlots.get(i).getType() == PlayerSlot.AI;
             if (!isParticipant) {
                 continue;
             }

@@ -1,4 +1,4 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.client.match;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.audio.AudioManager;

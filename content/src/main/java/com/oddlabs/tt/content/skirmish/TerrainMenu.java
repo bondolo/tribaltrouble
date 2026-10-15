@@ -13,6 +13,7 @@ import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.content.form.AbstractOptionsMenu;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.content.menu.SelectGameMenu;
+import com.oddlabs.tt.client.match.MatchLauncher;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.gui.CancelButton;
@@ -698,13 +699,13 @@ public final class TerrainMenu extends Group {
                 ? multiplayer_setup.worldParameters() : skirmish_setup.worldParameters();
         IslandConfig islandConfig = multiplayer
                 ? multiplayer_setup.islandConfig() : skirmish_setup.islandConfig();
-        var game_network = Menu.startNewGame(peer,
+        var game_network = MatchLauncher.startNewGame(peer,
                 gui_root,
                 main_menu.getScreenManager(),
                 menu,
                 parameters,
                 ingame_info,
-                new Menu.DefaultWorldInitAction(),
+                new MatchLauncher.DefaultWorldInitAction(),
                 game,
                 islandConfig,
                 IntStream.rangeClosed(0, 5).mapToObj(i -> ai_string + i).toArray(String[]::new));

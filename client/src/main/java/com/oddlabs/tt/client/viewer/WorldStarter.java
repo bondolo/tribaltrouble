@@ -17,8 +17,8 @@ import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * Triggers world loading, initializes players and matchmaking session information,
@@ -27,8 +27,8 @@ import java.util.List;
 public final class WorldStarter implements LoadCallback<GUIRoot, Screen> {
     private final Peer peer;
     private final ScreenManager screenManager;
-    private final UnitInfo[] unit_infos;
-    private final PlayerSlot[] player_slots;
+    private final List<UnitInfo> unit_infos;
+    private final List<PlayerSlot> player_slots;
     private final short player_slot;
     private final InGameInfo ingame_info;
     private final WorldGenerator<Landscape> generator;
@@ -38,7 +38,7 @@ public final class WorldStarter implements LoadCallback<GUIRoot, Screen> {
 
     public WorldStarter(int session_id, WorldGenerator<Landscape> generator,
             WorldParameters world_params,
-            PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot, InGameInfo ingame_info,
+            List<PlayerSlot> player_slots, List<UnitInfo> unit_infos, short player_slot, InGameInfo ingame_info,
             @Nullable WorldInitAction initial_action, Peer peer, ScreenManager screenManager) {
         this.peer = peer;
         this.screenManager = screenManager;
@@ -55,52 +55,42 @@ public final class WorldStarter implements LoadCallback<GUIRoot, Screen> {
     @Override
     public Screen load(GUIRoot gui_root) {
         peer.getFramePacer().freezeTime();
-        List<PlayerSlot> player_slot_list = new ArrayList<>();
-        List<UnitInfo> unit_info_list = new ArrayList<>();
-        short corrected_player_slot = -1;
-        for (short i = 0; i < player_slots.length; i++) {
-            if (player_slots[i].getInfo() != null) {
-                if (player_slot == i)
-                    corrected_player_slot = (short) player_slot_list.size();
-                player_slot_list.add(player_slots[i]);
-                unit_info_list.add(unit_infos[i]);
-            }
-        }
+        List<Integer> activeIndices = IntStream.range(0, player_slots.size())
+                .filter(i -> player_slots.get(i).getInfo() != null)
+                .boxed()
+                .toList();
+        List<PlayerSlot> playerSlots = activeIndices.stream()
+                .map(player_slots::get)
+                .toList();
+        List<UnitInfo> correctedUnitInfos = activeIndices.stream()
+                .map(unit_infos::get)
+                .toList();
+        short corrected_player_slot = (short) activeIndices.indexOf((int) player_slot);
         assert corrected_player_slot != -1;
-        PlayerSlot[] player_slots = player_slot_list.toArray(new PlayerSlot[0]);
-        UnitInfo[] corrected_unit_infos = unit_info_list.toArray(new UnitInfo[0]);
-        WorldViewer viewer = new WorldViewer(gui_root, peer, world_params, ingame_info, generator, player_slots,
-                corrected_unit_infos, corrected_player_slot, new SessionID(session_id), screenManager);
+        WorldViewer viewer = new WorldViewer(gui_root, peer, world_params, ingame_info, generator, playerSlots,
+                correctedUnitInfos, corrected_player_slot, new SessionID(session_id), screenManager);
         if (initial_action != null)
             initial_action.run(viewer);
-        Participant[] participants = getParticipants(viewer, player_slots);
+        Participant[] participants = getParticipants(viewer, playerSlots);
         if (peer.getNetwork().getMatchmakingClient().isConnected()) {
             GameSession game_session = new GameSession(session_id, participants, ingame_info.isRated());
             peer.getNetwork().getMatchmakingClient().getInterface().gameStartedNotify(game_session);
         }
-        System.out.println("PeerHub created (session_id = " + session_id + ") Player list:");
         return new DefaultScreen(gui_root, viewer.getRenderer());
     }
 
     private static Participant[] getParticipants(WorldViewer viewer,
-            PlayerSlot[] player_slots) {
-        List<Participant> participant_list = new ArrayList<>();
+            List<PlayerSlot> playerSlots) {
         List<Player> players = viewer.getWorld().getPlayers();
-        for (short i = 0; i < players.size(); i++) {
-            Player player = players.get(i);
-            if (player_slots[i].getType() != PlayerSlot.HUMAN)
-                continue;
-            int host_id;
-            if (player_slots[i].getAddress() != null)
-                host_id = player_slots[i].getAddress().getHostID();
-            else
-                host_id = -1;
-            Participant p = new Participant(host_id, player.getPlayerInfo().name(), player.getPlayerInfo().team(),
-                    player.getPlayerInfo().race().getValue());
-            participant_list.add(p);
-        }
-        Participant[] participants = new Participant[participant_list.size()];
-        participant_list.toArray(participants);
-        return participants;
+        return IntStream.range(0, players.size())
+                .filter(i -> playerSlots.get(i).getType() == PlayerSlot.HUMAN)
+                .mapToObj(i -> {
+                    Player player = players.get(i);
+                    int hostId = playerSlots.get(i).getAddress() != null
+                            ? playerSlots.get(i).getAddress().getHostID() : -1;
+                    return new Participant(hostId, player.getPlayerInfo().name(),
+                            player.getPlayerInfo().team(), player.getPlayerInfo().race().getValue());
+                })
+                .toArray(Participant[]::new);
     }
 }

@@ -1,7 +1,5 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.gui.EditLine;
-import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.event.TabListener;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;

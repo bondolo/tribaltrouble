@@ -8,7 +8,7 @@ import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.matchmaking.Game;
-import com.oddlabs.tt.content.menu.Menu;
+import com.oddlabs.tt.client.match.MatchLauncher;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.client.screen.Screen;
@@ -71,7 +71,7 @@ public abstract class Island {
         InGameInfo ingame_info = new CampaignInGameInfo(campaign);
         WorldInitAction init_action = (WorldViewer viewer) -> {
             world_viewer = viewer;
-            Menu.completeGameSetupHack(world_viewer);
+            MatchLauncher.completeGameSetup(world_viewer);
             if (!campaign.getState().hasRubberWeapons()) {
                 viewer.getLocalPlayer().enableRubber(false);
             }
@@ -107,10 +107,11 @@ public abstract class Island {
         };
         IslandConfig islandConfig = new IslandConfig(terrain, meters_per_world, hills, vegetation_amount,
                 supplies_amount, seed);
-        return Menu.startNewGame(campaign.getPeer(), gui_root, campaign.getScreenManager(), null, new WorldParameters(
-                Game.GAMESPEED_NORMAL,
-                "Campaign" + campaign_num, initial_units,
-                Player.DEFAULT_MAX_UNIT_COUNT),
+        return MatchLauncher.startNewGame(campaign.getPeer(), gui_root, campaign.getScreenManager(), null,
+                new WorldParameters(
+                        Game.GAMESPEED_NORMAL,
+                        "Campaign" + campaign_num, initial_units,
+                        Player.DEFAULT_MAX_UNIT_COUNT),
                 ingame_info,
                 init_action,
                 null, islandConfig, ai_names);

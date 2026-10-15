@@ -15,14 +15,17 @@ import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
+import com.oddlabs.tt.base.util.LoadCallback;
+import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.PlayerSlotHandler;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import com.oddlabs.tt.base.util.LoadCallback;
-import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 
 /** Network client endpoint managing connection negotiation and game startup. */
 public final class Client<C, R> implements ARMIEventBroker, GameClientInterface, ConnectionInterface {
@@ -115,8 +118,8 @@ public final class Client<C, R> implements ARMIEventBroker, GameClientInterface,
             cleanup_action.run();
     }
 
-    public PlayerSlot[] getPlayers() {
-        return player_slots;
+    public List<PlayerSlot> getPlayers() {
+        return Collections.unmodifiableList(Arrays.asList(player_slots));
     }
 
     public NetworkSelector getNetwork() {
@@ -129,8 +132,8 @@ public final class Client<C, R> implements ARMIEventBroker, GameClientInterface,
             return;
         close();
         LoadCallback<C, R> starter = starter_factory != null
-                ? starter_factory.createCallback(session_id, Objects.requireNonNull(generator), player_slots,
-                        unit_infos, player_slot)
+                ? starter_factory.createCallback(session_id, Objects.requireNonNull(generator),
+                        Arrays.asList(player_slots), Arrays.asList(unit_infos), player_slot)
                 : null;
         if (starter != null)
             getConfigurationListener().gameStarted(starter);
@@ -139,7 +142,7 @@ public final class Client<C, R> implements ARMIEventBroker, GameClientInterface,
     @Override
     public void setPlayers(PlayerSlot[] player_slots) {
         this.player_slots = player_slots;
-        getConfigurationListener().setPlayers(player_slots);
+        getConfigurationListener().setPlayers(Arrays.asList(player_slots));
     }
 
     @Override

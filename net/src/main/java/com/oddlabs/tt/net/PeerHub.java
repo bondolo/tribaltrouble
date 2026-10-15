@@ -82,7 +82,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
     private boolean is_synchronized;
 
     public PeerHub(AnimationManager manager, boolean is_multiplayer, boolean is_rated,
-            Player local_player, PlayerSlot[] player_slots, NetworkSelector network,
+            Player local_player, List<PlayerSlot> player_slots, NetworkSelector network,
             @Nullable BeaconListener beacon_listener, @Nullable MatchmakingClient matchmaking_client,
             @Nullable ChatHub chat_hub, DistributableTable distributable_table, SessionID session_id,
             StallHandler stall_handler) {
@@ -92,7 +92,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
     }
 
     public PeerHub(AnimationManager manager, boolean is_multiplayer, boolean is_rated,
-            Player local_player, PlayerSlot[] player_slots, NetworkSelector network,
+            Player local_player, List<PlayerSlot> player_slots, NetworkSelector network,
             @Nullable BeaconListener beacon_listener, @Nullable MatchmakingClient matchmaking_client,
             @Nullable ChatHub chat_hub, DistributableTable distributable_table, SessionID session_id,
             StallHandler stall_handler, @Nullable String router_address, int router_port) {
@@ -102,7 +102,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
     }
 
     public PeerHub(AnimationManager manager, boolean is_multiplayer, boolean is_rated,
-            Player local_player, PlayerSlot[] player_slots, NetworkSelector network,
+            Player local_player, List<PlayerSlot> player_slots, NetworkSelector network,
             @Nullable BeaconListener beacon_listener, @Nullable MatchmakingClient matchmaking_client,
             @Nullable ChatHub chat_hub, DistributableTable distributable_table, SessionID session_id,
             StallHandler stall_handler, @Nullable String router_address, int router_port,
@@ -140,8 +140,8 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
         }
         for (short i = 0; i < players.size(); i++) {
             Player player = players.get(i);
-            boolean is_peer = player_slots[i].getType() == PlayerSlot.HUMAN ||
-                    (allow_ai_peers && player_slots[i].getType() == PlayerSlot.AI);
+            boolean is_peer = player_slots.get(i).getType() == PlayerSlot.HUMAN ||
+                    (allow_ai_peers && player_slots.get(i).getType() == PlayerSlot.AI);
             if (!is_peer) {
                 nonhuman_players.add(player);
                 continue;

@@ -112,26 +112,37 @@ class HeadlessMultiplayerHarnessTest {
         }
     }
 
+    private static List<UnitInfo> createDefaultUnitInfos() {
+        return List.of(
+                new UnitInfo(false, false, 0, false, 5, 0, 0, 0),
+                new UnitInfo(false, false, 0, false, 5, 0, 0, 0)
+        );
+    }
+
+    private static List<PlayerSlot> createTestSlots(int difficulty0, String name0, int difficulty1, String name1) {
+        List<PlayerSlot> slots = new ArrayList<>(2);
+        PlayerSlot slot0 = new PlayerSlot(0);
+        slot0.setType(PlayerSlot.AI);
+        slot0.setAIDifficulty(difficulty0);
+        slot0.setInfo(new PlayerInfo(0, Race.VIKINGS, name0));
+        slots.add(slot0);
+
+        PlayerSlot slot1 = new PlayerSlot(1);
+        slot1.setType(PlayerSlot.AI);
+        slot1.setAIDifficulty(difficulty1);
+        slot1.setInfo(new PlayerInfo(1, Race.NATIVES, name1));
+        slots.add(slot1);
+        return slots;
+    }
+
     @Test
     void testMultiInstanceHeadlessSession() throws Exception {
         int gridSize = 32; // 2 patches of 16
         Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
-
-        PlayerSlot[] playerSlots = new PlayerSlot[2];
-        playerSlots[0] = new PlayerSlot(0);
-        playerSlots[0].setType(PlayerSlot.AI);
-        playerSlots[0].setAIDifficulty(PlayerSlot.AI_NORMAL);
-        playerSlots[0].setInfo(new PlayerInfo(0, Race.VIKINGS, "VikingPlayer"));
-
-        playerSlots[1] = new PlayerSlot(1);
-        playerSlots[1].setType(PlayerSlot.AI);
-        playerSlots[1].setAIDifficulty(PlayerSlot.AI_NORMAL);
-        playerSlots[1].setInfo(new PlayerInfo(1, Race.NATIVES, "NativePlayer"));
-
-        UnitInfo[] unitInfos = new UnitInfo[2];
-        unitInfos[0] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
-        unitInfos[1] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
+        List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_NORMAL, "VikingPlayer",
+                PlayerSlot.AI_NORMAL, "NativePlayer");
+        List<UnitInfo> unitInfos = createDefaultUnitInfos();
 
         try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.create(
                 landscapeData,
@@ -187,21 +198,9 @@ class HeadlessMultiplayerHarnessTest {
         int gridSize = 32;
         Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
-
-        PlayerSlot[] playerSlots = new PlayerSlot[2];
-        playerSlots[0] = new PlayerSlot(0);
-        playerSlots[0].setType(PlayerSlot.AI);
-        playerSlots[0].setAIDifficulty(PlayerSlot.AI_EASY);
-        playerSlots[0].setInfo(new PlayerInfo(0, Race.VIKINGS, "VikingBot1"));
-
-        playerSlots[1] = new PlayerSlot(1);
-        playerSlots[1].setType(PlayerSlot.AI);
-        playerSlots[1].setAIDifficulty(PlayerSlot.AI_NORMAL);
-        playerSlots[1].setInfo(new PlayerInfo(1, Race.NATIVES, "NativeBot2"));
-
-        UnitInfo[] unitInfos = new UnitInfo[2];
-        unitInfos[0] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
-        unitInfos[1] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
+        List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_EASY, "VikingBot1",
+                PlayerSlot.AI_NORMAL, "NativeBot2");
+        List<UnitInfo> unitInfos = createDefaultUnitInfos();
 
         try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.create(
                 landscapeData,
@@ -235,21 +234,9 @@ class HeadlessMultiplayerHarnessTest {
         int gridSize = 32;
         Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
-
-        PlayerSlot[] playerSlots = new PlayerSlot[2];
-        playerSlots[0] = new PlayerSlot(0);
-        playerSlots[0].setType(PlayerSlot.AI);
-        playerSlots[0].setAIDifficulty(PlayerSlot.AI_NORMAL);
-        playerSlots[0].setInfo(new PlayerInfo(0, Race.VIKINGS, "VikingJitter0"));
-
-        playerSlots[1] = new PlayerSlot(1);
-        playerSlots[1].setType(PlayerSlot.AI);
-        playerSlots[1].setAIDifficulty(PlayerSlot.AI_NORMAL);
-        playerSlots[1].setInfo(new PlayerInfo(1, Race.NATIVES, "NativeJitter1"));
-
-        UnitInfo[] unitInfos = new UnitInfo[2];
-        unitInfos[0] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
-        unitInfos[1] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
+        List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_NORMAL, "VikingJitter0",
+                PlayerSlot.AI_NORMAL, "NativeJitter1");
+        List<UnitInfo> unitInfos = createDefaultUnitInfos();
 
         TickTimeManager baseClock = new TickTimeManager();
         JitterConfig jitterConfig = JitterConfig.heavy(baseClock, 777L);
@@ -287,21 +274,9 @@ class HeadlessMultiplayerHarnessTest {
         int gridSize = 32;
         Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
-
-        PlayerSlot[] playerSlots = new PlayerSlot[2];
-        playerSlots[0] = new PlayerSlot(0);
-        playerSlots[0].setType(PlayerSlot.AI);
-        playerSlots[0].setAIDifficulty(PlayerSlot.AI_EASY);
-        playerSlots[0].setInfo(new PlayerInfo(0, Race.VIKINGS, "VikingLagBot"));
-
-        playerSlots[1] = new PlayerSlot(1);
-        playerSlots[1].setType(PlayerSlot.AI);
-        playerSlots[1].setAIDifficulty(PlayerSlot.AI_NORMAL);
-        playerSlots[1].setInfo(new PlayerInfo(1, Race.NATIVES, "NativeLagBot"));
-
-        UnitInfo[] unitInfos = new UnitInfo[2];
-        unitInfos[0] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
-        unitInfos[1] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
+        List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_EASY, "VikingLagBot",
+                PlayerSlot.AI_NORMAL, "NativeLagBot");
+        List<UnitInfo> unitInfos = createDefaultUnitInfos();
 
         TickTimeManager baseClock = new TickTimeManager();
         JitterConfig laggyConfig = JitterConfig.laggy(baseClock, 10101L);
@@ -333,21 +308,9 @@ class HeadlessMultiplayerHarnessTest {
         int gridSize = 32;
         Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
-
-        PlayerSlot[] playerSlots = new PlayerSlot[2];
-        playerSlots[0] = new PlayerSlot(0);
-        playerSlots[0].setType(PlayerSlot.AI);
-        playerSlots[0].setAIDifficulty(PlayerSlot.AI_NORMAL);
-        playerSlots[0].setInfo(new PlayerInfo(0, Race.VIKINGS, "VikingConcurrent0"));
-
-        playerSlots[1] = new PlayerSlot(1);
-        playerSlots[1].setType(PlayerSlot.AI);
-        playerSlots[1].setAIDifficulty(PlayerSlot.AI_NORMAL);
-        playerSlots[1].setInfo(new PlayerInfo(1, Race.NATIVES, "NativeConcurrent1"));
-
-        UnitInfo[] unitInfos = new UnitInfo[2];
-        unitInfos[0] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
-        unitInfos[1] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
+        List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_NORMAL, "VikingConcurrent0",
+                PlayerSlot.AI_NORMAL, "NativeConcurrent1");
+        List<UnitInfo> unitInfos = createDefaultUnitInfos();
 
         try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.createVirtual(
                 landscapeData,
