@@ -47,7 +47,7 @@ public final class NetworkSelector implements AutoCloseable {
 
     void asyncConnect(String dns_name, int port, Connection conn) {
         DNSTask task = new DNSTask(dns_name, port, conn);
-        getTaskThread().addTask(task);
+        getTaskThread().addTask(task, task);
     }
 
     public TaskThread getTaskThread() {

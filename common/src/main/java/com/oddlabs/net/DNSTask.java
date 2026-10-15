@@ -1,19 +1,20 @@
 package com.oddlabs.net;
 
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.concurrent.Callable;
 
-public final class DNSTask implements Callable<InetSocketAddress> {
-    private final String dns_name;
-    private final int port;
-    private final Connection connection;
+/**
+ * Resolves a DNS hostname asynchronously on a virtual thread and connects the socket on completion.
+ */
+record DNSTask(String dnsName, int port, Connection connection)
+        implements Callable<InetSocketAddress>, TaskCallback<InetSocketAddress> {
 
-    public DNSTask(String dns_name, int port, Connection conn) {
-        this.dns_name = dns_name;
-        this.port = port;
-        this.connection = conn;
+    @Override
+    public InetSocketAddress call() throws IOException {
+        InetAddress inetAddress = InetAddress.getByName(dnsName);
+        return new InetSocketAddress(inetAddress, port);
     }
 
     @Override
@@ -23,14 +24,6 @@ public final class DNSTask implements Callable<InetSocketAddress> {
 
     @Override
     public void taskFailed(Throwable e) {
-        connection.dnsError((IOException) e);
-    }
-
-    /* WARNING: Potentially threaded and not deterministic. See Callable.java for details */
-    @Override
-    public InetSocketAddress call() throws Exception {
-        InetAddress inet_address = InetAddress.getByName(dns_name);
-        InetSocketAddress address = new InetSocketAddress(inet_address, port);
-        return address;
+        connection.dnsError(e instanceof IOException ioException ? ioException : new IOException(e));
     }
 }

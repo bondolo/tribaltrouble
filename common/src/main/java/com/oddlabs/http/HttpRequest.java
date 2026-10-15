@@ -1,7 +1,7 @@
 package com.oddlabs.http;
 
-import com.oddlabs.net.Callable;
 import com.oddlabs.net.Task;
+import com.oddlabs.net.TaskCallback;
 import com.oddlabs.net.TaskThread;
 import com.oddlabs.util.CryptUtils;
 import org.jspecify.annotations.Nullable;
@@ -38,42 +38,36 @@ public final class HttpRequest {
     private static Task spawnPostRequest(TaskThread task_thread, final URL url,
             final HttpRequestParameters parameters, final HttpResponseParser parser,
             final HttpCallback callback) {
-        return task_thread.addTask(new Callable<HttpResponse>() {
-            @Override
-            public HttpResponse call() throws IOException {
-                return runPostRequest(url, parameters, parser);
-            }
+        return task_thread.addTask(
+                () -> runPostRequest(url, parameters, parser),
+                new TaskCallback<HttpResponse>() {
+                    @Override
+                    public void taskCompleted(HttpResponse result) {
+                        result.notify(callback);
+                    }
 
-            @Override
-            public void taskCompleted(HttpResponse result) {
-                result.notify(callback);
-            }
-
-            @Override
-            public void taskFailed(Throwable e) {
-                callback.error((IOException) e);
-            }
-        });
+                    @Override
+                    public void taskFailed(Throwable e) {
+                        callback.error((IOException) e);
+                    }
+                });
     }
 
     private static Task spawnGetRequest(TaskThread task_thread, final URL url,
             final HttpResponseParser parser, final HttpCallback callback) {
-        return task_thread.addTask(new Callable<HttpResponse>() {
-            @Override
-            public HttpResponse call() throws IOException {
-                return runGetRequest(url, parser);
-            }
+        return task_thread.addTask(
+                () -> runGetRequest(url, parser),
+                new TaskCallback<HttpResponse>() {
+                    @Override
+                    public void taskCompleted(HttpResponse result) {
+                        result.notify(callback);
+                    }
 
-            @Override
-            public void taskCompleted(HttpResponse result) {
-                result.notify(callback);
-            }
-
-            @Override
-            public void taskFailed(Throwable e) {
-                callback.error((IOException) e);
-            }
-        });
+                    @Override
+                    public void taskFailed(Throwable e) {
+                        callback.error((IOException) e);
+                    }
+                });
     }
 
     private static void copy(InputStream is, @Nullable OutputStream os) throws IOException {
