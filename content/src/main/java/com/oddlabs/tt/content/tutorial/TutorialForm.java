@@ -1,7 +1,6 @@
 package com.oddlabs.tt.content.tutorial;
 
 import com.oddlabs.matchmaking.Game;
-import com.oddlabs.tt.client.screen.Screen;
 import com.oddlabs.tt.client.match.MatchLauncher;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.client.screen.ScreenManager;
@@ -165,7 +164,7 @@ public final class TutorialForm extends Form {
         game_network.getClient().getServerInterface().startServer();
     }
 
-    private static GameNetwork<GUIRoot, Screen> doStartNewGame(
+    private static GameNetwork doStartNewGame(
             Peer peer, GUIRoot gui_root, ScreenManager screenManager,
             TutorialInGameInfo ingame_info, final @Nullable WorldInitAction initial_action,
             int initial_unit_count, int tutorial_num) {

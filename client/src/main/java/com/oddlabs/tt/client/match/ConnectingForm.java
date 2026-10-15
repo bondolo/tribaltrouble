@@ -10,7 +10,6 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MessageForm;
-import com.oddlabs.tt.client.screen.Screen;
 import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.ConfigurationListener;
@@ -28,7 +27,7 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
 /**
  * UI form shown while establishing a multiplayer connection or initializing a local game.
  */
-public final class ConnectingForm extends Form implements ConfigurationListener<GUIRoot, Screen> {
+public final class ConnectingForm extends Form implements ConfigurationListener {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ConnectingForm.class.getName());
 
     public static String i18n(String key, Object... args) {
@@ -37,11 +36,11 @@ public final class ConnectingForm extends Form implements ConfigurationListener<
 
     private final MultiplayerLobby owner;
     private final GUIRoot gui_root;
-    private final GameNetwork<GUIRoot, Screen> game_network;
+    private final GameNetwork game_network;
     private final ScreenManager screenManager;
     private final AudioManager audioManager;
 
-    public ConnectingForm(GameNetwork<GUIRoot, Screen> game_network, GUIRoot gui_root,
+    public ConnectingForm(GameNetwork game_network, GUIRoot gui_root,
             MultiplayerLobby owner,
             ScreenManager screenManager,
             AudioManager audioManager) {
@@ -68,7 +67,7 @@ public final class ConnectingForm extends Form implements ConfigurationListener<
     }
 
     @Override
-    public void connected(Client<GUIRoot, Screen> client, Game game, WorldGenerator<?> generator,
+    public void connected(Client client, Game game, WorldGenerator<?> generator,
             int player_slot) {
         Race race = Race.values()[ThreadLocalRandom.current().nextInt(Race.values().length)];
         int team = player_slot;
@@ -94,7 +93,7 @@ public final class ConnectingForm extends Form implements ConfigurationListener<
     }
 
     @Override
-    public void gameStarted(LoadCallback<GUIRoot, Screen> loadCallback) {
+    public void gameStarted(LoadCallback<?, ?> loadCallback) {
         remove();
         ProgressForm.setProgressForm(game_network.getClient().getNetwork(), screenManager, audioManager,
                 loadCallback);

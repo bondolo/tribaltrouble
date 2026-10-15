@@ -14,7 +14,6 @@ import com.oddlabs.tt.client.match.MatchLauncher;
 import com.oddlabs.tt.client.match.MultiplayerLobby;
 import com.oddlabs.tt.content.skirmish.MultiplayerInGameInfo;
 import com.oddlabs.tt.content.form.ChatPanel;
-import com.oddlabs.tt.client.screen.Screen;
 import com.oddlabs.tt.net.ChatRoomInfo;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.FocusDirection;
@@ -280,7 +279,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     }
 
     @Override
-    public void createGameMenu(GameNetwork<GUIRoot, Screen> game_network, Game game, WorldGenerator<?> generator,
+    public void createGameMenu(GameNetwork game_network, Game game, WorldGenerator<?> generator,
             int player_slot) {
         game_panel = new GameMenu(game_network, this, game, player_slot, game_list_panel
                 .getWidth(), game_list_panel.getHeight(), BUTTON_WIDTH, main_menu.getScreenManager());

@@ -80,13 +80,13 @@ public final class ProgressForm {
 
     public static void setProgressForm(NetworkSelector network, ScreenManager screenManager,
             @Nullable AudioManager audioManager,
-            LoadCallback<GUIRoot, Screen> callback) {
+            LoadCallback<?, ?> callback) {
         setProgressForm(network, screenManager, audioManager, callback, Mode.GAME_LOAD);
     }
 
     public static @Nullable Runnable setProgressForm(NetworkSelector network, final ScreenManager screenManager,
             @Nullable AudioManager audioManager,
-            final LoadCallback<GUIRoot, Screen> callback, final Mode mode) {
+            final LoadCallback<?, ?> callback, final Mode mode) {
         boolean show_tip = (mode == Mode.GAME_LOAD);
         Layout layout = switch (mode) {
             case STARTUP -> new Layout("/textures/gui/oddlabs", 1024, 1024, 800, 600, 320, 145, 200, true, true);
@@ -103,7 +103,7 @@ public final class ProgressForm {
 
     private ProgressForm(NetworkSelector network, final ScreenManager screenManager,
             @Nullable AudioManager audioManager,
-            final LoadCallback<GUIRoot, Screen> callback,
+            final LoadCallback<?, ?> callback,
             Mode mode, Layout layout, boolean show_tip) {
         this.network = network;
         this.screenManager = screenManager;
@@ -158,12 +158,13 @@ public final class ProgressForm {
         return load_task;
     }
 
-    private void executeCallback(LoadCallback<GUIRoot, Screen> callback,
+    @SuppressWarnings("unchecked")
+    private void executeCallback(LoadCallback<?, ?> callback,
             @Nullable AudioManager audioManager) {
         GUIRoot client_root = screenManager.createRoot();
         ProgressListener listener = new FormProgressListener();
         Screen screen = ProgressListener.supply(listener,
-                () -> callback.load(client_root));
+                () -> ((LoadCallback<GUIRoot, Screen>) callback).load(client_root));
         if (progress_bar != null) {
             progress_bar.setProgress(1f);
         }

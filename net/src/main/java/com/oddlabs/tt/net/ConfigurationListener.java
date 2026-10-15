@@ -8,10 +8,10 @@ import com.oddlabs.tt.simulation.player.PlayerSlot;
 import java.util.List;
 
 /** Listener interface receiving game lobby configuration events. */
-public interface ConfigurationListener<C, R> extends ErrorListener {
-    void connected(Client<C, R> client, Game game, WorldGenerator<?> generator, int player_slot);
+public interface ConfigurationListener extends ErrorListener {
+    void connected(Client client, Game game, WorldGenerator<?> generator, int player_slot);
 
     void setPlayers(List<PlayerSlot> players);
 
-    void gameStarted(LoadCallback<C, R> loadCallback);
+    void gameStarted(LoadCallback<?, ?> loadCallback);
 }

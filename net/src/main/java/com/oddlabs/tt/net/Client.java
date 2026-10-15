@@ -28,7 +28,7 @@ import com.oddlabs.tt.simulation.player.PlayerSlotHandler;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 
 /** Network client endpoint managing connection negotiation and game startup. */
-public final class Client<C, R> implements ARMIEventBroker, GameClientInterface, ConnectionInterface {
+public final class Client implements ARMIEventBroker, GameClientInterface, ConnectionInterface {
     private static final int CONNECTING = 1;
     private static final int NEGOTIATING = 2;
     private static final int CLOSED = 5;
@@ -38,7 +38,7 @@ public final class Client<C, R> implements ARMIEventBroker, GameClientInterface,
     private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(GameClientInterface.class);
     private final GameServerInterface gameserver_interface;
     private final UnitInfo[] unit_infos;
-    private final @Nullable LoadCallbackFactory<C, R> starter_factory;
+    private final @Nullable LoadCallbackFactory starter_factory;
     private final PlayerSlotHandler slot_handler;
     private final @Nullable ChatHub chat_hub;
     private final NetworkSelector network;
@@ -49,11 +49,11 @@ public final class Client<C, R> implements ARMIEventBroker, GameClientInterface,
 
     private PlayerSlot[] player_slots = new PlayerSlot[0];
     private short player_slot = -1;
-    private @Nullable ConfigurationListener<C, R> configuration_listener;
+    private @Nullable ConfigurationListener configuration_listener;
 
     public Client(@Nullable Runnable cleanup_action, NetworkSelector network,
             MatchmakingClient matchmaking_client, @Nullable ChatHub chat_hub, int host_id,
-            @Nullable LoadCallbackFactory<C, R> starter_factory, PlayerSlotHandler slot_handler) {
+            @Nullable LoadCallbackFactory starter_factory, PlayerSlotHandler slot_handler) {
         this.slot_handler = slot_handler;
         this.cleanup_action = cleanup_action;
         this.network = network;
@@ -72,11 +72,11 @@ public final class Client<C, R> implements ARMIEventBroker, GameClientInterface,
         }
     }
 
-    private @Nullable ConfigurationListener<C, R> getConfigurationListener() {
+    private @Nullable ConfigurationListener getConfigurationListener() {
         return configuration_listener;
     }
 
-    public void setConfigurationListener(ConfigurationListener<C, R> listener) {
+    public void setConfigurationListener(ConfigurationListener listener) {
         configuration_listener = listener;
     }
 
@@ -131,7 +131,7 @@ public final class Client<C, R> implements ARMIEventBroker, GameClientInterface,
         if (state != NEGOTIATING)
             return;
         close();
-        LoadCallback<C, R> starter = starter_factory != null
+        LoadCallback<?, ?> starter = starter_factory != null
                 ? starter_factory.createCallback(session_id, Objects.requireNonNull(generator),
                         Arrays.asList(player_slots), Arrays.asList(unit_infos), player_slot)
                 : null;

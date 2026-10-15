@@ -3,7 +3,6 @@ package com.oddlabs.tt.client.match;
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.resource.AssetRegistry;
-import com.oddlabs.tt.client.screen.Screen;
 import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.client.trigger.GameOverTrigger;
 import com.oddlabs.tt.client.viewer.InGameInfo;
@@ -78,7 +77,7 @@ public final class MatchLauncher {
      * @param maxUnitCount maximum unit population limit
      * @return the initialized game network coordinator
      */
-    public static GameNetwork<GUIRoot, Screen> joinGame(
+    public static GameNetwork joinGame(
             Peer peer,
             GUIRoot guiRoot,
             ScreenManager screenManager,
@@ -92,18 +91,18 @@ public final class MatchLauncher {
         var matchmakingClient = peer.getNetwork().getMatchmakingClient();
         var chatHub = peer.getNetwork().getChatHub();
         var networkSelector = peer.getNetwork().getSelector();
-        @SuppressWarnings("unchecked") LoadCallbackFactory<GUIRoot, Screen> starterFactory = (session_id,
+        @SuppressWarnings("unchecked") LoadCallbackFactory starterFactory = (session_id,
                 generator,
                 player_slots,
                 unit_infos, player_slot) -> new WorldStarter(session_id,
                         (WorldGenerator<Landscape>) generator, worldParams, player_slots, unit_infos,
                         player_slot, inGameInfo,
                         new DefaultWorldInitAction(), peer, screenManager);
-        Client<GUIRoot, Screen> client = new Client<>(null, networkSelector, matchmakingClient, chatHub,
+        Client client = new Client(null, networkSelector, matchmakingClient, chatHub,
                 hostId,
                 starterFactory,
                 new DefaultPlayerSlotHandler());
-        GameNetwork<GUIRoot, Screen> gameNetwork = new GameNetwork<>(null, client);
+        GameNetwork gameNetwork = new GameNetwork(null, client);
         ConnectingForm connectingForm = new ConnectingForm(gameNetwork, guiRoot, owner, screenManager, peer
                 .getAudioManager());
         client.setConfigurationListener(connectingForm);
@@ -126,7 +125,7 @@ public final class MatchLauncher {
      * @param aiNames bot player display names
      * @return the initialized game network coordinator
      */
-    public static GameNetwork<GUIRoot, Screen> startNewGame(
+    public static GameNetwork startNewGame(
             Peer peer,
             GUIRoot guiRoot,
             ScreenManager screenManager,
@@ -148,25 +147,25 @@ public final class MatchLauncher {
                 address, generator, multiplayer, aiNames,
                 (team, raceVal, name) -> new PlayerInfo(team, Race.fromValue(raceVal), name),
                 new DefaultPlayerSlotHandler(), deterministicSeed);
-        @SuppressWarnings("unchecked") LoadCallbackFactory<GUIRoot, Screen> starterFactory = (session_id,
+        @SuppressWarnings("unchecked") LoadCallbackFactory starterFactory = (session_id,
                 gen,
                 player_slots, unit_infos,
                 player_slot) -> new WorldStarter(
                         session_id, (WorldGenerator<Landscape>) gen,
                         worldParams, player_slots, unit_infos, player_slot, inGameInfo, initAction, peer,
                         screenManager);
-        Client<GUIRoot, Screen> client = new Client<>(server::close, networkSelector, matchmakingClient,
+        Client client = new Client(server::close, networkSelector, matchmakingClient,
                 chatHub, -1, starterFactory, new DefaultPlayerSlotHandler());
-        GameNetwork<GUIRoot, Screen> gameNetwork = new GameNetwork<>(server, client);
+        GameNetwork gameNetwork = new GameNetwork(server, client);
         if (multiplayer) {
             ConnectingForm connectingForm = new ConnectingForm(gameNetwork, guiRoot, owner, screenManager, peer
                     .getAudioManager());
             client.setConfigurationListener(connectingForm);
             guiRoot.addModalForm(connectingForm);
         } else {
-            client.setConfigurationListener(new ConfigurationListener<>() {
+            client.setConfigurationListener(new ConfigurationListener() {
                 @Override
-                public void connected(Client<GUIRoot, Screen> client, Game game,
+                public void connected(Client client, Game game,
                         WorldGenerator<?> generator, int player_slot) {
                     assert player_slot == 0 : "player_slot must be 0";
                 }
@@ -181,7 +180,7 @@ public final class MatchLauncher {
                 }
 
                 @Override
-                public void gameStarted(LoadCallback<GUIRoot, Screen> loadCallback) {
+                public void gameStarted(LoadCallback<?, ?> loadCallback) {
                     ProgressForm.Mode mode = inGameInfo.showLoadingHints()
                             ? ProgressForm.Mode.GAME_LOAD
                             : ProgressForm.Mode.TUTORIAL;
