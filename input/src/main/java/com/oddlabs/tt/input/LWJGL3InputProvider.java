@@ -28,6 +28,7 @@ import static org.lwjgl.sdl.SDLKeyboard.SDL_StopTextInput;
 import static org.lwjgl.sdl.SDLMouse.SDL_GetDefaultCursor;
 import static org.lwjgl.sdl.SDLMouse.SDL_GetMouseState;
 import static org.lwjgl.sdl.SDLMouse.SDL_GetWindowRelativeMouseMode;
+import static org.lwjgl.sdl.SDLMouse.SDL_HideCursor;
 import static org.lwjgl.sdl.SDLMouse.SDL_SetCursor;
 import static org.lwjgl.sdl.SDLMouse.SDL_SetWindowRelativeMouseMode;
 import static org.lwjgl.sdl.SDLMouse.SDL_ShowCursor;
@@ -58,6 +59,7 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
     private int mouseButtonMask;
     private int lastPhysicalX = Integer.MIN_VALUE;
     private int lastPhysicalY = Integer.MIN_VALUE;
+    private boolean cursorVisible = false;
 
     private static class KeyEvent {
         final int key;
@@ -112,6 +114,7 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
         window.setEventListener(this);
         SDL_StartTextInput(windowHandle);
         this.keyboardState = SDL_GetKeyboardState();
+        SDL_HideCursor();
     }
 
     public void processEvent(SDL_Event event) {
@@ -204,6 +207,8 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
 
     @Override
     public void close() {
+        setNativeCursor(null);
+        SDL_ShowCursor();
         if (windowHandle != MemoryUtil.NULL) {
             SDL_StopTextInput(windowHandle);
             windowHandle = MemoryUtil.NULL;
@@ -346,18 +351,32 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
     }
 
     @Override
+    public void setCursorVisible(boolean visible) {
+        if (windowHandle == MemoryUtil.NULL) return;
+        this.cursorVisible = visible;
+        if (visible) {
+            SDL_ShowCursor();
+        } else {
+            SDL_HideCursor();
+        }
+    }
+
+    @Override
     public void setNativeCursor(@Nullable Long cursor) {
         if (windowHandle == MemoryUtil.NULL) return;
 
         if (null != cursor && cursor != MemoryUtil.NULL) {
             SDL_SetCursor(cursor);
-            SDL_ShowCursor();
         } else {
             long defaultCursor = SDL_GetDefaultCursor();
             if (defaultCursor != MemoryUtil.NULL) {
                 SDL_SetCursor(defaultCursor);
-                SDL_ShowCursor();
             }
+        }
+        if (cursorVisible) {
+            SDL_ShowCursor();
+        } else {
+            SDL_HideCursor();
         }
     }
 }

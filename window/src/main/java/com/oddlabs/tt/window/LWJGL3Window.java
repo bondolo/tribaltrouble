@@ -5,6 +5,7 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.sdl.SDLDialog;
 import org.lwjgl.sdl.SDL_DialogFileFilter;
 import org.lwjgl.sdl.SDL_DisplayMode;
@@ -40,6 +41,9 @@ import static org.lwjgl.sdl.SDLInit.SDL_INIT_VIDEO;
 import static org.lwjgl.sdl.SDLInit.SDL_Init;
 import static org.lwjgl.sdl.SDLInit.SDL_Quit;
 import static org.lwjgl.sdl.SDLKeycode.SDL_KMOD_ALT;
+import static org.lwjgl.sdl.SDLMouse.SDL_GetDefaultCursor;
+import static org.lwjgl.sdl.SDLMouse.SDL_SetCursor;
+import static org.lwjgl.sdl.SDLMouse.SDL_ShowCursor;
 import static org.lwjgl.sdl.SDLPixels.SDL_BITSPERPIXEL;
 import static org.lwjgl.sdl.SDLPixels.SDL_PIXELFORMAT_ABGR8888;
 import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F11;
@@ -457,14 +461,7 @@ public final class LWJGL3Window implements Window {
         GL.createCapabilities();
         logger.info("OpenGL Context Created: " + org.lwjgl.opengl.GL11.glGetString(org.lwjgl.opengl.GL11.GL_VERSION));
 
-        // Clear double-buffer to solid black so all window manager placement settles on a clean black screen
-        GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-        SDL_GL_SwapWindow(windowHandle);
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-        SDL_GL_SwapWindow(windowHandle);
-
-        SDL_SyncWindow(windowHandle);
+        clearWindow();
         processEvents(false, 0);
 
         updateCachedDimensions();
@@ -475,7 +472,44 @@ public final class LWJGL3Window implements Window {
         }
     }
 
+    private void clearWindow() {
+        if (windowHandle == MemoryUtil.NULL || glContext == MemoryUtil.NULL) {
+            return;
+        }
+        try {
+            if (SDL_GL_MakeCurrent(windowHandle, glContext)) {
+                GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+                GL11.glDisable(GL11.GL_SCISSOR_TEST);
+                GL11.glColorMask(true, true, true, true);
+                GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+                GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+                SDL_GL_SwapWindow(windowHandle);
+                GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+                SDL_GL_SwapWindow(windowHandle);
+                SDL_SyncWindow(windowHandle);
+            }
+        } catch (Throwable t) {
+            logger.log(Level.FINE, "Failed to clear window", t);
+        }
+    }
+
+    private void resetCursor() {
+        try {
+            long defaultCursor = SDL_GetDefaultCursor();
+            if (defaultCursor != MemoryUtil.NULL) {
+                SDL_SetCursor(defaultCursor);
+            } else {
+                SDL_SetCursor(MemoryUtil.NULL);
+            }
+            SDL_ShowCursor();
+        } catch (Throwable t) {
+            logger.log(Level.FINE, "Failed to reset cursor", t);
+        }
+    }
+
     private void destroy() {
+        clearWindow();
+        resetCursor();
         if (glContext != MemoryUtil.NULL) {
             SDL_GL_DestroyContext(glContext);
             glContext = MemoryUtil.NULL;

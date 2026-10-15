@@ -165,6 +165,7 @@ public final class GUI implements AutoCloseable {
 
     public void setRoot(GUIRoot root) {
         this.currentRoot = root;
+        root.updateCursor();
     }
 
     public GUIRenderer getRenderer() {

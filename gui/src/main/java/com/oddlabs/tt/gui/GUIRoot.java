@@ -82,7 +82,6 @@ public final class GUIRoot extends GUIObject {
         addChild(info_printer);
         info_printer.setPos(0, 0);
         pushDelegate(new NullDelegate(false));
-        gui.getLocalInput().getPointerInput().setActiveCursor(current_gui_object.getCursorType());
     }
 
     public LocalInput getLocalInput() {
@@ -153,7 +152,9 @@ public final class GUIRoot extends GUIObject {
     }
 
     public void setActiveCursor(CursorType type) {
-        gui.getLocalInput().getPointerInput().setActiveCursor(type);
+        if (gui.getGUIRoot() == this) {
+            gui.getLocalInput().getPointerInput().setActiveCursor(type);
+        }
     }
 
     public void resetInput() {
@@ -243,6 +244,7 @@ public final class GUIRoot extends GUIObject {
             addChild(obj);
         }
         mousePick();
+        updateCursor();
     }
 
     public void removeDelegate(InputDelegate delegate) {
@@ -262,6 +264,7 @@ public final class GUIRoot extends GUIObject {
             }
         }
         mousePick();
+        updateCursor();
     }
 
     public InputDelegate getDelegate() {
@@ -277,6 +280,7 @@ public final class GUIRoot extends GUIObject {
         delegate.setDim(getWidth(), getHeight());
         super.addChild(delegate);
         mousePick();
+        updateCursor();
     }
 
     private void popModalDelegate(ModalDelegate delegate) {
@@ -315,6 +319,7 @@ public final class GUIRoot extends GUIObject {
             }
         }
         mousePick();
+        updateCursor();
     }
 
     public @Nullable ModalDelegate getModalDelegate() {
@@ -557,8 +562,26 @@ public final class GUIRoot extends GUIObject {
             }
             current_gui_object = target;
             current_gui_object.mouseEnteredAll();
-            if (!current_gui_object.isDisabled())
+            updateCursor();
+        }
+    }
+
+    public boolean renderCursor() {
+        return getModalDelegate() != null || getDelegate().renderCursor();
+    }
+
+    public void updateCursor() {
+        if (gui.getGUIRoot() != this) {
+            return;
+        }
+        boolean visible = renderCursor();
+        gui.getLocalInput().getPointerInput().setCursorVisible(visible);
+        if (visible) {
+            if (!current_gui_object.isDisabled()) {
                 gui.getLocalInput().getPointerInput().setActiveCursor(current_gui_object.getCursorType());
+            } else {
+                gui.getLocalInput().getPointerInput().setActiveCursor(CursorType.NORMAL);
+            }
         }
     }
 
@@ -577,7 +600,7 @@ public final class GUIRoot extends GUIObject {
     }
 
     private boolean showToolTip() {
-        return getModalDelegate() != null || getDelegate().renderCursor();
+        return renderCursor();
     }
 
     void renderTopmost(GUIRenderer renderer, @Nullable ToolTip hovered) {

@@ -57,6 +57,8 @@ public interface InputProvider<C> extends AutoCloseable {
     // Cursor
     void setNativeCursor(@Nullable C cursor);
 
+    void setCursorVisible(boolean visible);
+
     @Override
     void close();
 }
