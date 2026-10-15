@@ -25,7 +25,6 @@ import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -307,15 +306,24 @@ public final class Player implements PlayerInterface {
 
     public Optional<Selectable<?>> findNearestEnemy(int start_x, int start_y, @Nullable Selectable<?> target,
             Class<? extends Selectable<?>> type) {
-        return world.getPlayers().stream()
-                .filter(this::isEnemy)
-                .flatMap(player -> player.getUnits().getSet().stream())
-                .filter(s -> type.isInstance(s) && s != target)
-                .min(Comparator.comparingInt(s -> {
-                    int dx = s.getGridX() - start_x;
-                    int dy = s.getGridY() - start_y;
-                    return dx * dx + dy * dy;
-                }));
+        Selectable<?> nearest = null;
+        int minDistance = Integer.MAX_VALUE;
+        for (Player player : world.getPlayers()) {
+            if (isEnemy(player)) {
+                for (Selectable<?> s : player.getUnits().getSet()) {
+                    if (type.isInstance(s) && s != target) {
+                        int dx = s.getGridX() - start_x;
+                        int dy = s.getGridY() - start_y;
+                        int dist = dx * dx + dy * dy;
+                        if (dist < minDistance) {
+                            minDistance = dist;
+                            nearest = s;
+                        }
+                    }
+                }
+            }
+        }
+        return Optional.ofNullable(nearest);
     }
 
     public Optional<Selectable<?>> findNearestEnemyBuilding(int start_x, int start_y) {
@@ -339,24 +347,22 @@ public final class Player implements PlayerInterface {
     }
 
     public Optional<Building> getArmory() {
-        Selectable<?>[][] lists = classifyUnits();
-        for (Selectable<?>[] list : lists) {
-            Selectable<?> s = list[0];
-            if (s.getPrimaryController() instanceof NullController && s.getAbilities().hasAbilities(
-                    Abilities.BUILD_ARMIES)) {
-                return Optional.of((Building) s);
+        for (Selectable<?> s : units.getSet()) {
+            if (s instanceof Building b
+                    && b.getPrimaryController() instanceof NullController
+                    && b.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+                return Optional.of(b);
             }
         }
         return Optional.empty();
     }
 
     public Optional<Building> getQuarters() {
-        Selectable<?>[][] lists = classifyUnits();
-        for (Selectable<?>[] list : lists) {
-            Selectable<?> s = list[0];
-            if (s.getPrimaryController() instanceof NullController && s.getAbilities().hasAbilities(
-                    Abilities.REPRODUCE)) {
-                return Optional.of((Building) s);
+        for (Selectable<?> s : units.getSet()) {
+            if (s instanceof Building b
+                    && b.getPrimaryController() instanceof NullController
+                    && b.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
+                return Optional.of(b);
             }
         }
         return Optional.empty();
@@ -494,7 +500,7 @@ public final class Player implements PlayerInterface {
         int grid_size = world.getUnitGrid().getGridSize();
         if (grid_x < 0 || grid_x >= grid_size || grid_y < 0 || grid_y >= grid_size)
             return;
-        Target[] targets = world.getUnitGrid().findGridTargets(grid_x, grid_y, selection.length, selection.length != 1);
+        var targets = world.getUnitGrid().findGridTargets(grid_x, grid_y, selection.length, selection.length != 1);
         for (int i = 0; i < selection.length; i++) {
             if (isValid(selection[i]))
                 selection[i].initTarget(targets[i], action, aggressive);

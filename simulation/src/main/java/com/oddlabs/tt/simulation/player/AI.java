@@ -311,20 +311,14 @@ public abstract class AI implements Animated {
 
     public static int attackLandscape(Player owner, PlayerInterface playerInterface, Target target, int num_warriors) {
         int ordered = 0;
-        Selectable<?>[][] lists = owner.classifyUnits();
-        for (Selectable<?>[] list : lists) {
-            Selectable<?> s = list[0];
-            if (s instanceof Unit unit && !(s.getPrimaryController() instanceof WalkController && ((WalkController) s
-                    .getPrimaryController()).isAgressive())) {
-                for (Selectable<?> thrower : list) {
-                    if (unit.getAbilities().hasAbilities(Abilities.THROW)) {
-                        playerInterface.setLandscapeTarget(Selectable.newArray(thrower), target.getGridX(), target
-                                .getGridY(),
-                                Action.ATTACK, true);
-                        ordered++;
-                        if (ordered == num_warriors) {
-                            return ordered;
-                        }
+        for (Selectable<?> s : owner.getUnits().getSet()) {
+            if (s instanceof Unit unit && unit.getAbilities().hasAbilities(Abilities.THROW)) {
+                if (!(unit.getPrimaryController() instanceof WalkController wc && wc.isAgressive())) {
+                    playerInterface.setLandscapeTarget(Selectable.newArray(unit), target.getGridX(), target.getGridY(),
+                            Action.ATTACK, true);
+                    ordered++;
+                    if (ordered == num_warriors) {
+                        break;
                     }
                 }
             }
@@ -333,10 +327,8 @@ public abstract class AI implements Animated {
     }
 
     public static @Nullable Unit getWarrior(Player owner) {
-        Selectable<?>[][] lists = owner.classifyUnits();
-        for (Selectable<?>[] list : lists) {
-            Selectable<?> s = list[0];
-            if (s instanceof Unit unit && s.getAbilities().hasAbilities(Abilities.THROW)) {
+        for (Selectable<?> s : owner.getUnits().getSet()) {
+            if (s instanceof Unit unit && unit.getAbilities().hasAbilities(Abilities.THROW)) {
                 return unit;
             }
         }

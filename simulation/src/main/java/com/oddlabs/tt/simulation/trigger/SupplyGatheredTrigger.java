@@ -1,10 +1,10 @@
 package com.oddlabs.tt.simulation.trigger;
 
+import com.oddlabs.tt.simulation.behaviour.NullController;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Supply;
-import com.oddlabs.tt.simulation.behaviour.NullController;
 import com.oddlabs.tt.simulation.model.SupplyContainer;
 import com.oddlabs.tt.simulation.player.Player;
 
@@ -29,17 +29,13 @@ public final class SupplyGatheredTrigger extends IntervalTrigger {
     @Override
     protected void check() {
         int count = 0;
-        Selectable<?>[][] selectables = local_player.classifyUnits();
-
-        for (Selectable<?>[] selectable : selectables) {
-            Selectable<?> s = selectable[0];
-            if (s.getPrimaryController() instanceof NullController) {
-                for (Selectable<?> building : selectable) {
-                    if (building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
-                        count += ((Building) building).getSupplyContainer(type).map(SupplyContainer::getNumSupplies)
-                                .orElse(0);
-                    }
-                }
+        for (Selectable<?> s : local_player.getUnits().getSet()) {
+            if (s instanceof Building building
+                    && building.getPrimaryController() instanceof NullController
+                    && building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+                count += building.getSupplyContainer(type)
+                        .map(SupplyContainer::getNumSupplies)
+                        .orElse(0);
             }
         }
 

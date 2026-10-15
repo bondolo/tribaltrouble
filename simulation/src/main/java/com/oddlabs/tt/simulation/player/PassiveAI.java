@@ -23,18 +23,13 @@ public final class PassiveAI extends AI {
         if (walk_around) {
             if (!shouldDoAction(dt))
                 return;
-            Selectable<?>[][] lists = getOwner().classifyUnits();
-
-            for (Selectable<?>[] list : lists) {
-                Selectable<?> s = list[0];
+            for (Selectable<?> s : getOwner().getUnits().getSet()) {
                 if (s.getPrimaryController() instanceof IdleController) {
-                    for (Selectable<?> thrower : list) {
-                        float r = getAIRandom().nextFloat();
-                        if (r < .2) {
-                            Target walkable_target = getTarget(getAIRandom());
-                            getPlayerInterface().setTarget(Selectable.newArray(thrower), walkable_target, Action.ATTACK,
-                                    true);
-                        }
+                    float r = getAIRandom().nextFloat();
+                    if (r < .2f) {
+                        Target walkable_target = getTarget(getAIRandom());
+                        getPlayerInterface().setTarget(Selectable.newArray(s), walkable_target, Action.ATTACK,
+                                true);
                     }
                 }
             }
