@@ -2,14 +2,10 @@ package com.oddlabs.tt.simulation.pathfinder;
 
 import org.jspecify.annotations.Nullable;
 
-import java.util.Optional;
-
 /**
  * Base A* heuristic search algorithm computing distance approximations and goal validation.
  */
 abstract class AStarAlgorithm implements PathFinderAlgorithm {
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private static final Optional<Node> SEARCH_EXHAUSTED = Optional.of(Node.TOMBSTONE);
 
     private final int dst_x;
     private final int dst_y;
@@ -40,23 +36,23 @@ abstract class AStarAlgorithm implements PathFinderAlgorithm {
 
     protected abstract boolean isPathComplete(int dist_squared, Node node);
 
-    private Optional<Node> defaultTouchNode() {
+    private @Nullable Node defaultTouchNode() {
         nodes_visited++;
         if (nodes_visited == RegionBuilder.MAX_EXAMINED_NODES_PER_PATH) {
             if (allow_second_best && second_best_node != null) {
                 Node result = second_best_node;
                 second_best_node = null;
-                return Optional.of(result);
+                return result;
             } else {
-                return SEARCH_EXHAUSTED;
+                return Node.TOMBSTONE;
             }
         } else {
-            return Optional.empty();
+            return null;
         }
     }
 
     @Override
-    public final Optional<Node> touchNode(Node node) {
+    public final @Nullable Node touchNode(Node node) {
         int dx = node.getGridX() - dst_x;
         int dy = node.getGridY() - dst_y;
         int dist_squared = dx * dx + dy * dy;
@@ -67,13 +63,13 @@ abstract class AStarAlgorithm implements PathFinderAlgorithm {
         }
         if (isPathComplete(dist_squared, node)) {
             assert node != null : this + " " + dist_squared + " " + dx + " " + dy;
-            return Optional.of(node);
+            return node;
         }
         return defaultTouchNode();
     }
 
     @Override
-    public final Optional<Node> getBestNode() {
-        return Optional.empty();
+    public final @Nullable Node getBestNode() {
+        return null;
     }
 }

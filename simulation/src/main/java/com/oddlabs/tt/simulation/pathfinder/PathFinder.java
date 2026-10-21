@@ -87,16 +87,17 @@ final class PathFinder {
         addToLists(current_node);
         while (!open_list.isEmpty()) {
             current_node = open_list.removeBest();
-            var result = finder.touchNode(current_node);
-            if (result.isPresent()) {
-                return result.filter(node -> node != Node.TOMBSTONE);
+            Node result = finder.touchNode(current_node);
+            if (result != null) {
+                return result == Node.TOMBSTONE ? Optional.empty() : Optional.of(result);
             }
             boolean neighbour_result = current_node.addNeighbours(finder, unit_grid);
             if (neighbour_result) {
                 return Optional.of(current_node);
             }
         }
-        return finder.getBestNode().filter(node -> node != Node.TOMBSTONE);
+        Node best = finder.getBestNode();
+        return (best == null || best == Node.TOMBSTONE) ? Optional.empty() : Optional.of(best);
     }
 
     void addToOpenList(PathFinderAlgorithm finder, Node current_node, Node parent, int cost) {

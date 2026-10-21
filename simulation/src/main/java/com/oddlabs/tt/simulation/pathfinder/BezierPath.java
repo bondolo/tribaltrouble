@@ -89,12 +89,8 @@ public final class BezierPath {
 
     public void init(float inv_length, float x1, float y1, float x2, float y2) {
         assert x1 != x2 || y1 != y2 : x1 + " " + y1;
-        float extrapolated_x = x1 + (x1 - x2);
-        float extrapolated_y = y1 + (y1 - y2);
-        points[PREVIOUS][0] = extrapolated_x;
-        points[PREVIOUS][1] = extrapolated_y;
-        points[START][0] = extrapolated_x;
-        points[START][1] = extrapolated_y;
+        points[START][0] = x1 + (x1 - x2);
+        points[START][1] = y1 + (y1 - y2);
         points[END][0] = x1;
         points[END][1] = y1;
         points[NEXT][0] = x2;

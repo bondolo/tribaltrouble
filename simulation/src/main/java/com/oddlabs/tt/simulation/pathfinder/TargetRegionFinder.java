@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Search algorithm locating valid target regions containing matching occupants.
@@ -25,14 +25,14 @@ final class TargetRegionFinder implements PathFinderAlgorithm {
     }
 
     @Override
-    public Optional<Node> touchNode(Node node) {
+    public @Nullable Node touchNode(Node node) {
         Region region = (Region) node;
         var occ = filter.getOccupantFromRegion(region, false);
-        return occ.map(o -> unit_grid.getRegion(o.getGridX(), o.getGridY()));
+        return occ.map(o -> (Node) unit_grid.getRegion(o.getGridX(), o.getGridY())).orElse(null);
     }
 
     @Override
-    public Optional<Node> getBestNode() {
-        return filter.getBest().map(o -> unit_grid.getRegion(o.getGridX(), o.getGridY()));
+    public @Nullable Node getBestNode() {
+        return filter.getBest().map(o -> (Node) unit_grid.getRegion(o.getGridX(), o.getGridY())).orElse(null);
     }
 }

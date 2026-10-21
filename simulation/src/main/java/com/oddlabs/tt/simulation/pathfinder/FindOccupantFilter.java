@@ -6,16 +6,19 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Scan filter locating occupants matching a specific type within a circular radius.
+ */
 public final class FindOccupantFilter<S extends Selectable<?>> implements ScanFilter {
 
     private final float x;
     private final float y;
     private final float radius;
     private final @Nullable Selectable<?> src;
-    private final Class<S> type;
+    private final Class<? extends S> type;
     private final List<S> result = new ArrayList<>();
 
-    public FindOccupantFilter(float x, float y, float radius, @Nullable Selectable<?> src, Class<S> type) {
+    public FindOccupantFilter(float x, float y, float radius, @Nullable Selectable<?> src, Class<? extends S> type) {
         this.x = x;
         this.y = y;
         this.radius = radius;
@@ -43,6 +46,7 @@ public final class FindOccupantFilter<S extends Selectable<?>> implements ScanFi
             float squared_dist = dx * dx + dy * dy;
             if (!result.contains(s) && squared_dist < radius * radius) {
                 result.add(s);
+                return true;
             }
         }
         return false;
