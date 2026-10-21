@@ -13,7 +13,7 @@ public final class PocketList<T> {
 
     @SuppressWarnings("unchecked")
     public PocketList(int num_pockets) {
-        pockets = IntStream.rangeClosed(0, num_pockets)
+        pockets = IntStream.range(0, num_pockets)
                 .mapToObj(_ -> new ArrayList<T>())
                 .toArray(List[]::new);
         reset();
