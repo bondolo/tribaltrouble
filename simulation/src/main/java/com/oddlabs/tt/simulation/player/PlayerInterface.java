@@ -16,10 +16,6 @@ import com.oddlabs.tt.simulation.model.MagicType;
 public interface PlayerInterface {
     void deployUnits(Building building, DeployType type, int num_units);
 
-    /*	void deployPeons(Building building, int num_units);
-        void deployRockWarriors(Building building, int num_units);
-        void deployIronWarriors(Building building, int num_units);
-        void deployRubberWarriors(Building building, int num_units);*/
     void createHarvesters(Building building, int num_tree, int num_rock, int num_iron, int num_rubber);
 
     void buildRockWeapons(Building building, int num_weapons, boolean infinite);
@@ -42,9 +38,15 @@ public interface PlayerInterface {
     void setTarget(Selectable<?>[] selection, Target target, Action action,
             boolean aggressive);
 
+    void setTarget(Selectable<?> unit, Target target, Action action,
+            boolean aggressive);
+
     void setRallyPoint(Building building, int grid_x, int grid_y);
 
     void setLandscapeTarget(Selectable<?>[] selection, int grid_x, int grid_y, Action action,
+            boolean aggressive);
+
+    void setLandscapeTarget(Selectable<?> unit, int grid_x, int grid_y, Action action,
             boolean aggressive);
 
     void setPreferredGamespeed(int speed);

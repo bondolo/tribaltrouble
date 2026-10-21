@@ -483,6 +483,13 @@ public final class Player implements PlayerInterface {
         }
     }
 
+    @Override
+    public void setTarget(Selectable<?> unit, Target target, Action action, boolean aggressive) {
+        if (isValid(unit)) {
+            unit.initTarget(target, action, aggressive);
+        }
+    }
+
     public void killSelection(Selectable<?>[] selection) {
         for (Selectable<?> selectable : selection) {
             selectable.hit(10000, 0f, 1f, this);
@@ -502,6 +509,18 @@ public final class Player implements PlayerInterface {
         for (int i = 0; i < selection.length; i++) {
             if (isValid(selection[i]))
                 selection[i].initTarget(targets[i], action, aggressive);
+        }
+    }
+
+    @Override
+    public void setLandscapeTarget(Selectable<?> unit, int grid_x, int grid_y, Action action,
+            boolean aggressive) {
+        int grid_size = world.getUnitGrid().getGridSize();
+        if (grid_x < 0 || grid_x >= grid_size || grid_y < 0 || grid_y >= grid_size)
+            return;
+        var targets = world.getUnitGrid().findGridTargets(grid_x, grid_y, 1, false);
+        if (isValid(unit)) {
+            unit.initTarget(targets[0], action, aggressive);
         }
     }
 

@@ -79,12 +79,12 @@ public final class AdvancedAI extends AI {
                     3, // maxUnitsGatheringRock
                     3, // maxUnitsGatheringIron
                     0, // maxUnitsGatheringRubber
-                    100, // unitsPerTower1
-                    130, // unitsPerTower2
+                    1000, // unitsPerTower1
+                    1000, // unitsPerTower2
                     7, // numWarriorsDefault
                     3, // numWarriorsIncrease
-                    25, // numWarriorsMax
-                    20 // numWarriorsForChieftain
+                    19, // numWarriorsMax
+                    1000 // numWarriorsForChieftain
             ),
             Difficulty.HARD, new DifficultyParams(
                     2f, // defenseFactor
@@ -100,7 +100,7 @@ public final class AdvancedAI extends AI {
                     10, // numWarriorsDefault
                     5, // numWarriorsIncrease
                     40, // numWarriorsMax
-                    15 // numWarriorsForChieftain
+                    20 // numWarriorsForChieftain
             )));
 
     private final DifficultyParams params;
@@ -270,7 +270,7 @@ public final class AdvancedAI extends AI {
             for (int i = 0; i < getTowers().size(); i++) {
                 Building tower = getTowers().get(i);
                 if (!tower.getUnitContainer().orElseThrow().isSupplyFull() && getIdleWarriors().size() > i) {
-                    getPlayerInterface().setTarget(Selectable.newArray(getIdleWarriors().get(i)), tower,
+                    getPlayerInterface().setTarget(getIdleWarriors().get(i), tower,
                             Action.DEFAULT, false);
                     nodeDeployUnitsInArmory(1);
                 }
@@ -492,26 +492,28 @@ public final class AdvancedAI extends AI {
         int rockCount = getGatherRockPeons().size();
         int treeCount = getGatherTreePeons().size();
         int rubberCount = getGatherRubberPeons().size();
-        int totalAvailable = idleCount + ironCount + rockCount + treeCount + rubberCount;
-        int count = Math.min(min_num_peons, totalAvailable);
-        if (count == 0) {
+        int neededFromGatherers = Math.max(0, min_num_peons - idleCount);
+        int gatherersAvailable = ironCount + rockCount + treeCount + rubberCount;
+        int gatherersToTake = Math.min(neededFromGatherers, gatherersAvailable);
+        int totalCount = idleCount + gatherersToTake;
+        if (totalCount == 0) {
             return Selectable.newArray(0);
         }
-        Selectable<?>[] peons = Selectable.newArray(count);
+        Selectable<?>[] peons = Selectable.newArray(totalCount);
         int idx = 0;
-        for (int i = 0; i < idleCount && idx < count; i++) {
+        for (int i = 0; i < idleCount; i++) {
             peons[idx++] = getIdlePeons().get(i);
         }
-        for (int i = 0; i < ironCount && idx < count; i++) {
+        for (int i = 0; i < ironCount && idx < totalCount; i++) {
             peons[idx++] = getGatherIronPeons().get(i);
         }
-        for (int i = 0; i < rockCount && idx < count; i++) {
+        for (int i = 0; i < rockCount && idx < totalCount; i++) {
             peons[idx++] = getGatherRockPeons().get(i);
         }
-        for (int i = 0; i < treeCount && idx < count; i++) {
+        for (int i = 0; i < treeCount && idx < totalCount; i++) {
             peons[idx++] = getGatherTreePeons().get(i);
         }
-        for (int i = 0; i < rubberCount && idx < count; i++) {
+        for (int i = 0; i < rubberCount && idx < totalCount; i++) {
             peons[idx++] = getGatherRubberPeons().get(i);
         }
         return peons;

@@ -103,12 +103,23 @@ class AIDecouplingTest {
         }
 
         @Override
+        public void setTarget(Selectable<?> unit, Target target, Action action, boolean aggressive) {
+            calls.add("setTarget:" + action);
+        }
+
+        @Override
         public void setRallyPoint(Building building, int grid_x, int grid_y) {
             calls.add("setRallyPointCoords");
         }
 
         @Override
         public void setLandscapeTarget(Selectable<?>[] selection, int grid_x, int grid_y, Action action,
+                boolean aggressive) {
+            calls.add("setLandscapeTarget:" + action);
+        }
+
+        @Override
+        public void setLandscapeTarget(Selectable<?> unit, int grid_x, int grid_y, Action action,
                 boolean aggressive) {
             calls.add("setLandscapeTarget:" + action);
         }

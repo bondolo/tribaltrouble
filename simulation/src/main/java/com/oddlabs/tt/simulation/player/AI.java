@@ -26,6 +26,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.SplittableRandom;
 import java.util.random.RandomGenerator;
 
@@ -93,7 +94,7 @@ public abstract class AI implements Animated {
                 int ty = (int) (grid_start_y + 10f * dy * inv_dist);
                 owner.buildBuilding(BuildingType.TOWER, tx, ty);
             }
-            RandomGenerator random = new SplittableRandom(42L);
+            Random random = new Random(42);
             if (unit_info.hasChieftain()) {
                 Target t = getTarget(random);
                 Unit chieftain = new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRaceInfo()
@@ -285,8 +286,12 @@ public abstract class AI implements Animated {
     }
 
     private void reset() {
-        sleep_time = aiRandom.nextFloat(MIN_SLEEP_SECONDS,
-                MIN_SLEEP_SECONDS + SLEEP_SECONDS);
+        if (owner.getWorld().getWorldParameters().legacyDeterministic()) {
+            sleep_time = owner.getWorld().getRandom().nextFloat() * SLEEP_SECONDS + MIN_SLEEP_SECONDS;
+        } else {
+            sleep_time = aiRandom.nextFloat(MIN_SLEEP_SECONDS,
+                    MIN_SLEEP_SECONDS + SLEEP_SECONDS);
+        }
     }
 
     protected final RandomGenerator getAIRandom() {
@@ -308,7 +313,7 @@ public abstract class AI implements Animated {
 
         int length = Math.min(idleWarriors.size(), towers.size());
         for (int i = 0; i < length; i++) {
-            playerInterface.setTarget(Selectable.newArray(idleWarriors.get(i)), towers.get(i), Action.DEFAULT, false);
+            playerInterface.setTarget(idleWarriors.get(i), towers.get(i), Action.DEFAULT, false);
         }
     }
 
@@ -317,7 +322,7 @@ public abstract class AI implements Animated {
         for (Selectable<?> s : owner.getUnits().getSet()) {
             if (s instanceof Unit unit && unit.getAbilities().hasAbilities(Abilities.THROW)) {
                 if (!(unit.getPrimaryController() instanceof WalkController wc && wc.isAgressive())) {
-                    playerInterface.setLandscapeTarget(Selectable.newArray(unit), target.getGridX(), target.getGridY(),
+                    playerInterface.setLandscapeTarget(unit, target.getGridX(), target.getGridY(),
                             Action.ATTACK, true);
                     ordered++;
                     if (ordered == num_warriors) {
