@@ -52,7 +52,9 @@ public final class AnimationManager {
     public void runAnimations(float dt) {
         tick++;
         flushAnimations();
-        animations.forEach(a -> a.animate(dt));
+        animations.stream()
+                .filter(a -> !deleted_animations.contains(a))
+                .forEach(a -> a.animate(dt));
     }
 
     public void debugPrintAnimations() {
