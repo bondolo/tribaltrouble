@@ -8,7 +8,7 @@ import java.nio.file.Path;
  */
 public final class AppConfig {
     public static final String GAME_NAME = "TribalTrouble";
-    public static final int REVISION = 4;
+    public static final int REVISION = 4; // compatible with legacy simulation
     public static final Path SETTINGS_FILE_NAME = Path.of("settings");
     public static final int DEFAULT_DETAIL_NORMAL = 1;
     /**
@@ -17,11 +17,11 @@ public final class AppConfig {
      * high-frequency repeating detail textures.
      */
     public static final int DEFAULT_TEXELS_PER_GRID_UNIT = 8;
-    public static final boolean SAVE_EVENT_LOG = true;
+    public static final boolean DEVELOPER_MODE = Boolean.getBoolean("com.oddlabs.tt.developer");
+    public static final boolean SAVE_EVENT_LOG = DEVELOPER_MODE;
     public static final boolean HIDE_MULTIPLAYER = true;
     public static final int FRAME_GRAB_MILLISECONDS_PER_FRAME = 40;
 
-    public static final boolean DEVELOPER_MODE = Boolean.getBoolean("com.oddlabs.tt.developer");
 
     private AppConfig() {
         // no instances
