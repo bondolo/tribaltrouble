@@ -8,7 +8,6 @@ import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.RegionBuilder;
 
-import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -58,15 +57,32 @@ final class SupplyFinder<S extends Supply> implements FinderFilter<S> {
     }
 
     private Optional<S> findClosest(Set<S> supplies) {
-        return supplies.stream().min(Comparator.comparingInt(this::distanceSquared));
+        S closest = null;
+        int minDistance = Integer.MAX_VALUE;
+        for (S supply : supplies) {
+            int dist = distanceSquared(supply);
+            if (dist < minDistance) {
+                minDistance = dist;
+                closest = supply;
+            }
+        }
+        return Optional.ofNullable(closest);
     }
 
     private Optional<S> findClosest() {
-        Optional<S> closest = regions.stream()
-                .flatMap(Set::stream)
-                .min(Comparator.comparingInt(this::distanceSquared));
+        S closest = null;
+        int minDistance = Integer.MAX_VALUE;
+        for (Set<S> set : regions) {
+            for (S supply : set) {
+                int dist = distanceSquared(supply);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    closest = supply;
+                }
+            }
+        }
         regions.clear();
-        return closest;
+        return Optional.ofNullable(closest);
     }
 
     private int distanceSquared(S supply) {

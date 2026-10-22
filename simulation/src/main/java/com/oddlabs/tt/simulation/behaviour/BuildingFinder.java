@@ -22,9 +22,12 @@ final class BuildingFinder implements FinderFilter<Building> {
 
     @Override
     public Optional<Building> getOccupantFromRegion(Region region, boolean one_region) {
-        return region.getObjects(Building.class).stream()
-                .filter(this::accept)
-                .findFirst();
+        for (Building building : region.getObjects(Building.class)) {
+            if (accept(building)) {
+                return Optional.of(building);
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
