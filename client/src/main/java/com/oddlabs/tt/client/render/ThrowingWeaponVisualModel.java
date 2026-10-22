@@ -21,7 +21,9 @@ public final class ThrowingWeaponVisualModel extends AbstractVisualModel impleme
     private static final float GRAVITY_MAGNITUDE = 3.0f * 9.82f;
     private static final float SPEAR_LOFT_FACTOR = 1.05f;
     private static final float AXE_LOFT_FACTOR = 1.01f;
-    private static final float INITIAL_AXE_ROTATION = (float) Math.toRadians(345.0);
+    private static final float INITIAL_AXE_ROTATION = (float) Math.toRadians(29.2);
+    private static final float AXE_GRIP_OFFSET_X = 0.40f;
+    private static final float AXE_GRIP_OFFSET_Z = 0.70f;
     private static final float SPEAR_ROLL = (float) Math.PI;
 
     private final ThrowingWeapon weapon;
@@ -56,7 +58,7 @@ public final class ThrowingWeaponVisualModel extends AbstractVisualModel impleme
     private float computeVisualZ() {
         float t = weapon.getTime();
         float totalTime = weapon.getTimeLimit();
-        if (totalTime > 0f && t < totalTime) {
+        if (totalTime > 0f && t < totalTime && effectiveGravity > 0f) {
             return weapon.getPositionZ() + 0.5f * effectiveGravity * t * (totalTime - t);
         }
         return weapon.getPositionZ();
@@ -76,7 +78,7 @@ public final class ThrowingWeaponVisualModel extends AbstractVisualModel impleme
         float pitchRad;
 
         float baselineVz = totalTime > 0f ? (weapon.getDestZ() - weapon.getStartZ()) / totalTime : 0f;
-        if (totalTime > 0f && t < totalTime) {
+        if (totalTime > 0f && t < totalTime && effectiveGravity > 0f) {
             visualZ = weapon.getPositionZ() + 0.5f * effectiveGravity * t * (totalTime - t);
             float loftVz = 0.5f * effectiveGravity * (totalTime - 2f * t);
             pitchRad = (float) Math.atan2(baselineVz + loftVz, weapon.getMetersPerSecond());
@@ -93,7 +95,8 @@ public final class ThrowingWeaponVisualModel extends AbstractVisualModel impleme
             dest.rotate(-pitchRad, 0f, 1f, 0f)
                     .rotate(SPEAR_ROLL, 1f, 0f, 0f);
         } else {
-            dest.rotate(INITIAL_AXE_ROTATION + angleVelocity * t, 0f, 1f, 0f);
+            dest.rotate(INITIAL_AXE_ROTATION + angleVelocity * t, 0f, 1f, 0f)
+                    .translate(AXE_GRIP_OFFSET_X, 0f, AXE_GRIP_OFFSET_Z);
         }
     }
 

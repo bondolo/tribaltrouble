@@ -184,13 +184,13 @@ public final class RaceData {
         RaceGeometry.UnitBounds chieftainGeom = RaceGeometry.VIKING_CHIEFTAIN;
 
         WeaponFactory vikingWarriorRockWeapon = new ThrowingFactory<>(
-                RockAxeWeapon.class, RockAxeWeapon::new, 0.5f, THROW_RANGE, 27f / 58f
+                RockAxeWeapon.class, RockAxeWeapon::new, 0.5f, THROW_RANGE, 29f / 58f
         );
         WeaponFactory vikingWarriorIronWeapon = new ThrowingFactory<>(
-                IronAxeWeapon.class, IronAxeWeapon::new, 0.75f, THROW_RANGE, 27f / 58f
+                IronAxeWeapon.class, IronAxeWeapon::new, 0.75f, THROW_RANGE, 29f / 58f
         );
         WeaponFactory vikingWarriorRubberWeapon = new ThrowingFactory<>(
-                RubberAxeWeapon.class, RubberAxeWeapon::new, 0.95f, THROW_RANGE, 27f / 58f
+                RubberAxeWeapon.class, RubberAxeWeapon::new, 0.95f, THROW_RANGE, 29f / 58f
         );
 
         UnitTemplate vikingWarriorRock = new UnitTemplate(

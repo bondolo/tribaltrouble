@@ -16,19 +16,28 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Socket-attached weapon accessory for units holding throwing weapons.
  */
 final class WeaponAccessory implements StaticAccessory {
-    private static final String SOCKET_NAME = "Prop1";
+    private static final String SOCKET_PROP1 = "Prop1";
+    private static final String SOCKET_HAND = "R Hand";
 
     private static final Matrix4fc VIKING_AXE_LOCAL = new Matrix4f().set(
             -0.000430f, -0.969786f, 0.000022f, 0.000000f,
             0.897271f, 0.025162f, 0.000004f, 0.000000f,
             -0.003478f, 0.067121f, 0.999997f, 0.000000f,
             0.029143f, -0.393509f, 0.923507f, 1.000000f
+    );
+
+    private static final Matrix4fc VIKING_AXE_HAND_LOCAL = new Matrix4f().set(
+            0.965589f, 0.089989f, -0.005100f, 0.000000f,
+            -0.106651f, 0.877709f, 0.154857f, 0.000000f,
+            -0.045330f, -0.180879f, 0.984754f, 0.000000f,
+            0.598164f, -0.031971f, 0.672150f, 1.000000f
     );
 
     private static final Matrix4fc NATIVE_SPEAR_LOCAL = new Matrix4f().set(
@@ -44,21 +53,29 @@ final class WeaponAccessory implements StaticAccessory {
     private static final float NATIVE_SPEAR_BASE_PITCH = (float) Math.toRadians(6.7f);
     private static final float NATIVE_SPEAR_PRE_RELEASE_START = 0.41f;
     private static final float DEFAULT_SPEAR_LAUNCH_PITCH = (float) Math.toRadians(22.0f);
+    private static final float SPEAR_SPAWN_OFFSET_X = 1.25f;
+    private static final float SPEAR_SPAWN_OFFSET_Y = -0.35f;
+    private static final float SPEAR_SPAWN_OFFSET_Z = 1.90f;
+    private static final float SPEAR_EFFECTIVE_GRAVITY = 3.0f * 9.82f * 1.05f * 1.05f;
 
-    private final Unit unit;
-    private final UnitVisualModel visualModel;
-    private final boolean isNativeWarrior;
+    private final @NonNull Unit unit;
+    private final @NonNull UnitVisualModel visualModel;
+    private final boolean isViking;
     private final Matrix4f socketTransform = new Matrix4f();
-    private final Matrix4fc localTransform;
     private final Matrix4f adjustedTransform = new Matrix4f();
-    private int socketBoneIndex = -1;
+    private final @NonNull Matrix4fc localTransform;
+    private final @Nullable Matrix4fc handLocalTransform;
 
-    WeaponAccessory(Unit unit, UnitVisualModel visualModel) {
+    private int socketBoneIndex = -1;
+    private int handBoneIndex = -1;
+
+    WeaponAccessory(@NonNull Unit unit, @NonNull UnitVisualModel visualModel) {
         this.unit = unit;
         this.visualModel = visualModel;
         Race race = unit.getOwner().getPlayerInfo().race();
-        this.isNativeWarrior = (race == Race.NATIVES);
-        this.localTransform = (race == Race.VIKINGS) ? VIKING_AXE_LOCAL : NATIVE_SPEAR_LOCAL;
+        this.isViking = (race == Race.VIKINGS);
+        this.localTransform = isViking ? VIKING_AXE_LOCAL : NATIVE_SPEAR_LOCAL;
+        this.handLocalTransform = isViking ? VIKING_AXE_HAND_LOCAL : null;
     }
 
     private @Nullable SupplyType getWeaponMaterial() {
@@ -81,7 +98,7 @@ final class WeaponAccessory implements StaticAccessory {
     }
 
     @Override
-    public boolean isVisible(Model parent, CameraState camera) {
+    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
         if (unit.isDead()) {
             return false;
         }
@@ -110,37 +127,57 @@ final class WeaponAccessory implements StaticAccessory {
     private float computeSpearTargetPitch() {
         if (unit.getCurrentBehaviour() instanceof AttackBehaviour attackBehaviour) {
             Selectable<?> target = attackBehaviour.getTarget();
-            float dx = target.getPositionX() - unit.getPositionX();
-            float dy = target.getPositionY() - unit.getPositionY();
+            float startX = unit.getPositionX() + SPEAR_SPAWN_OFFSET_X * unit.getDirectionX()
+                    - SPEAR_SPAWN_OFFSET_Y * unit.getDirectionY();
+            float startY = unit.getPositionY() + SPEAR_SPAWN_OFFSET_X * unit.getDirectionY()
+                    + SPEAR_SPAWN_OFFSET_Y * unit.getDirectionX();
+            float dx = target.getPositionX() - startX;
+            float dy = target.getPositionY() - startY;
             float len = (float) Math.hypot(dx, dy);
             float mps = getSpearMetersPerSecond();
             float totalTime = mps > 0f ? len / mps : 0f;
-            float effectiveGravity = 3.0f * 9.82f * 1.05f * 1.05f;
-            float baselineVz = totalTime > 0f ? (target.getPositionZ() + target.getHitOffsetZ() - (unit.getPositionZ()
-                    + 1.78f)) / totalTime : 0f;
-            float loftVz = 0.5f * effectiveGravity * totalTime;
+            float destZ = target.getPositionZ() + target.getHitOffsetZ();
+            float startZ = unit.getPositionZ() + SPEAR_SPAWN_OFFSET_Z;
+            float baselineVz = totalTime > 0f ? (destZ - startZ) / totalTime : 0f;
+            float loftVz = 0.5f * SPEAR_EFFECTIVE_GRAVITY * totalTime;
             return (float) Math.atan2(baselineVz + loftVz, mps);
         }
         return DEFAULT_SPEAR_LAUNCH_PITCH;
     }
 
     @Override
-    public void getRelativeTransform(Matrix4f dest, ModelState<?> parentState) {
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull ModelState<?> parentState) {
         SpriteList spriteList = parentState.getSpriteList();
         if (spriteList == null) {
             return;
         }
+
+        boolean isThrowing = parentState.getAnimation() == Unit.Animation.THROWING.ordinal();
+        if (isViking && isThrowing && handLocalTransform != null) {
+            if (handBoneIndex < 0) {
+                handBoneIndex = spriteList.getSocketIndex(SOCKET_HAND);
+            }
+            if (handBoneIndex >= 0) {
+                Matrix4fc[] bones = visualModel.getEvaluatedBones(spriteList, parentState.getAnimation(),
+                        parentState.getAnimationTicks());
+                if (bones != null && spriteList.getSocketTransform(handBoneIndex, bones, socketTransform)) {
+                    dest.mul(socketTransform).mul(handLocalTransform);
+                    return;
+                }
+            }
+        }
+
         if (socketBoneIndex < 0) {
-            socketBoneIndex = spriteList.getSocketIndex(SOCKET_NAME);
+            socketBoneIndex = spriteList.getSocketIndex(SOCKET_PROP1);
         }
         if (socketBoneIndex >= 0) {
             Matrix4fc[] bones = visualModel.getEvaluatedBones(spriteList, parentState.getAnimation(),
                     parentState.getAnimationTicks());
             if (bones != null && spriteList.getSocketTransform(socketBoneIndex, bones, socketTransform)) {
-                if (isNativeWarrior && parentState.getAnimation() == Unit.Animation.THROWING.ordinal()) {
+                if (!isViking && isThrowing) {
                     float ticks = parentState.getAnimationTicks();
                     float releaseRatio = unit.getWeaponFactory().getReleaseRatio();
-                    if (ticks >= NATIVE_SPEAR_PRE_RELEASE_START) {
+                    if (ticks >= NATIVE_SPEAR_PRE_RELEASE_START && releaseRatio > NATIVE_SPEAR_PRE_RELEASE_START) {
                         float progress = Math.clamp((ticks - NATIVE_SPEAR_PRE_RELEASE_START) / (releaseRatio
                                 - NATIVE_SPEAR_PRE_RELEASE_START), 0f, 1f);
                         float targetPitch = computeSpearTargetPitch();
@@ -158,5 +195,4 @@ final class WeaponAccessory implements StaticAccessory {
             }
         }
     }
-
 }

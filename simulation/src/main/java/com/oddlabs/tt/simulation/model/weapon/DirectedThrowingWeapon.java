@@ -10,7 +10,7 @@ public abstract sealed class DirectedThrowingWeapon extends ThrowingWeapon permi
         RubberSpearWeapon {
     private static final float OFFSET_X = 1.25f;
     private static final float OFFSET_Y = -0.35f;
-    private static final float OFFSET_Z = 1.78f;
+    private static final float OFFSET_Z = 1.90f;
 
     public DirectedThrowingWeapon(boolean hit, Unit src, Selectable<?> target) {
         super(hit, src, target, OFFSET_X, OFFSET_Y, OFFSET_Z);
