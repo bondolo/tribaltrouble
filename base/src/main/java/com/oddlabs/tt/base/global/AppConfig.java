@@ -19,6 +19,10 @@ public final class AppConfig {
     public static final int DEFAULT_TEXELS_PER_GRID_UNIT = 8;
     public static final boolean DEVELOPER_MODE = Boolean.getBoolean("com.oddlabs.tt.developer");
     public static final boolean SAVE_EVENT_LOG = DEVELOPER_MODE;
+    /**
+     * true if simulation operates in legacy deterministic validation mode.
+     */
+    public static final boolean LEGACY_DETERMINISTIC = Boolean.getBoolean("com.oddlabs.tt.legacy.deterministic");
     public static final boolean HIDE_MULTIPLAYER = true;
     public static final int FRAME_GRAB_MILLISECONDS_PER_FRAME = 40;
 

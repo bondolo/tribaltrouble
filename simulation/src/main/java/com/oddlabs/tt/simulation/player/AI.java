@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.player;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.BuildingType;
 
 import com.oddlabs.tt.simulation.model.UnitType;
@@ -286,7 +287,7 @@ public abstract class AI implements Animated {
     }
 
     private void reset() {
-        if (owner.getWorld().getWorldParameters().legacyDeterministic()) {
+        if (AppConfig.LEGACY_DETERMINISTIC) {
             sleep_time = owner.getWorld().getRandom().nextFloat() * SLEEP_SECONDS + MIN_SLEEP_SECONDS;
         } else {
             sleep_time = aiRandom.nextFloat(MIN_SLEEP_SECONDS,

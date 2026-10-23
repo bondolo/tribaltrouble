@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.player;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.behaviour.IdleController;
@@ -25,7 +26,7 @@ public final class PassiveAI extends AI {
                 return;
             for (Selectable<?> s : getOwner().getUnits().getSet()) {
                 if (s.getPrimaryController() instanceof IdleController) {
-                    var random = getOwner().getWorld().getWorldParameters().legacyDeterministic()
+                    var random = AppConfig.LEGACY_DETERMINISTIC
                             ? getOwner().getWorld().getRandom()
                             : getAIRandom();
                     float r = random.nextFloat();
