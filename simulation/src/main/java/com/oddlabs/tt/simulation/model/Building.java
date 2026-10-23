@@ -344,7 +344,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     private void setHitPoints(int new_hit_points) {
-        hit_points = Math.clamp(new_hit_points, 0, Math.min(build_points, getTemplate().getMaxHitPoints()));
+        hit_points = Math.clamp(new_hit_points, 0, getTemplate().getMaxHitPoints());
     }
 
     public void repair(int amount) {
@@ -353,6 +353,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         if (!isDamaged())
             return;
 
+        setHitPoints(hit_points + amount);
         if (!isBuilt()) {
             var max_hitpoints = getTemplate().getMaxHitPoints();
             build_points = Math.min(build_points + amount, max_hitpoints);
@@ -361,8 +362,6 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 buildingCompleted();
             }
         }
-
-        adjustHitPoints(amount);
     }
 
     public static boolean isPlacingLegal(UnitGrid unit_grid, BuildingTemplate template, int grid_x,
