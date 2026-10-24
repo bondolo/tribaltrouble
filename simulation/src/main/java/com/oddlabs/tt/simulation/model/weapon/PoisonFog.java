@@ -1,6 +1,8 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.base.geom.BoundingBox;
+import com.oddlabs.tt.base.global.AppConfig;
+import com.oddlabs.tt.simulation.model.LegacyOneShotEmitter;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
@@ -13,6 +15,9 @@ import org.jspecify.annotations.Nullable;
  * Periodically applies damage to units within its radius.
  */
 public final class PoisonFog extends Model implements Magic {
+    private static final float SECONDS_BETWEEN_BURSTS = .1f;
+    private static final int PARTICLES_PER_BURST = 10;
+    private static final int MIN_BURSTS_PER_SOUND = 5;
 
     private final float hit_radius;
     private final float hit_chance;
@@ -27,6 +32,8 @@ public final class PoisonFog extends Model implements Magic {
 
     private float time = 0f;
     private int num_hits = 0;
+    private int bursts = 0;
+    private int next_sound = MIN_BURSTS_PER_SOUND;
 
     public PoisonFog(float offset_x, float offset_y, float offset_z, float hit_radius, float hit_chance, float interval,
             float time, int damage, Unit src) {
@@ -81,6 +88,23 @@ public final class PoisonFog extends Model implements Magic {
         if (time >= total_time) {
             remove();
             return;
+        }
+
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            if (bursts * SECONDS_BETWEEN_BURSTS < time) {
+                var random = owner.getWorld().getRandom();
+                random.nextGaussian();
+                random.nextFloat();
+                random.nextFloat();
+                var emitter = new LegacyOneShotEmitter(owner.getWorld(),
+                        owner.getWorld().getAnimationManagerGameTime(),
+                        PARTICLES_PER_BURST, (float) PARTICLES_PER_BURST, 0f, 0f, 1);
+                owner.getWorld().getAnimationManagerGameTime().registerAnimation(emitter);
+                if (bursts % next_sound == 0) {
+                    next_sound = MIN_BURSTS_PER_SOUND + random.nextInt(5);
+                }
+                bursts++;
+            }
         }
 
         if ((num_hits + 1) * interval < time) {

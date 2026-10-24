@@ -1,6 +1,7 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.base.geom.BoundingBox;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.PlantLocation;
 import com.oddlabs.tt.simulation.landscape.SupplyPlacement;
@@ -10,6 +11,7 @@ import com.oddlabs.util.LinkedList;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Abstract base class for spatial partition tree nodes in the world entity grid.
@@ -94,6 +96,9 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
             int grid_y = placement.y();
             float x = UnitGrid.coordinateFromGrid(grid_x) + world.getRandom().nextFloat(-.5f, .5f);
             float y = UnitGrid.coordinateFromGrid(grid_y) + world.getRandom().nextFloat(-.5f, .5f);
+            if (AppConfig.LEGACY_DETERMINISTIC) {
+                world.getRandom().nextFloat();
+            }
             new RockSupply(world, grid_x, grid_y, x, y, true);
         });
     }
@@ -105,6 +110,9 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
             int grid_y = placement.y();
             float x = UnitGrid.coordinateFromGrid(grid_x) + world.getRandom().nextFloat(-.5f, .5f);
             float y = UnitGrid.coordinateFromGrid(grid_y) + world.getRandom().nextFloat(-.5f, .5f);
+            if (AppConfig.LEGACY_DETERMINISTIC) {
+                world.getRandom().nextFloat();
+            }
             new IronSupply(world, grid_x, grid_y, x, y, true);
         });
     }
@@ -115,8 +123,12 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
         for (int t = 0; t < plants.length; t++) {
             num_plants += plants[t].size();
             for (PlantLocation placement : plants[t]) {
-                float dir_x = java.util.concurrent.ThreadLocalRandom.current().nextFloat();
-                float dir_y = java.util.concurrent.ThreadLocalRandom.current().nextFloat();
+                float dir_x = AppConfig.LEGACY_DETERMINISTIC
+                        ? world.getRandom().nextFloat()
+                        : ThreadLocalRandom.current().nextFloat();
+                float dir_y = AppConfig.LEGACY_DETERMINISTIC
+                        ? world.getRandom().nextFloat()
+                        : ThreadLocalRandom.current().nextFloat();
                 float len_sqr = dir_x * dir_x + dir_y * dir_y;
                 if (len_sqr < .001) {
                     dir_x = 1f;
@@ -128,6 +140,20 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
                 }
                 new Plants(world, placement.x(), placement.y(), dir_x, dir_y,
                         terrain, t);
+            }
+            if (AppConfig.LEGACY_DETERMINISTIC) {
+                int sizeMultiplier = switch (world.getHeightMap().getMetersPerWorld()) {
+                    case 256 -> 1;
+                    case 512 -> 4;
+                    case 1024 -> 16;
+                    default -> 1;
+                };
+                int maxPlantsPerType = sizeMultiplier * 64;
+                int dummySlots = maxPlantsPerType - plants[t].size();
+                for (int i = 0; i < dummySlots; i++) {
+                    world.getRandom().nextFloat();
+                    world.getRandom().nextFloat();
+                }
             }
         }
         IO.println("num_plants = " + num_plants);

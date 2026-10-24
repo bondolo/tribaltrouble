@@ -397,6 +397,15 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     }
 
     public void stun(float time) {
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            var rand = getWorld().getRandom();
+            for (int i = 0; i < 5; i++) {
+                rand.nextFloat();
+                rand.nextFloat();
+                rand.nextFloat();
+                rand.nextInt(4);
+            }
+        }
         pushController(new StunController(this, time));
         forceDecide();
     }

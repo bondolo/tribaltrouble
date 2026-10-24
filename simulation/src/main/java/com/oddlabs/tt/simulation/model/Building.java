@@ -1,8 +1,10 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.base.geom.BoundingBox;
+import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.behaviour.AttackController;
 import com.oddlabs.tt.simulation.behaviour.GatherController;
 import com.oddlabs.tt.simulation.behaviour.NullController;
@@ -25,6 +27,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 
 /**
  * Represents a static building structure in the game world.
@@ -84,6 +87,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         BUILT
     }
 
+    private final @Nullable LegacyDamagedSmokeEmitter damaged_emitter;
+
     public Building(Player owner, BuildingTemplate template, int grid_x, int grid_y) {
         super(owner, template);
         setGridPosition(grid_x, grid_y);
@@ -91,6 +96,12 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         float y = UnitGrid.coordinateFromGrid(grid_y);
         setPosition(x, y);
         pushController(new NullController(this));
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            damaged_emitter = new LegacyDamagedSmokeEmitter(owner.getWorld());
+            owner.getWorld().getAnimationManagerRealTime().registerAnimation(damaged_emitter);
+        } else {
+            damaged_emitter = null;
+        }
     }
 
     public boolean hasRallyPoint() {
@@ -135,6 +146,12 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             remove_delay -= t;
             if (remove_delay <= 0) {
                 remove();
+                if (AppConfig.LEGACY_DETERMINISTIC) {
+                    int numFragments = getTemplate().getNumFragments();
+                    getWorld().getAnimationManagerRealTime().registerAnimation(
+                            new LegacyOneShotEmitter(getWorld(), getWorld().getAnimationManagerRealTime(),
+                                    numFragments, (float) numFragments, 0.05f, (float) Math.PI, 4));
+                }
             }
         }
     }
@@ -142,6 +159,12 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     @Override
     public void remove() {
         super.remove();
+        if (weapons_producer != null) {
+            weapons_producer.remove();
+        }
+        if (damaged_emitter != null) {
+            getOwner().getWorld().getAnimationManagerRealTime().removeAnimation(damaged_emitter);
+        }
         getWorld().getNotificationListener().onModelRemoved(this);
     }
 
@@ -345,7 +368,15 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     private void setHitPoints(int new_hit_points) {
+        final int START_SMOKE = getTemplate().getMaxHitPoints() / 2;
         hit_points = Math.clamp(new_hit_points, 0, getTemplate().getMaxHitPoints());
+        if (damaged_emitter != null) {
+            if (build_points == getTemplate().getMaxHitPoints() && hit_points < START_SMOKE) {
+                damaged_emitter.start();
+            } else {
+                damaged_emitter.stop();
+            }
+        }
     }
 
     public void repair(int amount) {
@@ -575,6 +606,11 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         undoLandscape();
         int result = getOwner().getBuildingCountContainer().increaseSupply(-1);
         assert result == -1;
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            getWorld().getAnimationManagerRealTime().registerAnimation(
+                    new LegacyOneShotEmitter(getWorld(), getWorld().getAnimationManagerRealTime(),
+                            30, 400f, 1f, 1f, 1));
+        }
         super.removeDying();
     }
 
@@ -740,6 +776,62 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                     .orElse(0));
             IO.println("Rubber Weapons = " + getSupplyContainer(RubberAxeWeapon.class).map(
                     SupplyContainer::getNumSupplies).orElse(0));
+        }
+    }
+
+    private static final class LegacyDamagedSmokeEmitter implements Animated {
+        private final World world;
+        private float particleCounter = 0f;
+        private boolean started = false;
+        private float xAngle = 0f;
+        private float yAngle = 0f;
+
+        LegacyDamagedSmokeEmitter(World world) {
+            this.world = world;
+        }
+
+        void start() {
+            started = true;
+        }
+
+        void stop() {
+            started = false;
+        }
+
+        @Override
+        public void animate(float t) {
+            if (started) {
+                particleCounter += 4f * t;
+            }
+            while (particleCounter >= 1f && started) {
+                initParticle();
+                particleCounter -= 1f;
+            }
+        }
+
+        private void initParticle() {
+            randomizeVelocity();
+            world.getRandom().nextInt(1);
+        }
+
+        private void randomizeVelocity() {
+            Random random = world.getRandom();
+            float angleMaxJump = 0.7f;
+            float angleBound = 0.5f;
+            float dxAngle = random.nextFloat() * angleMaxJump - .5f * angleMaxJump;
+            float dyAngle = random.nextFloat() * angleMaxJump - .5f * angleMaxJump;
+
+            if ((xAngle + dxAngle < -angleBound) || (xAngle + dxAngle > angleBound)) {
+                xAngle -= dxAngle;
+            } else {
+                xAngle += dxAngle;
+            }
+
+            if ((yAngle + dyAngle < -angleBound) || (yAngle + dyAngle > angleBound)) {
+                yAngle -= dyAngle;
+            } else {
+                yAngle += dyAngle;
+            }
         }
     }
 }
