@@ -23,6 +23,7 @@ tasks.test {
     useJUnitPlatform {
         excludeTags("integration")
     }
+    systemProperties(System.getProperties().mapKeys { it.key.toString() })
 }
 
 tasks.register<Test>("integrationTest") {
@@ -33,4 +34,8 @@ tasks.register<Test>("integrationTest") {
     useJUnitPlatform {
         includeTags("integration")
     }
+    systemProperty("com.oddlabs.tt.legacy.deterministic", System.getProperty("com.oddlabs.tt.legacy.deterministic", "true"))
+    systemProperty("junit.jupiter.execution.parallel.enabled", System.getProperty("junit.jupiter.execution.parallel.enabled", "true"))
+    systemProperty("junit.jupiter.execution.parallel.mode.default", System.getProperty("junit.jupiter.execution.parallel.mode.default", "concurrent"))
+    systemProperties(System.getProperties().mapKeys { it.key.toString() })
 }

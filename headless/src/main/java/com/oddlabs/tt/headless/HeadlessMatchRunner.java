@@ -33,7 +33,8 @@ public final class HeadlessMatchRunner {
      * @throws InterruptedException if interrupted while executing
      * @throws IOException if network harness initialization fails
      */
-    public HeadlessMatchResult run(HeadlessMatchConfig config) throws TimeoutException, InterruptedException, IOException {
+    public HeadlessMatchResult run(HeadlessMatchConfig config) throws TimeoutException, InterruptedException,
+            IOException {
         int numPlayers = config.players().size();
         List<PlayerSlot> playerSlots = new ArrayList<>(numPlayers);
         List<UnitInfo> unitInfos = new ArrayList<>(numPlayers);
