@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.behaviour;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
@@ -37,6 +38,9 @@ final class RepairBehaviour implements Behaviour {
         anim_time += dt;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
+            if (AppConfig.LEGACY_DETERMINISTIC) {
+                unit.getWorld().getRandom().nextInt(6);
+            }
             unit.getWorld().getNotificationListener().onRepair(unit);
         }
 

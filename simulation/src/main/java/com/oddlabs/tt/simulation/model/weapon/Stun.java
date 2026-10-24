@@ -1,6 +1,7 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.base.geom.BoundingBox;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Model;
@@ -53,6 +54,10 @@ public final class Stun extends Model implements Magic {
         unit_grid.scan(filter, UnitGrid.toGridCoordinate(src.getPositionX()), UnitGrid.toGridCoordinate(src
                 .getPositionY()));
         target_list = filter.getResult();
+
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            owner.getWorld().getRandom().nextInt(3);
+        }
     }
 
     @Override

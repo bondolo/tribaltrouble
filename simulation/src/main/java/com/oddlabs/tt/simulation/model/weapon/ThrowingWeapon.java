@@ -2,6 +2,7 @@ package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.geom.BoundingBox;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.SupplyType;
@@ -46,6 +47,10 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         register();
 
         getWorld().getAnimationManagerGameTime().registerAnimation(this);
+
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            getWorld().getRandom().nextFloat();
+        }
 
         // stats
         src.getOwner().weaponThrown();
@@ -149,6 +154,10 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
 
     protected final void damageTarget(Selectable<?> target) {
         if (target instanceof Unit unitTarget) {
+            if (AppConfig.LEGACY_DETERMINISTIC) {
+                getSrc().getWorld().getRandom().nextInt(5);
+                getSrc().getWorld().getRandom().nextFloat();
+            }
             getSrc().getWorld().getNotificationListener().onUnitAttack(unitTarget.getTemplate().getUnitType(),
                     unitTarget.getOwner().getRaceInfo().getRaceType(), target.getPositionX(), target.getPositionY(),
                     target.getPositionZ());

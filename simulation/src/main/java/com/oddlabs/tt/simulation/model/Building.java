@@ -1,6 +1,7 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.base.geom.BoundingBox;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.behaviour.AttackController;
 import com.oddlabs.tt.simulation.behaviour.GatherController;
@@ -673,6 +674,9 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     public void hit(int damage, float dir_x, float dir_y, Player owner) {
         super.hit(damage, dir_x, dir_y, owner);
         if (!isDead()) {
+            if (AppConfig.LEGACY_DETERMINISTIC) {
+                getWorld().getRandom().nextInt(4);
+            }
             adjustHitPoints(-damage);
             getWorld().getNotificationListener().onBuildingHit(getPositionX(), getPositionY(), getPositionZ());
             if (hit_points <= 0) {

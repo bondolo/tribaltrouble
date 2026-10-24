@@ -2,6 +2,7 @@ package com.oddlabs.tt.simulation.model;
 
 
 import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.Movable;
 import com.oddlabs.tt.simulation.pathfinder.PathTracker;
@@ -118,6 +119,9 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             if (random < .75) {
                 setNewAnimation(Animation.IDLING);
                 if (random < .05) {
+                    if (AppConfig.LEGACY_DETERMINISTIC) {
+                        getWorld().getRandom().nextInt(4);
+                    }
                     getWorld().getNotificationListener().onChickenCluck(this);
                 }
             } else if (random < .85) {

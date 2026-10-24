@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.behaviour;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.Supply;
 import com.oddlabs.tt.simulation.model.Unit;
 
@@ -31,6 +32,13 @@ final class HarvestBehaviour implements Behaviour {
         anim_time += dt;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
+            if (AppConfig.LEGACY_DETERMINISTIC) {
+                int soundCount = switch (supply.getSupplyType()) {
+                    case WOOD -> 6;
+                    case ROCK, IRON, RUBBER -> 5;
+                };
+                unit.getWorld().getRandom().nextInt(soundCount);
+            }
             unit.getWorld().getNotificationListener().onHarvest(unit, supply.getSupplyType());
 
             if (supply.hit()) {

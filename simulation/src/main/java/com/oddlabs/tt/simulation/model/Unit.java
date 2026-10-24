@@ -2,6 +2,7 @@ package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.base.geom.BoundingBox;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.behaviour.DefendController;
 import com.oddlabs.tt.simulation.behaviour.DieBehaviour;
@@ -386,6 +387,9 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
                 pushController(new DieController(this));
                 forceDecide();
+                if (AppConfig.LEGACY_DETERMINISTIC) {
+                    getWorld().getRandom().nextFloat();
+                }
                 setDirection(-direction_x, -direction_y);
                 removeDying();
             }

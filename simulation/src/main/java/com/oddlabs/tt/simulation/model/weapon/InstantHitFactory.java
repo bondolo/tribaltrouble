@@ -1,9 +1,11 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.UnitType;
 
 import java.util.Optional;
 
@@ -30,6 +32,11 @@ public final class InstantHitFactory extends WeaponFactory {
         float dy = target.getPositionY() - src.getPositionY();
         float dir_len_inv = 1f / (float) Math.hypot(dx, dy);
         if (target instanceof Unit unitTarget) {
+            if (AppConfig.LEGACY_DETERMINISTIC) {
+                int soundCount = src.getTemplate().getUnitType() == UnitType.CHIEFTAIN ? 4 : 5;
+                src.getWorld().getRandom().nextInt(soundCount);
+                src.getWorld().getRandom().nextFloat();
+            }
             src.getWorld().getNotificationListener().onUnitAttack(unitTarget.getTemplate().getUnitType(), unitTarget
                     .getOwner().getRaceInfo().getRaceType(), target.getPositionX(), target.getPositionY(), target
                             .getPositionZ());
