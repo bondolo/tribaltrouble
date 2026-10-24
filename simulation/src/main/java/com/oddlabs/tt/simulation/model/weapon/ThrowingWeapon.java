@@ -8,7 +8,6 @@ import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.base.event.StateChecksum;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Base {@link Model} class for all projectile weapons that are thrown through the world.
@@ -57,11 +56,15 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         return src;
     }
 
+    private static final BoundingBox[] BOUNDS = new BoundingBox[]{
+            new BoundingBox(-2.5f, 2.5f, -2.5f, 2.5f, -2.5f, 15f)
+    };
+
     public abstract SupplyType getSupplyType();
 
     @Override
-    protected BoundingBox @Nullable [] getLocalBounds() {
-        return null;
+    protected BoundingBox[] getLocalBounds() {
+        return BOUNDS;
     }
 
     @Override
