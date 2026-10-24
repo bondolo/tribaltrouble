@@ -8,12 +8,13 @@ import org.jspecify.annotations.Nullable;
 /**
  * Represents a world entity with visual representation and world association.
  */
-public abstract class Model extends Element<Model> implements Shadowable {
+public abstract class Model extends Element<Model> implements Shadowable, Distributable {
     private final World world;
     /** ground height if {@link #groundBased} */
     private float baseZ;
     /** if true then the Model is positioned relative to the terrain at (x, y) */
     private boolean groundBased = true;
+    private int distributable_id = Distributable.NO_ID;
 
     protected Model(World world) {
         super(world.getElementRoot());
@@ -28,6 +29,16 @@ public abstract class Model extends Element<Model> implements Shadowable {
     @Override
     public boolean isDead() {
         return !isRegistered();
+    }
+
+    @Override
+    public int getId() {
+        return distributable_id;
+    }
+
+    @Override
+    public void setId(int id) {
+        this.distributable_id = id;
     }
 
     @Override

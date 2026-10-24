@@ -1,6 +1,7 @@
 package com.oddlabs.tt.simulation.landscape;
 
 import com.oddlabs.tt.base.geom.BoundingBox;
+import com.oddlabs.tt.simulation.model.Distributable;
 import com.oddlabs.tt.simulation.model.Supply;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
@@ -30,6 +31,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
 
     private int num_supplies = INITIAL_SUPPLIES;
     private int hit_counter = 0;
+    private int distributable_id = Distributable.NO_ID;
 
     public TreeSupply(World world, @Nullable AbstractTreeGroup parent, float x, float y, int grid_x,
             int grid_y, int grid_size, float size, Matrix4f matrix, TreeType tree_type) {
@@ -85,6 +87,16 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     @Override
     public World getWorld() {
         return world;
+    }
+
+    @Override
+    public int getId() {
+        return distributable_id;
+    }
+
+    @Override
+    public void setId(int id) {
+        this.distributable_id = id;
     }
 
     @Override

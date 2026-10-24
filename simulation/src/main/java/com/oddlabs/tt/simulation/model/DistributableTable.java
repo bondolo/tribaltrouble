@@ -6,7 +6,6 @@ import org.jspecify.annotations.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
@@ -15,30 +14,30 @@ import java.util.Map;
 @NullMarked
 public final class DistributableTable {
     private final Map<Integer, Distributable> distributables = new HashMap<>();
-    private final IdentityHashMap<Distributable, Integer> names = new IdentityHashMap<>();
     private int current_name = 1;
 
     public int register(Distributable distributable) {
         int name = current_name++;
+        distributable.setId(name);
+        assert distributable.getId() == name : "Distributable did not retain assigned id: " + distributable;
         Distributable o = distributables.put(name, distributable);
         assert o == null : "Error registering distributable.";
-        Integer p = names.put(distributable, name);
-        assert p == null : "Error registering name.";
         return name;
     }
 
     public void unregister(Distributable distributable) {
-        Integer name = names.remove(distributable);
-        assert name != null : "Error unregistering name.";
+        int name = distributable.getId();
+        assert name != Distributable.NO_ID : "Error unregistering unregistered distributable: " + distributable;
+        distributable.setId(Distributable.NO_ID);
 
         Distributable o = distributables.remove(name);
         assert o == distributable : "Error unregistering distributable.";
     }
 
     public int getName(Distributable distributable) {
-        Integer val = names.get(distributable);
-        assert val != null : distributable + " is not registered.";
-        return val;
+        int id = distributable.getId();
+        assert id != Distributable.NO_ID : distributable + " is not registered.";
+        return id;
     }
 
     public @Nullable Distributable getDistributable(int name) {

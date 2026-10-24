@@ -11,6 +11,17 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class DistributableTableTest {
 
     private static final class TestDistributable implements Distributable {
+        private int id = Distributable.NO_ID;
+
+        @Override
+        public int getId() {
+            return id;
+        }
+
+        @Override
+        public void setId(int id) {
+            this.id = id;
+        }
     }
 
     @Test
@@ -25,6 +36,9 @@ class DistributableTableTest {
         assertEquals(1, id1);
         assertEquals(2, id2);
 
+        assertEquals(id1, d1.getId());
+        assertEquals(id2, d2.getId());
+
         assertEquals(id1, table.getName(d1));
         assertEquals(id2, table.getName(d2));
 
@@ -38,9 +52,11 @@ class DistributableTableTest {
         TestDistributable d1 = new TestDistributable();
 
         int id1 = table.register(d1);
+        assertEquals(id1, d1.getId());
         assertEquals(d1, table.getDistributable(id1));
 
         table.unregister(d1);
+        assertEquals(Distributable.NO_ID, d1.getId());
         assertNull(table.getDistributable(id1));
     }
 
