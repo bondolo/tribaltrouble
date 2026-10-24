@@ -48,6 +48,8 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     private float anim_time = 0;
     private Animation animation = Animation.IDLING;
     private boolean is_hit = false;
+    private boolean spawning;
+    private float spawn_time;
 
     public RubberSupply(World world, int grid_x, int grid_y,
             float x, float y, RubberGroup group, float spawn_x, float spawn_y) {
@@ -62,6 +64,10 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         float dy = y - spawn_y;
         float inv_len = 1f / (float) Math.hypot(dx, dy);
         setDirection(dx * inv_len, dy * inv_len);
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            world.getRandom().nextFloat();
+            spawning = true;
+        }
         setNewAnimation(Animation.IDLING);
     }
 
@@ -111,6 +117,13 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
 
     @Override
     public void animate(float dt) {
+        if (spawning) {
+            spawn_time += dt;
+            if (spawn_time >= 2f) {
+                spawning = false;
+            }
+            return;
+        }
         anim_time += animation.getSpeed() * dt;
         if (animation == Animation.FLYING || animation == Animation.RUNNING) {
             fly(dt);
@@ -126,9 +139,16 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                 }
             } else if (random < .85) {
                 // move
-                int max_grids = (int) MAX_MOVE_GRIDS;
-                int new_grid_x = start_grid_x + getWorld().getRandom().nextInt(-max_grids, max_grids + 1);
-                int new_grid_y = start_grid_y + getWorld().getRandom().nextInt(-max_grids, max_grids + 1);
+                int new_grid_x;
+                int new_grid_y;
+                if (AppConfig.LEGACY_DETERMINISTIC) {
+                    new_grid_x = start_grid_x + (int) ((getWorld().getRandom().nextFloat() * 2 - 1) * MAX_MOVE_GRIDS);
+                    new_grid_y = start_grid_y + (int) ((getWorld().getRandom().nextFloat() * 2 - 1) * MAX_MOVE_GRIDS);
+                } else {
+                    int max_grids = (int) MAX_MOVE_GRIDS;
+                    new_grid_x = start_grid_x + getWorld().getRandom().nextInt(-max_grids, max_grids + 1);
+                    new_grid_y = start_grid_y + getWorld().getRandom().nextInt(-max_grids, max_grids + 1);
+                }
                 UnitGrid grid = getWorld().getUnitGrid();
                 if (new_grid_x >= 0 && new_grid_y >= 0 && new_grid_x < grid.getGridSize() && new_grid_y < grid
                         .getGridSize()) {

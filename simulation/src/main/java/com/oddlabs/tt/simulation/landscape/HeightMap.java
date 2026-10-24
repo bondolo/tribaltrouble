@@ -1,5 +1,7 @@
 package com.oddlabs.tt.simulation.landscape;
 
+import com.oddlabs.tt.base.global.AppConfig;
+
 import java.util.BitSet;
 import java.util.List;
 
@@ -139,27 +141,61 @@ public final class HeightMap implements LandscapeEnvironment {
         return (int) (f * inv_meters_per_patch);
     }
 
+    private static float computePlaneHeight(float h1x, float h1y, float h1z, float h2x, float h2y, float h2z, float h3x,
+            float h3y, float h3z, float x, float y) {
+        float v1x = h2x - h1x;
+        float v1y = h2y - h1y;
+        float v1z = h2z - h1z;
+        float v2x = h3x - h1x;
+        float v2y = h3y - h1y;
+        float v2z = h3z - h1z;
+
+        float cx = v2y * v1z - v2z * v1y;
+        float cy = v2z * v1x - v2x * v1z;
+        float cz = v2x * v1y - v2y * v1x;
+
+        float inv_z = -1f / cz;
+        float px = cx * inv_z;
+        float py = cy * inv_z;
+        float pz = (-cx * h1x - cy * h1y) * inv_z + h1z;
+        return px * x + py * y + pz;
+    }
+
     public float computeInterpolatedHeight(int lod, float x_f, float y_f) {
         x_f *= inv_meters_per_grid_unit;
         y_f *= inv_meters_per_grid_unit;
 
         int size = getGridUnitsPerWorld();
-        x_f = (x_f % size + size) % size;
-        y_f = (y_f % size + size) % size;
+        int x_int = (int) Math.floor(x_f);
+        int y_int = (int) Math.floor(y_f);
+        float dx = x_f - x_int;
+        float dy = y_f - y_int;
 
-        int x0 = (int) x_f;
-        int y0 = (int) y_f;
+        int x0 = Math.floorMod(x_int, size);
+        int y0 = Math.floorMod(y_int, size);
         int x1 = (x0 + 1) % size;
         int y1 = (y0 + 1) % size;
-
-        float dx = x_f - x0;
-        float dy = y_f - y0;
 
         float[] heightmap = landscape.heightmap();
         float h00 = heightmap[y0 * size + x0];
         float h10 = heightmap[y0 * size + x1];
         float h01 = heightmap[y1 * size + x0];
         float h11 = heightmap[y1 * size + x1];
+
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            if ((x0 + y0) % 2 == 0) {
+                return dx > dy
+                        ? computePlaneHeight(x_int + 1, y_int, h10, x_int + 1, y_int + 1, h11, x_int, y_int, h00, x_f,
+                                y_f)
+                        : computePlaneHeight(x_int, y_int + 1, h01, x_int, y_int, h00, x_int + 1, y_int + 1, h11, x_f,
+                                y_f);
+            } else {
+                return dx + dy > 1.0f
+                        ? computePlaneHeight(x_int + 1, y_int + 1, h11, x_int, y_int + 1, h01, x_int + 1, y_int, h10,
+                                x_f, y_f)
+                        : computePlaneHeight(x_int, y_int, h00, x_int + 1, y_int, h10, x_int, y_int + 1, h01, x_f, y_f);
+            }
+        }
 
         return dx + dy < 1.0f
                 ? h00 + dx * (h10 - h00) + dy * (h01 - h00)

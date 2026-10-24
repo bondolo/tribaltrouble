@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.model.weapon.InstantHitFactory;
 import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
@@ -321,14 +322,15 @@ public final class RaceData {
         RaceGeometry.UnitBounds peonGeom = RaceGeometry.NATIVE_PEON;
         RaceGeometry.UnitBounds chieftainGeom = RaceGeometry.NATIVE_CHIEFTAIN;
 
+        float nativeSpearReleaseRatio = AppConfig.LEGACY_DETERMINISTIC ? 46f / 100f : 44f / 100f;
         WeaponFactory nativeWarriorRockWeapon = new ThrowingFactory<>(
-                RockSpearWeapon.class, RockSpearWeapon::new, 0.5f, THROW_RANGE, 44f / 100f
+                RockSpearWeapon.class, RockSpearWeapon::new, 0.5f, THROW_RANGE, nativeSpearReleaseRatio
         );
         WeaponFactory nativeWarriorIronWeapon = new ThrowingFactory<>(
-                IronSpearWeapon.class, IronSpearWeapon::new, 0.75f, THROW_RANGE, 44f / 100f
+                IronSpearWeapon.class, IronSpearWeapon::new, 0.75f, THROW_RANGE, nativeSpearReleaseRatio
         );
         WeaponFactory nativeWarriorRubberWeapon = new ThrowingFactory<>(
-                RubberSpearWeapon.class, RubberSpearWeapon::new, 0.95f, THROW_RANGE, 44f / 100f
+                RubberSpearWeapon.class, RubberSpearWeapon::new, 0.95f, THROW_RANGE, nativeSpearReleaseRatio
         );
 
         UnitTemplate nativeWarriorRock = new UnitTemplate(

@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.base.geom.BoundingBox;
@@ -146,6 +147,13 @@ public final class LightningCloud extends Model implements Magic {
         float x = target.getPositionX();
         float y = target.getPositionY();
         float z = owner.getWorld().getHeightMap().getNearestHeight(x, y);
+
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            var rand = owner.getWorld().getRandom();
+            for (int i = 0; i < 31; i++) {
+                rand.nextFloat();
+            }
+        }
 
         owner.getWorld().getNotificationListener().onLightningStrike(this, x, y, z);
     }

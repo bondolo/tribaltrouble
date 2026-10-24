@@ -36,9 +36,20 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         this.src = src;
         this.hit = hit;
 
-        float x = src.getPositionX() + offsetX * src.getDirectionX() - offsetY * src.getDirectionY();
-        float y = src.getPositionY() + offsetX * src.getDirectionY() + offsetY * src.getDirectionX();
-        start_z = src.getPositionZ() + offsetZ;
+        float x;
+        float y;
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            float legacyOffsetX = 1.316f;
+            float legacyOffsetY = -.347f;
+            float legacyOffsetZ = 1.382f;
+            x = src.getPositionX() + legacyOffsetX * src.getDirectionX() - legacyOffsetY * src.getDirectionY();
+            y = src.getPositionY() + legacyOffsetX * src.getDirectionY() - legacyOffsetY * src.getDirectionX();
+            start_z = src.getPositionZ() + legacyOffsetZ + src.getMountOffset();
+        } else {
+            x = src.getPositionX() + offsetX * src.getDirectionX() - offsetY * src.getDirectionY();
+            y = src.getPositionY() + offsetX * src.getDirectionY() + offsetY * src.getDirectionX();
+            start_z = src.getPositionZ() + offsetZ;
+        }
 
         setPosition(x, y, start_z);
 
@@ -90,7 +101,9 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         updateTarget();
         float dx = end_x - start_x;
         float dy = end_y - start_y;
-        float len = (float) Math.hypot(dx, dy);
+        float len = AppConfig.LEGACY_DETERMINISTIC
+                ? (float) Math.sqrt(dx * dx + dy * dy)
+                : (float) Math.hypot(dx, dy);
         time_limit = len / getMetersPerSecond();
         time = 0;
     }
@@ -106,7 +119,15 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     private void updateDirection() {
         float dx = target.getPositionX() - getPositionX();
         float dy = target.getPositionY() - getPositionY();
-        float len = (float) Math.max(Math.hypot(dx, dy), .01);
+        float len;
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            len = (float) Math.sqrt(dx * dx + dy * dy);
+            if (len < .01f) {
+                len = .01f;
+            }
+        } else {
+            len = (float) Math.max(Math.hypot(dx, dy), .01);
+        }
         float len_inv = 1f / len;
         dir_x = dx * len_inv;
         dir_y = dy * len_inv;

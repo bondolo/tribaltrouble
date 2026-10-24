@@ -8,12 +8,11 @@ import java.nio.file.Path;
  */
 public final class AppConfig {
     public static final String GAME_NAME = "TribalTrouble";
-    public static final int REVISION = 4; // compatible with legacy simulation
     public static final Path SETTINGS_FILE_NAME = Path.of("settings");
     public static final int DEFAULT_DETAIL_NORMAL = 1;
     /**
      * Default baked terrain texture resolution of 8 texels per 2-meter grid unit (25 cm/texel),
-     * providing smooth macro-level color transitions while fine surface detail is supplied by
+     * providing smooth macro-level colour transitions while fine surface detail is supplied by
      * high-frequency repeating detail textures.
      */
     public static final int DEFAULT_TEXELS_PER_GRID_UNIT = 8;
@@ -23,9 +22,13 @@ public final class AppConfig {
      * true if simulation operates in legacy deterministic validation mode.
      */
     public static final boolean LEGACY_DETERMINISTIC = Boolean.getBoolean("com.oddlabs.tt.legacy.deterministic");
+    /**
+     * 4 - compatible with legacy simulation 764a309d28577fb37ae4608bebfda63a132c0fe8
+     * 5 - compatible with master branch
+     */
+    public static final int REVISION = LEGACY_DETERMINISTIC ? 4 : 5;
     public static final boolean HIDE_MULTIPLAYER = true;
     public static final int FRAME_GRAB_MILLISECONDS_PER_FRAME = 40;
-
 
     private AppConfig() {
         // no instances
