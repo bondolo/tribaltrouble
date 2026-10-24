@@ -299,7 +299,11 @@ public final class Player implements PlayerInterface {
     }
 
     public int getStatus() {
-        return getUnits().getSet().stream().mapToInt(Selectable::getStatusValue).sum();
+        int sum = 0;
+        for (Selectable<?> s : getUnits().getSet()) {
+            sum += s.getStatusValue();
+        }
+        return sum;
     }
 
     public Optional<Selectable<?>> findNearestEnemy(int start_x, int start_y, @Nullable Selectable<?> target,
@@ -374,6 +378,10 @@ public final class Player implements PlayerInterface {
 
     public boolean hasActiveChieftain() {
         return chieftain != null;
+    }
+
+    public @Nullable Unit getActiveChieftain() {
+        return chieftain;
     }
 
     public Optional<Unit> getChieftain() {

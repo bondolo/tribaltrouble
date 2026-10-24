@@ -125,7 +125,7 @@ public final class PoisonFog extends Model implements Magic {
                     * (1 - s.getDefenseChance()))
                     || (!owner.isEnemy(s.getOwner()) && owner.getWorld().getRandom().nextFloat() < (hit_chance / 4f)
                             * (1 - s.getDefenseChance())
-                            && owner.getChieftain().filter(c -> c == s).isEmpty()))) {
+                            && owner.getActiveChieftain() != s))) {
                 float inv_dist = 1f / ((float) Math.sqrt(squared_dist));
                 s.hit(damage, dx * inv_dist, dy * inv_dist, owner);
             }

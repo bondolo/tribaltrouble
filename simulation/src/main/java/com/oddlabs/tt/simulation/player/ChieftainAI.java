@@ -10,9 +10,12 @@ public abstract sealed class ChieftainAI permits NativeChieftainAI, VikingChieft
     public abstract void decide(Unit chieftain, PlayerInterface playerInterface);
 
     protected final int numEnemyUnits(Player owner) {
-        return owner.getWorld().getPlayers().stream()
-                .filter(owner::isEnemy)
-                .mapToInt(p -> p.getUnits().size())
-                .sum();
+        int count = 0;
+        for (Player player : owner.getWorld().getPlayers()) {
+            if (owner.isEnemy(player)) {
+                count += player.getUnits().size();
+            }
+        }
+        return count;
     }
 }

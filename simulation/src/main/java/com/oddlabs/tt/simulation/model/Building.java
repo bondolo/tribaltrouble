@@ -168,6 +168,11 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         getWorld().getNotificationListener().onModelRemoved(this);
     }
 
+    public @Nullable UnitContainer getRawUnitContainer() {
+        assert !isDead();
+        return unit_container;
+    }
+
     public Optional<UnitContainer> getUnitContainer() {
         assert !isDead();
         return Optional.ofNullable(unit_container);
