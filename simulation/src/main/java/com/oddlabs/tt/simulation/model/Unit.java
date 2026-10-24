@@ -28,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 
 /**
@@ -119,7 +120,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                         }
                     }
                 }
-                unit_target = grid.findGridTargets(lt.getGridX(), lt.getGridY(), 1, true)[0];
+                unit_target = grid.findGridTarget(lt.getGridX(), lt.getGridY(), true);
                 for (Target target : temp_occupants) {
                     grid.freeGrid(target.getGridX(), target.getGridY(), this);
                 }
@@ -156,8 +157,8 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
     private void findInitialPosition(float x, float y, boolean grid_targets_only) {
         UnitGrid unit_grid = getUnitGrid();
-        Target reserved_target = unit_grid.findGridTargets(UnitGrid.toGridCoordinate(x), UnitGrid.toGridCoordinate(y),
-                1, grid_targets_only)[0];
+        Target reserved_target = Objects.requireNonNull(unit_grid.findGridTarget(UnitGrid.toGridCoordinate(x),
+                UnitGrid.toGridCoordinate(y), grid_targets_only));
         setGridPosition(reserved_target.getGridX(), reserved_target.getGridY());
         setPosition(reserved_target.getPositionX(), reserved_target.getPositionY());
 
@@ -450,8 +451,8 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     }
 
     private void walkToTarget(Target target, boolean scan_attack) {
-        Target walkable_target = getUnitGrid().findGridTargets(target.getGridX(), target.getGridY(), 1, false)[0];
-        pushController(new WalkController(this, walkable_target, scan_attack));
+        Target walkable_target = getUnitGrid().findGridTarget(target.getGridX(), target.getGridY(), false);
+        pushController(new WalkController(this, walkable_target != null ? walkable_target : target, scan_attack));
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
 import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
 
@@ -26,8 +27,60 @@ public final class UnitGrid {
         return x >= 0 && y >= 0 && x < occupants.length && y < occupants.length && filter.filter(x, y, occupants[y][x]);
     }
 
+    /**
+     * Finds a single open landscape target without allocating filter or array objects.
+     *
+     * @param center_grid_x the center x coordinate
+     * @param center_grid_y the center y coordinate
+     * @param grid_targets_only whether to restrict to checkerboard grid coordinates ((x + y) & 1 == 0)
+     * @return the nearest valid Target, or null if none found
+     */
+    public @Nullable Target findGridTarget(int center_grid_x, int center_grid_y, boolean grid_targets_only) {
+        if (isValidTarget(center_grid_x, center_grid_y, grid_targets_only)) {
+            return new LandscapeTarget(center_grid_x, center_grid_y);
+        }
+        int radius = 1;
+        int max_radius = occupants.length;
+        while (radius <= max_radius) {
+            int x = center_grid_x - radius;
+            int x2 = center_grid_x + radius;
+            for (int i = 0; i < 2 * radius - 1; i++) {
+                int y_i = center_grid_y - radius + 1 + i;
+                if (isValidTarget(x, y_i, grid_targets_only)) {
+                    return new LandscapeTarget(x, y_i);
+                }
+                if (isValidTarget(x2, y_i, grid_targets_only)) {
+                    return new LandscapeTarget(x2, y_i);
+                }
+            }
+            int y = center_grid_y - radius;
+            int y2 = center_grid_y + radius;
+            for (int i = 0; i < 2 * radius + 1; i++) {
+                int x_i = center_grid_x - radius + i;
+                if (isValidTarget(x_i, y, grid_targets_only)) {
+                    return new LandscapeTarget(x_i, y);
+                }
+                if (isValidTarget(x_i, y2, grid_targets_only)) {
+                    return new LandscapeTarget(x_i, y2);
+                }
+            }
+            radius++;
+        }
+        return null;
+    }
+
+    private boolean isValidTarget(int x, int y, boolean grid_targets_only) {
+        return x >= 0 && y >= 0 && x < occupants.length && y < occupants.length
+                && (!grid_targets_only || ((x + y) & 1) == 0)
+                && occupants[y][x] == null;
+    }
+
     public @Nullable Target[] findGridTargets(int center_grid_x, int center_grid_y, int num_targets,
             boolean grid_targets_only) {
+        if (num_targets == 1) {
+            Target target = findGridTarget(center_grid_x, center_grid_y, grid_targets_only);
+            return new Target[]{target};
+        }
         FindTargetsFilter filter = new FindTargetsFilter(num_targets, occupants.length, grid_targets_only);
         scan(filter, center_grid_x, center_grid_y);
         return filter.getTargets();

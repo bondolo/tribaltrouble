@@ -152,15 +152,17 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                 UnitGrid grid = getWorld().getUnitGrid();
                 if (new_grid_x >= 0 && new_grid_y >= 0 && new_grid_x < grid.getGridSize() && new_grid_y < grid
                         .getGridSize()) {
-                    Target target = grid.findGridTargets(new_grid_x, new_grid_y, 1, false)[0];
-                    path_tracker.setTarget(new TargetTrackerAlgorithm(grid, 0f, target));
-                    float move_random = getWorld().getRandom().nextFloat();
-                    if (move_random < .25f) {
-                        setNewAnimation(Animation.FLYING);
-                        getWorld().getNotificationListener().onChickenPeck(getPositionX(), getPositionY(),
-                                getPositionZ());
-                    } else {
-                        setNewAnimation(Animation.RUNNING);
+                    Target target = grid.findGridTarget(new_grid_x, new_grid_y, false);
+                    if (target != null) {
+                        path_tracker.setTarget(new TargetTrackerAlgorithm(grid, 0f, target));
+                        float move_random = getWorld().getRandom().nextFloat();
+                        if (move_random < .25f) {
+                            setNewAnimation(Animation.FLYING);
+                            getWorld().getNotificationListener().onChickenPeck(getPositionX(), getPositionY(),
+                                    getPositionZ());
+                        } else {
+                            setNewAnimation(Animation.RUNNING);
+                        }
                     }
                 }
             } else {

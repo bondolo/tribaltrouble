@@ -21,6 +21,7 @@ import com.oddlabs.tt.simulation.behaviour.IdleController;
 import com.oddlabs.tt.simulation.behaviour.NullController;
 import com.oddlabs.tt.simulation.behaviour.PlaceBuildingController;
 import com.oddlabs.tt.simulation.behaviour.WalkController;
+import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
@@ -348,8 +349,10 @@ public abstract class AI implements Animated {
         float RADIUS = 30;
         float target_x = owner.getStartX() + random.nextFloat(-RADIUS, RADIUS);
         float target_y = owner.getStartY() + random.nextFloat(-RADIUS, RADIUS);
-        return getUnitGrid().findGridTargets(UnitGrid.toGridCoordinate(target_x), UnitGrid.toGridCoordinate(target_y),
-                1, false)[0];
-
+        Target target = getUnitGrid().findGridTarget(UnitGrid.toGridCoordinate(target_x),
+                UnitGrid.toGridCoordinate(target_y), false);
+        return target != null
+                ? target
+                : new LandscapeTarget(UnitGrid.toGridCoordinate(target_x), UnitGrid.toGridCoordinate(target_y));
     }
 }

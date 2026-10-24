@@ -502,10 +502,14 @@ public final class Player implements PlayerInterface {
             boolean aggressive) {
         if (selection.length == 0)
             return;
+        if (selection.length == 1) {
+            setLandscapeTarget(selection[0], grid_x, grid_y, action, aggressive);
+            return;
+        }
         int grid_size = world.getUnitGrid().getGridSize();
         if (grid_x < 0 || grid_x >= grid_size || grid_y < 0 || grid_y >= grid_size)
             return;
-        var targets = world.getUnitGrid().findGridTargets(grid_x, grid_y, selection.length, selection.length != 1);
+        var targets = world.getUnitGrid().findGridTargets(grid_x, grid_y, selection.length, true);
         for (int i = 0; i < selection.length; i++) {
             if (isValid(selection[i]))
                 selection[i].initTarget(targets[i], action, aggressive);
@@ -518,9 +522,9 @@ public final class Player implements PlayerInterface {
         int grid_size = world.getUnitGrid().getGridSize();
         if (grid_x < 0 || grid_x >= grid_size || grid_y < 0 || grid_y >= grid_size)
             return;
-        var targets = world.getUnitGrid().findGridTargets(grid_x, grid_y, 1, false);
-        if (isValid(unit)) {
-            unit.initTarget(targets[0], action, aggressive);
+        Target target = world.getUnitGrid().findGridTarget(grid_x, grid_y, false);
+        if (isValid(unit) && target != null) {
+            unit.initTarget(target, action, aggressive);
         }
     }
 

@@ -288,7 +288,7 @@ class AIDecouplingTest {
     @Test
     void testAttackLandscapeDispatchesThroughPlayerInterface() {
         Unit warrior = new Unit(player, 15, 15, null, player.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
-        Target target = world.getUnitGrid().findGridTargets(15, 15, 1, false)[0];
+        Target target = java.util.Objects.requireNonNull(world.getUnitGrid().findGridTarget(15, 15, false));
 
         int ordered = AI.attackLandscape(player, recordingInterface, target, 1);
         assertEquals(1, ordered);

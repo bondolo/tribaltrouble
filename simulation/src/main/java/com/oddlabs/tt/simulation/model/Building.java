@@ -625,7 +625,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             return;
         rally_point = isValidRallyPoint(target)
                 ? target
-                : getUnitGrid().findGridTargets(target.getGridX(), target.getGridY(), 1, false)[0];
+                : getUnitGrid().findGridTarget(target.getGridX(), target.getGridY(), false);
     }
 
     @Override
