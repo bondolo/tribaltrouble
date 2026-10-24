@@ -76,7 +76,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
 
     @Override
     public boolean isMoving() {
-        return animation == Animation.FLYING || animation == Animation.RUNNING;
+        return false;
     }
 
     @Override
