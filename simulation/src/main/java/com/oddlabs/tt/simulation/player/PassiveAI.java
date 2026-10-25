@@ -20,9 +20,9 @@ public final class PassiveAI extends AI {
     }
 
     @Override
-    public void animate(float dt) {
+    public void tick() {
         if (walk_around) {
-            if (!shouldDoAction(dt))
+            if (!shouldDoAction())
                 return;
             for (Selectable<?> s : getOwner().getUnits().getSet()) {
                 if (s.getPrimaryController() instanceof IdleController) {

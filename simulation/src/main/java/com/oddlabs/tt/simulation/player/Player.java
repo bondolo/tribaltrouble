@@ -265,6 +265,13 @@ public final class Player implements PlayerInterface {
         this.ai = ai;
     }
 
+    /**
+     * {@return the AI controller assigned to this player, or null if player is human or unassigned}
+     */
+    public @Nullable AI getRawAI() {
+        return ai;
+    }
+
     public Optional<AI> getAI() {
         return Optional.ofNullable(ai);
     }

@@ -117,8 +117,8 @@ public final class AdvancedAI extends AI {
     }
 
     @Override
-    public void animate(float dt) {
-        if (!shouldDoAction(dt))
+    public void tick() {
+        if (!shouldDoAction())
             return;
         reclassify();
         nodeDefendBase();

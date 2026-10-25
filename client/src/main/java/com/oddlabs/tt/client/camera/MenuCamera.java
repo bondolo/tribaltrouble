@@ -11,12 +11,14 @@ public final class MenuCamera extends Camera {
     private static final float HEIGHT = 0f;
     private static final float LANDSCAPE_OFFSET = 5f;
     private static final float CENTER_Z = 128f; // NOT HEIGHT!
+    private static final float MAX_ACCUMULATOR_STEP = 0.2f;
 
     private final World world;
     private final AnimationManager manager;
     private final float centerX;
     private final float centerY;
     private float center_angle;
+    private float tickAccumulator;
 
     public MenuCamera(World world, AnimationManager highPrecisionManager,
             AnimationManager menuManager) {
@@ -45,7 +47,11 @@ public final class MenuCamera extends Camera {
     @Override
     public void doAnimate(float dt) {
         updatePos(dt);
-        world.tick(dt);
+        tickAccumulator += Math.min(dt, MAX_ACCUMULATOR_STEP);
+        while (tickAccumulator >= AnimationManager.ANIMATION_SECONDS_PER_TICK) {
+            world.tick();
+            tickAccumulator -= AnimationManager.ANIMATION_SECONDS_PER_TICK;
+        }
         manager.runAnimations(dt);
     }
 }

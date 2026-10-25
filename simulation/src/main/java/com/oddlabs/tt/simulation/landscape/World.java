@@ -15,6 +15,7 @@ import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.pathfinder.RegionBuilder;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
+import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.util.Color;
@@ -33,8 +34,6 @@ import java.util.stream.IntStream;
  * and players within a simulation environment.
  */
 public final class World implements SimulationClock {
-    public static final int GAMESPEED_DONTCARE = -2;
-
     private static final float[] GAMESPEEDS = new float[]{
             0f,
             AnimationManager.ANIMATION_SECONDS_PER_TICK / 2,
@@ -137,10 +136,19 @@ public final class World implements SimulationClock {
         }
     }
 
-    public void tick(float dt) {
-        getAnimationManagerGameTime().runAnimations(getSecondsPerTick() * dt
-                / AnimationManager.ANIMATION_SECONDS_PER_TICK);
-        getAnimationManagerRealTime().runAnimations(dt/*AnimationManager.ANIMATION_SECONDS_PER_TICK*/);
+    public void tick() {
+        getAnimationManagerGameTime().runAnimations(getSecondsPerTick());
+        tickAI();
+        getAnimationManagerRealTime().runAnimations(AnimationManager.ANIMATION_SECONDS_PER_TICK);
+    }
+
+    private void tickAI() {
+        for (Player player : players) {
+            AI ai = player.getRawAI();
+            if (ai != null) {
+                ai.tick();
+            }
+        }
     }
 
     @Override

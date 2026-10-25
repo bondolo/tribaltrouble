@@ -1,6 +1,5 @@
 package com.oddlabs.tt.headless;
 
-import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.net.HeadlessSimulationInstance;
 import com.oddlabs.tt.procedural.landscape.IslandGenerator;
 import com.oddlabs.tt.simulation.landscape.Landscape;
@@ -78,10 +77,8 @@ public final class LegacyValidationMatchRunner {
                 default -> throw new IllegalArgumentException("Unsupported difficulty: " + pConfig.aiDifficulty());
             };
             player.setAI(ai);
-            world.getAnimationManagerRealTime().registerAnimation(ai);
         }
 
-        float dt = AnimationManager.ANIMATION_SECONDS_PER_TICK;
         int maxTicks = config.maxTicks();
 
         String dumpTicks = System.getProperty("dumpTicks");
@@ -89,7 +86,7 @@ public final class LegacyValidationMatchRunner {
         int dumpInterval = dumpIntervalStr != null ? Integer.parseInt(dumpIntervalStr) : 0;
 
         for (int currentTick = 1; currentTick <= maxTicks; currentTick++) {
-            world.tick(dt);
+            world.tick();
             if (dumpInterval > 0 && currentTick % dumpInterval == 0) {
                 System.out.printf("MODERN TICK %d: checksum=%d%n", currentTick, world.getChecksum());
             }

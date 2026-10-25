@@ -158,7 +158,6 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
             default -> throw new IllegalArgumentException("unexpected difficulty: " + localSlot.getAIDifficulty());
         };
         localPlayer.setAI(ai);
-        animManager.registerAnimation(ai);
 
         return new HeadlessSimulationInstance(playerIndex, world, ai, animManager, peerHub);
     }

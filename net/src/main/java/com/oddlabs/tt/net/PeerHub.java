@@ -47,6 +47,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
 
     private static final int MILLISECONDS_PER_HEARTBEAT = 60;
     private static final int CLIENT_MAX_DELAY_MILLIS = 60;
+    private static final int MAX_CATCHUP_TICKS_PER_STEP = 8;
     private static final float FREE_QUIT_TIME = 120f;
     private static final int TICKS_PER_STATUS_UPDATE = (int) (20 / AnimationManager.ANIMATION_SECONDS_PER_TICK);
     private static final int TICKS_PER_CHECKSUM = (int) (10 / AnimationManager.ANIMATION_SECONDS_PER_TICK);
@@ -294,10 +295,13 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
             processStall();
         } else {
             if (!isPaused()) {
-                doTick(dt);
+                doTick();
                 int min_tick = millisToTick(server_millis - MILLISECONDS_PER_HEARTBEAT - CLIENT_MAX_DELAY_MILLIS);
-                while (getTick() < min_tick)
-                    doTick(dt);
+                int catchupCount = 0;
+                while (getTick() < min_tick && catchupCount < MAX_CATCHUP_TICKS_PER_STEP) {
+                    doTick();
+                    catchupCount++;
+                }
             } else
                 pause_ticks++;
         }
@@ -307,7 +311,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
         return local_player.getWorld().getTick();
     }
 
-    private void doTick(float dt) {
+    private void doTick() {
         stall_handler.stopStall();
         if (getFreeQuitTicksLeft(local_player.getWorld()) == 0 && matchmaking_client != null && matchmaking_client
                 .isConnected())
@@ -325,7 +329,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
                 }
             }
         }
-        local_player.getWorld().tick(dt);
+        local_player.getWorld().tick();
         if (getTick() % TICKS_PER_CHECKSUM == 0)
             sendChecksum();
     }

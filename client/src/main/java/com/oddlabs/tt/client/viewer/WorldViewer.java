@@ -279,7 +279,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
             };
             if (ai != null) {
                 player.setAI(ai);
-                world.getAnimationManagerRealTime().registerAnimation(ai);
             }
         } else {
             player.setPreferredGamespeed(initial_gamespeed);
