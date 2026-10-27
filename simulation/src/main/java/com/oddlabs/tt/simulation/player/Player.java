@@ -18,9 +18,7 @@ import com.oddlabs.tt.simulation.model.SupplyContainer;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.behaviour.NullController;
-import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
-import com.oddlabs.tt.simulation.model.weapon.RockAxeWeapon;
-import com.oddlabs.tt.simulation.model.weapon.RubberAxeWeapon;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
@@ -432,19 +430,19 @@ public final class Player implements PlayerInterface {
     @Override
     public void buildRockWeapons(Building building, int num_weapons, boolean infinite) {
         if (isValid(building))
-            building.buildWeapons(RockAxeWeapon.class, num_weapons, infinite);
+            building.buildWeapons(WeaponTier.ROCK, num_weapons, infinite);
     }
 
     @Override
     public void buildIronWeapons(Building building, int num_weapons, boolean infinite) {
         if (isValid(building))
-            building.buildWeapons(IronAxeWeapon.class, num_weapons, infinite);
+            building.buildWeapons(WeaponTier.IRON, num_weapons, infinite);
     }
 
     @Override
     public void buildRubberWeapons(Building building, int num_weapons, boolean infinite) {
         if (isValid(building))
-            building.buildWeapons(RubberAxeWeapon.class, num_weapons, infinite);
+            building.buildWeapons(WeaponTier.RUBBER, num_weapons, infinite);
     }
 
     @Override

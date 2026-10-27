@@ -4,6 +4,8 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.SupplyContainer;
+import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.player.Player;
 
 /** Tutorial trigger waiting for sufficient supplies (wood and rock) to be harvested. */
@@ -20,11 +22,9 @@ final class SupplyTrigger extends TutorialTrigger {
     public void run(Tutorial tutorial) {
         for (var s : tutorial.getViewer().getSelection().getCurrentSelection().getSet()) {
             if (s instanceof Building armory && s.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
-                if (armory.getSupplyContainer(com.oddlabs.tt.simulation.model.RockSupply.class).map(c -> c
-                        .getNumSupplies())
-                        .orElse(0) >= ROCK &&
-                        armory.getSupplyContainer(com.oddlabs.tt.simulation.landscape.TreeSupply.class).map(c -> c
-                                .getNumSupplies()).orElse(0) >= TREE)
+                if (armory.getSupplyContainer(SupplyType.ROCK).map(SupplyContainer::getNumSupplies).orElse(0) >= ROCK &&
+                        armory.getSupplyContainer(SupplyType.WOOD).map(SupplyContainer::getNumSupplies).orElse(0)
+                                >= TREE)
                     tutorial.next(new BuildMenuTrigger(tutorial.getViewer().getLocalPlayer()));
             }
         }

@@ -3,7 +3,7 @@ package com.oddlabs.tt.simulation.behaviour;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.model.weapon.ThrowingFactory;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 
 /**
  * Controller that handles unit movement and entry into buildings (towers or armories).
@@ -34,10 +34,10 @@ public final class EnterController extends Controller {
                                             .getNumSupplies())
                             );
                         }
-                        if (unit.getWeaponFactory() instanceof ThrowingFactory) {
-                            unit.getWeaponFactory().getType().ifPresent(type -> {
-                                building.getSupplyContainer(type).orElseThrow().increaseSupply(1);
-                            });
+                        WeaponTier tier = unit.getWeaponFactory().getTier();
+                        if (tier != null) {
+                            building.getWeaponContainer(tier).ifPresent(weaponContainer -> weaponContainer
+                                    .increaseSupply(1));
                         }
                     }
                     c.enter(unit);

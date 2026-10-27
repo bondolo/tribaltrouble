@@ -1,9 +1,12 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.Supply;
+import com.oddlabs.tt.simulation.model.SupplyType;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,7 +16,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * Represents a logical sub-region of the unit grid used to optimize pathfinding and object lookups.
  */
 public final class Region extends Node {
-    private final Map<Class<?>, Set<?>> objectSets = new HashMap<>();
+    private final Set<Building> buildings = new CopyOnWriteArraySet<>();
+    private final Map<SupplyType, Set<Supply>> supplies = new EnumMap<>(SupplyType.class);
     private final List<Region> neighbours = new ArrayList<>();
 
     private int center_x;
@@ -58,19 +62,30 @@ public final class Region extends Node {
         r2.addNeighbour(r1);
     }
 
-    public <K> Set<K> getObjects(Class<? super K> key) {
-        //noinspection unchecked
-        return (Set<K>) objectSets.computeIfAbsent(key, k -> new CopyOnWriteArraySet<>());
+    public Set<Building> getBuildings() {
+        return buildings;
     }
 
-    public <K> void registerObject(Class<? super K> key, K object) {
-        getObjects(key).add(object);
+    public void registerBuilding(Building building) {
+        buildings.add(building);
     }
 
-    public <K> boolean unregisterObject(Class<? super K> key, K object) {
-        @SuppressWarnings("unchecked") Set<K> list = (Set<K>) objectSets.get(key);
-        assert list != null : "Unknown key";
-        return null != list && list.remove(object);
+    public boolean unregisterBuilding(Building building) {
+        return buildings.remove(building);
+    }
+
+    public Set<Supply> getSupplies(SupplyType type) {
+        Set<Supply> set = supplies.get(type);
+        return set != null ? set : Set.of();
+    }
+
+    public void registerSupply(Supply supply) {
+        supplies.computeIfAbsent(supply.getSupplyType(), k -> new CopyOnWriteArraySet<>()).add(supply);
+    }
+
+    public boolean unregisterSupply(Supply supply) {
+        Set<Supply> set = supplies.get(supply.getSupplyType());
+        return set != null && set.remove(supply);
     }
 
     private void addNeighbour(Region n) {

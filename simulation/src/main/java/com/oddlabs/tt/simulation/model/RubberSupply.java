@@ -101,8 +101,8 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         Region current_region = getWorld().getUnitGrid().getRegion(getGridX(), getGridY());
         Region new_region = getWorld().getUnitGrid().getRegion(grid_x, grid_y);
         if (current_region != new_region) {
-            current_region.unregisterObject(RubberSupply.class, this);
-            new_region.registerObject(RubberSupply.class, this);
+            current_region.unregisterSupply(this);
+            new_region.registerSupply(this);
         }
         super.setGridPosition(grid_x, grid_y);
     }

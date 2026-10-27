@@ -4,6 +4,7 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.simulation.player.Player;
 
 /** Tutorial trigger waiting for a quota of weapons to be produced in an armory. */
@@ -19,8 +20,7 @@ final class WeaponTrigger extends TutorialTrigger {
     public void run(Tutorial tutorial) {
         for (var s : tutorial.getViewer().getSelection().getCurrentSelection().getSet()) {
             if (s instanceof Building armory && s.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
-                if (armory.getSupplyContainer(com.oddlabs.tt.simulation.model.weapon.RockAxeWeapon.class)
-                        .map(c -> c.getNumSupplies()).orElse(0) >= WEAPONS)
+                if (armory.getWeaponSupplyCount(WeaponTier.ROCK) >= WEAPONS)
                     tutorial.next(new ArmyMenuTrigger(tutorial.getViewer().getLocalPlayer()));
             }
         }

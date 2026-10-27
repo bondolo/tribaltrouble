@@ -2,8 +2,7 @@ package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
-
-import java.util.Optional;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 
 /**
  * A factory for creating throwing weapons.
@@ -16,13 +15,13 @@ public final class ThrowingFactory<W extends ThrowingWeapon> extends WeaponFacto
         W create(boolean hit, Unit src, Selectable<?> target);
     }
 
-    private final Class<W> weapon_type;
+    private final WeaponTier tier;
     private final WeaponConstructor<W> weapon_constructor;
 
-    public ThrowingFactory(Class<W> weapon_type, WeaponConstructor<W> weapon_constructor,
+    public ThrowingFactory(WeaponTier tier, WeaponConstructor<W> weapon_constructor,
             float hit_chance, float range, float release_ratio) {
         super(hit_chance, range, release_ratio);
-        this.weapon_type = weapon_type;
+        this.tier = tier;
         this.weapon_constructor = weapon_constructor;
     }
 
@@ -32,7 +31,7 @@ public final class ThrowingFactory<W extends ThrowingWeapon> extends WeaponFacto
     }
 
     @Override
-    public Optional<Class<? extends ThrowingWeapon>> getType() {
-        return Optional.of(weapon_type);
+    public WeaponTier getTier() {
+        return tier;
     }
 }

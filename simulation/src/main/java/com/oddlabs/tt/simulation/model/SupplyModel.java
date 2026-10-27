@@ -35,8 +35,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         UnitGrid unit_grid = world.getUnitGrid();
         unit_grid.occupyGrid(grid_x, grid_y, this);
         Region region = unit_grid.getRegion(grid_x, grid_y);
-        @SuppressWarnings("unchecked") var supplyClass = (Class<Supply>) getSupplyType().getSupplyClass();
-        region.registerObject(supplyClass, this);
+        region.registerSupply(this);
         register();
         if (increase_count)
             world.getSupplyManager(getSupplyType()).newSupply();
@@ -66,7 +65,6 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         return isEmpty();
     }
 
-    @SuppressWarnings("unchecked")
     private void decreaseSupply() {
         num_supplies--;
         if (isEmpty()) {
@@ -74,8 +72,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
             unit_grid.freeGrid(grid_x, grid_y, this);
             getWorld().unregisterTarget(this);
             Region region = unit_grid.getRegion(grid_x, grid_y);
-            @SuppressWarnings("unchecked") var supplyClass = (Class<Supply>) getSupplyType().getSupplyClass();
-            region.unregisterObject(supplyClass, this);
+            region.unregisterSupply(this);
             remove();
             getWorld().getSupplyManager(getSupplyType()).emptySupply(this);
         }

@@ -13,7 +13,7 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.simulation.model.DeployType;
 import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
@@ -180,8 +180,8 @@ final class VikingIsland4 extends Island {
         // Fill native armory with units and weapons
         int num_reinforcements = 100;
         enemy.getArmory().ifPresent(armory -> {
-            if (armory.getSupplyContainer(IronAxeWeapon.class).orElseThrow().getNumSupplies() < num_reinforcements)
-                armory.getSupplyContainer(IronAxeWeapon.class).orElseThrow().increaseSupply(num_reinforcements);
+            if (armory.getWeaponSupplyCount(WeaponTier.IRON) < num_reinforcements)
+                armory.getWeaponContainer(WeaponTier.IRON).orElseThrow().increaseSupply(num_reinforcements);
             if (armory.getUnitContainer().orElseThrow().getNumSupplies() < num_reinforcements)
                 armory.getUnitContainer().orElseThrow().increaseSupply(num_reinforcements);
         });

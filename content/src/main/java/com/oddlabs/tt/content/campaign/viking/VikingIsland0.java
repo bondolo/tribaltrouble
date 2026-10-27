@@ -11,13 +11,11 @@ import com.oddlabs.tt.simulation.model.Difficulty;
 
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.DeployType;
-import com.oddlabs.tt.simulation.model.IronSupply;
-import com.oddlabs.tt.simulation.model.RockSupply;
+import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.AI;
@@ -126,8 +124,8 @@ final class VikingIsland0 extends Island {
         // Fill native armory with units and weapons
         final int num_units = 10;
         Building enemyArmory = enemy.getArmory().orElseThrow();
-        if (enemyArmory.getSupplyContainer(IronAxeWeapon.class).orElseThrow().getNumSupplies() < num_units * 3)
-            enemyArmory.getSupplyContainer(IronAxeWeapon.class).orElseThrow().increaseSupply(num_units * 3);
+        if (enemyArmory.getWeaponSupplyCount(WeaponTier.IRON) < num_units * 3)
+            enemyArmory.getWeaponContainer(WeaponTier.IRON).orElseThrow().increaseSupply(num_units * 3);
         if (enemyArmory.getUnitContainer().orElseThrow().getNumSupplies() < num_units * 3)
             enemyArmory.getUnitContainer().orElseThrow().increaseSupply(num_units * 3);
 
@@ -142,13 +140,13 @@ final class VikingIsland0 extends Island {
             }
         };
         if (getCampaign().getState().getDifficulty() == Difficulty.NORMAL) {
-            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, TreeSupply.class, 30);
-            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, RockSupply.class, 30);
-            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, IronSupply.class, 30);
+            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.WOOD, 30);
+            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.ROCK, 30);
+            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.IRON, 30);
         } else if (getCampaign().getState().getDifficulty() == Difficulty.HARD) {
-            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, TreeSupply.class, 20);
-            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, RockSupply.class, 15);
-            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, IronSupply.class, 15);
+            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.WOOD, 20);
+            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.ROCK, 15);
+            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.IRON, 15);
         }
 
         // Defeat if neutrals eliminated

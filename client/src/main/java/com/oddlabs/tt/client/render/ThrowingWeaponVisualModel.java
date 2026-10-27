@@ -1,13 +1,13 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.engine.render.AnimatedAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.weapon.DirectedThrowingWeapon;
 import com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
@@ -15,39 +15,23 @@ import org.jspecify.annotations.Nullable;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Visual model for throwing weapons managing spatial flight audio, rotation spin, and visual loft.
+ * Abstract visual model for throwing weapons managing spatial flight audio and visual ballistic loft.
+ *
+ * @param <T> weapon type
  */
-public final class ThrowingWeaponVisualModel extends AbstractVisualModel implements AnimatedAccessory {
-    private static final float GRAVITY_MAGNITUDE = 3.0f * 9.82f;
-    private static final float SPEAR_LOFT_FACTOR = 1.05f;
-    private static final float AXE_LOFT_FACTOR = 1.01f;
-    private static final float INITIAL_AXE_ROTATION = (float) Math.toRadians(29.2);
-    private static final float AXE_GRIP_OFFSET_X = 0.40f;
-    private static final float AXE_GRIP_OFFSET_Z = 0.70f;
-    private static final float SPEAR_ROLL = (float) Math.PI;
+abstract sealed class ThrowingWeaponVisualModel<T extends ThrowingWeapon> extends AbstractVisualModel
+        implements AnimatedAccessory permits DirectedThrowingWeaponVisualModel, RotatingThrowingWeaponVisualModel {
+    protected static final float GRAVITY_MAGNITUDE = 3.0f * 9.82f;
 
-    private final ThrowingWeapon weapon;
+    protected final T weapon;
     private final @Nullable AudioPlayer audioPlayer;
-    private final float effectiveGravity;
-    private final float angleVelocity;
+    protected final float effectiveGravity;
 
-    public ThrowingWeaponVisualModel(ThrowingWeapon weapon, AudioImplementation audio) {
+    ThrowingWeaponVisualModel(T weapon, AudioImplementation audio, float loftFactor, AudioFile sound) {
         super(weapon);
         this.weapon = weapon;
-        boolean isDirected = weapon instanceof DirectedThrowingWeapon;
-        float loft = isDirected ? SPEAR_LOFT_FACTOR : AXE_LOFT_FACTOR;
-        this.effectiveGravity = GRAVITY_MAGNITUDE * loft * loft;
-        float rotsPerSec = isDirected ? 0f : switch (weapon.getSupplyType()) {
-            case ROCK -> 3f;
-            case IRON -> 6f;
-            case RUBBER -> 9f;
-            default -> 0f;
-        };
-        this.angleVelocity = (float) (rotsPerSec * 2.0 * Math.PI);
+        this.effectiveGravity = GRAVITY_MAGNITUDE * loftFactor * loftFactor;
 
-        var sound = isDirected
-                ? AudioRegistry.SFX_WEAPON_SPEAR
-                : AudioRegistry.SFX_WEAPON_AXE;
         var params = new AudioParameters(sound, AudioRegistry.AUDIO_RANK_WEAPON_ATTACK,
                 AudioRegistry.AUDIO_DISTANCE_WEAPON_ATTACK, AudioRegistry.AUDIO_GAIN_WEAPON_ATTACK,
                 AudioRegistry.AUDIO_RADIUS_WEAPON_ATTACK,
@@ -55,7 +39,7 @@ public final class ThrowingWeaponVisualModel extends AbstractVisualModel impleme
         this.audioPlayer = audio.newAudio(weapon.getPositionX(), weapon.getPositionY(), weapon.getPositionZ(), params);
     }
 
-    private float computeVisualZ() {
+    protected final float computeVisualZ() {
         float t = weapon.getTime();
         float totalTime = weapon.getTimeLimit();
         if (totalTime > 0f && t < totalTime && effectiveGravity > 0f) {
@@ -65,53 +49,26 @@ public final class ThrowingWeaponVisualModel extends AbstractVisualModel impleme
     }
 
     @Override
-    public void animate(float dt) {
+    public final void animate(float dt) {
         if (audioPlayer != null) {
             audioPlayer.setPosition(weapon.getPositionX(), weapon.getPositionY(), computeVisualZ());
         }
     }
 
-    public void getTransform(Matrix4f dest) {
-        float t = weapon.getTime();
-        float totalTime = weapon.getTimeLimit();
-        float visualZ;
-        float pitchRad;
-
-        float baselineVz = totalTime > 0f ? (weapon.getDestZ() - weapon.getStartZ()) / totalTime : 0f;
-        if (totalTime > 0f && t < totalTime && effectiveGravity > 0f) {
-            visualZ = weapon.getPositionZ() + 0.5f * effectiveGravity * t * (totalTime - t);
-            float loftVz = 0.5f * effectiveGravity * (totalTime - 2f * t);
-            pitchRad = (float) Math.atan2(baselineVz + loftVz, weapon.getMetersPerSecond());
-        } else {
-            visualZ = weapon.getPositionZ();
-            pitchRad = (float) Math.atan2(baselineVz, weapon.getMetersPerSecond());
-        }
-
-        float yawRad = (float) Math.atan2(weapon.getDirectionY(), weapon.getDirectionX());
-        dest.translation(weapon.getPositionX(), weapon.getPositionY(), visualZ)
-                .rotate(yawRad, 0f, 0f, 1f);
-
-        if (weapon instanceof DirectedThrowingWeapon) {
-            dest.rotate(-pitchRad, 0f, 1f, 0f)
-                    .rotate(SPEAR_ROLL, 1f, 0f, 0f);
-        } else {
-            dest.rotate(INITIAL_AXE_ROTATION + angleVelocity * t, 0f, 1f, 0f)
-                    .translate(AXE_GRIP_OFFSET_X, 0f, AXE_GRIP_OFFSET_Z);
-        }
-    }
+    public abstract void getTransform(Matrix4f dest);
 
     @Override
-    protected boolean isSelfExpired() {
+    protected final boolean isSelfExpired() {
         return weapon.isDead();
     }
 
     @Override
-    public boolean isVisible(Model parent, CameraState camera) {
+    public final boolean isVisible(Model parent, CameraState camera) {
         return !weapon.isDead();
     }
 
     @Override
-    public void close() {
+    public final void close() {
         super.close();
         if (audioPlayer != null) {
             audioPlayer.stop();

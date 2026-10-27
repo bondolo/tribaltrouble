@@ -674,7 +674,7 @@ public final class RenderState implements SceneContext {
                     DirectedThrowingWeapon model = render_state.getModel();
                     Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
                     return AssetRegistry.getInstance().getWeaponSprite(race, model
-                            .getSupplyType());
+                            .getWeaponTier());
                 }
 
                 @Override
@@ -682,7 +682,7 @@ public final class RenderState implements SceneContext {
                         Matrix4f dest) {
                     if (render_state.sceneContext instanceof RenderState rs
                             && rs.getOrCreateVisualModel(render_state
-                                    .getModel()) instanceof ThrowingWeaponVisualModel vm) {
+                                    .getModel()) instanceof DirectedThrowingWeaponVisualModel vm) {
                         vm.getTransform(dest);
                     }
                 }
@@ -706,7 +706,7 @@ public final class RenderState implements SceneContext {
                     RotatingThrowingWeapon model = render_state.getModel();
                     Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
                     return AssetRegistry.getInstance().getWeaponSprite(race, model
-                            .getSupplyType());
+                            .getWeaponTier());
                 }
 
                 @Override
@@ -714,7 +714,7 @@ public final class RenderState implements SceneContext {
                         Matrix4f dest) {
                     if (render_state.sceneContext instanceof RenderState rs
                             && rs.getOrCreateVisualModel(render_state
-                                    .getModel()) instanceof ThrowingWeaponVisualModel vm) {
+                                    .getModel()) instanceof RotatingThrowingWeaponVisualModel vm) {
                         vm.getTransform(dest);
                     }
                 }

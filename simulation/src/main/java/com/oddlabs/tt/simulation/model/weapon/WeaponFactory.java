@@ -4,8 +4,8 @@ import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.Target;
-
-import java.util.Optional;
+import com.oddlabs.tt.simulation.model.WeaponTier;
+import org.jspecify.annotations.Nullable;
 
 public abstract sealed class WeaponFactory permits InstantHitFactory, ThrowingFactory {
     private static final float TERRAIN_MAX_BONUS = .25f;
@@ -56,5 +56,5 @@ public abstract sealed class WeaponFactory permits InstantHitFactory, ThrowingFa
 
     protected abstract void doAttack(boolean hit, Unit src, Selectable<?> target);
 
-    public abstract Optional<Class<? extends ThrowingWeapon>> getType();
+    public abstract @Nullable WeaponTier getTier();
 }

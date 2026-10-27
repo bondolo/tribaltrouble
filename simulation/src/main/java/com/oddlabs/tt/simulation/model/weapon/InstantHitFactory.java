@@ -6,8 +6,8 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitType;
-
-import java.util.Optional;
+import com.oddlabs.tt.simulation.model.WeaponTier;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A weapon factory for units that deal damage instantly to their targets
@@ -45,7 +45,7 @@ public final class InstantHitFactory extends WeaponFactory {
     }
 
     @Override
-    public Optional<Class<? extends ThrowingWeapon>> getType() {
-        return Optional.empty();
+    public @Nullable WeaponTier getTier() {
+        return null;
     }
 }

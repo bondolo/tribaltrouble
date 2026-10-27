@@ -1,41 +1,68 @@
 package com.oddlabs.tt.simulation.model;
 
-public class DeployContainer extends SupplyContainer {
+import org.jspecify.annotations.Nullable;
+
+/**
+ * Container managing the deployment timing, order queues, and resource/unit consumption for a deployable unit type.
+ */
+public final class DeployContainer {
     private final Building building;
     private final DeployType deploy_type;
-    private final Class<?> supply_type;
+    private final @Nullable SupplyContainer required_supply;
     private final float seconds_per_deploy;
 
     private float time = 0;
+    private int queued_count = 0;
     private int num_orders = 0;
 
-
-    public DeployContainer(Building building, float seconds_per_deploy, DeployType deploy_type, Class<?> supply_type) {
-        super(Integer.MAX_VALUE);
+    DeployContainer(Building building, float seconds_per_deploy, DeployType deploy_type,
+            @Nullable SupplyContainer required_supply) {
         this.building = building;
         this.seconds_per_deploy = seconds_per_deploy;
         this.deploy_type = deploy_type;
-        this.supply_type = supply_type;
+        this.required_supply = required_supply;
+    }
+
+    /**
+     * {@return the required supply container (e.g. weapons for warriors or raw materials for transporters), or null if
+     * none}
+     */
+    public @Nullable SupplyContainer getRequiredSupply() {
+        return required_supply;
+    }
+
+    private int capAmount(int amount) {
+        return Math.max(amount, -queued_count);
+    }
+
+    public int getNumSupplies() {
+        return queued_count;
+    }
+
+    public int increaseSupply(int amount) {
+        int result = building.getOwner().getUnitCountContainer().increaseSupply(amount);
+        assert result == amount;
+        queued_count += amount;
+        return amount;
     }
 
     public void orderSupply(int orders) {
         int capped_amount = capAmount(orders);
         UnitContainer unitContainer = building.getUnitContainer().orElseThrow();
         int result = -unitContainer.capAmount(-capped_amount);
-        if (supply_type != null)
-            result = -building.getSupplyContainer(supply_type).orElseThrow().capAmount(-result);
+        if (required_supply != null)
+            result = -required_supply.capAmount(-result);
         if (result > 0) {
-            if (supply_type != null)
-                building.getSupplyContainer(supply_type).orElseThrow().prepareDeploy(result);
+            if (required_supply != null)
+                required_supply.prepareDeploy(result);
             unitContainer.prepareDeploy(result);
             orderSupply(result, orders);
         } else {
             orderSupply(result, orders);
             unitContainer.prepareDeploy(result);
-            if (supply_type != null) {
-                SupplyContainer supply_container = building.getSupplyContainer(supply_type).orElseThrow();
-                if (!supply_container.isSupplyFull())
-                    supply_container.prepareDeploy(result);
+            if (required_supply != null) {
+                if (!required_supply.isSupplyFull())
+                    required_supply.prepareDeploy(result);
             }
         }
     }
@@ -45,11 +72,15 @@ public class DeployContainer extends SupplyContainer {
         num_orders += orders;
     }
 
-    public final int getNumOrders() {
+    public int getNumOrders() {
         return num_orders;
     }
 
-    public final void deploy(float amount) {
+    public int getMaxSupplyCount() {
+        return Integer.MAX_VALUE;
+    }
+
+    public void deploy(float amount) {
         time += amount;
         if (time >= seconds_per_deploy) {
             time = 0;
@@ -60,29 +91,22 @@ public class DeployContainer extends SupplyContainer {
 
     private void doDeploy() {
         switch (deploy_type) {
-            case ROCK_WARRIOR -> building.createArmy(0, 1, 0, 0);
-            case IRON_WARRIOR -> building.createArmy(0, 0, 1, 0);
-            case RUBBER_WARRIOR -> building.createArmy(0, 0, 0, 1);
-            case PEON -> building.createArmy(1, 0, 0, 0);
-            case PEON_HARVEST_TREE -> building.createHarvesters(1, 0, 0, 0);
-            case PEON_TRANSPORT_TREE -> building.createTransporters(1, 0, 0, 0);
-            case PEON_HARVEST_ROCK -> building.createHarvesters(0, 1, 0, 0);
-            case PEON_TRANSPORT_ROCK -> building.createTransporters(0, 1, 0, 0);
-            case PEON_HARVEST_IRON -> building.createHarvesters(0, 0, 1, 0);
-            case PEON_TRANSPORT_IRON -> building.createTransporters(0, 0, 1, 0);
-            case PEON_HARVEST_RUBBER -> building.createHarvesters(0, 0, 0, 1);
-            case PEON_TRANSPORT_RUBBER -> building.createTransporters(0, 0, 0, 1);
+            case ROCK_WARRIOR -> building.createWarriors(WeaponTier.ROCK, 1);
+            case IRON_WARRIOR -> building.createWarriors(WeaponTier.IRON, 1);
+            case RUBBER_WARRIOR -> building.createWarriors(WeaponTier.RUBBER, 1);
+            case PEON -> building.createPeons(1);
+            case PEON_HARVEST_TREE -> building.createHarvesters(SupplyType.WOOD, 1);
+            case PEON_TRANSPORT_TREE -> building.createTransporters(SupplyType.WOOD, 1);
+            case PEON_HARVEST_ROCK -> building.createHarvesters(SupplyType.ROCK, 1);
+            case PEON_TRANSPORT_ROCK -> building.createTransporters(SupplyType.ROCK, 1);
+            case PEON_HARVEST_IRON -> building.createHarvesters(SupplyType.IRON, 1);
+            case PEON_TRANSPORT_IRON -> building.createTransporters(SupplyType.IRON, 1);
+            case PEON_HARVEST_RUBBER -> building.createHarvesters(SupplyType.RUBBER, 1);
+            case PEON_TRANSPORT_RUBBER -> building.createTransporters(SupplyType.RUBBER, 1);
         }
     }
 
-    @Override
-    public int increaseSupply(int amount) {
-        int result = building.getOwner().getUnitCountContainer().increaseSupply(amount);
-        assert result == amount;
-        return super.increaseSupply(amount);
-    }
-
-    public final float getBuildProgress() {
+    public float getBuildProgress() {
         return time / seconds_per_deploy;
     }
 }

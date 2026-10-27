@@ -7,11 +7,12 @@ import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.tt.simulation.model.SupplyModel;
 import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.weapon.DirectedThrowingWeapon;
 import com.oddlabs.tt.simulation.model.weapon.LightningCloud;
 import com.oddlabs.tt.simulation.model.weapon.PoisonFog;
+import com.oddlabs.tt.simulation.model.weapon.RotatingThrowingWeapon;
 import com.oddlabs.tt.simulation.model.weapon.SonicBlast;
 import com.oddlabs.tt.simulation.model.weapon.Stun;
-import com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon;
 
 
 /**
@@ -39,7 +40,8 @@ public final class ClientStateInitializer {
             case SupplyModel supplyModel -> new GenericSupplyVisualModel(supplyModel);
             case PoisonFog fog -> new PoisonFogVisualModel(fog, audio);
             case Stun stun -> new StunVisualModel(stun, audio);
-            case ThrowingWeapon throwingWeapon -> new ThrowingWeaponVisualModel(throwingWeapon, audio);
+            case DirectedThrowingWeapon spear -> new DirectedThrowingWeaponVisualModel(spear, audio);
+            case RotatingThrowingWeapon axe -> new RotatingThrowingWeaponVisualModel(axe, audio);
             default -> new DynamicVisualModel(model);
         };
     }

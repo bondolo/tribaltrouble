@@ -10,8 +10,8 @@ import com.oddlabs.tt.simulation.behaviour.AttackBehaviour;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Selectable;
-import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector3f;
@@ -78,21 +78,21 @@ final class WeaponAccessory implements StaticAccessory {
         this.handLocalTransform = isViking ? VIKING_AXE_HAND_LOCAL : null;
     }
 
-    private @Nullable SupplyType getWeaponMaterial() {
+    private @Nullable WeaponTier getWeaponTier() {
         return switch (unit.getTemplate().getUnitType()) {
-            case WARRIOR_ROCK -> SupplyType.ROCK;
-            case WARRIOR_IRON -> SupplyType.IRON;
-            case WARRIOR_RUBBER -> SupplyType.RUBBER;
+            case WARRIOR_ROCK -> WeaponTier.ROCK;
+            case WARRIOR_IRON -> WeaponTier.IRON;
+            case WARRIOR_RUBBER -> WeaponTier.RUBBER;
             default -> null;
         };
     }
 
     @Override
     public @Nullable SpriteKey getSpriteRenderer() {
-        SupplyType visualType = getWeaponMaterial();
-        if (visualType != null) {
+        WeaponTier tier = getWeaponTier();
+        if (tier != null) {
             Race race = unit.getOwner().getPlayerInfo().race();
-            return AssetRegistry.getInstance().getWeaponSprite(race, visualType);
+            return AssetRegistry.getInstance().getWeaponSprite(race, tier);
         }
         return null;
     }
@@ -112,13 +112,12 @@ final class WeaponAccessory implements StaticAccessory {
     }
 
     private float getSpearMetersPerSecond() {
-        SupplyType type = getWeaponMaterial();
-        if (type != null) {
-            return switch (type) {
+        WeaponTier tier = getWeaponTier();
+        if (tier != null) {
+            return switch (tier) {
                 case ROCK -> 20f;
                 case IRON -> 25f;
                 case RUBBER -> 30f;
-                default -> 20f;
             };
         }
         return 20f;

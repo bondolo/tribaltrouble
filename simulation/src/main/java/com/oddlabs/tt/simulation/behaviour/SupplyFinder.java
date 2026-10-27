@@ -28,8 +28,7 @@ final class SupplyFinder<S extends Supply> implements FinderFilter<S> {
 
     @Override
     public Optional<S> getOccupantFromRegion(Region region, boolean one_region) {
-        @SuppressWarnings("unchecked") Class<S> supplyClass = (Class<S>) supplyType.getSupplyClass();
-        Set<S> supplies = region.getObjects(supplyClass);
+        @SuppressWarnings("unchecked") Set<S> supplies = (Set<S>) (Set<?>) region.getSupplies(supplyType);
         if (one_region) {
             return findClosest(supplies);
         } else {
@@ -93,11 +92,10 @@ final class SupplyFinder<S extends Supply> implements FinderFilter<S> {
 
     @Override
     public boolean acceptOccupant(Occupant occ) {
-        if (supplyType.getSupplyClass().isInstance(occ)) {
-            Supply supply = (Supply) occ;
+        if (occ instanceof Supply supply && supply.getSupplyType() == supplyType) {
             assert !supply.isEmpty();
             return true;
-        } else
-            return false;
+        }
+        return false;
     }
 }

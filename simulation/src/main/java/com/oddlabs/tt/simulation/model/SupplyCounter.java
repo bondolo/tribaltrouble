@@ -1,47 +1,41 @@
 package com.oddlabs.tt.simulation.model;
 
-public class SupplyCounter {
+/**
+ * Tracks and computes live and pending supply counts for building UI indicators.
+ */
+public abstract sealed class SupplyCounter permits WeaponSupplyCounter, ResourceSupplyCounter, UnitSupplyCounter {
     private final Building building;
-    private final Class<?> supply_type;
+    private int delta = 0;
 
-    private int delta;
-
-    public SupplyCounter(Building building, Class<?> supply_type) {
+    protected SupplyCounter(Building building) {
         this.building = building;
-        this.supply_type = supply_type;
-        delta = 0;
+    }
+
+    public static SupplyCounter of(Building building, WeaponTier tier) {
+        return new WeaponSupplyCounter(building, tier);
+    }
+
+    public static SupplyCounter of(Building building, SupplyType supplyType) {
+        return new ResourceSupplyCounter(building, supplyType);
+    }
+
+    public static SupplyCounter ofUnits(Building building) {
+        return new UnitSupplyCounter(building);
+    }
+
+    public final Building getBuilding() {
+        return building;
     }
 
     public final void increaseSupply(int amount) {
         delta += amount;
     }
 
-    public int getNumSupplies() {
-        if (!building.isDead()) {
-            return building.getSupplyContainer(supply_type).map(c -> c.getNumSupplies()).orElse(0) + delta;
-        } else {
-            return 0;
-        }
-    }
-
-    protected final Building getBuilding() {
-        return building;
-    }
-
-    protected final Class<?> getSupplyType() {
-        return supply_type;
-    }
-
     public final int getDelta() {
         return delta;
     }
 
-    protected final void setDelta(int delta) {
-        this.delta = delta;
-    }
+    public abstract int getNumSupplies();
 
-    public final int getMaxSupplies() {
-        return !building.isDead() ? building.getSupplyContainer(supply_type).map(c -> c.getMaxSupplyCount()).orElse(0)
-                : 0;
-    }
+    public abstract int getMaxSupplies();
 }

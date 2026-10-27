@@ -185,13 +185,13 @@ public final class RaceData {
         RaceGeometry.UnitBounds chieftainGeom = RaceGeometry.VIKING_CHIEFTAIN;
 
         WeaponFactory vikingWarriorRockWeapon = new ThrowingFactory<>(
-                RockAxeWeapon.class, RockAxeWeapon::new, 0.5f, THROW_RANGE, 29f / 58f
+                WeaponTier.ROCK, RockAxeWeapon::new, 0.5f, THROW_RANGE, 29f / 58f
         );
         WeaponFactory vikingWarriorIronWeapon = new ThrowingFactory<>(
-                IronAxeWeapon.class, IronAxeWeapon::new, 0.75f, THROW_RANGE, 29f / 58f
+                WeaponTier.IRON, IronAxeWeapon::new, 0.75f, THROW_RANGE, 29f / 58f
         );
         WeaponFactory vikingWarriorRubberWeapon = new ThrowingFactory<>(
-                RubberAxeWeapon.class, RubberAxeWeapon::new, 0.95f, THROW_RANGE, 29f / 58f
+                WeaponTier.RUBBER, RubberAxeWeapon::new, 0.95f, THROW_RANGE, 29f / 58f
         );
 
         UnitTemplate vikingWarriorRock = new UnitTemplate(
@@ -324,13 +324,13 @@ public final class RaceData {
 
         float nativeSpearReleaseRatio = AppConfig.LEGACY_DETERMINISTIC ? 46f / 100f : 44f / 100f;
         WeaponFactory nativeWarriorRockWeapon = new ThrowingFactory<>(
-                RockSpearWeapon.class, RockSpearWeapon::new, 0.5f, THROW_RANGE, nativeSpearReleaseRatio
+                WeaponTier.ROCK, RockSpearWeapon::new, 0.5f, THROW_RANGE, nativeSpearReleaseRatio
         );
         WeaponFactory nativeWarriorIronWeapon = new ThrowingFactory<>(
-                IronSpearWeapon.class, IronSpearWeapon::new, 0.75f, THROW_RANGE, nativeSpearReleaseRatio
+                WeaponTier.IRON, IronSpearWeapon::new, 0.75f, THROW_RANGE, nativeSpearReleaseRatio
         );
         WeaponFactory nativeWarriorRubberWeapon = new ThrowingFactory<>(
-                RubberSpearWeapon.class, RubberSpearWeapon::new, 0.95f, THROW_RANGE, nativeSpearReleaseRatio
+                WeaponTier.RUBBER, RubberSpearWeapon::new, 0.95f, THROW_RANGE, nativeSpearReleaseRatio
         );
 
         UnitTemplate nativeWarriorRock = new UnitTemplate(

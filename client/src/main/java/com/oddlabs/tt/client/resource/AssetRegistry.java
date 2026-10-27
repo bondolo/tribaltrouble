@@ -9,6 +9,7 @@ import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.UnitType;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -52,7 +53,7 @@ public final class AssetRegistry {
 
     private final EnumMap<Race, EnumMap<UnitType, SpriteKey>> units = new EnumMap<>(Race.class);
     private final EnumMap<Race, EnumMap<BuildingType, BuildingVisuals>> buildings = new EnumMap<>(Race.class);
-    private final EnumMap<Race, EnumMap<SupplyType, SpriteKey>> weapons = new EnumMap<>(Race.class);
+    private final EnumMap<Race, EnumMap<WeaponTier, SpriteKey>> weapons = new EnumMap<>(Race.class);
     private final EnumMap<Race, EnumMap<SupplyType, SpriteKey>> carriedSupplies = new EnumMap<>(Race.class);
     private final EnumMap<EmojiType, SpriteKey> emojis = new EnumMap<>(EmojiType.class);
     private final EnumMap<Race, SpriteKey> rallyPoints = new EnumMap<>(Race.class);
@@ -76,7 +77,7 @@ public final class AssetRegistry {
         for (Race race : Race.values()) {
             units.put(race, new EnumMap<>(UnitType.class));
             buildings.put(race, new EnumMap<>(BuildingType.class));
-            weapons.put(race, new EnumMap<>(SupplyType.class));
+            weapons.put(race, new EnumMap<>(WeaponTier.class));
             carriedSupplies.put(race, new EnumMap<>(SupplyType.class));
         }
     }
@@ -85,14 +86,14 @@ public final class AssetRegistry {
         this.chickenCluckSprites = sprites.clone();
     }
 
-    public void registerWeapon(Race race, SupplyType type, SpriteKey sprite) {
-        weapons.get(race).put(type, sprite);
+    public void registerWeapon(Race race, WeaponTier tier, SpriteKey sprite) {
+        weapons.get(race).put(tier, sprite);
     }
 
-    public SpriteKey getWeaponSprite(Race race, SupplyType type) {
-        SpriteKey sprite = weapons.get(race).get(type);
+    public SpriteKey getWeaponSprite(Race race, WeaponTier tier) {
+        SpriteKey sprite = weapons.get(race).get(tier);
         if (sprite == null) {
-            throw new IllegalStateException("Weapon sprite not registered for race " + race + " and type " + type);
+            throw new IllegalStateException("Weapon sprite not registered for race " + race + " and tier " + tier);
         }
         return sprite;
     }

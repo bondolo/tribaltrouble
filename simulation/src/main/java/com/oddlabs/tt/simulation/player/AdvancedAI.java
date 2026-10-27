@@ -12,12 +12,7 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.DeployType;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
-import com.oddlabs.tt.simulation.model.weapon.IronSpearWeapon;
-import com.oddlabs.tt.simulation.model.weapon.RockAxeWeapon;
-import com.oddlabs.tt.simulation.model.weapon.RockSpearWeapon;
-import com.oddlabs.tt.simulation.model.weapon.RubberAxeWeapon;
-import com.oddlabs.tt.simulation.model.weapon.RubberSpearWeapon;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
@@ -164,12 +159,11 @@ public final class AdvancedAI extends AI {
                 return;
 
             int num_warriors = Math.min(num_units, num_weapons);
-            int num_rubber_units = Math.min(num_warriors, armory.getSupplyContainer(RubberAxeWeapon.class)
-                    .orElseThrow().getNumSupplies());
-            int num_iron_units = Math.min(num_warriors - num_rubber_units, armory.getSupplyContainer(
-                    IronAxeWeapon.class).orElseThrow().getNumSupplies());
-            int num_rock_units = Math.min(num_warriors - num_rubber_units - num_iron_units, armory.getSupplyContainer(
-                    RockAxeWeapon.class).orElseThrow().getNumSupplies());
+            int num_rubber_units = Math.min(num_warriors, armory.getWeaponSupplyCount(WeaponTier.RUBBER));
+            int num_iron_units = Math.min(num_warriors - num_rubber_units, armory.getWeaponSupplyCount(
+                    WeaponTier.IRON));
+            int num_rock_units = Math.min(num_warriors - num_rubber_units - num_iron_units, armory.getWeaponSupplyCount(
+                    WeaponTier.ROCK));
             if (num_rubber_units > 0) {
                 getPlayerInterface().deployUnits(armory, DeployType.RUBBER_WARRIOR, num_rubber_units);
             }
@@ -251,13 +245,13 @@ public final class AdvancedAI extends AI {
         } else if (unit.getAbilities().hasAbilities(Abilities.MAGIC)) {
             return SCORE_CHIEFTAIN;
         } else {
-            var type = unit.getWeaponFactory().getType().orElse(null);
-            if (type == RockAxeWeapon.class || type == RockSpearWeapon.class) {
-                return SCORE_WARRIOR_ROCK;
-            } else if (type == IronAxeWeapon.class || type == IronSpearWeapon.class) {
-                return SCORE_WARRIOR_IRON;
-            } else if (type == RubberAxeWeapon.class || type == RubberSpearWeapon.class) {
-                return SCORE_WARRIOR_RUBBER;
+            var tier = unit.getWeaponFactory().getTier();
+            if (tier != null) {
+                return switch (tier) {
+                    case ROCK -> SCORE_WARRIOR_ROCK;
+                    case IRON -> SCORE_WARRIOR_IRON;
+                    case RUBBER -> SCORE_WARRIOR_RUBBER;
+                };
             }
         }
         throw new IllegalArgumentException("Unit has no valid weapon or magic abilities");
@@ -358,12 +352,11 @@ public final class AdvancedAI extends AI {
                 int num_weapons = numWeapons(armory) - params.minWeaponsInStock();
 
                 if (num_units >= num_warriors && num_weapons >= num_warriors) {
-                    int num_rubber_units = Math.min(num_warriors, armory.getSupplyContainer(RubberAxeWeapon.class)
-                            .orElseThrow().getNumSupplies());
-                    int num_iron_units = Math.min(num_warriors - num_rubber_units, armory.getSupplyContainer(
-                            IronAxeWeapon.class).orElseThrow().getNumSupplies());
+                    int num_rubber_units = Math.min(num_warriors, armory.getWeaponSupplyCount(WeaponTier.RUBBER));
+                    int num_iron_units = Math.min(num_warriors - num_rubber_units, armory.getWeaponSupplyCount(
+                            WeaponTier.IRON));
                     int num_rock_units = Math.min(num_warriors - num_rubber_units - num_iron_units, armory
-                            .getSupplyContainer(RockAxeWeapon.class).orElseThrow().getNumSupplies());
+                            .getWeaponSupplyCount(WeaponTier.ROCK));
                     if (num_rubber_units > 0)
                         getPlayerInterface().deployUnits(armory, DeployType.RUBBER_WARRIOR, num_rubber_units);
                     if (num_iron_units > 0)
@@ -532,9 +525,9 @@ public final class AdvancedAI extends AI {
         }
     */
     private int numWeapons(Building armory) {
-        return armory.getSupplyContainer(RockAxeWeapon.class).orElseThrow().getNumSupplies()
-                + armory.getSupplyContainer(IronAxeWeapon.class).orElseThrow().getNumSupplies()
-                + armory.getSupplyContainer(RubberAxeWeapon.class).orElseThrow().getNumSupplies();
+        return armory.getWeaponSupplyCount(WeaponTier.ROCK)
+                + armory.getWeaponSupplyCount(WeaponTier.IRON)
+                + armory.getWeaponSupplyCount(WeaponTier.RUBBER);
     }
 
     private @Nullable Target findTarget(int start_x, int start_y) {

@@ -17,7 +17,7 @@ import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.DeployType;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitTemplate;
-import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.client.viewer.WorldInitAction;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
@@ -207,10 +207,10 @@ public abstract class Island {
     protected final void refillArmory(Player enemy) {
         enemy.getQuarters().ifPresent(quarters -> {
             enemy.getArmory().ifPresent(armory -> {
-                quarters.removeSupplies(Unit.class);
-                armory.fillSupplies(Unit.class, enemy.getWorld().getMaxUnitCount() - enemy.getUnitCountContainer()
+                quarters.removeUnits();
+                armory.fillUnits(enemy.getWorld().getMaxUnitCount() - enemy.getUnitCountContainer()
                         .getNumSupplies());
-                armory.fillSupplies(IronAxeWeapon.class, Integer.MAX_VALUE);
+                armory.fillWeapons(WeaponTier.IRON, Integer.MAX_VALUE);
             });
         });
     }

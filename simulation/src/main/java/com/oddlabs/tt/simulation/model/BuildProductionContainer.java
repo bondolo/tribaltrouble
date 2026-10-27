@@ -3,7 +3,7 @@ package com.oddlabs.tt.simulation.model;
 /**
  * Manages production and resource consumption for manufactured goods in a building.
  */
-public class BuildProductionContainer extends BuildSupplyContainer {
+public final class BuildProductionContainer extends SupplyContainer {
     public static final int INFINITE_LIMIT = 30;
 
     private final SupplyContainer dest_container;
@@ -13,8 +13,9 @@ public class BuildProductionContainer extends BuildSupplyContainer {
 
     private float man_seconds = 0;
     private boolean infinite = false;
+    private int num_orders = 0;
 
-    public BuildProductionContainer(int max_supply_count,
+    BuildProductionContainer(int max_supply_count,
             SupplyContainer dest_container,
             Building building,
             Cost cost,
@@ -26,15 +27,28 @@ public class BuildProductionContainer extends BuildSupplyContainer {
         this.man_seconds_per_production = man_seconds_per_production;
     }
 
+    public void orderSupply(int amount) {
+        orderSupply(amount, amount);
+    }
+
+    private void orderSupply(int amount, int orders) {
+        increaseSupply(amount);
+        num_orders += orders;
+    }
+
+    public int getNumOrders() {
+        return num_orders;
+    }
+
     public void orderSupply(int amount, boolean infinite) {
         this.infinite = infinite;
         if (infinite)
-            super.orderSupply(INFINITE_LIMIT - getNumSupplies(), amount);
+            orderSupply(INFINITE_LIMIT - getNumSupplies(), amount);
         else
-            super.orderSupply(amount);
+            orderSupply(amount);
     }
 
-    public final boolean hasEnoughSupplies() {
+    public boolean hasEnoughSupplies() {
         SupplyType[] types = SupplyType.getValues();
         for (SupplyType type : types) {
             int needed = cost.getCost(type);
@@ -48,7 +62,7 @@ public class BuildProductionContainer extends BuildSupplyContainer {
         return true;
     }
 
-    public final void build(float delta) {
+    public void build(float delta) {
         man_seconds += delta;
         if (man_seconds >= man_seconds_per_production) {
             man_seconds = 0;
@@ -68,7 +82,7 @@ public class BuildProductionContainer extends BuildSupplyContainer {
         }
     }
 
-    public final float getBuildProgress() {
+    public float getBuildProgress() {
         return man_seconds / man_seconds_per_production;
     }
 

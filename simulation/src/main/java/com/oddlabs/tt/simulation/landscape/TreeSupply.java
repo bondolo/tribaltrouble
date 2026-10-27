@@ -111,12 +111,11 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         return "Tree at " + grid_x + " " + grid_y + " isEmpty() " + isEmpty();
     }
 
-    @SuppressWarnings("unchecked")
     private void occupyTree() {
         UnitGrid grid = world.getUnitGrid();
         world.registerTarget(this);
         Region region = grid.getRegion(getGridX(), getGridY());
-        region.registerObject(TreeSupply.class, this);
+        region.registerSupply(this);
         for (int y = 0; y < grid_size; y++) {
             int occ_y = grid_y + y - (grid_size - 1) / 2;
             for (int x = 0; x < grid_size; x++) {
@@ -129,12 +128,11 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         grid.occupyGrid(grid_x, grid_y, this);
     }
 
-    @SuppressWarnings("unchecked")
     private void unoccupyTree() {
         UnitGrid grid = world.getUnitGrid();
         world.unregisterTarget(this);
         Region region = grid.getRegion(grid_x, grid_y);
-        region.unregisterObject(TreeSupply.class, this);
+        region.unregisterSupply(this);
         grid.freeGrid(grid_x, grid_y, this);
     }
 

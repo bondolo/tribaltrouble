@@ -4,53 +4,61 @@ import com.oddlabs.tt.gui.ToolTipBox;
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.simulation.model.BuildProductionContainer;
-import com.oddlabs.tt.simulation.model.BuildSupplyContainer;
 import com.oddlabs.tt.simulation.model.Building;
-import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
-import com.oddlabs.tt.simulation.model.weapon.RockAxeWeapon;
-import com.oddlabs.tt.simulation.model.weapon.RubberAxeWeapon;
-import com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.client.viewer.WorldViewer;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
+/**
+ * A spinner GUI control for queuing weapon and item production orders in a building.
+ */
 public final class BuildSpinner extends IconSpinner {
     public static final int INFINITE_LIMIT = BuildProductionContainer.INFINITE_LIMIT;
 
     private final PlayerInterface player_interface;
+    private final WeaponTier tier;
 
-    private Building current_building;
-    private Class<? extends ThrowingWeapon> type;
+    private @Nullable Building current_building;
     private int num_orders;
     private int order_size;
     private boolean infinite;
 
     BuildSpinner(WorldViewer viewer, PlayerInterface player_interface,
             ModeIconQuads icon_quad, String tool_tip, List<IconQuad> tool_tip_icons,
-            GameAction action, GameAction dec_action) {
+            GameAction action, GameAction dec_action, WeaponTier tier) {
         super(viewer, icon_quad, tool_tip, tool_tip_icons, action, dec_action);
         this.player_interface = player_interface;
+        this.tier = tier;
     }
 
-    void setBuildSupplyContainer(Building current_building, Class<? extends ThrowingWeapon> type) {
+    void setBuilding(@Nullable Building current_building) {
         this.current_building = current_building;
-        this.type = type;
-        if (!current_building.isDead())
-            num_orders = current_building.getBuildSupplyContainer(type).orElseThrow().getNumOrders();
+        if (current_building != null && !current_building.isDead()) {
+            num_orders = current_building.getWeaponBuildContainer(tier).map(BuildProductionContainer::getNumOrders)
+                    .orElse(0);
+        } else {
+            num_orders = 0;
+        }
     }
 
     @Override
     public int computeCount() {
-        if (!current_building.isDead()) {
-            BuildSupplyContainer build_container = current_building.getBuildSupplyContainer(type).orElseThrow();
+        if (current_building != null && !current_building.isDead()) {
+            BuildProductionContainer build_container = current_building.getWeaponBuildContainer(tier).orElse(null);
+            if (build_container == null) {
+                return 0;
+            }
             int count = Math.clamp(build_container.getNumSupplies() + getOrderDiff(),
                     0, build_container.getMaxSupplyCount());
             infinite = count >= INFINITE_LIMIT;
             return count;
-        } else
+        } else {
             return 0;
+        }
     }
 
     @Override
@@ -59,15 +67,11 @@ public final class BuildSpinner extends IconSpinner {
     }
 
     private void order(int num) {
-        if (!current_building.isDead()) {
-            if (type == RockAxeWeapon.class) {
-                player_interface.buildRockWeapons(current_building, num, infinite);
-            } else if (type == IronAxeWeapon.class) {
-                player_interface.buildIronWeapons(current_building, num, infinite);
-            } else if (type == RubberAxeWeapon.class) {
-                player_interface.buildRubberWeapons(current_building, num, infinite);
-            } else {
-                throw new IllegalArgumentException();
+        if (current_building != null && !current_building.isDead() && tier != null) {
+            switch (tier) {
+                case ROCK -> player_interface.buildRockWeapons(current_building, num, infinite);
+                case IRON -> player_interface.buildIronWeapons(current_building, num, infinite);
+                case RUBBER -> player_interface.buildRubberWeapons(current_building, num, infinite);
             }
         }
     }
@@ -80,20 +84,22 @@ public final class BuildSpinner extends IconSpinner {
 
     @Override
     protected float getProgress() {
-        return current_building.isDead()
+        return (current_building == null || current_building.isDead() || tier == null)
                 ? 0
-                : ((BuildProductionContainer) current_building.getBuildSupplyContainer(type).orElseThrow())
-                        .getBuildProgress();
+                : current_building.getWeaponBuildContainer(tier)
+                        .map(BuildProductionContainer::getBuildProgress).orElse(0f);
     }
 
+    @Nullable
     Building getBuilding() {
         return current_building;
     }
 
     private int getOrderDiff() {
-        return current_building.isDead()
+        return (current_building == null || current_building.isDead() || tier == null)
                 ? 0
-                : num_orders - current_building.getBuildSupplyContainer(type).orElseThrow().getNumOrders();
+                : num_orders - current_building.getWeaponBuildContainer(tier)
+                        .map(BuildProductionContainer::getNumOrders).orElse(0);
     }
 
     @Override

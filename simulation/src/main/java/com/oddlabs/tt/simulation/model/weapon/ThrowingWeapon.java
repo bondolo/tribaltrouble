@@ -5,8 +5,8 @@ import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
-import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.base.event.StateChecksum;
 
@@ -76,7 +76,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
             new BoundingBox(-2.5f, 2.5f, -2.5f, 2.5f, -2.5f, 15f)
     };
 
-    public abstract SupplyType getSupplyType();
+    public abstract WeaponTier getWeaponTier();
 
     @Override
     protected BoundingBox[] getLocalBounds() {

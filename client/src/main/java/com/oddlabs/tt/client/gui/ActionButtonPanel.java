@@ -18,20 +18,15 @@ import com.oddlabs.tt.client.delegate.RallyPointDelegate;
 import com.oddlabs.tt.client.delegate.TargetDelegate;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
-import com.oddlabs.tt.simulation.landscape.TreeSupply;
-import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.DeployType;
-import com.oddlabs.tt.simulation.model.IronSupply;
+import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.tt.simulation.model.RockSupply;
-import com.oddlabs.tt.simulation.model.RubberSupply;
 import com.oddlabs.tt.simulation.model.SupplyCounter;
+import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
-import com.oddlabs.tt.simulation.model.weapon.RockAxeWeapon;
-import com.oddlabs.tt.simulation.model.weapon.RubberAxeWeapon;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.base.util.Utils;
@@ -295,7 +290,8 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         quarters_peon_button = new DeploySpinner(
                 viewer, player_interface, race_icons.peonIcon(),
                 i18n("deploy_peon_tip"),
-                List.of(race_icons.unitStatusIcon()), GameAction.TRAIN_PEON, GameAction.TRAIN_PEON_DEC
+                List.of(race_icons.unitStatusIcon()), GameAction.TRAIN_PEON, GameAction.TRAIN_PEON_DEC,
+                DeployType.PEON
         );
         quarters_group.addChild(quarters_peon_button);
         quarters_chieftain_button = new ChieftainButton(viewer, player_interface, race_icons.chieftainIcon(), icons);
@@ -364,25 +360,25 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         harvest_tree_button = new DeploySpinner(
                 viewer, player_interface, icons.getTreeIcon(),
                 i18n("harvest_tree_tip"), List.of(race_icons.unitStatusIcon()),
-                GameAction.RES_TREE, GameAction.RES_TREE_DEC
+                GameAction.RES_TREE, GameAction.RES_TREE_DEC, DeployType.PEON_HARVEST_TREE
         );
         harvest_group.addChild(harvest_tree_button);
         harvest_rock_button = new DeploySpinner(
                 viewer, player_interface, icons.getRockIcon(),
                 i18n("harvest_rock_tip"), List.of(race_icons.unitStatusIcon()),
-                GameAction.RES_ROCK, GameAction.RES_ROCK_DEC
+                GameAction.RES_ROCK, GameAction.RES_ROCK_DEC, DeployType.PEON_HARVEST_ROCK
         );
         harvest_group.addChild(harvest_rock_button);
         harvest_iron_button = new DeploySpinner(
                 viewer, player_interface, icons.getIronIcon(),
                 i18n("harvest_iron_tip"), List.of(race_icons.unitStatusIcon()),
-                GameAction.RES_IRON, GameAction.RES_IRON_DEC
+                GameAction.RES_IRON, GameAction.RES_IRON_DEC, DeployType.PEON_HARVEST_IRON
         );
         harvest_group.addChild(harvest_iron_button);
         harvest_rubber_button = new DeploySpinner(
                 viewer, player_interface, icons.getRubberIcon(), i18n(
                         "harvest_chicken_tip"), List.of(race_icons.unitStatusIcon()),
-                GameAction.RES_CHICKEN, GameAction.RES_CHICKEN_DEC
+                GameAction.RES_CHICKEN, GameAction.RES_CHICKEN_DEC, DeployType.PEON_HARVEST_RUBBER
         );
         harvest_group.addChild(harvest_rubber_button);
         var harvest_back_button = new NonFocusIconButton(
@@ -402,19 +398,19 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         build_weapon_rock_button = new BuildSpinner(
                 viewer, player_interface, race_icons.buildWeaponRockIcon(),
                 i18n("build_rock_tip"), icons.toIconList(Building.COST_ROCK_WEAPON),
-                GameAction.RES_ROCK, GameAction.RES_ROCK_DEC
+                GameAction.RES_ROCK, GameAction.RES_ROCK_DEC, WeaponTier.ROCK
         );
         build_group.addChild(build_weapon_rock_button);
         build_weapon_iron_button = new BuildSpinner(
                 viewer, player_interface, race_icons.buildWeaponIronIcon(),
                 i18n("build_iron_tip"), icons.toIconList(Building.COST_IRON_WEAPON),
-                GameAction.RES_IRON, GameAction.RES_IRON_DEC
+                GameAction.RES_IRON, GameAction.RES_IRON_DEC, WeaponTier.IRON
         );
         build_group.addChild(build_weapon_iron_button);
         build_weapon_rubber_button = new BuildSpinner(
                 viewer, player_interface, race_icons.buildWeaponRubberIcon(),
                 i18n("build_chicken_tip"), icons.toIconList(Building.COST_RUBBER_WEAPON),
-                GameAction.RES_CHICKEN, GameAction.RES_CHICKEN_DEC
+                GameAction.RES_CHICKEN, GameAction.RES_CHICKEN_DEC, WeaponTier.RUBBER
         );
         build_group.addChild(build_weapon_rubber_button);
         var build_back_button = new NonFocusIconButton(
@@ -433,27 +429,27 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         army_peon_button = new DeploySpinner(
                 viewer, player_interface, race_icons.peonIcon(),
                 i18n("deploy_peon_tip"), List.of(race_icons.unitStatusIcon()),
-                GameAction.TRAIN_PEON, GameAction.TRAIN_PEON_DEC
+                GameAction.TRAIN_PEON, GameAction.TRAIN_PEON_DEC, DeployType.PEON
         );
         army_group.addChild(army_peon_button);
         army_warrior_rock_button = new DeploySpinner(
                 viewer, player_interface, race_icons.warriorRockIcon(),
                 i18n("deploy_rock_tip"), List.of(race_icons.unitStatusIcon(), race_icons.weaponRockStatusIcon()),
-                GameAction.RES_ROCK, GameAction.RES_ROCK_DEC
+                GameAction.RES_ROCK, GameAction.RES_ROCK_DEC, DeployType.ROCK_WARRIOR
         );
         army_group.addChild(army_warrior_rock_button);
 
         army_warrior_iron_button = new DeploySpinner(
                 viewer, player_interface, race_icons.warriorIronIcon(),
                 i18n("deploy_iron_tip"), List.of(race_icons.unitStatusIcon(), race_icons.weaponIronStatusIcon()),
-                GameAction.RES_IRON, GameAction.RES_IRON_DEC
+                GameAction.RES_IRON, GameAction.RES_IRON_DEC, DeployType.IRON_WARRIOR
         );
         army_group.addChild(army_warrior_iron_button);
 
         army_warrior_rubber_button = new DeploySpinner(
                 viewer, player_interface, race_icons.warriorRubberIcon(),
                 i18n("deploy_chicken_tip"), List.of(race_icons.unitStatusIcon(), race_icons.weaponRubberStatusIcon()),
-                GameAction.RES_CHICKEN, GameAction.RES_CHICKEN_DEC
+                GameAction.RES_CHICKEN, GameAction.RES_CHICKEN_DEC, DeployType.RUBBER_WARRIOR
         );
         army_group.addChild(army_warrior_rubber_button);
 
@@ -474,25 +470,25 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         transport_tree_button = new DeploySpinner(
                 viewer, player_interface, icons.getTreeIcon(),
                 i18n("transport_tree_tip"), List.of(race_icons.unitStatusIcon(), icons.getTreeStatusIcon()),
-                GameAction.RES_TREE, GameAction.RES_TREE_DEC
+                GameAction.RES_TREE, GameAction.RES_TREE_DEC, DeployType.PEON_TRANSPORT_TREE
         );
         transport_group.addChild(transport_tree_button);
         transport_rock_button = new DeploySpinner(
                 viewer, player_interface, icons.getRockIcon(),
                 i18n("transport_rock_tip"), List.of(race_icons.unitStatusIcon(), icons.getRockStatusIcon()),
-                GameAction.RES_ROCK, GameAction.RES_ROCK_DEC
+                GameAction.RES_ROCK, GameAction.RES_ROCK_DEC, DeployType.PEON_TRANSPORT_ROCK
         );
         transport_group.addChild(transport_rock_button);
         transport_iron_button = new DeploySpinner(
                 viewer, player_interface, icons.getIronIcon(),
                 i18n("transport_iron_tip"), List.of(race_icons.unitStatusIcon(), icons.getIronStatusIcon()),
-                GameAction.RES_IRON, GameAction.RES_IRON_DEC
+                GameAction.RES_IRON, GameAction.RES_IRON_DEC, DeployType.PEON_TRANSPORT_IRON
         );
         transport_group.addChild(transport_iron_button);
         transport_rubber_button = new DeploySpinner(
                 viewer, player_interface, icons.getRubberIcon(),
                 i18n("transport_chicken_tip"), List.of(race_icons.unitStatusIcon(), icons.getRubberStatusIcon()),
-                GameAction.RES_CHICKEN, GameAction.RES_CHICKEN_DEC
+                GameAction.RES_CHICKEN, GameAction.RES_CHICKEN_DEC, DeployType.PEON_TRANSPORT_RUBBER
         );
         transport_group.addChild(transport_rubber_button);
         var transport_back_button = new NonFocusIconButton(
@@ -633,10 +629,10 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
             addChild(quarters_status_group);
             addChild(quarters_group);
             Building b = q.getBuilding();
-            SupplyCounter unit_counter = new SupplyCounter(b, Unit.class);
+            SupplyCounter unit_counter = SupplyCounter.ofUnits(b);
             quarters_unit_status.setCounter(unit_counter);
             quarters_unit_status.setUnitContainerBuilding(b);
-            quarters_peon_button.setContainers(b, DeployType.PEON, null);
+            quarters_peon_button.setBuilding(b);
             quarters_peon_button.setIconDisabler(() -> unit_counter.getNumSupplies() == 0);
             quarters_chieftain_button.setIconDisabler(() -> !b.canBuildChieftain() && !b.canStopChieftain());
             quarters_chieftain_button.setBuilding(b);
@@ -745,52 +741,52 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
 
     private void updateCounters() {
         assert current_building != null : "Building is null";
-        SupplyCounter unit_counter = new SupplyCounter(current_building, Unit.class);
+        SupplyCounter unit_counter = SupplyCounter.ofUnits(current_building);
         unit_status.setCounter(unit_counter);
-        SupplyCounter weapon_rock_counter = new SupplyCounter(current_building, RockAxeWeapon.class);
+        SupplyCounter weapon_rock_counter = SupplyCounter.of(current_building, WeaponTier.ROCK);
         weapon_rock_status.setCounter(weapon_rock_counter);
-        SupplyCounter weapon_iron_counter = new SupplyCounter(current_building, IronAxeWeapon.class);
+        SupplyCounter weapon_iron_counter = SupplyCounter.of(current_building, WeaponTier.IRON);
         weapon_iron_status.setCounter(weapon_iron_counter);
-        SupplyCounter weapon_rubber_counter = new SupplyCounter(current_building, RubberAxeWeapon.class);
+        SupplyCounter weapon_rubber_counter = SupplyCounter.of(current_building, WeaponTier.RUBBER);
         weapon_rubber_status.setCounter(weapon_rubber_counter);
-        SupplyCounter tree_counter = new SupplyCounter(current_building, TreeSupply.class);
+        SupplyCounter tree_counter = SupplyCounter.of(current_building, SupplyType.WOOD);
         tree_status.setCounter(tree_counter);
-        SupplyCounter rock_counter = new SupplyCounter(current_building, RockSupply.class);
+        SupplyCounter rock_counter = SupplyCounter.of(current_building, SupplyType.ROCK);
         rock_status.setCounter(rock_counter);
-        SupplyCounter iron_counter = new SupplyCounter(current_building, IronSupply.class);
+        SupplyCounter iron_counter = SupplyCounter.of(current_building, SupplyType.IRON);
         iron_status.setCounter(iron_counter);
-        SupplyCounter rubber_counter = new SupplyCounter(current_building, RubberSupply.class);
+        SupplyCounter rubber_counter = SupplyCounter.of(current_building, SupplyType.RUBBER);
         rubber_status.setCounter(rubber_counter);
 
-        harvest_tree_button.setContainers(current_building, DeployType.PEON_HARVEST_TREE, null);
+        harvest_tree_button.setBuilding(current_building);
         harvest_tree_button.setIconDisabler(() -> unit_counter.getNumSupplies() == 0);
-        harvest_rock_button.setContainers(current_building, DeployType.PEON_HARVEST_ROCK, null);
+        harvest_rock_button.setBuilding(current_building);
         harvest_rock_button.setIconDisabler(() -> unit_counter.getNumSupplies() == 0);
-        harvest_iron_button.setContainers(current_building, DeployType.PEON_HARVEST_IRON, null);
+        harvest_iron_button.setBuilding(current_building);
         harvest_iron_button.setIconDisabler(() -> unit_counter.getNumSupplies() == 0);
-        harvest_rubber_button.setContainers(current_building, DeployType.PEON_HARVEST_RUBBER, null);
+        harvest_rubber_button.setBuilding(current_building);
         harvest_rubber_button.setIconDisabler(() -> unit_counter.getNumSupplies() == 0);
 
-        build_weapon_rock_button.setBuildSupplyContainer(current_building, RockAxeWeapon.class);
-        build_weapon_iron_button.setBuildSupplyContainer(current_building, IronAxeWeapon.class);
-        build_weapon_rubber_button.setBuildSupplyContainer(current_building, RubberAxeWeapon.class);
+        build_weapon_rock_button.setBuilding(current_building);
+        build_weapon_iron_button.setBuilding(current_building);
+        build_weapon_rubber_button.setBuilding(current_building);
 
-        army_peon_button.setContainers(current_building, DeployType.PEON, null);
+        army_peon_button.setBuilding(current_building);
         army_peon_button.setIconDisabler(() -> unit_counter.getNumSupplies() == 0);
-        army_warrior_rock_button.setContainers(current_building, DeployType.ROCK_WARRIOR, RockAxeWeapon.class);
+        army_warrior_rock_button.setBuilding(current_building);
         army_warrior_rock_button.setIconDisabler(() -> suppliesEmpty(unit_counter, weapon_rock_counter));
-        army_warrior_iron_button.setContainers(current_building, DeployType.IRON_WARRIOR, IronAxeWeapon.class);
+        army_warrior_iron_button.setBuilding(current_building);
         army_warrior_iron_button.setIconDisabler(() -> suppliesEmpty(unit_counter, weapon_iron_counter));
-        army_warrior_rubber_button.setContainers(current_building, DeployType.RUBBER_WARRIOR, RubberAxeWeapon.class);
+        army_warrior_rubber_button.setBuilding(current_building);
         army_warrior_rubber_button.setIconDisabler(() -> suppliesEmpty(unit_counter, weapon_rubber_counter));
 
-        transport_tree_button.setContainers(current_building, DeployType.PEON_TRANSPORT_TREE, TreeSupply.class);
+        transport_tree_button.setBuilding(current_building);
         transport_tree_button.setIconDisabler(() -> suppliesEmpty(unit_counter, tree_counter));
-        transport_rock_button.setContainers(current_building, DeployType.PEON_TRANSPORT_ROCK, RockSupply.class);
+        transport_rock_button.setBuilding(current_building);
         transport_rock_button.setIconDisabler(() -> suppliesEmpty(unit_counter, rock_counter));
-        transport_iron_button.setContainers(current_building, DeployType.PEON_TRANSPORT_IRON, IronSupply.class);
+        transport_iron_button.setBuilding(current_building);
         transport_iron_button.setIconDisabler(() -> suppliesEmpty(unit_counter, iron_counter));
-        transport_rubber_button.setContainers(current_building, DeployType.PEON_TRANSPORT_RUBBER, RubberSupply.class);
+        transport_rubber_button.setBuilding(current_building);
         transport_rubber_button.setIconDisabler(() -> suppliesEmpty(unit_counter, rubber_counter));
     }
 

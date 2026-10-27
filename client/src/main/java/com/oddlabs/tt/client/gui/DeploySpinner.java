@@ -13,37 +13,39 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
+/**
+ * A spinner GUI control for queuing and deploying units and resources from buildings.
+ */
 public final class DeploySpinner extends IconSpinner {
     private final PlayerInterface player_interface;
-    private @Nullable Class<?> supply_type;
-    private DeployType deploy_type;
-    private Building current_building;
+    private final DeployType deploy_type;
+    private @Nullable Building current_building;
     private int num_orders = 0;
     private int order_size = 0;
 
     public DeploySpinner(WorldViewer viewer, PlayerInterface player_interface,
             ModeIconQuads icon_quad, String tool_tip, @Nullable List<
                     IconQuad> tool_tip_icons,
-            GameAction action, GameAction dec_action) {
+            GameAction action, GameAction dec_action, DeployType deploy_type) {
         super(viewer, icon_quad, tool_tip, tool_tip_icons, action, dec_action);
         this.player_interface = player_interface;
+        this.deploy_type = deploy_type;
     }
 
-    public void setContainers(Building current_building, DeployType deploy_type, @Nullable Class<
-            ?> supply_type) {
+    public void setBuilding(@Nullable Building current_building) {
         this.current_building = current_building;
-        this.deploy_type = deploy_type;
-        this.supply_type = supply_type;
-        if (!current_building.isDead())
+        if (current_building != null && !current_building.isDead()) {
             num_orders = current_building.getDeployContainer(deploy_type).getNumOrders();
+        } else {
+            num_orders = 0;
+        }
     }
 
     @Override
     public int computeCount() {
         if (current_building != null && !current_building.isDead()) {
             DeployContainer deploy_container = current_building.getDeployContainer(deploy_type);
-            return Math.min(deploy_container.getMaxSupplyCount(),
-                    Math.max(0, deploy_container.getNumSupplies() + getOrderDiff()));
+            return Math.max(0, deploy_container.getNumSupplies() + getOrderDiff());
         } else
             return 0;
     }
@@ -70,15 +72,15 @@ public final class DeploySpinner extends IconSpinner {
     protected void increase(int amount) {
         if (!current_building.isDead()) {
             int num_units = current_building.getUnitContainer().map(SupplyContainer::getNumSupplies).orElse(0);
-            int num_supplies = supply_type != null
-                    ? current_building.getSupplyContainer(supply_type).map(SupplyContainer::getNumSupplies).orElse(0)
-                    : Integer.MAX_VALUE;
+            DeployContainer deploy_container = current_building.getDeployContainer(deploy_type);
+            SupplyContainer req = deploy_container.getRequiredSupply();
+            int num_supplies = req != null ? req.getNumSupplies() : Integer.MAX_VALUE;
 
             if (num_units > getOrderDiff() && num_supplies > getOrderDiff()) {
                 if (amount > num_units - getOrderDiff()) {
                     amount = num_units - getOrderDiff();
                 }
-                if (supply_type != null && amount > num_supplies - getOrderDiff()) {
+                if (req != null && amount > num_supplies - getOrderDiff()) {
                     amount = num_supplies - getOrderDiff();
                 }
                 order_size += amount;

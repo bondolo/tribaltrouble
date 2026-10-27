@@ -23,6 +23,7 @@ import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.UnitType;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 
 import java.util.EnumMap;
 import java.util.function.Supplier;
@@ -230,23 +231,23 @@ public final class RacesAssetsLoader {
         ProgressListener.progress(1f / num_progress);
 
         AssetRegistry.getInstance().registerWeapon(
-                Race.VIKINGS, SupplyType.ROCK,
+                Race.VIKINGS, WeaponTier.ROCK,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_ROCK.getValue()));
         AssetRegistry.getInstance().registerWeapon(
-                Race.VIKINGS, SupplyType.IRON,
+                Race.VIKINGS, WeaponTier.IRON,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_IRON.getValue()));
         AssetRegistry.getInstance().registerWeapon(
-                Race.VIKINGS, SupplyType.RUBBER,
+                Race.VIKINGS, WeaponTier.RUBBER,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_RUBBER.getValue()));
 
         AssetRegistry.getInstance().registerWeapon(
-                Race.NATIVES, SupplyType.ROCK,
+                Race.NATIVES, WeaponTier.ROCK,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_ROCK.getValue()));
         AssetRegistry.getInstance().registerWeapon(
-                Race.NATIVES, SupplyType.IRON,
+                Race.NATIVES, WeaponTier.IRON,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_IRON.getValue()));
         AssetRegistry.getInstance().registerWeapon(
-                Race.NATIVES, SupplyType.RUBBER,
+                Race.NATIVES, WeaponTier.RUBBER,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_RUBBER.getValue())
         );
 

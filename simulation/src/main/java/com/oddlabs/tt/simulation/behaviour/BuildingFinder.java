@@ -22,7 +22,7 @@ final class BuildingFinder implements FinderFilter<Building> {
 
     @Override
     public Optional<Building> getOccupantFromRegion(Region region, boolean one_region) {
-        for (Building building : region.getObjects(Building.class)) {
+        for (Building building : region.getBuildings()) {
             if (accept(building)) {
                 return Optional.of(building);
             }
