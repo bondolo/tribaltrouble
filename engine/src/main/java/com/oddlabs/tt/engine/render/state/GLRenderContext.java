@@ -56,6 +56,7 @@ public final class GLRenderContext implements RenderContext, AutoCloseable {
     private GLState cullFaceEnabled = GLState.UNKNOWN;
     private GLState framebufferSrgbEnabled = GLState.UNKNOWN;
     private GLState multisampleEnabled = GLState.UNKNOWN;
+    private int effectiveSamples = 0;
     private int maxSamples = -1;
 
     private GLState maskR = GLState.UNKNOWN;
@@ -414,6 +415,16 @@ public final class GLRenderContext implements RenderContext, AutoCloseable {
     @Override
     public boolean isMultisampleEnabled() {
         return multisampleEnabled.isTrue();
+    }
+
+    @Override
+    public void setEffectiveSamples(int samples) {
+        this.effectiveSamples = Math.max(0, samples);
+    }
+
+    @Override
+    public int getEffectiveSamples() {
+        return multisampleEnabled.isTrue() ? effectiveSamples : 0;
     }
 
     @Override

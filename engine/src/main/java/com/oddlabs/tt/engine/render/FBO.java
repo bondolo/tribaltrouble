@@ -349,4 +349,13 @@ public final class FBO extends NativeResource<FBO.Buffer> {
             depthTexture = null;
         }
     }
+
+    /**
+     * Returns the sample count configured for this FBO.
+     *
+     * @return the sample count (1 for non-multisample FBOs)
+     */
+    public int getSamples() {
+        return samples;
+    }
 }

@@ -175,6 +175,23 @@ public interface Window extends AutoCloseable {
     boolean isExclusiveFullscreen();
 
     /**
+     * Returns the physical DPI (dots per inch) for the current display and mode.
+     *
+     * @return physical DPI
+     */
+    default float getDisplayDPI() {
+        Vector2f physSize = getMonitorPhysicalSize();
+        if (physSize.x() > 0 && physSize.y() > 0) {
+            double diagMm = Math.hypot(physSize.x(), physSize.y());
+            double diagInches = diagMm / 25.4;
+            double diagPixels = Math.hypot(getWidth(), getHeight());
+            return (float) (diagPixels / diagInches);
+        }
+        float scale = getMonitorContentScale().x();
+        return 96.0f * (scale > 0 ? scale : 1.0f);
+    }
+
+    /**
      * Updates the OS system UI visibility (e.g. taskbar, dock, menu bar) based on the game state.
      *
      * @param playing true if the game simulation is active (not in a menu)

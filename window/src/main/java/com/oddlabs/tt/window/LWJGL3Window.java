@@ -20,6 +20,15 @@ import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.system.macosx.MacOSXLibrary;
 import org.lwjgl.system.macosx.ObjCRuntime;
 
+import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SegmentAllocator;
+import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
+import java.lang.invoke.MethodHandle;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
@@ -84,6 +93,7 @@ public final class LWJGL3Window implements Window {
     private static long cfArrayGetCount = MemoryUtil.NULL;
     private static long cfArrayGetValueAtIndex = MemoryUtil.NULL;
     private static long cfRelease = MemoryUtil.NULL;
+    private static @Nullable MethodHandle cgDisplayScreenSizeHandle = null;
 
     private static boolean macInitialized = false;
 
@@ -110,6 +120,18 @@ public final class LWJGL3Window implements Window {
                 cfArrayGetCount = cf.getFunctionAddress("CFArrayGetCount");
                 cfArrayGetValueAtIndex = cf.getFunctionAddress("CFArrayGetValueAtIndex");
                 cfRelease = cf.getFunctionAddress("CFRelease");
+
+                Linker linker = Linker.nativeLinker();
+                SymbolLookup cgLookup = SymbolLookup.libraryLookup(
+                        "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics", Arena.global());
+                cgLookup.find("CGDisplayScreenSize").ifPresent(fn -> {
+                    MemoryLayout cgSizeLayout = MemoryLayout.structLayout(
+                            ValueLayout.JAVA_DOUBLE.withName("width"),
+                            ValueLayout.JAVA_DOUBLE.withName("height")
+                    );
+                    cgDisplayScreenSizeHandle = linker.downcallHandle(fn,
+                            FunctionDescriptor.of(cgSizeLayout, ValueLayout.JAVA_INT));
+                });
 
                 macInitialized = true;
             } catch (Throwable t) {
@@ -1020,13 +1042,35 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public Vector2f getMonitorPhysicalSize() {
+        if (isMac) {
+            initMacFFI();
+            if (cgDisplayScreenSizeHandle != null && cgMainDisplayID != MemoryUtil.NULL) {
+                try (Arena arena = Arena.ofConfined()) {
+                    int displayID = JNI.invokeI(cgMainDisplayID);
+                    MemorySegment result = (MemorySegment) cgDisplayScreenSizeHandle.invokeExact((SegmentAllocator) arena, displayID);
+                    double width = result.get(ValueLayout.JAVA_DOUBLE, 0);
+                    double height = result.get(ValueLayout.JAVA_DOUBLE, 8);
+                    if (width > 0 && height > 0) {
+                        return new Vector2f((float) width, (float) height);
+                    }
+                } catch (Throwable t) {
+                    logger.log(Level.FINE, "Failed to query macOS physical display size", t);
+                }
+            }
+        }
         return new Vector2f(500, 300);
     }
 
     @Override
     public Vector2f getMonitorContentScale() {
-        float density = getPixelDensity();
-        return new Vector2f(density, density);
+        int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle)
+                : SDL_GetPrimaryDisplay();
+        if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
+        float scale = SDL_GetDisplayContentScale(displayID);
+        if (scale <= 0f) {
+            scale = getPixelDensity();
+        }
+        return new Vector2f(scale, scale);
     }
 
     @Override

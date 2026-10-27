@@ -46,9 +46,13 @@ public final class PostProcessor implements AutoCloseable {
     }
 
     private FBO getActiveSceneFBO() {
-        if (samples > 1 && RenderContext.current().isMultisampleEnabled()) {
-            if (msaaSceneFBO == null) {
-                msaaSceneFBO = FBO.createMultisampleSceneFBO(currentWidth, currentHeight, samples);
+        int effectiveSamples = RenderContext.current().getEffectiveSamples();
+        if (effectiveSamples > 1 && RenderContext.current().isMultisampleEnabled()) {
+            if (msaaSceneFBO == null || msaaSceneFBO.getSamples() != effectiveSamples) {
+                if (msaaSceneFBO != null) {
+                    msaaSceneFBO.close();
+                }
+                msaaSceneFBO = FBO.createMultisampleSceneFBO(currentWidth, currentHeight, effectiveSamples);
             }
             return msaaSceneFBO;
         }
@@ -78,7 +82,13 @@ public final class PostProcessor implements AutoCloseable {
             msaaSceneFBO.close();
             msaaSceneFBO = null;
         } else if (msaaSceneFBO != null) {
-            msaaSceneFBO.resize(width, height);
+            int effectiveSamples = RenderContext.current().getEffectiveSamples();
+            if (msaaSceneFBO.getSamples() != effectiveSamples) {
+                msaaSceneFBO.close();
+                msaaSceneFBO = null;
+            } else {
+                msaaSceneFBO.resize(width, height);
+            }
         }
 
         depthCopyFBO.resize(width, height);

@@ -76,10 +76,10 @@ public final class RenderHost implements AutoCloseable {
             lastDisplayH = h;
         }
         renderContext.setViewport(0, 0, w, h);
-        boolean enableMultisample = WindowSettings.from(settings).view_samples > 0
-                && window.getPixelDensity() <= 1.0f
-                && DebugFlags.draw_msaa;
-        renderContext.setMultisampleEnabled(enableMultisample);
+        int requestedSamples = WindowSettings.from(settings).view_samples;
+        int effectiveSamples = computeEffectiveSamples(requestedSamples);
+        renderContext.setEffectiveSamples(effectiveSamples);
+        renderContext.setMultisampleEnabled(effectiveSamples > 1);
 
         renderPass.run();
 
@@ -180,6 +180,7 @@ public final class RenderHost implements AutoCloseable {
             logger.info("Monitor Content Scale: " + monScale.x() + "x, " + monScale.y() + "y");
             var winScale = window.getWindowContentScale();
             logger.info("Window Content Scale: " + winScale.x() + "x, " + winScale.y() + "y");
+            logger.info("Display DPI: " + String.format("%.1f", window.getDisplayDPI()));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "OpenGL Failure", e);
             throw e;
@@ -209,15 +210,38 @@ public final class RenderHost implements AutoCloseable {
         window.update();
     }
 
+    public int computeEffectiveSamples(int requestedSamples) {
+        if (requestedSamples <= 1 || !DebugFlags.draw_msaa) {
+            return 0;
+        }
+        if (window.getPixelDensity() > 1.0f) {
+            return 0;
+        }
+        if (window.isExclusiveFullscreen()) {
+            float dpi = window.getDisplayDPI();
+            int height = window.getHeight();
+            if (dpi > RenderConfig.MSAA_DPI_THRESHOLD_HIGH) {
+                return 0;
+            } else if (dpi >= RenderConfig.MSAA_DPI_THRESHOLD_LOW || height > RenderConfig.MSAA_MAX_HEIGHT_TIER1) {
+                return Math.min(requestedSamples, 2);
+            } else {
+                return Math.min(requestedSamples, 4);
+            }
+        }
+        return Math.min(requestedSamples, 4);
+    }
+
     private void initGL() {
         VBO.releaseAll();
-        boolean enableMultisample = WindowSettings.from(settings).view_samples > 0
-                && window.getPixelDensity() <= 1.0f
-                && DebugFlags.draw_msaa;
-        renderContext.applyDefaults(enableMultisample);
+        int requestedSamples = WindowSettings.from(settings).view_samples;
+        int effectiveSamples = computeEffectiveSamples(requestedSamples);
+        renderContext.setEffectiveSamples(effectiveSamples);
+        renderContext.applyDefaults(effectiveSamples > 1);
         int w = window.getWidth();
         int h = window.getHeight();
-        logger.info("[RenderHost] initGL: window.getWidth()=" + w + ", window.getHeight()=" + h);
+        logger.info("[RenderHost] initGL: window.getWidth()=" + w + ", window.getHeight()=" + h
+                + ", displayDPI=" + String.format("%.1f", window.getDisplayDPI())
+                + ", effectiveSamples=" + effectiveSamples);
         renderContext.setViewport(0, 0, w, h);
     }
 }

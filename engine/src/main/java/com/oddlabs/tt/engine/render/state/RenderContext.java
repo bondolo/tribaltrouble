@@ -154,6 +154,20 @@ public interface RenderContext {
     boolean isMultisampleEnabled();
 
     /**
+     * Sets the effective sample count for multisampling.
+     *
+     * @param samples the sample count (e.g. 0, 2, 4)
+     */
+    void setEffectiveSamples(int samples);
+
+    /**
+     * Returns the effective sample count for multisampling.
+     *
+     * @return the sample count (0 if multisampling is disabled)
+     */
+    int getEffectiveSamples();
+
+    /**
      * Returns the maximum number of samples supported for multisampling by the hardware.
      *
      * @return the maximum hardware sample count
