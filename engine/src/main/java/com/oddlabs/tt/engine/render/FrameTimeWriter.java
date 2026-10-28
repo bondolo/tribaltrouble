@@ -23,6 +23,7 @@ final class FrameTimeWriter implements AutoCloseable {
     private final FrameTimeRing ring;
     private final FrameTimeRecorder.Phase[] phases = FrameTimeRecorder.Phase.values();
     private final GpuPass[] gpuPasses = GpuPass.values();
+    private final FrameTimeRecorder.Metric[] metrics = FrameTimeRecorder.Metric.values();
     private final BufferedWriter out;
     private final Thread thread;
     private final StringBuilder line = new StringBuilder();
@@ -54,7 +55,11 @@ final class FrameTimeWriter implements AutoCloseable {
         for (var pass : gpuPasses) {
             line.append(SEPARATOR).append("gpu_").append(pass.name().toLowerCase(Locale.ROOT)).append("_us");
         }
-        line.append(SEPARATOR).append("gpu_total_us").append(SEPARATOR).append("dropped").append('\n');
+        line.append(SEPARATOR).append("gpu_total_us");
+        for (var metric : metrics) {
+            line.append(SEPARATOR).append(metric.name().toLowerCase(Locale.ROOT));
+        }
+        line.append(SEPARATOR).append("dropped").append('\n');
         out.append(line);
     }
 
@@ -110,8 +115,12 @@ final class FrameTimeWriter implements AutoCloseable {
                 line.append(SEPARATOR).append(nanos / NANOS_PER_MICRO);
             }
         }
-        line.append(SEPARATOR).append(gpuAvailable ? gpuTotal / NANOS_PER_MICRO : UNAVAILABLE_MICROS)
-                .append(SEPARATOR).append(ring.droppedFrames())
+        line.append(SEPARATOR).append(gpuAvailable ? gpuTotal / NANOS_PER_MICRO : UNAVAILABLE_MICROS);
+        for (int i = 0; i < metrics.length; i++) {
+            long val = ring.get(frame, 1 + phases.length + gpuPasses.length + i);
+            line.append(SEPARATOR).append(val);
+        }
+        line.append(SEPARATOR).append(ring.droppedFrames())
                 .append('\n');
         out.append(line);
     }

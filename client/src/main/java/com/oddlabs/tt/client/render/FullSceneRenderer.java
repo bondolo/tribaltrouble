@@ -83,6 +83,9 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
     private final Matrix4f rallyPointMatrix = new Matrix4f();
 
     private @Nullable Building selected_building;
+    private long lastPrepLandscapeNanos;
+    private long lastTreeVisitNanos;
+    private long lastPrepTreesNanos;
 
     public FullSceneRenderer(@Nullable Cheat cheat, Player local_player,
             RenderQueues render_queues,
@@ -248,10 +251,11 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
                 GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
             }
 
-            renderEnvironment(pass);
+            renderTerrain(pass);
             prepareCPU(frustum_state, currentTime);
             renderOpaqueGeometry(pass, gui_root);
             renderWater(pass);
+            renderSky(pass);
             renderTransparents(context, frustum_state);
             renderOverlays(context, frustum_state);
         }
@@ -263,8 +267,12 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
 
     private void prepareCPU(CameraState frustum_state, float currentTime) {
         if (DebugFlags.process_trees) {
+            long treeStart = System.nanoTime();
             tree_renderer.setup(frustum_state);
             tree_renderer.visit(world.getTreeRoot());
+            lastTreeVisitNanos = System.nanoTime() - treeStart;
+        } else {
+            lastTreeVisitNanos = 0L;
         }
         if (DebugFlags.process_misc) {
             element_renderer.setup(frustum_state, currentTime);
@@ -281,22 +289,39 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
         sprite_sorter.distributeModels();
     }
 
-    private void renderEnvironment(ScenePassContext pass) {
+    private void renderTerrain(ScenePassContext pass) {
         RenderContext context = pass.renderContext();
         try (var _ = context.withDrawBuffers(false)) {
-            if (DebugFlags.draw_sky) {
-                var gpu = context.gpuTimer();
-                gpu.begin(GpuPass.SKY);
-                sky.render(pass);
-                seaBottom.render(pass);
-                gpu.end();
-            }
-
             if (DebugFlags.process_landscape) {
                 var gpu = context.gpuTimer();
                 gpu.begin(GpuPass.LANDSCAPE);
+                long prepStart = System.nanoTime();
                 landscape_renderer.prepareAll(pass.camera(), false);
+                lastPrepLandscapeNanos = System.nanoTime() - prepStart;
                 landscape_renderer.render(pass);
+                if (DebugFlags.draw_sky) {
+                    seaBottom.render(pass);
+                }
+                gpu.end();
+            } else {
+                lastPrepLandscapeNanos = 0L;
+                if (DebugFlags.draw_sky) {
+                    var gpu = context.gpuTimer();
+                    gpu.begin(GpuPass.LANDSCAPE);
+                    seaBottom.render(pass);
+                    gpu.end();
+                }
+            }
+        }
+    }
+
+    private void renderSky(ScenePassContext pass) {
+        if (DebugFlags.draw_sky) {
+            RenderContext context = pass.renderContext();
+            try (var _ = context.withDrawBuffers(false)) {
+                var gpu = context.gpuTimer();
+                gpu.begin(GpuPass.SKY);
+                sky.render(pass);
                 gpu.end();
             }
         }
@@ -317,11 +342,15 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
             gpu.end();
         }
 
+        long treeRenderNanos = 0L;
         if (DebugFlags.process_trees) {
             gpu.begin(GpuPass.TREES);
+            long treeRenderStart = System.nanoTime();
             tree_renderer.render(pass);
+            treeRenderNanos = System.nanoTime() - treeRenderStart;
             gpu.end();
         }
+        lastPrepTreesNanos = lastTreeVisitNanos + treeRenderNanos;
         if (DebugFlags.process_misc) {
             gpu.begin(GpuPass.UNITS);
             render_queues.renderAll(context, frustum_state);
@@ -401,6 +430,26 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
     @Override
     public boolean isClosed() {
         return closed;
+    }
+
+    @Override
+    public int getVisiblePatchCount() {
+        return landscape_renderer.getVisiblePatchCount();
+    }
+
+    @Override
+    public int getRenderedTreeCount() {
+        return tree_renderer.getLastRenderedTreeCount();
+    }
+
+    @Override
+    public long getLandscapePrepNanos() {
+        return lastPrepLandscapeNanos;
+    }
+
+    @Override
+    public long getTreePrepNanos() {
+        return lastPrepTreesNanos;
     }
 
     @Override

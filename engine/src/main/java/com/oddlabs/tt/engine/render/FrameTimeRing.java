@@ -14,6 +14,7 @@ final class FrameTimeRing {
 
     private final int cpuPhases;
     private final int gpuPasses;
+    private final int metrics;
     private final int stride;
     private final long[] data;
     private final AtomicLong published = new AtomicLong();
@@ -24,10 +25,11 @@ final class FrameTimeRing {
     private long publishedHead;
     private int base;
 
-    FrameTimeRing(int cpuPhases, int gpuPasses) {
+    FrameTimeRing(int cpuPhases, int gpuPasses, int metrics) {
         this.cpuPhases = cpuPhases;
         this.gpuPasses = gpuPasses;
-        this.stride = 1 + cpuPhases + gpuPasses;
+        this.metrics = metrics;
+        this.stride = 1 + cpuPhases + gpuPasses + metrics;
         this.data = new long[CAPACITY * stride];
     }
 
@@ -38,6 +40,9 @@ final class FrameTimeRing {
         }
         base = slotBase(claimed);
         data[base] = startNanos;
+        for (int i = 0; i < metrics; i++) {
+            data[base + 1 + cpuPhases + gpuPasses + i] = 0;
+        }
         claimed++;
         return true;
     }
@@ -52,6 +57,10 @@ final class FrameTimeRing {
 
     void setGpu(long frame, int pass, long nanos) {
         data[slotBase(frame) + 1 + cpuPhases + pass] = nanos;
+    }
+
+    void setMetric(int metric, long value) {
+        data[base + 1 + cpuPhases + gpuPasses + metric] = value;
     }
 
     void publishNext() {

@@ -44,6 +44,7 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
     private final @Nullable LandscapeRenderer landscapeRenderer;
     private final Map<TreeSupply, Float> fallingTrees = new HashMap<>();
     private final Map<TreeSupply, Float> spawningTrees = new HashMap<>();
+    private int lastRenderedTreeCount;
 
     TreeRenderer(@Nullable Cheat cheat,
             RespondManager respond_manager,
@@ -190,21 +191,30 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
         if (!DebugFlags.draw_trees || (cheat != null && !cheat.draw_trees)) {
             // Just clear lists if not drawing
             clearLists();
+            lastRenderedTreeCount = 0;
             return;
         }
 
+        int count = 0;
         for (var entry : getRenderLists().entrySet()) {
             List<TreeSupply> list = entry.getValue();
             if (!list.isEmpty()) {
+                count += list.size();
                 renderList(getTrees().get(entry.getKey()), list, false);
             }
         }
         for (var entry : getRespondRenderLists().entrySet()) {
             List<TreeSupply> list = entry.getValue();
             if (!list.isEmpty()) {
+                count += list.size();
                 renderList(getTrees().get(entry.getKey()), list, true);
             }
         }
+        lastRenderedTreeCount = count;
+    }
+
+    int getLastRenderedTreeCount() {
+        return lastRenderedTreeCount;
     }
 
     private void clearLists() {

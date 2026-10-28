@@ -20,6 +20,7 @@ public final class FrameTimeRecorder implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(FrameTimeRecorder.class.getName());
     private static final int PHASE_COUNT = Phase.values().length;
     private static final int GPU_PASS_COUNT = GpuPass.values().length;
+    private static final int METRIC_COUNT = Metric.values().length;
     private static final DateTimeFormatter FILE_TIMESTAMP = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
     private static final String FILE_PREFIX = "frametimes-";
     private static final String FILE_SUFFIX = ".csv";
@@ -32,6 +33,17 @@ public final class FrameTimeRecorder implements AutoCloseable {
         DISPLAY,
         SWAP,
         GL_FINISH
+    }
+
+    /** Per-frame scene and camera metrics captured alongside timings. */
+    public enum Metric {
+        CAM_PITCH_DEG,
+        CAM_YAW_DEG,
+        CAM_Z,
+        PATCHES_DRAWN,
+        TREES_DRAWN,
+        PREP_LANDSCAPE_US,
+        PREP_TREES_US
     }
 
     private final Path directory;
@@ -65,6 +77,20 @@ public final class FrameTimeRecorder implements AutoCloseable {
         var active = ring;
         if (claimed && active != null) {
             active.set(phase.ordinal(), System.nanoTime());
+        }
+    }
+
+    public void recordSceneStats(float pitchDeg, float yawDeg, float camZ, int patchesDrawn, int treesDrawn,
+            long prepLandscapeUs, long prepTreesUs) {
+        var active = ring;
+        if (claimed && active != null) {
+            active.setMetric(Metric.CAM_PITCH_DEG.ordinal(), Math.round(pitchDeg));
+            active.setMetric(Metric.CAM_YAW_DEG.ordinal(), Math.round(yawDeg));
+            active.setMetric(Metric.CAM_Z.ordinal(), Math.round(camZ));
+            active.setMetric(Metric.PATCHES_DRAWN.ordinal(), patchesDrawn);
+            active.setMetric(Metric.TREES_DRAWN.ordinal(), treesDrawn);
+            active.setMetric(Metric.PREP_LANDSCAPE_US.ordinal(), prepLandscapeUs);
+            active.setMetric(Metric.PREP_TREES_US.ordinal(), prepTreesUs);
         }
     }
 
@@ -106,7 +132,7 @@ public final class FrameTimeRecorder implements AutoCloseable {
     private void startRecording() {
         Path file = directory.resolve(FILE_PREFIX + FILE_TIMESTAMP.format(LocalDateTime.now(ZoneId.systemDefault()))
                 + FILE_SUFFIX);
-        var newRing = new FrameTimeRing(PHASE_COUNT, GPU_PASS_COUNT);
+        var newRing = new FrameTimeRing(PHASE_COUNT, GPU_PASS_COUNT, METRIC_COUNT);
         try {
             writer = FrameTimeWriter.start(newRing, file);
             ring = newRing;

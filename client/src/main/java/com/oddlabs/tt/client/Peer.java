@@ -187,6 +187,21 @@ public final class Peer implements AutoCloseable, DisplayModeController {
         gpu.begin(GpuPass.GUI);
         screenManager.renderUI(context);
         gpu.end();
+
+        var renderer = screen.sceneRenderer();
+        if (renderer != null && !renderer.isClosed()) {
+            frameTimeRecorder.recordSceneStats(
+                    (float) Math.toDegrees(frustumState.getCurrentVertAngle()),
+                    (float) Math.toDegrees(frustumState.getHorizAngle()),
+                    frustumState.getCurrentZ(),
+                    renderer.getVisiblePatchCount(),
+                    renderer.getRenderedTreeCount(),
+                    renderer.getLandscapePrepNanos() / 1000L,
+                    renderer.getTreePrepNanos() / 1000L
+            );
+        } else {
+            frameTimeRecorder.recordSceneStats(0f, 0f, 0f, 0, 0, 0L, 0L);
+        }
     }
 
     public float getFPS() {

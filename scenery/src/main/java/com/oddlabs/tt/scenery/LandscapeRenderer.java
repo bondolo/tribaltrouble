@@ -101,6 +101,10 @@ public final class LandscapeRenderer implements SubSceneRenderer, Animated, Auto
         return render_list;
     }
 
+    public int getVisiblePatchCount() {
+        return render_list.size();
+    }
+
     public HeightMap getHeightMap() {
         return world.getHeightMap();
     }
