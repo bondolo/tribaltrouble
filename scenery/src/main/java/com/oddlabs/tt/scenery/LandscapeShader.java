@@ -43,6 +43,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         vec3 viewPosition;
                         float height;
                         float waveScale;
+                        vec3 worldNormal;
                     } vs_out;
 
                     void main() {
@@ -67,6 +68,12 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         vs_out.viewPosition = viewPosition.xyz;
                         vs_out.height = h;
                         vs_out.waveScale = in_InstancePatchOffset.z;
+
+                        float h_plus_x = textureLodOffset(u_HeightMap, uv, 0.0, ivec2(1, 0)).r;
+                        float h_minus_x = textureLodOffset(u_HeightMap, uv, 0.0, ivec2(-1, 0)).r;
+                        float h_plus_y = textureLodOffset(u_HeightMap, uv, 0.0, ivec2(0, 1)).r;
+                        float h_minus_y = textureLodOffset(u_HeightMap, uv, 0.0, ivec2(0, -1)).r;
+                        vs_out.worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 64.0));
                     }
                     """;
 
@@ -96,6 +103,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         vec3 viewPosition;
                         float height;
                         float waveScale;
+                        vec3 worldNormal;
                     } fs_in;
 
                     layout(location = 0) out vec4 out_FragColor;
@@ -172,15 +180,8 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         float submerge = smoothstep(3.5, 5.5, depthStatic);
                         diffuseColor.rgb = mix(diffuseColor.rgb, u_SeaBottomColor, (1.0 - edgeBlend) * submerge);
 
-                        // Compute view-space normal from heightmap slope, flattening towards the boundary
-                        float h_plus_x = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(1, 0)).r;
-                        float h_minus_x = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(-1, 0)).r;
-                        float h_plus_y = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(0, 1)).r;
-                        float h_minus_y = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(0, -1)).r;
-
-                        // Calculate base normal for specular highlights
-                        vec3 worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 64.0));
-                        worldNormal = normalize(mix(vec3(0.0, 0.0, 1.0), worldNormal, edgeBlend));
+                        // Calculate base normal for specular highlights from interpolated vertex normal
+                        vec3 worldNormal = normalize(mix(vec3(0.0, 0.0, 1.0), normalize(fs_in.worldNormal), edgeBlend));
 
                         // Sample baked tangent normal map (Unit 1) and detail normal map (Unit 4)
                         vec4 bakedNormSample = texture(u_NormalMap, fs_in.texCoordColormap);
