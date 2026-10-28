@@ -94,21 +94,13 @@ public final class Region extends Node {
 
     @Override
     public boolean addNeighbours(PathFinderAlgorithm finder, UnitGrid unit_grid) {
+        int search_id = unit_grid.pathFinder().getSearchId();
         for (Region neighbour : neighbours) {
-            if (!neighbour.isVisited())
+            if (!neighbour.isVisited(search_id))
                 unit_grid.pathFinder().addToOpenList(finder, neighbour, this, estimateCost(neighbour.getGridX(),
-                        neighbour
-                                .getGridY()));
+                        neighbour.getGridY()));
         }
         return false;
-    }
-
-    public void markVisited() {
-        setVisited(true);
-    }
-
-    public void clearVisited() {
-        setVisited(false);
     }
 
     public List<Region> getNeighbours() {

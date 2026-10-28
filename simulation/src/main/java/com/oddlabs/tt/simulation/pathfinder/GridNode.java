@@ -78,7 +78,7 @@ final class GridNode extends Node {
     private boolean addNeighbour(PathFinderAlgorithm finder, UnitGrid unit_grid, int x, int y,
             int cost) {
         GridNode node = unit_grid.pathFinder().getPathfinderNode(offset, x, y);
-        if (node == null || node.isVisited())
+        if (node == null || node.isVisited(unit_grid.pathFinder().getSearchId()))
             return false;
         Occupant occupant = unit_grid.getOccupant(node.getGridX(), node.getGridY());
         if (occupant != null) {

@@ -4,8 +4,6 @@ import com.oddlabs.tt.base.util.PocketList;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -14,8 +12,8 @@ import java.util.Optional;
 final class PathFinder {
     private final UnitGrid unit_grid;
     private final PocketList<Node> open_list = new PocketList<>(RegionBuilder.MAX_PATH_COST);
-    private final List<Node> visited_list = new ArrayList<>();
     private final GridNode[][] pathfinder_grid = new GridNode[RegionBuilder.GRID_SIZE][RegionBuilder.GRID_SIZE];
+    private int current_search_id = 0;
     private int stat_pathfinder_per_frame = 0;
 
     PathFinder(UnitGrid unit_grid) {
@@ -83,8 +81,8 @@ final class PathFinder {
         Node current_node = start_node;
         stat_pathfinder_per_frame++;
         initSearch();
-        current_node.setPathInitial(finder.computeEstimatedCost(current_node));
-        addToLists(current_node);
+        current_node.setPathInitial(current_search_id, finder.computeEstimatedCost(current_node));
+        open_list.add(current_node.getTotalCost(), current_node);
         while (!open_list.isEmpty()) {
             current_node = open_list.removeBest();
             Node result = finder.touchNode(current_node);
@@ -100,9 +98,13 @@ final class PathFinder {
         return (best == null || best == Node.TOMBSTONE) ? Optional.empty() : Optional.of(best);
     }
 
+    int getSearchId() {
+        return current_search_id;
+    }
+
     void addToOpenList(PathFinderAlgorithm finder, Node current_node, Node parent, int cost) {
-        current_node.setPath(parent, cost, finder.computeEstimatedCost(current_node));
-        addToLists(current_node);
+        current_node.setPath(current_search_id, parent, cost, finder.computeEstimatedCost(current_node));
+        open_list.add(current_node.getTotalCost(), current_node);
     }
 
     int getStatPathfinderPerFrame() {
@@ -113,14 +115,20 @@ final class PathFinder {
         stat_pathfinder_per_frame = 0;
     }
 
-    private void addToLists(Node current_node) {
-        open_list.add(current_node.getTotalCost(), current_node);
-        visited_list.add(current_node);
-    }
-
     private void initSearch() {
         open_list.clear();
-        visited_list.forEach(Node::reset);
-        visited_list.clear();
+        if (++current_search_id == 0) {
+            resetAllNodeSearchIds();
+            current_search_id = 1;
+        }
+    }
+
+    private void resetAllNodeSearchIds() {
+        for (GridNode[] row : pathfinder_grid) {
+            for (GridNode node : row) {
+                node.resetSearchId();
+            }
+        }
+        unit_grid.resetRegionSearchIds();
     }
 }

@@ -11,6 +11,9 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Renders debug visualisations for pathfinder simulation state using {@link DebugRender}.
  *
@@ -153,14 +156,12 @@ public final class PathfinderDebugRenderer {
             }
         }
         if (last_region != null) {
-            renderRegionConnections(last_region, heightmap);
-            resetRegionConnectionVisited(last_region);
+            renderRegionConnections(last_region, heightmap, new HashSet<>());
         }
     }
 
-    private static void renderRegionConnections(Region region, HeightMap heightmap) {
-        if (region.isVisited()) return;
-        region.markVisited();
+    private static void renderRegionConnections(Region region, HeightMap heightmap, Set<Region> visited) {
+        if (!visited.add(region)) return;
         for (Region neighbour : region.getNeighbours()) {
             float x1 = UnitGrid.coordinateFromGrid(region.getGridX());
             float y1 = UnitGrid.coordinateFromGrid(region.getGridY());
@@ -169,15 +170,7 @@ public final class PathfinderDebugRenderer {
             float y2 = UnitGrid.coordinateFromGrid(neighbour.getGridY());
             float z2 = heightmap.getNearestHeight(x2, y2) + 2f;
             DebugRender.drawLine(x1, y1, z1, x2, y2, z2, 1f, 1f, 0f);
-            renderRegionConnections(neighbour, heightmap);
-        }
-    }
-
-    private static void resetRegionConnectionVisited(Region region) {
-        if (!region.isVisited()) return;
-        region.clearVisited();
-        for (Region neighbour : region.getNeighbours()) {
-            resetRegionConnectionVisited(neighbour);
+            renderRegionConnections(neighbour, heightmap, visited);
         }
     }
 }

@@ -34,65 +34,40 @@ abstract class Node {
     private int cost;
     private int total_cost;
     private @Nullable Node parent;
-    private boolean visited;
+    private int search_id;
 
     protected Node() {
-        reset();
     }
 
-    /*	public final String toString() {
-            return x + " " + y;
-        }
-
-        protected final void setPosition(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        public final int getGridX() {
-            return x;
-        }
-
-        public final int getGridY() {
-            return y;
-        }
-    */
     public final @Nullable Node getParent() {
         return parent;
     }
 
-    public final void reset() {
-        visited = false;
+    public final void resetSearchId() {
+        search_id = 0;
     }
 
-    public final void setPathInitial(int initial_cost) {
+    public final void setPathInitial(int search_id, int initial_cost) {
+        this.search_id = search_id;
         cost = 0;
         parent = null;
-        setTotalCost(initial_cost);
+        total_cost = initial_cost;
     }
 
-    public final void setPath(Node parent, int cost, int estimated_cost) {
+    public final void setPath(int search_id, Node parent, int cost, int estimated_cost) {
+        assert this.search_id != search_id;
+        this.search_id = search_id;
         this.cost = parent.cost + cost;
         this.parent = parent;
-        setTotalCost(this.cost + estimated_cost);
-    }
-
-    protected final void setVisited(boolean visited) {
-        this.visited = visited;
-    }
-
-    private void setTotalCost(int total_cost) {
-        assert !this.visited;
-        setVisited(true);
-        this.total_cost = total_cost;
+        total_cost = this.cost + estimated_cost;
     }
 
     public final int getTotalCost() {
         return total_cost;
     }
 
-    public final boolean isVisited() {
-        return visited;
+    public final boolean isVisited(int search_id) {
+        return this.search_id == search_id;
     }
 
     public final int estimateCost(int dest_x, int dest_y) {

@@ -253,6 +253,14 @@ public final class UnitGrid {
         return regions[grid_y * gridSize + grid_x];
     }
 
+    void resetRegionSearchIds() {
+        for (Region region : regions) {
+            if (region != null) {
+                region.resetSearchId();
+            }
+        }
+    }
+
     public void setRegion(int grid_x, int grid_y, Region r) {
         int index = grid_y * gridSize + grid_x;
         assert regions[index] == null && occupants[index] == null;
