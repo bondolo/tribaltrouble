@@ -127,6 +127,9 @@ final class InstancedSpriteShader extends ShaderProgram implements FogShader, Li
 
                     void main() {
                         vec4 base = texture(u_texture0, fs_in.texCoord0);
+                        if (u_alphaTestValue > 0.0 && (base.a <= u_alphaTestValue || fs_in.color.a <= 0.0)) {
+                            discard;
+                        }
                         out_MaskColor = vec4(0.0);
 
                         if (u_desaturate > 0.0) {
