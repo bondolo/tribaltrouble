@@ -18,6 +18,7 @@ import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.util.Color;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -178,5 +179,119 @@ class UnitGridTest {
                 assertEquals(arrayTarget[0].getGridY(), singleTarget.getGridY());
             }
         }
+    }
+
+    @Test
+    void testChunkOccupancyTracking() {
+        int chunkX = 2;
+        int chunkY = 2;
+        // Chunk (2, 2) covers grid coordinates [16, 23] in X and Y
+        org.junit.jupiter.api.Assertions.assertFalse(unitGrid.isChunkOccupied(chunkX, chunkY));
+
+        StaticOccupant occ1 = new StaticOccupant();
+        StaticOccupant occ2 = new StaticOccupant();
+
+        unitGrid.occupyGrid(16, 16, occ1);
+        org.junit.jupiter.api.Assertions.assertTrue(unitGrid.isChunkOccupied(chunkX, chunkY));
+
+        unitGrid.occupyGrid(17, 18, occ2);
+        org.junit.jupiter.api.Assertions.assertTrue(unitGrid.isChunkOccupied(chunkX, chunkY));
+
+        unitGrid.freeGrid(16, 16, occ1);
+        org.junit.jupiter.api.Assertions.assertTrue(unitGrid.isChunkOccupied(chunkX, chunkY));
+
+        unitGrid.freeGrid(17, 18, occ2);
+        org.junit.jupiter.api.Assertions.assertFalse(unitGrid.isChunkOccupied(chunkX, chunkY));
+    }
+
+    @Test
+    void testScanOccupantsExactParityWithScanAll() {
+        StaticOccupant occA = new StaticOccupant();
+        StaticOccupant occB = new StaticOccupant();
+        StaticOccupant occC = new StaticOccupant();
+
+        unitGrid.occupyGrid(12, 10, occA);
+        unitGrid.occupyGrid(18, 14, occB);
+        unitGrid.occupyGrid(10, 18, occC);
+
+        List<Occupant> visitedWithScanAll = new ArrayList<>();
+        List<Occupant> visitedWithScanOccupants = new ArrayList<>();
+
+        ScanFilter allFilter = new ScanFilter() {
+            @Override
+            public int getMinRadius() {
+                return 0;
+            }
+
+            @Override
+            public int getMaxRadius() {
+                return 20;
+            }
+
+            @Override
+            public boolean requiresOccupant() {
+                return false;
+            }
+
+            @Override
+            public boolean filter(int grid_x, int grid_y, @Nullable Occupant occ) {
+                if (occ != null) {
+                    visitedWithScanAll.add(occ);
+                }
+                return false;
+            }
+        };
+
+        ScanFilter occupantsFilter = new ScanFilter() {
+            @Override
+            public int getMinRadius() {
+                return 0;
+            }
+
+            @Override
+            public int getMaxRadius() {
+                return 20;
+            }
+
+            @Override
+            public boolean requiresOccupant() {
+                return true;
+            }
+
+            @Override
+            public boolean filter(int grid_x, int grid_y, @Nullable Occupant occ) {
+                if (occ != null) {
+                    visitedWithScanOccupants.add(occ);
+                }
+                return false;
+            }
+        };
+
+        unitGrid.scan(allFilter, 15, 15);
+        unitGrid.scan(occupantsFilter, 15, 15);
+
+        assertEquals(3, visitedWithScanAll.size());
+        assertEquals(visitedWithScanAll, visitedWithScanOccupants);
+
+        unitGrid.freeGrid(12, 10, occA);
+        unitGrid.freeGrid(18, 14, occB);
+        unitGrid.freeGrid(10, 18, occC);
+    }
+
+    @Test
+    void test1DRegionsAndOccupantsConsistency() {
+        int gx = 7;
+        int gy = 19;
+        StaticOccupant occupant = new StaticOccupant();
+        org.junit.jupiter.api.Assertions.assertFalse(unitGrid.isGridOccupied(gx, gy));
+        org.junit.jupiter.api.Assertions.assertNull(unitGrid.getOccupant(gx, gy));
+
+        unitGrid.occupyGrid(gx, gy, occupant);
+        org.junit.jupiter.api.Assertions.assertTrue(unitGrid.isGridOccupied(gx, gy));
+        assertEquals(occupant, unitGrid.getOccupant(gx, gy));
+
+        unitGrid.freeGrid(gx, gy, occupant);
+        org.junit.jupiter.api.Assertions.assertFalse(unitGrid.isGridOccupied(gx, gy));
+        org.junit.jupiter.api.Assertions.assertNull(unitGrid.getOccupant(gx, gy));
     }
 }

@@ -48,6 +48,11 @@ public final class CountOccupantScanFilter<S extends Selectable<?>> implements S
     }
 
     @Override
+    public boolean requiresOccupant() {
+        return true;
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public boolean filter(int grid_x, int grid_y, @Nullable Occupant occ) {
         if (occ != src && type.isInstance(occ)) {

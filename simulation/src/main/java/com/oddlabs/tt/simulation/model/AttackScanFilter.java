@@ -55,7 +55,12 @@ public final class AttackScanFilter implements ScanFilter {
     }
 
     @Override
-    public boolean filter(int grid_x, int grid_y, Occupant occ) {
+    public boolean requiresOccupant() {
+        return true;
+    }
+
+    @Override
+    public boolean filter(int grid_x, int grid_y, @Nullable Occupant occ) {
         if (occ instanceof Selectable<?> s && owner.isEnemy(s.getOwner())) {
             Priority priority = s.getAttackPriority();
             if (target_priority.value < priority.value) {

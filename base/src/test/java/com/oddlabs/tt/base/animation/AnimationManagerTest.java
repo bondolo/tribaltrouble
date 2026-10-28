@@ -77,7 +77,8 @@ final class AnimationManagerTest {
         manager.registerAnimation(parentAnim);
         manager.runAnimations(AnimationManager.ANIMATION_SECONDS_PER_TICK);
 
-        assertEquals(List.of("parent", "child"), executionLog, "Child animation registered during tick must execute in same tick");
+        assertEquals(List.of("parent", "child"), executionLog,
+                "Child animation registered during tick must execute in same tick");
     }
 
     @Test
@@ -135,7 +136,8 @@ final class AnimationManagerTest {
         manager.removeAnimation(d);
 
         manager.runAnimations(AnimationManager.ANIMATION_SECONDS_PER_TICK);
-        assertEquals(List.of("A", "C", "E"), executed, "Relative order of non-deleted animations must be strictly preserved");
+        assertEquals(List.of("A", "C", "E"), executed,
+                "Relative order of non-deleted animations must be strictly preserved");
     }
 
     @Test
@@ -171,7 +173,8 @@ final class AnimationManagerTest {
         StateChecksum checksum = new StateChecksum();
         manager.updateChecksum(checksum);
 
-        assertEquals(List.of("first", "third"), checksumLog, "Checksum updates must reach only surviving active animations");
+        assertEquals(List.of("first", "third"), checksumLog,
+                "Checksum updates must reach only surviving active animations");
     }
 
     @Test
@@ -209,7 +212,8 @@ final class AnimationManagerTest {
     void testRemoveNonExistentOrNullDoesNotThrow() {
         AnimationManager manager = new AnimationManager();
         manager.removeAnimation(null);
-        Animated unregistered = _ -> {};
+        Animated unregistered = _ -> {
+        };
         manager.removeAnimation(unregistered);
         manager.runAnimations(AnimationManager.ANIMATION_SECONDS_PER_TICK);
         assertEquals(1, manager.getTick());

@@ -37,8 +37,13 @@ public final class FindOccupantFilter<S extends Selectable<?>> implements ScanFi
     }
 
     @Override
+    public boolean requiresOccupant() {
+        return true;
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
-    public boolean filter(int grid_x, int grid_y, Occupant occ) {
+    public boolean filter(int grid_x, int grid_y, @Nullable Occupant occ) {
         if (occ != src && type.isInstance(occ)) {
             S s = (S) occ;
             float dx = s.getPositionX() - x;
