@@ -153,8 +153,13 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
                 SDL_MouseMotionEvent motionEvent = event.motion();
                 float density = window.getPixelDensity();
                 int framebufferHeight = window.getHeight();
-                this.mouseX = Math.round(motionEvent.x() * density);
-                this.mouseY = framebufferHeight - Math.round(motionEvent.y() * density) - 1;
+                if (isGrabbed()) {
+                    this.mouseX += Math.round(motionEvent.xrel() * density);
+                    this.mouseY -= Math.round(motionEvent.yrel() * density);
+                } else {
+                    this.mouseX = Math.round(motionEvent.x() * density);
+                    this.mouseY = framebufferHeight - Math.round(motionEvent.y() * density) - 1;
+                }
                 int intX = (int) mouseX;
                 int intY = (int) mouseY;
                 synchronized (mouseEvents) {
@@ -334,19 +339,27 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
     @Override
     public void setCursorPosition(int x, int y) {
         if (windowHandle == MemoryUtil.NULL) return;
-        float density = window.getPixelDensity();
-        float screenX = x / density;
-        float screenY = (window.getHeight() - y - 1) / density;
-        SDL_WarpMouseInWindow(windowHandle, screenX, screenY);
+        this.mouseX = x;
+        this.mouseY = y;
+        this.lastPhysicalX = x;
+        this.lastPhysicalY = y;
+        if (!isGrabbed()) {
+            float density = window.getPixelDensity();
+            float screenX = x / density;
+            float screenY = (window.getHeight() - y - 1) / density;
+            SDL_WarpMouseInWindow(windowHandle, screenX, screenY);
+        }
     }
 
     @Override
     public void setGrabbed(boolean grabbed) {
+        if (windowHandle == MemoryUtil.NULL) return;
         SDL_SetWindowRelativeMouseMode(windowHandle, grabbed);
     }
 
     @Override
     public boolean isGrabbed() {
+        if (windowHandle == MemoryUtil.NULL) return false;
         return SDL_GetWindowRelativeMouseMode(windowHandle);
     }
 

@@ -8,7 +8,10 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 
-public class ZoomDelegate extends InGameDelegate<GameCamera> {
+/**
+ * Camera drag zoom input delegate for adjusting camera distance.
+ */
+public final class ZoomDelegate extends InGameDelegate<GameCamera> {
     private static final float ZOOM_FACTOR_CORRECTION = .25f;
 
     private final int start_x;
@@ -82,5 +85,10 @@ public class ZoomDelegate extends InGameDelegate<GameCamera> {
     @Override
     protected CursorType getCursorType() {
         return CursorType.NULL;
+    }
+
+    @Override
+    public boolean renderCursor() {
+        return false;
     }
 }

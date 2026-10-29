@@ -566,6 +566,7 @@ public final class GUIRoot extends GUIObject {
         }
     }
 
+    /** {@return true if cursor should be rendered.} */
     public boolean renderCursor() {
         return getModalDelegate() != null || getDelegate().renderCursor();
     }
@@ -574,15 +575,12 @@ public final class GUIRoot extends GUIObject {
         if (gui.getGUIRoot() != this) {
             return;
         }
-        boolean visible = renderCursor();
+        CursorType cursorType = (!current_gui_object.isDisabled())
+                ? current_gui_object.getCursorType()
+                : CursorType.NORMAL;
+        boolean visible = renderCursor() && cursorType != CursorType.NULL;
         gui.getLocalInput().getPointerInput().setCursorVisible(visible);
-        if (visible) {
-            if (!current_gui_object.isDisabled()) {
-                gui.getLocalInput().getPointerInput().setActiveCursor(current_gui_object.getCursorType());
-            } else {
-                gui.getLocalInput().getPointerInput().setActiveCursor(CursorType.NORMAL);
-            }
-        }
+        gui.getLocalInput().getPointerInput().setActiveCursor(visible ? cursorType : CursorType.NULL);
     }
 
     public GUIObject getCurrentGUIObject() {

@@ -9,7 +9,10 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 
-public class FirstPersonDelegate extends InGameDelegate<FirstPersonCamera> {
+/**
+ * Free-look camera input delegate for first-person and free-camera navigation.
+ */
+public final class FirstPersonDelegate extends InGameDelegate<FirstPersonCamera> {
     private final boolean key_pressed;
     private final int created_tick;
 
@@ -83,5 +86,10 @@ public class FirstPersonDelegate extends InGameDelegate<FirstPersonCamera> {
     @Override
     protected CursorType getCursorType() {
         return CursorType.NULL;
+    }
+
+    @Override
+    public boolean renderCursor() {
+        return false;
     }
 }
