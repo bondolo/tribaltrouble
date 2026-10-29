@@ -330,9 +330,18 @@ public final class Picker implements Updatable<TimerAnimation> {
         float seaLevel = local_player.getWorld().getHeightMap().getSeaLevelMeters();
         if (!nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport) || patch_hit_z < seaLevel) {
             float dz = tmp_camera.getCurrentZ() - seaLevel;
-            float factor = dz / dir_vector.z();
-            patch_hit_x = tmp_camera.getCurrentX() - factor * dir_vector.x();
-            patch_hit_y = tmp_camera.getCurrentY() - factor * dir_vector.y();
+            float maxRadius = camera.getDefaultRotateRadius();
+            if (dir_vector.z() < -0.0001f) {
+                float dist = Math.min(-dz / dir_vector.z(), maxRadius);
+                patch_hit_x = tmp_camera.getCurrentX() + dist * dir_vector.x();
+                patch_hit_y = tmp_camera.getCurrentY() + dist * dir_vector.y();
+            } else {
+                patch_hit_x = tmp_camera.getCurrentX() + dir_vector.x() * maxRadius;
+                patch_hit_y = tmp_camera.getCurrentY() + dir_vector.y() * maxRadius;
+            }
+            float metersPerWorld = local_player.getWorld().getHeightMap().getMetersPerWorld();
+            patch_hit_x = Math.clamp(patch_hit_x, 0, metersPerWorld);
+            patch_hit_y = Math.clamp(patch_hit_y, 0, metersPerWorld);
             patch_hit_z = seaLevel;
         }
         int grid_x = UnitGrid.toGridCoordinate(patch_hit_x);
@@ -454,8 +463,19 @@ public final class Picker implements Updatable<TimerAnimation> {
     public void pickMapGoto(int x, int y, MapCamera camera) {
         float scale = getScale();
         setupPicking(camera.getState(), x * scale, y * scale, PICK_SIZE, PICK_SIZE, viewport);
-        if (nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport))
+        float seaLevel = local_player.getWorld().getHeightMap().getSeaLevelMeters();
+        if (nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport) && patch_hit_z >= seaLevel) {
             camera.mapGoto(patch_hit_x, patch_hit_y);
+        } else if (dir_vector.z() != 0) {
+            float dz = tmp_camera.getCurrentZ() - seaLevel;
+            float factor = dz / dir_vector.z();
+            float hit_x = tmp_camera.getCurrentX() - factor * dir_vector.x();
+            float hit_y = tmp_camera.getCurrentY() - factor * dir_vector.y();
+            int worldSize = local_player.getWorld().getLandscapeEnvironment().getMetersPerWorld();
+            if (hit_x >= 0 && hit_x < worldSize && hit_y >= 0 && hit_y < worldSize) {
+                camera.mapGoto(hit_x, hit_y);
+            }
+        }
     }
 
     public Optional<Target> pickRallyPoint(CameraState camera, int x, int y,

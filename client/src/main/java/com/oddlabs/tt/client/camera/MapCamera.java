@@ -10,6 +10,8 @@ import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.tt.engine.render.state.RadialFogInfo;
 import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
+import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.util.Color;
 import org.joml.Vector2fc;
 
@@ -48,29 +50,43 @@ public final class MapCamera extends Camera {
     }
 
     private final SelectionDelegate delegate;
+    private final GameCamera game_camera;
     private final CameraState original_camera_state;
-    private final float distance_to_landscape;
+    private final float vertical_clearance;
+    private final float horizontal_distance;
     private final Label label;
 
     private MapMode map_mode = MapMode.TO_MAP;
     private float fogTime = 0f;
+    private boolean has_goto_target = false;
+    private float goto_x = 0f;
+    private float goto_y = 0f;
 
     public MapCamera(SelectionDelegate delegate, GameCamera old_camera) {
+        this.game_camera = old_camera;
         original_camera_state = old_camera.getState();
         FogInfo radialFog = new RadialFogInfo(Color.Linear.WHITE, 0.25f);
         CameraState mapCameraState = new CameraState(radialFog);
         mapCameraState.set(old_camera.getState());
         mapCameraState.setFog(radialFog);
+        mapCameraState.setNoDetailMode(true);
         super(old_camera.getLandscapeEnvironment(), mapCameraState, old_camera.getAnimationManager());
         this.delegate = delegate;
         this.label = new Label(Utils.getBundleString(ResourceBundle.getBundle(MapCamera.class.getName()),
                 "map_mode"), delegate.getGUIRoot().getSkin().getHeadlineFont());
-        Vector2fc target = old_camera.getRotationPoint();
-        float target_z = getLandscapeEnvironment().getHeight(target.x(), target.y());
-        float dx = target.x() - original_camera_state.getTargetX();
-        float dy = target.y() - original_camera_state.getTargetY();
-        float dz = target_z - original_camera_state.getTargetZ();
-        distance_to_landscape = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+        float cam_x0 = original_camera_state.getTargetX();
+        float cam_y0 = original_camera_state.getTargetY();
+        float cam_z0 = original_camera_state.getTargetZ();
+        float ground_z0 = Math.max(getLandscapeEnvironment().getHeight(cam_x0, cam_y0),
+                getLandscapeEnvironment().getSeaLevelMeters());
+        float clearance = cam_z0 - ground_z0;
+        vertical_clearance = Math.clamp(clearance, 20f, GameCamera.MAX_Z);
+
+        float vert_angle = original_camera_state.getTargetVertAngle();
+        float tanAlpha = (float) Math.tan(Math.max(-vert_angle, (float) Math.toRadians(20.0)));
+        float max_h = Math.min(getLandscapeEnvironment().getMetersPerWorld() / 4f, 150f);
+        horizontal_distance = Math.clamp(vertical_clearance / tanAlpha, 15f, max_h);
 
         setSmoothnessFactor(SMOOTHNESS_FACTOR);
     }
@@ -165,6 +181,7 @@ public final class MapCamera extends Camera {
                     camera_state.setTargetZ(original_camera_state.getTargetZ());
                     camera_state.setTargetVertAngle(original_camera_state.getTargetVertAngle());
                     checkPosition();
+                    syncToOriginalCamera();
                     delegate.exitMapMode();
                     break;
                 }
@@ -184,12 +201,31 @@ public final class MapCamera extends Camera {
                 label.setPos((delegate.getGUIRoot().getWidth() - label.getWidth()) / 2, delegate.getGUIRoot()
                         .getHeight() - label.getHeight());
                 delegate.addChild(label);
-                getState().setNoDetailMode(true);
             }
             case FROM_MAP -> {
                 label.remove();
-                getState().setNoDetailMode(false);
             }
+        }
+    }
+
+    private void syncToOriginalCamera() {
+        CameraState camera_state = getState();
+        original_camera_state.setCurrentX(camera_state.getTargetX());
+        original_camera_state.setCurrentY(camera_state.getTargetY());
+        original_camera_state.setCurrentZ(camera_state.getTargetZ());
+        original_camera_state.setTargetX(camera_state.getTargetX());
+        original_camera_state.setTargetY(camera_state.getTargetY());
+        original_camera_state.setTargetZ(camera_state.getTargetZ());
+        original_camera_state.setCurrentVertAngle(camera_state.getTargetVertAngle());
+        original_camera_state.setTargetVertAngle(camera_state.getTargetVertAngle());
+        original_camera_state.setCurrentHorizAngle(camera_state.getTargetHorizAngle());
+        original_camera_state.setTargetHorizAngle(camera_state.getTargetHorizAngle());
+        original_camera_state.setNoDetailMode(false);
+        if (has_goto_target) {
+            game_camera.setRotationPoint(new LandscapeTarget(
+                    UnitGrid.toGridCoordinate(goto_x),
+                    UnitGrid.toGridCoordinate(goto_y)
+            ));
         }
     }
 
@@ -199,19 +235,24 @@ public final class MapCamera extends Camera {
 
     public void mapGoto(float x, float y, boolean override) {
         if (map_mode == MapMode.IN_MAP || override) {
-            //	float radius = (float)Math.cos(getVertAngle());
-            //	float old_dir_x = (float)Math.cos(getHorizAngle())*radius;
-            //	float old_dir_y = (float)Math.sin(getHorizAngle())*radius;
-            //	float old_dir_z = (float)Math.sin(getVertAngle());
-            float radius = (float) Math.cos(original_camera_state.getTargetVertAngle());
-            float old_dir_x = (float) Math.cos(getState().getHorizAngle()) * radius;
-            float old_dir_y = (float) Math.sin(getState().getHorizAngle()) * radius;
-            float old_dir_z = (float) Math.sin(original_camera_state.getTargetVertAngle());
-            // Adjust the position of the original camera.
-            original_camera_state.setTargetX(x - old_dir_x * distance_to_landscape);
-            original_camera_state.setTargetY(y - old_dir_y * distance_to_landscape);
-            original_camera_state.setTargetZ(getLandscapeEnvironment().getHeight(x, y) - old_dir_z
-                    * distance_to_landscape);
+            this.goto_x = x;
+            this.goto_y = y;
+            this.has_goto_target = true;
+            float yaw = original_camera_state.getTargetHorizAngle();
+            float cam_x = x - (float) Math.cos(yaw) * horizontal_distance;
+            float cam_y = y - (float) Math.sin(yaw) * horizontal_distance;
+            float target_z = Math.max(getLandscapeEnvironment().getHeight(x, y),
+                    getLandscapeEnvironment().getSeaLevelMeters());
+            float cam_z = target_z + vertical_clearance;
+            float min_z = Math.max(getLandscapeEnvironment().getHeight(cam_x, cam_y),
+                    getLandscapeEnvironment().getSeaLevelMeters()) + 1.0f;
+            cam_z = Math.clamp(Math.max(cam_z, min_z), min_z, GameCamera.MAX_Z);
+            float landing_vert_angle = -(float) Math.atan2(cam_z - target_z, horizontal_distance);
+
+            original_camera_state.setTargetX(cam_x);
+            original_camera_state.setTargetY(cam_y);
+            original_camera_state.setTargetZ(cam_z);
+            original_camera_state.setTargetVertAngle(landing_vert_angle);
             changeMode(MapMode.FROM_MAP);
         }
     }

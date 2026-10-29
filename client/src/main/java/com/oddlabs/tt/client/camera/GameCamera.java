@@ -3,7 +3,6 @@ package com.oddlabs.tt.client.camera;
 import com.oddlabs.tt.client.delegate.SelectionDelegate;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
@@ -27,7 +26,6 @@ public final class GameCamera extends Camera {
     private static final float SCROLL_ACCELERATION_SECONDS_MAX = 1f;
     private static final float SCROLL_ACCELERATION_FACTOR = 2.5f;
     private static final float SCROLL_START_MAX_SPEED = 60f;
-    private static final float ROTATE_PICKING_ANGLE_MAX = (-(RenderConfig.FOV) - 10) * ((float) Math.PI / 180) * .5f;
     private static final float ZOOM_SPEED = 50f;
 
     private final WorldViewer viewer;
@@ -97,16 +95,6 @@ public final class GameCamera extends Camera {
         return rotate_left;
     }
 
-    /*
-    float radius = (float)Math.cos(old_vert_angle);
-    float old_dir_x = (float)Math.cos(getHorizAngle())*radius;
-    float old_dir_y = (float)Math.sin(getHorizAngle())*radius;
-    float old_dir_z = (float)Math.sin(old_vert_angle);
-    old_x = x - old_dir_x*distance_to_landscape;
-    old_y = y - old_dir_y*distance_to_landscape;
-    old_z = World.getLandscapeEnvironment().getHeight(x, y) - old_dir_z*distance_to_landscape;
-
-    */
     public void reset() {
     }
 
@@ -280,10 +268,16 @@ public final class GameCamera extends Camera {
             return center_y;
         } else {
             float da = getState().getTargetVertAngle() - rotatePickingAngleMax;
-            int dy = (int) (Math.tan(da) * RenderConfig.VIEW_MIN);
+            float fovyRad = (float) Math.toRadians(currentFov);
+            float pixels_to_screen = (viewer.getGUIRoot().getHeight() * 0.5f) / (float) Math.tan(fovyRad * 0.5f);
+            int dy = (int) (Math.tan(da) * pixels_to_screen);
             int y = center_y - dy;
-            return y;
+            return Math.max(0, y);
         }
+    }
+
+    public float getDefaultRotateRadius() {
+        return default_rotate_radius;
     }
 
     private boolean insideWorld(float x, float y) {
