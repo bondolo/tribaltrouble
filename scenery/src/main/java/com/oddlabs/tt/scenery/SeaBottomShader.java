@@ -113,7 +113,7 @@ final class SeaBottomShader extends ShaderProgram implements FogShader {
                             color.rgb *= (1.0 + causticFactor * 0.35);
                         }
 
-                        vec3 finalColor = applyFog(color.rgb, v_fogDist, gl_FragCoord.xy);
+                        vec3 finalColor = applyFog(color.rgb, v_fogDist, 0.0, gl_FragCoord.xy);
                         out_FragColor = vec4(finalColor, color.a);
                     }
                     """;

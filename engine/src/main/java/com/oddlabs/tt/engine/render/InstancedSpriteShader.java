@@ -47,6 +47,7 @@ final class InstancedSpriteShader extends ShaderProgram implements FogShader, Li
                             vec4 color;
                             vec4 decalColor;
                             float fogDist;
+                            float worldZ;
                             vec3 viewPosition;
                             vec3 viewNormal;
                             vec3 worldNormal;
@@ -87,6 +88,7 @@ final class InstancedSpriteShader extends ShaderProgram implements FogShader, Li
                             vs_out.color = in_InstanceColor;
                             vs_out.decalColor = in_InstanceDecalColor;
                             vs_out.fogDist = length(viewPosition.xyz);
+                            vs_out.worldZ = worldPosition.z;
 
                             vs_out.viewPosition = viewPosition.xyz;
                             vs_out.viewNormal = normalize((u_viewMatrix * in_InstanceModelMatrix * vec4(normal, 0.0)).xyz);
@@ -117,6 +119,7 @@ final class InstancedSpriteShader extends ShaderProgram implements FogShader, Li
                         vec4 color;
                         vec4 decalColor;
                         float fogDist;
+                        float worldZ;
                         vec3 viewPosition;
                         vec3 viewNormal;
                         vec3 worldNormal;
@@ -184,7 +187,7 @@ final class InstancedSpriteShader extends ShaderProgram implements FogShader, Li
                             if (edgeAlpha <= 0.0) discard;
                         }
 
-                        vec3 litColor = applyFog(finalColor.rgb, fs_in.fogDist, gl_FragCoord.xy);
+                        vec3 litColor = applyFog(finalColor.rgb, fs_in.fogDist, fs_in.worldZ, gl_FragCoord.xy);
                         out_FragColor = vec4(litColor, edgeAlpha);
                     }
                     """;

@@ -98,11 +98,11 @@ final class SkyShader extends ShaderProgram {
                         // Pre-cloud atmospheric haze with smooth exponential decay:
                         // Applied strictly to the background sky gradient before clouds are composited,
                         // so clouds never get discolored or darkened by cold fog.
-                        float skirtFactor = exp(-fs_in.elevation * 30.0);
+                        float skirtFactor = exp(-fs_in.elevation * 20.0);
                         float altitudeAttenuation = u_fogMode >= 0
                                 ? (1.0 - smoothstep(20.0, 85.0, u_cameraHeight))
                                 : 0.0;
-                        float fogBlend = skirtFactor * altitudeAttenuation * 0.30;
+                        float fogBlend = skirtFactor * altitudeAttenuation * 0.55;
                         vec3 skyBg = mix(fs_in.color, u_fogColor.rgb, fogBlend);
 
                         // Sunward cloud rim highlight: subtle 20% luminance boost when aligned toward the sun azimuth

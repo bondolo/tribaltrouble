@@ -299,7 +299,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                             litColor *= (1.0 + causticFactor * 0.35);
                         }
 
-                        vec3 finalColor = applyFog(litColor, fs_in.fogDist, gl_FragCoord.xy);
+                        vec3 finalColor = applyFog(litColor, fs_in.fogDist, fs_in.height, gl_FragCoord.xy);
                         out_FragColor = vec4(finalColor, 1.0);
                     }
                     """;

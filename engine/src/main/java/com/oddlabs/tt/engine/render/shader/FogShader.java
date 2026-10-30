@@ -12,6 +12,7 @@ public interface FogShader extends Shader {
     String FOG_FUNCTION = """
             float calculateFogFactor(
                 float dist,
+                float worldZ,
                 vec2 fragCoord
             ) {
                 if (u_fogMode == 3) { // Radial fog for map view
@@ -26,25 +27,48 @@ public interface FogShader extends Shader {
                     return 1.0 - smoothstep(radius - (radius * density), radius, distance);
                 }
 
-                float fogFactor = 1.0;
-                float effectiveDensity = u_fogParams.x;
-                if (u_fogHeightFactor > 0.0) {
-                     effectiveDensity *= (1.0 - clamp(u_cameraHeight / u_fogHeightFactor, 0.0, 1.0));
+                if (u_fogMode < 0) {
+                    return 1.0;
                 }
 
-                if (u_fogMode == 0) { // GL_LINEAR
-                    fogFactor = (u_fogParams.z - dist) / (u_fogParams.z - u_fogParams.y);
-                } else if (u_fogMode == 1) { // GL_EXP
-                    fogFactor = exp(-dist * effectiveDensity);
-                } else if (u_fogMode == 2) { // GL_EXP2
-                    fogFactor = exp(-pow(dist * effectiveDensity, 2.0));
+                float seaLevel = u_fogParams.w;
+                float c_z = max(u_cameraHeight - seaLevel, 0.0);
+                float p_z = max(worldZ - seaLevel, 0.0);
+                float deltaZ = p_z - c_z;
+
+                const float lambda = 0.020;
+                float rho0 = u_fogParams.x * 0.80; // Scaled base density for natural aerial perspective
+
+                float opticalDepth;
+                float absDeltaZ = abs(deltaZ);
+                if (absDeltaZ > 0.001) {
+                    opticalDepth = dist * rho0 * exp(-lambda * c_z) * ((1.0 - exp(-lambda * deltaZ)) / (lambda * deltaZ));
+                } else {
+                    opticalDepth = dist * rho0 * exp(-lambda * c_z);
                 }
-                return clamp(fogFactor, 0.0, 1.0);
+
+                // Minimum horizon haze floor on distant ocean to dissolve outer mesh rim at high camera altitudes
+                float distFactor = smoothstep(2000.0, 6000.0, dist);
+                float minHorizonDepth = distFactor * 3.5;
+                opticalDepth = max(opticalDepth, minHorizonDepth);
+
+                return clamp(exp(-opticalDepth), 0.0, 1.0);
+            }
+
+            float calculateFogFactor(
+                float dist,
+                vec2 fragCoord
+            ) {
+                return calculateFogFactor(dist, u_fogParams.w, fragCoord);
+            }
+
+            vec3 applyFog(vec3 color, float dist, float worldZ, vec2 fragCoord) {
+                float fogFactor = calculateFogFactor(dist, worldZ, fragCoord);
+                return mix(u_fogColor.rgb, color, fogFactor);
             }
 
             vec3 applyFog(vec3 color, float dist, vec2 fragCoord) {
-                float fogFactor = calculateFogFactor(dist, fragCoord);
-                return mix(u_fogColor.rgb, color, fogFactor);
+                return applyFog(color, dist, u_fogParams.w, fragCoord);
             }
             """;
 }

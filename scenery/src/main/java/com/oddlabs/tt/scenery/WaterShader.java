@@ -85,7 +85,13 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
                         vec3 disp = vec3(0.0);
                         vec3 normal = vec3(0.0, 0.0, 1.0);
 
-                        float waveScale = (in_InstanceOffset.z > 0.5) ? 1.0 : texture(u_oceanMask, (baseXY + 1.0) / u_WorldSize).r;
+                        float waveScale;
+                        if (in_InstanceOffset.z > 0.5) {
+                            float distFromCenter = length(baseXY - vec2(u_WorldSize * 0.5));
+                            waveScale = 1.0 - smoothstep(u_WorldSize * 0.75, u_WorldSize * 2.0, distFromCenter);
+                        } else {
+                            waveScale = texture(u_oceanMask, (baseXY + 1.0) / u_WorldSize).r;
+                        }
                         if (u_waveAmpSteep[0].x > 0.0001 && waveScale > 0.001) {
                             addGerstnerWave(0, baseXY, waveScale, disp, normal);
                             addGerstnerWave(1, baseXY, waveScale, disp, normal);
@@ -101,7 +107,7 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
                         vec4 viewPosition = u_modelViewMatrix * vec4(worldPos, 1.0);
                         gl_Position = u_projectionMatrix * viewPosition;
 
-                        float flowScale = waveScale;
+                        float flowScale = 1.0;
                         vs_out.texCoord0 = (worldPos.xy * u_waterRepeatRate) + u_scrollOffsets.xy * flowScale;
                         vs_out.texCoord1 = (worldPos.xy * u_waterDetailRepeatRate) + u_scrollOffsets.zw * flowScale;
                         vs_out.texCoordHeightmap = (worldPos.xy + 1.0) / u_WorldSize;
@@ -150,7 +156,9 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
                         float terrainHeight = texture(u_HeightMap, closestPoint).r;
                         float depth = fs_in.worldPos.z - terrainHeight;
                         float shoreFade = smoothstep(0.0, 0.15, depth);
-                        float finalAlpha = baseColor.a * shoreFade;
+                        float distFromCenter = length(fs_in.worldPos.xy - vec2(u_WorldSize * 0.5));
+                        float oceanAlpha = mix(baseColor.a, 1.0, smoothstep(u_WorldSize * 0.5, u_WorldSize * 1.5, distFromCenter));
+                        float finalAlpha = oceanAlpha * shoreFade;
 
                         vec4 detail = texture(u_texture1, fs_in.texCoord1);
 
@@ -193,7 +201,7 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
                         float specular = pow(specAngle, 64.0) * 0.40;
                         finalRGB += vec3(specular);
 
-                        vec3 finalColor = applyFog(finalRGB, fs_in.fogDist, gl_FragCoord.xy);
+                        vec3 finalColor = applyFog(finalRGB, fs_in.fogDist, fs_in.worldPos.z, gl_FragCoord.xy);
                         out_FragColor = vec4(finalColor, finalAlpha);
 
                         // Write water marker to mask buffer (alpha = 0.1)

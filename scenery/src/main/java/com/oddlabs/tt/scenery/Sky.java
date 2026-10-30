@@ -19,6 +19,7 @@ import com.oddlabs.tt.procedural.noise.Midpoint;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.util.Color;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -142,13 +143,11 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
         // Create interleaved VBO for the sky
         int num_vertices_sky = subdiv_axis * (subdiv_height - 1) + 1;
         int stride = FLOATS_PER_VERTEX * Float.BYTES; // pos, norm, uv0, uv1, color
-        try (var stack = MemoryStack.stackPush()) {
-            FloatBuffer skyBuffer = stack.mallocFloat(num_vertices_sky * (stride / Float.BYTES));
-            makeSkyVertices(radius, outer_utile, outer_vtile, inner_utile, inner_vtile, origin_x, origin_y, origin_z,
-                    skyBuffer);
-            skyBuffer.flip();
-            sky_vbo = new FloatVBO(GL15.GL_STATIC_DRAW, skyBuffer);
-        }
+        FloatBuffer skyBuffer = BufferUtils.createFloatBuffer(num_vertices_sky * (stride / Float.BYTES));
+        makeSkyVertices(radius, outer_utile, outer_vtile, inner_utile, inner_vtile, origin_x, origin_y, origin_z,
+                skyBuffer);
+        skyBuffer.flip();
+        sky_vbo = new FloatVBO(GL15.GL_STATIC_DRAW, skyBuffer);
 
         strip_indices = makeSkyStripIndices();
         fan_indices = makeSkyFanIndices();
@@ -277,8 +276,13 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
         );
 
         for (int i = 0; i < subdiv_height - 1; i++) {
-            z = (float) Math.sin(h_angle_inc * i) * radius;
-            r = (float) Math.cos(h_angle_inc * i) * radius;
+            if (i == 0) {
+                z = -150f;
+                r = radius + 100f;
+            } else {
+                z = (float) Math.sin(h_angle_inc * i) * radius;
+                r = (float) Math.cos(h_angle_inc * i) * radius;
+            }
             height_coeff = Math.abs(z) < 250f ? dome_height / 250f : dome_height / z;
             float elevation = (float) i / (subdiv_height - 1);
 
