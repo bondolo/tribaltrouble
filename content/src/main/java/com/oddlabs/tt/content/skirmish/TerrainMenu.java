@@ -14,6 +14,7 @@ import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.content.menu.SelectGameMenu;
 import com.oddlabs.tt.client.match.MatchLauncher;
 import com.oddlabs.tt.client.Peer;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.CheckBox;
@@ -129,20 +130,22 @@ public final class TerrainMenu extends Group {
     private final boolean multiplayer;
     private final PulldownMenu<Gamespeed> pm_gamespeed;
     private final GUIRoot gui_root;
+    private final ScreenManager screen_manager;
     private final NetworkSelector network;
     private int seed;
 
     public TerrainMenu(Menu main_menu, boolean multiplayer, @Nullable TerrainMenuListener owner) {
-        this(main_menu.getGUIRoot(), main_menu.getPeer(), main_menu, multiplayer, owner);
+        this(main_menu.getGUIRoot(), main_menu.getPeer(), main_menu.getScreenManager(), main_menu, multiplayer, owner);
     }
 
     @SuppressWarnings("unchecked")
-    public TerrainMenu(GUIRoot gui_root, Peer peer,
+    public TerrainMenu(GUIRoot gui_root, Peer peer, ScreenManager screen_manager,
             @Nullable Menu main_menu, boolean multiplayer, @Nullable TerrainMenuListener owner) {
         super(gui_root);
         this.peer = peer;
         this.network = peer.getNetwork().getSelector();
         this.gui_root = gui_root;
+        this.screen_manager = screen_manager;
         this.main_menu = main_menu;
         this.multiplayer = multiplayer;
         this.owner = owner;
@@ -698,7 +701,7 @@ public final class TerrainMenu extends Group {
                 ? multiplayer_setup.islandConfig() : skirmish_setup.islandConfig();
         var game_network = MatchLauncher.startNewGame(peer,
                 gui_root,
-                main_menu.getScreenManager(),
+                screen_manager,
                 menu,
                 parameters,
                 ingame_info,

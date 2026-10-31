@@ -155,8 +155,8 @@ public class DefaultInGameInfo implements InGameInfo, InGameMenuHook {
     @Override
     public final void close(WorldViewer viewer) {
         if (replay_island_flag) {
-            TerrainMenu menu = new TerrainMenu(viewer.getGUIRoot(), viewer.getPeer(), null,
-                    false, null);
+            TerrainMenu menu = new TerrainMenu(viewer.getGUIRoot(), viewer.getPeer(), viewer.getScreenManager(),
+                    null, false, null);
             menu.parseMapcode(viewer.getParameters().mapCode());
             menu.startGame();
         } else
