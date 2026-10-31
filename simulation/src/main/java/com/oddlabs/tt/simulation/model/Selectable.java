@@ -65,6 +65,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
 
     @Override
     public final void animate(float dt) {
+        capturePreviousTransform();
         last = current_behaviour.animate(dt);
         switch (last) {
             case UNINTERRUPTIBLE -> {

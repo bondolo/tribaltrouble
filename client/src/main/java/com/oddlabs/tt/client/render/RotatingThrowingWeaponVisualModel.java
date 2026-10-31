@@ -28,11 +28,17 @@ final class RotatingThrowingWeaponVisualModel extends ThrowingWeaponVisualModel<
 
     @Override
     public void getTransform(Matrix4f dest) {
-        float t = weapon.getTime();
-        float visualZ = computeVisualZ();
-        float yawRad = (float) Math.atan2(weapon.getDirectionY(), weapon.getDirectionX());
+        getTransform(dest, 1.0f);
+    }
 
-        dest.translation(weapon.getPositionX(), weapon.getPositionY(), visualZ)
+    public void getTransform(Matrix4f dest, float alpha) {
+        float x = weapon.getInterpolatedPositionX(alpha);
+        float y = weapon.getInterpolatedPositionY(alpha);
+        float t = weapon.getTime();
+        float visualZ = computeVisualZ(alpha);
+        float yawRad = weapon.getInterpolatedAngle(alpha);
+
+        dest.translation(x, y, visualZ)
                 .rotate(yawRad, 0f, 0f, 1f)
                 .rotate(INITIAL_AXE_ROTATION + angleVelocity * t, 0f, 1f, 0f)
                 .translate(AXE_GRIP_OFFSET_X, 0f, AXE_GRIP_OFFSET_Z);

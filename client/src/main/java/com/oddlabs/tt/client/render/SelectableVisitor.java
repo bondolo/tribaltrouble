@@ -45,9 +45,15 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
 
     @Override
     public void getTransform(ElementSceneContext<S> render_state, Matrix4f dest) {
-        Model model = render_state.model;
-        float angle = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
-        dest.translation(model.getPositionX(), model.getPositionY(), render_state.f)
+        S model = render_state.model;
+        float alpha = render_state.sceneContext.getInterpolationAlpha();
+        float x = model.getInterpolatedPositionX(alpha);
+        float y = model.getInterpolatedPositionY(alpha);
+        float z = render_state.sceneContext instanceof RenderState rs
+                ? rs.getVisuallyCorrectHeight(x, y) + model.getOffsetZ()
+                : render_state.f;
+        float angle = model.getInterpolatedAngle(alpha);
+        dest.translation(x, y, z)
                 .rotate(angle, 0f, 0f, 1f);
     }
 

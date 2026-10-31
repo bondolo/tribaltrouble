@@ -15,4 +15,11 @@ public interface SimulationClock {
      * {@return seconds per simulation tick}
      */
     float getSecondsPerTick();
+
+    /**
+     * {@return sub-tick presentation interpolation factor alpha in [0, 1]}
+     */
+    default float getInterpolationAlpha() {
+        return 1.0f;
+    }
 }

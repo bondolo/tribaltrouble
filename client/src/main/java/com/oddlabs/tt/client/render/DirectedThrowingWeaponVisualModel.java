@@ -18,6 +18,13 @@ final class DirectedThrowingWeaponVisualModel extends ThrowingWeaponVisualModel<
 
     @Override
     public void getTransform(Matrix4f dest) {
+        getTransform(dest, 1.0f);
+    }
+
+    public void getTransform(Matrix4f dest, float alpha) {
+        float x = weapon.getInterpolatedPositionX(alpha);
+        float y = weapon.getInterpolatedPositionY(alpha);
+        float baseZ = weapon.getInterpolatedPositionZ(alpha);
         float t = weapon.getTime();
         float totalTime = weapon.getTimeLimit();
         float visualZ;
@@ -25,16 +32,16 @@ final class DirectedThrowingWeaponVisualModel extends ThrowingWeaponVisualModel<
 
         float baselineVz = totalTime > 0f ? (weapon.getDestZ() - weapon.getStartZ()) / totalTime : 0f;
         if (totalTime > 0f && t < totalTime && effectiveGravity > 0f) {
-            visualZ = weapon.getPositionZ() + 0.5f * effectiveGravity * t * (totalTime - t);
+            visualZ = baseZ + 0.5f * effectiveGravity * t * (totalTime - t);
             float loftVz = 0.5f * effectiveGravity * (totalTime - 2f * t);
             pitchRad = (float) Math.atan2(baselineVz + loftVz, weapon.getMetersPerSecond());
         } else {
-            visualZ = weapon.getPositionZ();
+            visualZ = baseZ;
             pitchRad = (float) Math.atan2(baselineVz, weapon.getMetersPerSecond());
         }
 
-        float yawRad = (float) Math.atan2(weapon.getDirectionY(), weapon.getDirectionX());
-        dest.translation(weapon.getPositionX(), weapon.getPositionY(), visualZ)
+        float yawRad = weapon.getInterpolatedAngle(alpha);
+        dest.translation(x, y, visualZ)
                 .rotate(yawRad, 0f, 0f, 1f)
                 .rotate(-pitchRad, 0f, 1f, 0f)
                 .rotate(SPEAR_ROLL, 1f, 0f, 0f);

@@ -447,7 +447,12 @@ public final class RenderState implements SceneContext {
         emitter.getPosition().set(emitterTransform.m30(), emitterTransform.m31(), emitterTransform.m32());
     }
 
-    private float getVisuallyCorrectHeight(float x_f, float y_f) {
+    @Override
+    public float getInterpolationAlpha() {
+        return local_player.getWorld().getInterpolationAlpha();
+    }
+
+    float getVisuallyCorrectHeight(float x_f, float y_f) {
         return local_player.getWorld().getHeightMap().computeInterpolatedHeight(0, x_f, y_f);
     }
 
@@ -575,9 +580,15 @@ public final class RenderState implements SceneContext {
 
         @Override
         public void getTransform(ElementSceneContext<RubberSupply> render_state, Matrix4f dest) {
-            Model model = render_state.model;
-            float angle = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
-            dest.translation(model.getPositionX(), model.getPositionY(), render_state.f)
+            RubberSupply model = render_state.model;
+            float alpha = render_state.sceneContext.getInterpolationAlpha();
+            float x = model.getInterpolatedPositionX(alpha);
+            float y = model.getInterpolatedPositionY(alpha);
+            float z = render_state.sceneContext instanceof RenderState rs
+                    ? rs.getVisuallyCorrectHeight(x, y) + model.getOffsetZ()
+                    : render_state.f;
+            float angle = model.getInterpolatedAngle(alpha);
+            dest.translation(x, y, z)
                     .rotate(angle, 0f, 0f, 1f);
         }
     };
@@ -683,7 +694,7 @@ public final class RenderState implements SceneContext {
                     if (render_state.sceneContext instanceof RenderState rs
                             && rs.getOrCreateVisualModel(render_state
                                     .getModel()) instanceof DirectedThrowingWeaponVisualModel vm) {
-                        vm.getTransform(dest);
+                        vm.getTransform(dest, render_state.sceneContext.getInterpolationAlpha());
                     }
                 }
 
@@ -715,7 +726,7 @@ public final class RenderState implements SceneContext {
                     if (render_state.sceneContext instanceof RenderState rs
                             && rs.getOrCreateVisualModel(render_state
                                     .getModel()) instanceof RotatingThrowingWeaponVisualModel vm) {
-                        vm.getTransform(dest);
+                        vm.getTransform(dest, render_state.sceneContext.getInterpolationAlpha());
                     }
                 }
 

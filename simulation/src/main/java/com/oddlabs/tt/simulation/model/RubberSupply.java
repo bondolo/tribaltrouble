@@ -68,6 +68,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             world.getRandom().nextFloat();
             spawning = true;
         }
+        capturePreviousTransform();
         setNewAnimation(Animation.IDLING);
     }
 
@@ -117,6 +118,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
 
     @Override
     public void animate(float dt) {
+        capturePreviousTransform();
         if (spawning) {
             spawn_time += dt;
             if (spawn_time >= 2f) {

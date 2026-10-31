@@ -52,6 +52,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         }
 
         setPosition(x, y, start_z);
+        capturePreviousTransform();
 
         setTarget(target);
 
@@ -141,6 +142,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
 
     @Override
     public void animate(float dt) {
+        capturePreviousTransform();
         if (time >= time_limit) {
             hitTarget(hit, getSrc().getOwner(), target);
             return;

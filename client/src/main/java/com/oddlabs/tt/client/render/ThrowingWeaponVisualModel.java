@@ -39,13 +39,18 @@ abstract sealed class ThrowingWeaponVisualModel<T extends ThrowingWeapon> extend
         this.audioPlayer = audio.newAudio(weapon.getPositionX(), weapon.getPositionY(), weapon.getPositionZ(), params);
     }
 
-    protected final float computeVisualZ() {
+    protected final float computeVisualZ(float alpha) {
         float t = weapon.getTime();
         float totalTime = weapon.getTimeLimit();
+        float baseZ = weapon.getInterpolatedPositionZ(alpha);
         if (totalTime > 0f && t < totalTime && effectiveGravity > 0f) {
-            return weapon.getPositionZ() + 0.5f * effectiveGravity * t * (totalTime - t);
+            return baseZ + 0.5f * effectiveGravity * t * (totalTime - t);
         }
-        return weapon.getPositionZ();
+        return baseZ;
+    }
+
+    protected final float computeVisualZ() {
+        return computeVisualZ(1.0f);
     }
 
     @Override

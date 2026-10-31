@@ -41,8 +41,12 @@ public class WhiteModelVisitor<M extends Model> extends ModelVisitor<M> {
     @Override
     public void getTransform(ElementSceneContext<M> render_state, Matrix4f dest) {
         Model model = render_state.getModel();
-        float angle = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
-        dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ())
+        float alpha = render_state.sceneContext.getInterpolationAlpha();
+        float x = model.getInterpolatedPositionX(alpha);
+        float y = model.getInterpolatedPositionY(alpha);
+        float z = model.getInterpolatedPositionZ(alpha);
+        float angle = model.getInterpolatedAngle(alpha);
+        dest.translation(x, y, z)
                 .rotate(angle, 0f, 0f, 1f);
     }
 }

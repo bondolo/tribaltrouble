@@ -30,4 +30,11 @@ public interface SceneContext {
      * @return true if responding
      */
     boolean isResponding(Model model);
+
+    /**
+     * {@return sub-tick presentation interpolation factor alpha in [0, 1]}
+     */
+    default float getInterpolationAlpha() {
+        return 1.0f;
+    }
 }

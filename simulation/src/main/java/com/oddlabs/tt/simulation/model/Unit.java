@@ -173,6 +173,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
         occupy();
         reinsert();
+        capturePreviousTransform();
     }
 
     @Override

@@ -66,6 +66,7 @@ public final class World implements SimulationClock {
 
     private int global_checksum;
     private int gamespeed;
+    private long lastTickNanos = System.nanoTime();
 
     public static World newWorld(
             @Nullable RaceData races_resources,
@@ -137,6 +138,7 @@ public final class World implements SimulationClock {
     }
 
     public void tick() {
+        lastTickNanos = System.nanoTime();
         getAnimationManagerGameTime().runAnimations(getSecondsPerTick());
         tickAI();
         getAnimationManagerRealTime().runAnimations(AnimationManager.ANIMATION_SECONDS_PER_TICK);
@@ -149,6 +151,26 @@ public final class World implements SimulationClock {
                 ai.tick();
             }
         }
+    }
+
+    @Override
+    public float getInterpolationAlpha() {
+        float secondsPerTick = getSecondsPerTick();
+        if (secondsPerTick <= 0f) {
+            return 1.0f;
+        }
+        long tickDurationNanos = (long) (secondsPerTick * 1_000_000_000L);
+        if (tickDurationNanos <= 0L) {
+            return 1.0f;
+        }
+        long elapsed = System.nanoTime() - lastTickNanos;
+        if (elapsed <= 0L) {
+            return 0.0f;
+        }
+        if (elapsed >= tickDurationNanos) {
+            return 1.0f;
+        }
+        return (float) elapsed / (float) tickDurationNanos;
     }
 
     @Override
