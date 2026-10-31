@@ -53,6 +53,7 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
             Terrain.VIKING, WindSpeeds.fromPolar(185.0f, 0.20f, 200.0f, 0.38f)
     );
     private static final float SKYDOME_HEIGHT = 0f;
+    private static final int SKYDOME_GRADIENT_LENGTH = 20;
     private static final int SKYDOME_DEFAULT_COLOR = 8;
     private static final int FLOATS_PER_VERTEX = 11;
     private static final int CLOUD_TEXTURE_SIZE = 512;
@@ -140,8 +141,9 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
         this.originZ = origin_z;
         this.clouds = Resources.findResource(new CloudTextures(terrain));
 
-        // Create interleaved VBO for the sky
-        int num_vertices_sky = subdiv_axis * (subdiv_height - 1) + 1;
+        // Create interleaved VBO for the sky:
+        // Dedicated skirt ring + (subdiv_height - 1) dome rings + 1 apex vertex
+        int num_vertices_sky = subdiv_axis * subdiv_height + 1;
         int stride = FLOATS_PER_VERTEX * Float.BYTES; // pos, norm, uv0, uv1, color
         FloatBuffer skyBuffer = BufferUtils.createFloatBuffer(num_vertices_sky * (stride / Float.BYTES));
         makeSkyVertices(radius, outer_utile, outer_vtile, inner_utile, inner_vtile, origin_x, origin_y, origin_z,
@@ -243,28 +245,39 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
                 (float) Math.pow(skydome_gradient_const[2], SKYDOME_DEFAULT_COLOR)
         };
 
-        float[][] skydome_gradient = new float[subdiv_height][3];
-        skydome_gradient[0] = skydome_init_color.clone();
+        // Compute canonical 20-step legacy gradient table to preserve authored angular color curves
+        float[][] canonical_gradient = new float[SKYDOME_GRADIENT_LENGTH][3];
+        canonical_gradient[0] = skydome_init_color.clone();
 
-        for (int i = 1; i < subdiv_height; i++) {
-            float alpha = (float) i / (subdiv_height - 1);
-            skydome_gradient[i] = new float[]{
-                    alpha * skydome_default_color[0] + (1f - alpha) * skydome_gradient[i - 1][0]
+        for (int i = 1; i < SKYDOME_GRADIENT_LENGTH; i++) {
+            float alpha = (float) i / (SKYDOME_GRADIENT_LENGTH - 1);
+            canonical_gradient[i] = new float[]{
+                    alpha * skydome_default_color[0] + (1f - alpha) * canonical_gradient[i - 1][0]
                             * skydome_gradient_const[0],
-                    alpha * skydome_default_color[1] + (1f - alpha) * skydome_gradient[i - 1][1]
+                    alpha * skydome_default_color[1] + (1f - alpha) * canonical_gradient[i - 1][1]
                             * skydome_gradient_const[1],
-                    alpha * skydome_default_color[2] + (1f - alpha) * skydome_gradient[i - 1][2]
+                    alpha * skydome_default_color[2] + (1f - alpha) * canonical_gradient[i - 1][2]
                             * skydome_gradient_const[2]
             };
         }
 
-        // Convert the computed sRGB/display gradient colors to linear HDR scene colors
+        // Interpolate canonical gradient across subdiv_height geometric dome rings
         Color.Linear[] skydome_gradient_linear = new Color.Linear[subdiv_height];
         for (int i = 0; i < subdiv_height; i++) {
+            float t = (float) i / (subdiv_height - 1);
+            float u = t * (SKYDOME_GRADIENT_LENGTH - 1);
+            int idx0 = (int) u;
+            int idx1 = Math.min(idx0 + 1, SKYDOME_GRADIENT_LENGTH - 1);
+            float frac = u - idx0;
+
+            float r_val = (1f - frac) * canonical_gradient[idx0][0] + frac * canonical_gradient[idx1][0];
+            float g_val = (1f - frac) * canonical_gradient[idx0][1] + frac * canonical_gradient[idx1][1];
+            float b_val = (1f - frac) * canonical_gradient[idx0][2] + frac * canonical_gradient[idx1][2];
+
             skydome_gradient_linear[i] = new Color.Linear(
-                    Color.toLinear(skydome_gradient[i][0]),
-                    Color.toLinear(skydome_gradient[i][1]),
-                    Color.toLinear(skydome_gradient[i][2]),
+                    Color.toLinear(r_val),
+                    Color.toLinear(g_val),
+                    Color.toLinear(b_val),
                     1.0f
             );
         }
@@ -275,14 +288,27 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
                 1.0f
         );
 
+        // Dedicated skirt ring at z = -150m to guarantee overlap with ocean disk, sharing horizon color
+        z = -150f;
+        r = radius + 100f;
+        height_coeff = dome_height / 250f;
+        Color.Linear horizonColor = skydome_gradient_linear[0];
+        for (int j = 0; j < subdiv_axis; j++) {
+            x = (float) Math.cos(START_ANGLE + a_angle_inc * j) * r;
+            y = (float) Math.sin(START_ANGLE + a_angle_inc * j) * r;
+
+            buffer.put(x + origin_x).put(y + origin_y).put(z + origin_z); // Position
+            buffer.put(x * height_coeff / (radius * outer_utile) + 0.5f).put(y * height_coeff / (radius
+                    * outer_vtile) + 0.5f); // TexCoord0
+            buffer.put(x * height_coeff / (radius * inner_utile) + 0.5f).put(y * height_coeff / (radius
+                    * inner_vtile) + 0.5f); // TexCoord1
+            buffer.put(horizonColor.r()).put(horizonColor.g()).put(horizonColor.b()).put(0.0f); // Color & Elevation
+        }
+
+        // Spherical dome rings from z = 0m horizon to upper latitude
         for (int i = 0; i < subdiv_height - 1; i++) {
-            if (i == 0) {
-                z = -150f;
-                r = radius + 100f;
-            } else {
-                z = (float) Math.sin(h_angle_inc * i) * radius;
-                r = (float) Math.cos(h_angle_inc * i) * radius;
-            }
+            z = (float) Math.sin(h_angle_inc * i) * radius;
+            r = (float) Math.cos(h_angle_inc * i) * radius;
             height_coeff = Math.abs(z) < 250f ? dome_height / 250f : dome_height / z;
             float elevation = (float) i / (subdiv_height - 1);
 
@@ -308,7 +334,7 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
 
 
     private ShortVBO[] makeSkyStripIndices() {
-        ShortVBO[] strip_indices = new ShortVBO[subdiv_height - 2];
+        ShortVBO[] strip_indices = new ShortVBO[subdiv_height - 1];
         try (var stack = MemoryStack.stackPush()) {
             for (int i = 0; i < strip_indices.length; i++) {
                 int size = subdiv_axis * 2 + 2;
@@ -331,11 +357,11 @@ public final class Sky implements SubSceneRenderer, AutoCloseable {
         int size = subdiv_axis + 2;
         try (var stack = MemoryStack.stackPush()) {
             ShortBuffer temp = stack.mallocShort(size);
-            temp.put(0, (short) (sky_vbo.capacity() / FLOATS_PER_VERTEX - 1));
+            temp.put(0, (short) (subdiv_axis * subdiv_height));
             for (int i = 0; i < subdiv_axis; i++) {
-                temp.put(i + 1, (short) ((subdiv_height - 1) * subdiv_axis - i - 1));
+                temp.put(i + 1, (short) (subdiv_axis * subdiv_height - i - 1));
             }
-            temp.put(subdiv_axis + 1, (short) ((subdiv_height - 1) * subdiv_axis - 1));
+            temp.put(subdiv_axis + 1, (short) (subdiv_axis * subdiv_height - 1));
 
             ShortVBO fan_indices = new ShortVBO(GL15.GL_STATIC_DRAW, size);
             temp.rewind();

@@ -171,22 +171,35 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
 
                         // Base water color in linear HDR space with subtle optical variation
                         vec3 waterColor = pow(baseColor.rgb, vec3(2.2));
+                        bool isTropical = u_skyColor.b >= u_skyColor.r;
                         if (u_enableDetail) {
-                            waterColor = mix(waterColor, waterColor * detail.rgb, detail.a * 0.15);
+                            float detailStrength = isTropical ? 0.15 : 0.04;
+                            waterColor = mix(waterColor, waterColor * detail.rgb, detail.a * detailStrength);
                         }
+
+                        // Optical water backscattering in open ocean (vibrant tropical turquoise vs cold Nordic depth)
+                        float oceanDist = length(fs_in.worldPos.xy - vec2(u_WorldSize * 0.5));
+                        float deepOceanFactor = smoothstep(u_WorldSize * 0.20, u_WorldSize * 0.65, oceanDist);
+                        vec3 oceanBackscatter = isTropical ? vec3(0.025, 0.16, 0.25) : vec3(0.008, 0.045, 0.12);
+                        waterColor += oceanBackscatter * deepOceanFactor;
 
                         // Dynamic reflection vector sampling sky gradient and cloud decks
                         vec3 reflectDir = reflect(-viewDir, normal);
                         float horizonFactor = clamp(reflectDir.z, 0.0, 1.0);
-                        vec3 reflectedSky = mix(u_fogColor.rgb, u_skyColor, horizonFactor);
+                        vec3 reflectedSky = isTropical
+                                ? mix(u_fogColor.rgb, u_skyColor, horizonFactor)
+                                : mix(vec3(0.35, 0.20, 0.14), u_fogColor.rgb * 0.70, horizonFactor);
 
                         if (reflectDir.z > 0.0) {
-                            vec2 reflectUV0 = reflectDir.xy * 0.15 + u_innerOffset;
-                            vec2 reflectUV1 = reflectDir.xy * 0.15 + u_outerOffset;
+                            // Dampen normal perturbation on cloud UVs to eliminate caustic-like shimmering
+                            vec3 smoothReflect = reflect(-viewDir, normalize(mix(vec3(0.0, 0.0, 1.0), normal, 0.20)));
+                            vec2 reflectUV0 = smoothReflect.xy * 0.08 + u_innerOffset;
+                            vec2 reflectUV1 = smoothReflect.xy * 0.08 + u_outerOffset;
                             float cloud0 = texture(u_cloudTexture0, reflectUV0).r;
                             float cloud1 = texture(u_cloudTexture1, reflectUV1).r;
                             float cloudFactor = clamp(reflectDir.z * 1.5, 0.0, 1.0);
-                            float cloudAlpha = (cloud0 * 0.20 + cloud1 * 0.12) * cloudFactor;
+                            float cloudStrength = isTropical ? 1.0 : 0.40;
+                            float cloudAlpha = (cloud0 * 0.20 + cloud1 * 0.12) * cloudFactor * cloudStrength;
                             reflectedSky = mix(reflectedSky, vec3(1.0), cloudAlpha);
                         }
 
@@ -198,8 +211,10 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
 
                         // Directional sun specular glints under 70 degree sun
                         float specAngle = max(dot(normal, halfDir), 0.0);
-                        float specular = pow(specAngle, 64.0) * 0.40;
-                        finalRGB += vec3(specular);
+                        float specIntensity = isTropical ? 0.35 : 0.12;
+                        vec3 specColor = isTropical ? vec3(1.0) : vec3(1.0, 0.85, 0.60);
+                        float specular = pow(specAngle, 64.0) * specIntensity;
+                        finalRGB += specColor * specular;
 
                         vec3 finalColor = applyFog(finalRGB, fs_in.fogDist, fs_in.worldPos.z, gl_FragCoord.xy);
                         out_FragColor = vec4(finalColor, finalAlpha);

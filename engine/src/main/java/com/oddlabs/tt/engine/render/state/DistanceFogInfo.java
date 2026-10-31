@@ -15,6 +15,10 @@ public final class DistanceFogInfo extends FogInfo {
             Terrain.NATIVE, new Color.Standard(0xFF_A5_BF_FF).linear(),
             Terrain.VIKING, new Color.Standard(0xFF_33_66_8C).linear()
     ));
+    private static final Map<Terrain, Float> SCALE_HEIGHT = new EnumMap<>(Map.of(
+            Terrain.NATIVE, 50.0f,
+            Terrain.VIKING, 85.0f
+    ));
     private static final float NATIVE_FOG_DENSITY = 0.001f;
     private static final float VIKING_FOG_DENSITY = 0.0015f;
     private static final float NATIVE_FOG_HEIGHT = 1.2f;
@@ -23,13 +27,20 @@ public final class DistanceFogInfo extends FogInfo {
     private final float start;
     private final float end;
     private final float height_factor;
+    private final float scale_height;
+
+    public DistanceFogInfo(FogInfo.Mode mode, Color color, float density, float height_factor,
+            float scale_height, float start, float end) {
+        super(mode, color, density);
+        this.height_factor = height_factor;
+        this.scale_height = scale_height;
+        this.start = start;
+        this.end = end;
+    }
 
     public DistanceFogInfo(FogInfo.Mode mode, Color color, float density, float height_factor,
             float start, float end) {
-        super(mode, color, density);
-        this.height_factor = height_factor;
-        this.start = start;
-        this.end = end;
+        this(mode, color, density, height_factor, 50.0f, start, end);
     }
 
     /**
@@ -43,10 +54,10 @@ public final class DistanceFogInfo extends FogInfo {
         return switch (terrain) {
             case NATIVE ->
                 new DistanceFogInfo(Mode.EXP2, FOG_COLOR.get(terrain), NATIVE_FOG_DENSITY, NATIVE_FOG_HEIGHT
-                        * meters_per_world, 0f, meters_per_world >> 2);
+                        * meters_per_world, SCALE_HEIGHT.get(terrain), 0f, meters_per_world >> 2);
             case VIKING ->
                 new DistanceFogInfo(Mode.EXP2, FOG_COLOR.get(terrain), VIKING_FOG_DENSITY, VIKING_FOG_HEIGHT
-                        * meters_per_world, 0f, meters_per_world >> 2);
+                        * meters_per_world, SCALE_HEIGHT.get(terrain), 0f, meters_per_world >> 2);
         };
     }
 
@@ -60,5 +71,9 @@ public final class DistanceFogInfo extends FogInfo {
 
     public float getHeightFactor() {
         return height_factor;
+    }
+
+    public float getScaleHeight() {
+        return scale_height;
     }
 }

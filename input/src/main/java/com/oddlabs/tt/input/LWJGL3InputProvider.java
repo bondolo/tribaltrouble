@@ -26,7 +26,6 @@ import static org.lwjgl.sdl.SDLKeyboard.SDL_GetKeyboardState;
 import static org.lwjgl.sdl.SDLKeyboard.SDL_StartTextInput;
 import static org.lwjgl.sdl.SDLKeyboard.SDL_StopTextInput;
 import static org.lwjgl.sdl.SDLMouse.SDL_GetDefaultCursor;
-import static org.lwjgl.sdl.SDLMouse.SDL_GetMouseState;
 import static org.lwjgl.sdl.SDLMouse.SDL_GetWindowRelativeMouseMode;
 import static org.lwjgl.sdl.SDLMouse.SDL_HideCursor;
 import static org.lwjgl.sdl.SDLMouse.SDL_SetCursor;

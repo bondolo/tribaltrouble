@@ -19,6 +19,7 @@ final class FogInfoTest {
         assertTrue(fog.isEnabled());
         assertEquals(0.001f, fog.getDensity(), 0.0001f);
         assertEquals(1.2f * 512, fog.getHeightFactor(), 0.001f);
+        assertEquals(50.0f, fog.getScaleHeight(), 0.001f);
         assertEquals(0f, fog.getStart(), 0.0001f);
         assertEquals(128f, fog.getEnd(), 0.0001f);
         assertNotNull(fog.getColor());
@@ -32,6 +33,7 @@ final class FogInfoTest {
         assertTrue(fog.isEnabled());
         assertEquals(0.0015f, fog.getDensity(), 0.0001f);
         assertEquals(1.4f * 1024, fog.getHeightFactor(), 0.001f);
+        assertEquals(85.0f, fog.getScaleHeight(), 0.001f);
         assertEquals(0f, fog.getStart(), 0.0001f);
         assertEquals(256f, fog.getEnd(), 0.0001f);
         assertNotNull(fog.getColor());

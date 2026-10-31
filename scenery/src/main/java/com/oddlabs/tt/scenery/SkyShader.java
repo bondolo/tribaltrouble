@@ -102,7 +102,8 @@ final class SkyShader extends ShaderProgram {
                         float altitudeAttenuation = u_fogMode >= 0
                                 ? (1.0 - smoothstep(20.0, 85.0, u_cameraHeight))
                                 : 0.0;
-                        float fogBlend = skirtFactor * altitudeAttenuation * 0.55;
+                        float chromaticMatch = clamp(dot(normalize(fs_in.color), normalize(u_fogColor.rgb)), 0.0, 1.0);
+                        float fogBlend = skirtFactor * altitudeAttenuation * 0.55 * smoothstep(0.70, 0.90, chromaticMatch);
                         vec3 skyBg = mix(fs_in.color, u_fogColor.rgb, fogBlend);
 
                         // Sunward cloud rim highlight: subtle 20% luminance boost when aligned toward the sun azimuth

@@ -61,7 +61,7 @@ public final class GlobalUniforms {
                     default -> FogShader.FOG_MODE_LINEAR;
                 };
                 p1 = df.getDensity();
-                p2 = df.getStart();
+                p2 = df.getScaleHeight();
                 p3 = df.getEnd();
                 hf = df.getHeightFactor();
             } else if (fog instanceof RadialFogInfo rf) {
