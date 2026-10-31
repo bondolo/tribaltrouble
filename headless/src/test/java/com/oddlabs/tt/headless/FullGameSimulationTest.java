@@ -278,7 +278,8 @@ class FullGameSimulationTest {
                 new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, PlayerSlot.AI_EASY, "Team1", eliminatedUnits),
                 new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, PlayerSlot.AI_EASY, "Team2-Winner", activeUnits),
                 new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, PlayerSlot.AI_EASY, "Team3", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES, PlayerSlot.AI_NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
+                new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES,
+                        PlayerSlot.AI_NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
         );
 
         HeadlessMatchConfig config = new HeadlessMatchConfig(
@@ -295,7 +296,8 @@ class FullGameSimulationTest {
         assertTrue(result.victory(), "Match should conclude in victory for the sole surviving competitive team");
         assertEquals(2, result.winningTeam(), "Team 2 must be the winning team");
         assertTrue(result.survivingPlayerIndices().contains(2), "Winning player must be in surviving players list");
-        assertTrue(result.survivingPlayerIndices().contains(4), "Neutral player must also survive without preventing victory");
+        assertTrue(result.survivingPlayerIndices().contains(4),
+                "Neutral player must also survive without preventing victory");
     }
 
     @Test
@@ -325,7 +327,8 @@ class FullGameSimulationTest {
                 new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, PlayerSlot.AI_EASY, "Team1", eliminatedUnits),
                 new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, PlayerSlot.AI_EASY, "Team2", eliminatedUnits),
                 new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, PlayerSlot.AI_EASY, "Team3", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES, PlayerSlot.AI_NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
+                new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES,
+                        PlayerSlot.AI_NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
         );
 
         HeadlessMatchConfig config = new HeadlessMatchConfig(
@@ -368,10 +371,13 @@ class FullGameSimulationTest {
 
         List<HeadlessMatchConfig.PlayerConfig> players = List.of(
                 new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, PlayerSlot.AI_EASY, "Team0-Alive", activeUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, PlayerSlot.AI_EASY, "Team1-Elim", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, PlayerSlot.AI_EASY, "Team1-Elim",
+                        eliminatedUnits),
                 new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, PlayerSlot.AI_EASY, "Team2-Alive", activeUnits),
-                new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, PlayerSlot.AI_EASY, "Team3-Elim", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES, PlayerSlot.AI_NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
+                new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, PlayerSlot.AI_EASY, "Team3-Elim",
+                        eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES,
+                        PlayerSlot.AI_NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
         );
 
         HeadlessMatchConfig config = new HeadlessMatchConfig(

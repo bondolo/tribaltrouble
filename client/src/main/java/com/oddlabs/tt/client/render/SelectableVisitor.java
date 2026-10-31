@@ -7,7 +7,6 @@ import com.oddlabs.tt.engine.render.VisualPattern;
 import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
-import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;

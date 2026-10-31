@@ -22,6 +22,7 @@ public final class PulldownMenu<T> extends Group {
 
     private final List<PulldownItem<T>> items = new ArrayList<>();
     private int chosen_item_index = -1;
+    private @Nullable GUIObject returnFocusTarget = null;
 
     public PulldownMenu(GUIRoot guiRoot) {
         super(guiRoot);
@@ -37,16 +38,47 @@ public final class PulldownMenu<T> extends Group {
         return items.size();
     }
 
+    boolean hasHoveredItem() {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).isHovered()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    boolean hasActiveItem() {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).isActive()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     protected void renderGeometry(GUIRenderer renderer) {
         var pulldownData = skin.getPulldownData();
+
+        ModeIconQuads.Mode botMode = isDisabled()
+                ? ModeIconQuads.Mode.DISABLED
+                : (!items.isEmpty() && items.getLast().isHighlighted())
+                        ? ModeIconQuads.Mode.ACTIVE
+                : ModeIconQuads.Mode.NORMAL;
+
         // Render bottom edge
         Horizontal bot = pulldownData.pulldownBottom();
-        bot.render(renderer, 0, 0, getWidth(), ModeIconQuads.Mode.NORMAL);
+        bot.render(renderer, 0, 0, getWidth(), botMode);
+
+        ModeIconQuads.Mode topMode = isDisabled()
+                ? ModeIconQuads.Mode.DISABLED
+                : (!items.isEmpty() && items.getFirst().isHighlighted())
+                        ? ModeIconQuads.Mode.ACTIVE
+                : ModeIconQuads.Mode.NORMAL;
 
         // Render top edge
         Horizontal top = pulldownData.pulldownTop();
-        top.render(renderer, 0, getHeight() - top.getHeight(), getWidth(), ModeIconQuads.Mode.NORMAL);
+        top.render(renderer, 0, getHeight() - top.getHeight(), getWidth(), topMode);
     }
 
     public void addItem(PulldownItem<T> item) {
@@ -93,6 +125,10 @@ public final class PulldownMenu<T> extends Group {
         return -1 != chosen_item_index ? Optional.of(items.get(chosen_item_index)) : Optional.empty();
     }
 
+    boolean isItemChosen(PulldownItem<T> item) {
+        return chosen_item_index >= 0 && chosen_item_index < items.size() && items.get(chosen_item_index) == item;
+    }
+
     /** {@return index of the chosen item, or -1 if no item is chosen} */
     public int getChosenItemIndex() {
         return chosen_item_index;
@@ -126,6 +162,16 @@ public final class PulldownMenu<T> extends Group {
         }
     }
 
+    void setReturnFocusTarget(@Nullable GUIObject target) {
+        this.returnFocusTarget = target;
+    }
+
+    @Override
+    protected void doRemove() {
+        super.doRemove();
+        returnFocusTarget = null;
+    }
+
     @Override
     protected void focusNotify(boolean focus) {
         if (!focus) {
@@ -146,15 +192,29 @@ public final class PulldownMenu<T> extends Group {
                 event.consume();
                 return;
             }
+            if (event.consumeAction(GameAction.UI_CANCEL)) {
+                GUIObject target = returnFocusTarget;
+                remove();
+                if (target != null) {
+                    target.setFocus();
+                }
+                event.consume();
+                return;
+            }
         }
         super.handleInput(event);
     }
 
     // Sending click on to appropriate item when PulldownButton has been pressed and released on an item
     void clickItem(MouseButton button, int x, int y, int clicks) {
+        clickItemExcept(button, x, y, clicks, null);
+    }
+
+    void clickItemExcept(MouseButton button, int x, int y, int clicks, @Nullable PulldownItem<T> except) {
         for (PulldownItem<T> item : items) {
-            if (item.isHovered())
+            if (item != except && item.isHovered()) {
                 item.mouseClickedAll(button, x, y, clicks);
+            }
         }
     }
 

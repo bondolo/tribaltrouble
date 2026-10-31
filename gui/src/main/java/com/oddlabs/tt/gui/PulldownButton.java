@@ -4,6 +4,7 @@ import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Dropdown selection button managing opening and positioning of a {@link PulldownMenu}.
@@ -13,6 +14,7 @@ public final class PulldownButton<T> extends GUIObject {
     private final Label label;
     private final GUIRoot gui_root;
     private final Skin skin;
+    private @Nullable PulldownItem<T> openedItem = null;
 
     public PulldownButton(GUIRoot gui_root, PulldownMenu<T> menu, int width) {
         this.menu = menu;
@@ -48,6 +50,23 @@ public final class PulldownButton<T> extends GUIObject {
     }
 
     @Override
+    protected @Nullable GUIObject pick(float x, float y) {
+        if (isMenuOpen()) {
+            return null;
+        }
+        return super.pick(x, y);
+    }
+
+    @Override
+    protected void render(GUIRenderer renderer, float clip_left, float clip_right, float clip_bottom,
+            float clip_top) {
+        if (isMenuOpen()) {
+            return;
+        }
+        super.render(renderer, clip_left, clip_right, clip_bottom, clip_top);
+    }
+
+    @Override
     protected void renderGeometry(GUIRenderer renderer) {
         PulldownData data = skin.getPulldownData();
         Horizontal pulldownButton = data.pulldownButton();
@@ -77,8 +96,9 @@ public final class PulldownButton<T> extends GUIObject {
     protected void mouseReleased(MouseButton button, int x, int y) {
         if (isMenuOpen()) {
             menu.getChosenItem().ifPresent(GUIObject::setFocus);
+            menu.clickItemExcept(button, x, y, 1, openedItem);
         }
-        menu.clickItem(button, x, y, 1);
+        openedItem = null;
     }
 
     private boolean isMenuOpen() {
@@ -86,12 +106,17 @@ public final class PulldownButton<T> extends GUIObject {
     }
 
     private void activateMenu() {
-        int menu_x = (int) (getRootX() + getWidth() - menu.getWidth());
-        int menu_y = (int) (getRootY() - menu.getHeight());
-        if (menu_y < 0) {
-            menu_y = (int) (getRootY() + getHeight());
-        }
-        menu.setPos(menu_x, menu_y);
+        PulldownItem<T> currentItem = menu.getChosenItem()
+                .orElse(menu.getSize() > 0 ? menu.getItem(0).orElse(null) : null);
+        openedItem = currentItem;
+        int item_y = currentItem != null ? currentItem.getY() : 0;
+        int item_height = currentItem != null ? currentItem.getHeight() : getHeight();
+        int menu_x = Math.round(getRootX());
+        int menu_y = Math.round(getRootY() + (getHeight() - item_height) / 2f - item_y);
+        int max_x = Math.max(0, gui_root.getWidth() - menu.getWidth());
+        int max_y = Math.max(0, gui_root.getHeight() - menu.getHeight());
+        menu.setPos(Math.clamp(menu_x, 0, max_x), Math.clamp(menu_y, 0, max_y));
+        menu.setReturnFocusTarget(this);
         var modal_delegate = gui_root.getModalDelegate();
         if (modal_delegate != null) {
             modal_delegate.addChild(menu);
@@ -102,6 +127,7 @@ public final class PulldownButton<T> extends GUIObject {
     }
 
     private void deactivateMenu() {
+        openedItem = null;
         setFocus();
         menu.remove();
     }
@@ -113,6 +139,7 @@ public final class PulldownButton<T> extends GUIObject {
     @Override
     protected void doRemove() {
         super.doRemove();
+        openedItem = null;
         if (isMenuOpen()) {
             menu.remove();
         }

@@ -54,12 +54,27 @@ public final class PulldownItem<T> extends ButtonObject {
         return this;
     }
 
+    boolean isChosen() {
+        return menu != null && menu.isItemChosen(this);
+    }
+
+    boolean isHighlighted() {
+        if (isDisabled()) {
+            return false;
+        }
+        if (menu != null && menu.hasHoveredItem()) {
+            return isHovered();
+        }
+        if (menu != null && menu.hasActiveItem()) {
+            return isActive();
+        }
+        return isChosen();
+    }
+
     @Override
     protected void renderGeometry(GUIRenderer renderer) {
-        ModeIconQuads.Mode skinMode = isDisabled()
-                ? ModeIconQuads.Mode.NORMAL
-                : isActive() || isHovered()
-                        ? ModeIconQuads.Mode.ACTIVE
+        ModeIconQuads.Mode skinMode = isHighlighted()
+                ? ModeIconQuads.Mode.ACTIVE
                 : ModeIconQuads.Mode.NORMAL;
         itemBox.render(renderer, 0f, 0f, getWidth(), getHeight(), skinMode);
     }
