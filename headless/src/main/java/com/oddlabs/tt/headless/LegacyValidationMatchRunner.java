@@ -18,9 +18,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -80,6 +78,8 @@ public final class LegacyValidationMatchRunner {
         }
 
         int maxTicks = config.maxTicks();
+        List<Player> players = world.getPlayers();
+        int numPlayers = players.size();
 
         String dumpTicks = System.getProperty("dumpTicks");
         String dumpIntervalStr = System.getProperty("dumpInterval");
@@ -112,20 +112,36 @@ public final class LegacyValidationMatchRunner {
                 }
             }
 
-            Set<Integer> aliveTeams = new HashSet<>();
-            List<Integer> survivingPlayers = new ArrayList<>();
-            for (int i = 0; i < world.getPlayers().size(); i++) {
-                Player player = world.getPlayers().get(i);
+            int firstAliveTeam = 0;
+            boolean hasFirstTeam = false;
+            boolean multipleTeamsAlive = false;
+            boolean anyPlayerAlive = false;
+
+            for (int i = 0; i < numPlayers; i++) {
+                Player player = players.get(i);
                 if (player.isAlive()) {
-                    aliveTeams.add(player.getPlayerInfo().team());
-                    survivingPlayers.add(i);
+                    anyPlayerAlive = true;
+                    int team = player.getPlayerInfo().team();
+                    if (!hasFirstTeam) {
+                        firstAliveTeam = team;
+                        hasFirstTeam = true;
+                    } else if (firstAliveTeam != team) {
+                        multipleTeamsAlive = true;
+                        break;
+                    }
                 }
             }
 
             int tick = currentTick;
-            if (aliveTeams.size() == 1) {
-                int winningTeam = aliveTeams.iterator().next();
+            if (!multipleTeamsAlive && hasFirstTeam) {
+                int winningTeam = firstAliveTeam;
                 logger.info(() -> "Legacy validation victory achieved by team " + winningTeam + " at tick " + tick);
+                List<Integer> survivingPlayers = new ArrayList<>();
+                for (int i = 0; i < numPlayers; i++) {
+                    if (players.get(i).isAlive()) {
+                        survivingPlayers.add(i);
+                    }
+                }
                 return new HeadlessMatchResult(
                         winningTeam,
                         true,
@@ -135,22 +151,22 @@ public final class LegacyValidationMatchRunner {
                 );
             }
 
-            if (aliveTeams.isEmpty()) {
+            if (!anyPlayerAlive) {
                 logger.info(() -> "All teams eliminated at tick " + tick);
                 return new HeadlessMatchResult(
                         -1,
                         false,
                         world.getTick(),
                         world.getChecksum(),
-                        survivingPlayers
+                        List.of()
                 );
             }
         }
 
         logger.info(() -> "Match reached maximum tick limit " + maxTicks);
         List<Integer> survivingPlayers = new ArrayList<>();
-        for (int i = 0; i < world.getPlayers().size(); i++) {
-            if (world.getPlayers().get(i).isAlive()) {
+        for (int i = 0; i < numPlayers; i++) {
+            if (players.get(i).isAlive()) {
                 survivingPlayers.add(i);
             }
         }

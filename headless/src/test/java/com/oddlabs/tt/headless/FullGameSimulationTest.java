@@ -6,6 +6,7 @@ import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.net.JitterConfig;
@@ -248,5 +249,147 @@ class FullGameSimulationTest {
         );
 
         assertEquals(java.time.Duration.ofMillis(50), configWithTimeout.stallTimeout());
+    }
+
+    @Test
+    void testFourTeamsWithNeutralFactionSoleSurvivorVictory() throws Exception {
+        int seed = 42;
+        IslandConfig islandConfig = new IslandConfig(
+                Terrain.NATIVE,
+                256 * HeightMap.METERS_PER_UNIT_GRID,
+                0.5f,
+                0.5f,
+                0.5f,
+                seed
+        );
+
+        WorldParameters worldParameters = new WorldParameters(
+                1,
+                "headless_4teams_neutral_" + seed,
+                1,
+                100
+        );
+
+        UnitInfo activeUnits = new UnitInfo(false, false, 0, false, 1, 0, 0, 0);
+        UnitInfo eliminatedUnits = new UnitInfo(false, false, 0, false, 0, 0, 0, 0);
+
+        List<HeadlessMatchConfig.PlayerConfig> players = List.of(
+                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, PlayerSlot.AI_EASY, "Team0", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, PlayerSlot.AI_EASY, "Team1", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, PlayerSlot.AI_EASY, "Team2-Winner", activeUnits),
+                new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, PlayerSlot.AI_EASY, "Team3", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES, PlayerSlot.AI_NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
+        );
+
+        HeadlessMatchConfig config = new HeadlessMatchConfig(
+                islandConfig,
+                worldParameters,
+                players,
+                100,
+                50
+        );
+
+        HeadlessMatchRunner runner = new HeadlessMatchRunner();
+        HeadlessMatchResult result = runner.run(config);
+
+        assertTrue(result.victory(), "Match should conclude in victory for the sole surviving competitive team");
+        assertEquals(2, result.winningTeam(), "Team 2 must be the winning team");
+        assertTrue(result.survivingPlayerIndices().contains(2), "Winning player must be in surviving players list");
+        assertTrue(result.survivingPlayerIndices().contains(4), "Neutral player must also survive without preventing victory");
+    }
+
+    @Test
+    void testFourTeamsAllEliminatedWithNeutralFactionSurvivingDraw() throws Exception {
+        int seed = 42;
+        IslandConfig islandConfig = new IslandConfig(
+                Terrain.NATIVE,
+                256 * HeightMap.METERS_PER_UNIT_GRID,
+                0.5f,
+                0.5f,
+                0.5f,
+                seed
+        );
+
+        WorldParameters worldParameters = new WorldParameters(
+                1,
+                "headless_4teams_elim_" + seed,
+                1,
+                100
+        );
+
+        UnitInfo activeUnits = new UnitInfo(false, false, 0, false, 1, 0, 0, 0);
+        UnitInfo eliminatedUnits = new UnitInfo(false, false, 0, false, 0, 0, 0, 0);
+
+        List<HeadlessMatchConfig.PlayerConfig> players = List.of(
+                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, PlayerSlot.AI_EASY, "Team0", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, PlayerSlot.AI_EASY, "Team1", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, PlayerSlot.AI_EASY, "Team2", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, PlayerSlot.AI_EASY, "Team3", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES, PlayerSlot.AI_NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
+        );
+
+        HeadlessMatchConfig config = new HeadlessMatchConfig(
+                islandConfig,
+                worldParameters,
+                players,
+                100,
+                50
+        );
+
+        HeadlessMatchRunner runner = new HeadlessMatchRunner();
+        HeadlessMatchResult result = runner.run(config);
+
+        assertFalse(result.victory(), "Match must not conclude in victory when all competitive teams are eliminated");
+        assertEquals(-1, result.winningTeam(), "Winning team must be -1 when all competitive teams are eliminated");
+        assertEquals(List.of(4), result.survivingPlayerIndices(), "Neutral player must be the sole surviving player");
+    }
+
+    @Test
+    void testFourTeamsMultipleAliveWithNeutralFactionDoesNotDeclarePrematureVictory() throws Exception {
+        int seed = 42;
+        IslandConfig islandConfig = new IslandConfig(
+                Terrain.NATIVE,
+                256 * HeightMap.METERS_PER_UNIT_GRID,
+                0.5f,
+                0.5f,
+                0.5f,
+                seed
+        );
+
+        WorldParameters worldParameters = new WorldParameters(
+                1,
+                "headless_4teams_multiple_" + seed,
+                1,
+                100
+        );
+
+        UnitInfo activeUnits = new UnitInfo(false, false, 0, false, 1, 0, 0, 0);
+        UnitInfo eliminatedUnits = new UnitInfo(false, false, 0, false, 0, 0, 0, 0);
+
+        List<HeadlessMatchConfig.PlayerConfig> players = List.of(
+                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, PlayerSlot.AI_EASY, "Team0-Alive", activeUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, PlayerSlot.AI_EASY, "Team1-Elim", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, PlayerSlot.AI_EASY, "Team2-Alive", activeUnits),
+                new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, PlayerSlot.AI_EASY, "Team3-Elim", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES, PlayerSlot.AI_NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
+        );
+
+        HeadlessMatchConfig config = new HeadlessMatchConfig(
+                islandConfig,
+                worldParameters,
+                players,
+                5,
+                50
+        );
+
+        HeadlessMatchRunner runner = new HeadlessMatchRunner();
+        HeadlessMatchResult result = runner.run(config);
+
+        assertFalse(result.victory(), "Match must not declare victory while multiple competitive teams remain alive");
+        assertEquals(-1, result.winningTeam(), "Winning team must be -1 when match ends due to max tick limit");
+        assertTrue(result.survivingPlayerIndices().contains(0));
+        assertTrue(result.survivingPlayerIndices().contains(2));
+        assertTrue(result.survivingPlayerIndices().contains(4));
+        assertEquals(3, result.survivingPlayerIndices().size());
     }
 }

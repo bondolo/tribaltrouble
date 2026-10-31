@@ -12,10 +12,9 @@ import com.oddlabs.tt.simulation.player.UnitInfo;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -110,39 +109,55 @@ public final class HeadlessMatchRunner {
                     lastProgressTimeNanos = nowNanos;
                     lastProgressTick = currentTick;
 
-                    StringBuilder progress = new StringBuilder();
-                    progress.append(String.format("Tick %d (+%d/%d, %.1f ticks/s):", currentTick, elapsedTicks,
-                            maxTicks, ticksPerSec));
-                    for (HeadlessSimulationInstance instance : harness.getInstances()) {
-                        Player player = instance.getLocalPlayer();
-                        int units = player.getUnitCountContainer().getNumSupplies();
-                        int buildings = player.getBuildingCountContainer().getNumSupplies();
-                        progress.append(String.format(" [%s(T%d): %d units, %d bldgs, alive=%b]",
-                                player.getPlayerInfo().name(),
-                                player.getPlayerInfo().team(),
-                                units,
-                                buildings,
-                                instance.isAlive()));
+                    if (logger.isLoggable(Level.FINE)) {
+                        StringBuilder progress = new StringBuilder();
+                        progress.append(String.format("Tick %d (+%d/%d, %.1f ticks/s):", currentTick, elapsedTicks,
+                                maxTicks, ticksPerSec));
+                        for (HeadlessSimulationInstance instance : harness.getInstances()) {
+                            Player player = instance.getLocalPlayer();
+                            int units = player.getUnitCountContainer().getNumSupplies();
+                            int buildings = player.getBuildingCountContainer().getNumSupplies();
+                            progress.append(String.format(" [%s(T%d): %d units, %d bldgs, alive=%b]",
+                                    player.getPlayerInfo().name(),
+                                    player.getPlayerInfo().team(),
+                                    units,
+                                    buildings,
+                                    instance.isAlive()));
+                        }
+                        logger.fine(progress.toString());
                     }
-                    IO.println(progress);
                 }
 
-                Set<Integer> aliveTeams = new HashSet<>();
-                List<Integer> survivingPlayers = new ArrayList<>();
+                int firstAliveTeam = 0;
+                boolean hasFirstTeam = false;
+                boolean multipleTeamsAlive = false;
+                boolean anyNonNeutralAlive = false;
                 for (HeadlessSimulationInstance instance : harness.getInstances()) {
                     if (instance.isAlive()) {
-                        survivingPlayers.add(instance.getPlayerIndex());
                         int team = instance.getLocalPlayer().getPlayerInfo().team();
                         if (team != PlayerInfo.TEAM_NEUTRAL) {
-                            aliveTeams.add(team);
+                            anyNonNeutralAlive = true;
+                            if (!hasFirstTeam) {
+                                firstAliveTeam = team;
+                                hasFirstTeam = true;
+                            } else if (firstAliveTeam != team) {
+                                multipleTeamsAlive = true;
+                                break;
+                            }
                         }
                     }
                 }
 
-                if (aliveTeams.size() == 1) {
+                if (!multipleTeamsAlive && hasFirstTeam) {
                     harness.verifyChecksums();
-                    int winningTeam = aliveTeams.iterator().next();
+                    int winningTeam = firstAliveTeam;
                     logger.info(() -> "Victory achieved by team " + winningTeam + " at tick " + currentTick);
+                    List<Integer> survivingPlayers = new ArrayList<>();
+                    for (HeadlessSimulationInstance instance : harness.getInstances()) {
+                        if (instance.isAlive()) {
+                            survivingPlayers.add(instance.getPlayerIndex());
+                        }
+                    }
                     return new HeadlessMatchResult(
                             winningTeam,
                             true,
@@ -152,9 +167,15 @@ public final class HeadlessMatchRunner {
                     );
                 }
 
-                if (aliveTeams.isEmpty()) {
+                if (!anyNonNeutralAlive) {
                     harness.verifyChecksums();
                     logger.info(() -> "All teams eliminated at tick " + currentTick);
+                    List<Integer> survivingPlayers = new ArrayList<>();
+                    for (HeadlessSimulationInstance instance : harness.getInstances()) {
+                        if (instance.isAlive()) {
+                            survivingPlayers.add(instance.getPlayerIndex());
+                        }
+                    }
                     return new HeadlessMatchResult(
                             -1,
                             false,
@@ -168,6 +189,12 @@ public final class HeadlessMatchRunner {
                     harness.verifyChecksums();
                     logger.info(() -> "Match reached maximum tick limit " + maxTicks + " (elapsed ticks: "
                             + elapsedTicks + ")");
+                    List<Integer> survivingPlayers = new ArrayList<>();
+                    for (HeadlessSimulationInstance instance : harness.getInstances()) {
+                        if (instance.isAlive()) {
+                            survivingPlayers.add(instance.getPlayerIndex());
+                        }
+                    }
                     return new HeadlessMatchResult(
                             -1,
                             false,
