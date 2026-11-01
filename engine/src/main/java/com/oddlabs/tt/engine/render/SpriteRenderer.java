@@ -171,7 +171,7 @@ public final class SpriteRenderer {
                         : -1;
                 batch.addInstance(index, boneBaseOffset, model.getTransform(tempMatrix),
                         1f, 1f, 1f, 1f,
-                        1f, 1f, 1f, 1f);
+                        model.getTeamColorR(), model.getTeamColorG(), model.getTeamColorB(), model.getTeamColorA());
             }
             render_list.clear();
         }

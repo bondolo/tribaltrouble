@@ -443,6 +443,18 @@ public final class RenderState implements SceneContext {
     private <M extends Model> void updateEmitterWorldPosition(Emitter<?> emitter,
             Accessory accessory, ElementSceneContext<M> parentState) {
         parentState.getTransform(emitterTransform);
+        float sx = (float) Math.sqrt(emitterTransform.m00() * emitterTransform.m00()
+                + emitterTransform.m01() * emitterTransform.m01()
+                + emitterTransform.m02() * emitterTransform.m02());
+        float sy = (float) Math.sqrt(emitterTransform.m10() * emitterTransform.m10()
+                + emitterTransform.m11() * emitterTransform.m11()
+                + emitterTransform.m12() * emitterTransform.m12());
+        float sz = (float) Math.sqrt(emitterTransform.m20() * emitterTransform.m20()
+                + emitterTransform.m21() * emitterTransform.m21()
+                + emitterTransform.m22() * emitterTransform.m22());
+        if (sx > 0f && sy > 0f && sz > 0f) {
+            emitter.scale(sx, sy, sz);
+        }
         accessory.getRelativeTransform(emitterTransform, parentState.model);
         emitter.getPosition().set(emitterTransform.m30(), emitterTransform.m31(), emitterTransform.m32());
     }

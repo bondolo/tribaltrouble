@@ -30,7 +30,7 @@ public class WhiteModelVisitor<M extends Model> extends ModelVisitor<M> {
 
     @Override
     public Color getTeamColor(ElementSceneContext<M> render_state) {
-        return Color.Linear.WHITE;
+        return Color.Linear.TRANSPARENT;
     }
 
     @Override

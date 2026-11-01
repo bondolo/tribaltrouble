@@ -33,14 +33,18 @@ public sealed interface Accessory extends AutoCloseable permits StaticAccessory,
         return parent.getAnimationTicks();
     }
 
-    default void getRelativeTransform(Matrix4f dest, Model parent) {
+    /**
+     * {@return whether this accessory should inherit and output the parent's team color in stencil masks.}
+     */
+    default boolean hasTeamColor() {
+        return true;
+    }
+
+    default void getRelativeTransform(Matrix4f dest, @Nullable Model parent) {
     }
 
     default void getRelativeTransform(Matrix4f dest, ModelState<?> parentState) {
-        Model parent = parentState.getModel();
-        if (parent != null) {
-            getRelativeTransform(dest, parent);
-        }
+        getRelativeTransform(dest, parentState.getModel());
     }
 
     @Override

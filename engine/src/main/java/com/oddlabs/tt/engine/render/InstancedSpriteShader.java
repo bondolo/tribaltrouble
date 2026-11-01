@@ -173,12 +173,12 @@ final class InstancedSpriteShader extends ShaderProgram implements FogShader, Li
                                 // Mix decal color
                                 vec3 mixedColor = mix(finalColor.rgb, fs_in.decalColor.rgb * diffuseLight + specularLight, tex1.rgb);
                                 finalColor.rgb = mixedColor;
-
-                                // Write to Mask Buffer (Team Color)
-                                if (base.a > 0.1) {
-                                    out_MaskColor = fs_in.decalColor;
-                                }
                             }
+                        }
+
+                        // Write to Mask Buffer (Team Color / Stencil)
+                        if (fs_in.decalColor.a > 0.0 && base.a > 0.1) {
+                            out_MaskColor = fs_in.decalColor;
                         }
 
                         float edgeAlpha = finalColor.a;

@@ -64,7 +64,9 @@ public final class AttachedRenderState implements ModelState<Model> {
     @Override
     public Color getTeamColor() {
         assert parentState != null;
-        return parentState.getTeamColor();
+        return accessory != null && !accessory.hasTeamColor()
+               ? Color.Linear.TRANSPARENT
+               : parentState.getTeamColor();
     }
 
     @Override

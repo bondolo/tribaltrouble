@@ -278,9 +278,9 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
         for (TreeSupply supply : render_list) {
             prepareMatrix(supply);
             // Render Crown (Sprite 0). Blend = false, DepthWrite = true for opaque trees.
-            crownBatch.addInstance(0, tempMatrix, Color.Standard.WHITE, Color.Standard.WHITE);
+            crownBatch.addInstance(0, tempMatrix, Color.Standard.WHITE, Color.Standard.TRANSPARENT);
             // Render Trunk (Sprite 0). Blend = false, DepthWrite = true.
-            trunkBatch.addInstance(0, tempMatrix, Color.Standard.WHITE, Color.Standard.WHITE);
+            trunkBatch.addInstance(0, tempMatrix, Color.Standard.WHITE, Color.Standard.TRANSPARENT);
         }
         render_list.clear();
     }
