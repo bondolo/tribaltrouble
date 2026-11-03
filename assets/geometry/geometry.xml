@@ -3,7 +3,7 @@
 <!DOCTYPE geometry [
 	<!ELEMENT geometry  (group+)>
 	<!ELEMENT group	 (sprite*)*>
-	<!ELEMENT sprite	(skeleton?, model+, animation*)>
+	<!ELEMENT sprite	(skeleton?, model, animation*)>
 	<!ELEMENT animation (#PCDATA)>
 	<!ELEMENT model	 (#PCDATA | texture)*>
 	<!ELEMENT skeleton  (#PCDATA)>
@@ -32,12 +32,6 @@
 				<texture name="viking_warrior_iron" team="viking_warrior_iron_team"/>
 				<texture name="viking_warrior_rubber" team="viking_warrior_rubber_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				vikings/warrior/warrior_low_poly_mesh.xml
-				<texture name="viking_warrior_rock" team="viking_warrior_rock_team"/>
-				<texture name="viking_warrior_iron" team="viking_warrior_iron_team"/>
-				<texture name="viking_warrior_rubber" team="viking_warrior_rubber_team"/>
-			</model>
 			<animation name="idle" wpc="1" type="loop">vikings/warrior/warrior_idle.xml</animation>
 			<animation name="run" wpc="5" type="loop">vikings/warrior/warrior_run.xml</animation>
 			<animation name="attack" wpc="1" type="plain">vikings/warrior/warrior_attack.xml</animation>
@@ -47,10 +41,6 @@
 			<skeleton>vikings/chieftain/viking_chieftain_skeleton.xml</skeleton>
 			<model r="90" g="60" b="30">
 				vikings/chieftain/viking_chief.xml
-				<texture name="viking_chieftain" team="viking_chieftain_team"/>
-			</model>
-			<model r="90" g="60" b="30">
-				vikings/chieftain/viking_chief_lo.xml
 				<texture name="viking_chieftain" team="viking_chieftain_team"/>
 			</model>
 			<animation name="idle" wpc="1" type="loop">vikings/chieftain/viking_chieftain_idle.xml</animation>
@@ -64,10 +54,6 @@
 			<skeleton>vikings/peon/peon_skeleton.xml</skeleton>
 			<model r="90" g="60" b="30">
 				vikings/peon/peon_mesh.xml
-				<texture name="viking_peon" team="viking_peon_team"/>
-			</model>
-			<model r="90" g="60" b="30">
-				vikings/peon/peon_low_poly_mesh.xml
 				<texture name="viking_peon" team="viking_peon_team"/>
 			</model>
 			<animation name="idle" wpc="1" type="loop">vikings/peon/peon_idle.xml</animation>
@@ -122,28 +108,16 @@
 				vikings/quarters/viking_main_built.xml
 				<texture name="viking_buildings_hi" team="viking_buildings_hi_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				vikings/quarters/viking_main_built_lo.xml
-				<texture name="viking_buildings_lo" team="viking_buildings_lo_team"/>
-			</model>
 		</sprite>
 		<sprite name="quarters_halfbuilt">
 			<model r="90" g="60" b="30">
 				vikings/quarters/viking_main_build.xml
 				<texture name="viking_buildings_hi" team="viking_buildings_hi_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				vikings/quarters/viking_main_build_lo.xml
-				<texture name="viking_buildings_lo2" team="viking_buildings_lo2_team"/>
-			</model>
 		</sprite>
 		<sprite name="quarters_start">
 			<model r="90" g="60" b="30">
 				vikings/quarters/viking_main_start.xml
-				<texture name="viking_buildings_hi" team="viking_buildings_hi_team"/>
-			</model>
-			<model r="90" g="60" b="30">
-				vikings/quarters/viking_main_start_lo.xml
 				<texture name="viking_buildings_hi" team="viking_buildings_hi_team"/>
 			</model>
 		</sprite>
@@ -152,28 +126,16 @@
 				vikings/armory/viking_armoury_built.xml
 				<texture name="viking_buildings_hi" team="viking_buildings_hi_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				vikings/armory/viking_armoury_built_lo.xml
-				<texture name="viking_buildings_lo2" team="viking_buildings_lo2_team"/>
-			</model>
 		</sprite>
 		<sprite name="armory_halfbuilt">
 			<model r="90" g="60" b="30">
 				vikings/armory/viking_armoury_build.xml
 				<texture name="viking_buildings_hi" team="viking_buildings_hi_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				vikings/armory/viking_armoury_build_lo.xml
-				<texture name="viking_buildings_lo" team="viking_buildings_lo_team"/>
-			</model>
 		</sprite>
 		<sprite name="armory_start">
 			<model r="90" g="60" b="30">
 				vikings/armory/viking_armoury_start.xml
-				<texture name="viking_buildings_hi" team="viking_buildings_hi_team"/>
-			</model>
-			<model r="90" g="60" b="30">
-				vikings/armory/viking_armoury_start_lo.xml
 				<texture name="viking_buildings_hi" team="viking_buildings_hi_team"/>
 			</model>
 		</sprite>
@@ -182,28 +144,16 @@
 				vikings/tower/viking_tower_built.xml
 				<texture name="viking_building_lookout" team="viking_building_lookout_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				vikings/tower/viking_tower_built_low.xml
-				<texture name="viking_building_lookout" team="viking_building_lookout_team"/>
-			</model>
 		</sprite>
 		<sprite name="tower_halfbuilt">
 			<model r="90" g="60" b="30">
 				vikings/tower/viking_tower_halfbuilt.xml
 				<texture name="viking_building_lookout" team="viking_building_lookout_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				vikings/tower/viking_tower_halfbuilt_low.xml
-				<texture name="viking_building_lookout" team="viking_building_lookout_team"/>
-			</model>
 		</sprite>
 		<sprite name="tower_start">
 			<model r="90" g="60" b="30">
 				vikings/tower/viking_tower_start.xml
-				<texture name="viking_building_lookout" team="viking_building_lookout_team"/>
-			</model>
-			<model r="90" g="60" b="30">
-				vikings/tower/viking_tower_start_low.xml
 				<texture name="viking_building_lookout" team="viking_building_lookout_team"/>
 			</model>
 		</sprite>
@@ -221,10 +171,6 @@
 				natives/chieftain/native_chieftain_mesh.xml
 				<texture name="native_chieftain" team="native_chieftain_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				natives/chieftain/native_chieftain_low_poly_mesh.xml
-				<texture name="native_chieftain" team="native_chieftain_team"/>
-			</model>
 			<animation name="idle" wpc="1" type="loop">natives/chieftain/native_chieftain_idle.xml</animation>
 			<animation name="run" wpc="4" type="loop">natives/chieftain/native_chieftain_run.xml</animation>
 			<animation name="attack" wpc="1" type="plain">natives/chieftain/native_chieftain_attack.xml</animation>
@@ -237,10 +183,6 @@
 				natives/peon/native_peon_mesh.xml
 				<texture name="native_peon" team="native_peon_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				natives/peon/native_peon_low_poly_mesh.xml
-				<texture name="native_peon" team="native_peon_team"/>
-			</model>
 			<animation name="idle" wpc="1" type="loop">natives/peon/peon_idle.xml</animation>
 			<animation name="run" wpc="3.625" type="loop">natives/peon/peon_run.xml</animation>
 			<animation name="attack" wpc="1" type="plain">natives/peon/peon_attack.xml</animation>
@@ -250,12 +192,6 @@
 			<skeleton>natives/warrior/native_warrior_skeleton.xml</skeleton>
 			<model r="90" g="60" b="30">
 				natives/warrior/native_warrior_mesh.xml
-				<texture name="native_warrior_rock" team="native_warrior_rock_team"/>
-				<texture name="native_warrior_iron" team="native_warrior_iron_team"/>
-				<texture name="native_warrior_rubber" team="native_warrior_rubber_team"/>
-			</model>
-			<model r="90" g="60" b="30">
-				natives/warrior/native_warrior_low_poly_mesh.xml
 				<texture name="native_warrior_rock" team="native_warrior_rock_team"/>
 				<texture name="native_warrior_iron" team="native_warrior_iron_team"/>
 				<texture name="native_warrior_rubber" team="native_warrior_rubber_team"/>
@@ -304,28 +240,16 @@
 				natives/quarters/native_built_hi.xml
 				<texture name="native_building_hi" team="native_building_hi_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				natives/quarters/native_built_lo.xml
-				<texture name="native_building_lo" team="native_building_lo_team"/>
-			</model>
 		</sprite>
 		<sprite name="quarters_halfbuilt">
 			<model r="90" g="60" b="30">
 				natives/quarters/native_build_hi.xml
 				<texture name="native_building_hi" team="native_building_hi_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				natives/quarters/native_build_lo-new.xml
-				<texture name="native_building_lo" team="native_building_lo_team"/>
-			</model>
 		</sprite>
 		<sprite name="quarters_start">
 			<model r="90" g="60" b="30">
 				natives/quarters/native_start_hi.xml
-				<texture name="native_building_hi" team="native_building_hi_team"/>
-			</model>
-			<model r="90" g="60" b="30">
-				natives/quarters/native_start_lo.xml
 				<texture name="native_building_hi" team="native_building_hi_team"/>
 			</model>
 		</sprite>
@@ -334,28 +258,16 @@
 				natives/armory/build_armoury_built_hi.xml
 				<texture name="native_building_hi" team="native_building_hi_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				natives/armory/build_armoury_built_lo.xml
-				<texture name="native_armoury_lo" team="native_armoury_lo_team"/>
-			</model>
 		</sprite>
 		<sprite name="armory_halfbuilt">
 			<model r="90" g="60" b="30">
 				natives/armory/build_armoury_build_hi.xml
 				<texture name="native_building_hi" team="native_building_hi_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				natives/armory/build_armoury_build_lo.xml
-				<texture name="native_armoury_lo" team="native_armoury_lo_team"/>
-			</model>
 		</sprite>
 		<sprite name="armory_start">
 			<model r="90" g="60" b="30">
 				natives/armory/build_armoury_start_hi.xml
-				<texture name="native_building_hi" team="native_building_hi_team"/>
-			</model>
-			<model r="90" g="60" b="30">
-				natives/armory/build_armoury_start_lo.xml
 				<texture name="native_building_hi" team="native_building_hi_team"/>
 			</model>
 		</sprite>
@@ -364,28 +276,16 @@
 				natives/tower/native_tower_built_hi.xml
 				<texture name="native_tower" team="native_tower_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				natives/tower/native_tower_built_lo.xml
-				<texture name="native_tower" team="native_tower_team"/>
-			</model>
 		</sprite>
 		<sprite name="tower_halfbuilt">
 			<model r="90" g="60" b="30">
 				natives/tower/native_tower_build_hi.xml
 				<texture name="native_tower" team="native_tower_team"/>
 			</model>
-			<model r="90" g="60" b="30">
-				natives/tower/native_tower_build_lo.xml
-				<texture name="native_tower" team="native_tower_team"/>
-			</model>
 		</sprite>
 		<sprite name="tower_start">
 			<model r="90" g="60" b="30">
 				natives/tower/native_tower_start_hi.xml
-				<texture name="native_tower" team="native_tower_team"/>
-			</model>
-			<model r="90" g="60" b="30">
-				natives/tower/native_tower_start_lo.xml
 				<texture name="native_tower" team="native_tower_team"/>
 			</model>
 		</sprite>

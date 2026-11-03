@@ -143,7 +143,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
                 getTemplate().getBuildingType()
         ).built();
         SpriteRenderer built_renderer = queues.getRenderer(built_key);
-        Sprite sprite = built_renderer.getSpriteList().getSprite(0);
+        Sprite sprite = built_renderer.getSpriteList().getSprite();
 
         var placeColor = Building.isPlacingLegal(unit_grid, getTemplate(), placing_center_grid_x,
                 placing_center_grid_y)

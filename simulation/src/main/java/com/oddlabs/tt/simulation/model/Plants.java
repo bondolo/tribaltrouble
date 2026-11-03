@@ -14,7 +14,6 @@ public final class Plants extends SceneryModel {
         super(world, x, y, dir_x, dir_y, world.getLandscapeResources().getPlantBounds(terrain, index), 0f, false, null);
         this.terrain = terrain;
         this.index = index;
-        world.registerPlant(this);
     }
 
     public Terrain getTerrain() {

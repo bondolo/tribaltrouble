@@ -10,7 +10,6 @@ import com.oddlabs.tt.effects.render.LightningRenderer;
 import com.oddlabs.tt.effects.render.SonicBlastRenderer;
 import com.oddlabs.tt.engine.render.BoundingMode;
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.render.InstancedSpriteRenderer;
 import com.oddlabs.tt.engine.render.PostProcessor;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.GpuPass;
@@ -32,7 +31,6 @@ import com.oddlabs.tt.scenery.Water;
 import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
-import com.oddlabs.tt.engine.settings.GraphicsSettings;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -67,13 +65,11 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
     private final World world;
     private final ElementRenderer<?> element_renderer;
     private final TreeRenderer tree_renderer;
-    private final SpriteSorter sprite_sorter;
     private final RenderQueues render_queues;
     private final Selection selection;
     private final LightningRenderer lightningRenderer;
     private final SonicBlastRenderer sonicBlastRenderer;
     private final EmitterRenderer emitterRenderer;
-    private final InstancedSpriteRenderer treeSpriteRenderer = new InstancedSpriteRenderer();
     private final PostProcessor postProcessor;
     private final @Nullable Cheat cheat;
     private final AmbientAudio ambient;
@@ -99,11 +95,11 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
         this.render_queues = render_queues;
         this.picker = picker;
         this.selection = selection;
-        this.sprite_sorter = new SpriteSorter(GraphicsSettings.from(settings).graphic_detail);
-        this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false, sprite_sorter,
+        this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false,
                 selection, audioManager);
-        this.tree_renderer = new TreeRenderer(cheat, picker.getRespondManager(), treeSpriteRenderer,
+        this.tree_renderer = new TreeRenderer(cheat, picker.getRespondManager(), render_queues.getInstancedRenderer(),
                 picker.getAnimationManager(), landscape_renderer);
+        this.tree_renderer.initTreeBounds(world.getTreeRoot());
         this.landscape_renderer = landscape_renderer;
         this.ringMesh = new ConcentricRingMesh(world.getHeightMap(), HORIZON_RADIUS, RING_MESH_SUBDIV_AXIS);
         this.sky = new Sky(world.getHeightMap(), world_info.landscape().terrain(), HORIZON_RADIUS, SKY_SUBDIV_AXIS,
@@ -168,7 +164,6 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
         }
 
         rally_point_renderer.addInstance(
-                0, // spriteIndex
                 0, // animation
                 0f, // animTicks
                 false, // respond
@@ -227,7 +222,6 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
     @Override
     public void render(RenderContext context, CameraState frustum_state, GUIRoot gui_root) {
         var gpu = context.gpuTimer();
-        treeSpriteRenderer.clear();
         render_queues.getInstancedRenderer().clear();
 
         try (var _ = postProcessor.withScene(frustum_state.getWidth(), frustum_state.getHeight())) {
@@ -261,7 +255,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
         }
 
         gpu.begin(GpuPass.COMPOSITE);
-        postProcessor.renderComposite(context);
+        postProcessor.renderComposite(context, frustum_state.inNoDetailMode());
         gpu.end();
     }
 
@@ -286,7 +280,6 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
             lightningRenderer.prepare(renderState.getLightningQueue());
             sonicBlastRenderer.prepare(renderState.getSonicBlastQueue());
         }
-        sprite_sorter.distributeModels();
     }
 
     private void renderTerrain(ScenePassContext pass) {
@@ -344,27 +337,20 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
 
         long treeRenderNanos = 0L;
         if (DebugFlags.process_trees) {
-            gpu.begin(GpuPass.TREES);
             long treeRenderStart = System.nanoTime();
             tree_renderer.render(pass);
             treeRenderNanos = System.nanoTime() - treeRenderStart;
-            gpu.end();
         }
         lastPrepTreesNanos = lastTreeVisitNanos + treeRenderNanos;
-        if (DebugFlags.process_misc) {
-            gpu.begin(GpuPass.UNITS);
+        if (DebugFlags.process_misc || DebugFlags.process_trees) {
+            gpu.begin(GpuPass.SPRITES);
             render_queues.renderAll(context, frustum_state);
             gpu.end();
-
-            gpu.begin(GpuPass.TREES);
-            treeSpriteRenderer.renderAll(context, frustum_state);
-            gpu.end();
-
+        }
+        if (DebugFlags.process_misc) {
             gpu.begin(GpuPass.PLANTS);
             render_queues.renderPlants(context, frustum_state);
             gpu.end();
-
-            render_queues.renderNoDetail();
         }
 
         if (gui_root.getDelegate() instanceof Delegate delegate) {
@@ -412,6 +398,9 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
 
     private void renderOverlays(RenderContext context, CameraState frustum_state) {
         renderRallyPoint(context, frustum_state);
+        if (DebugFlags.process_misc) {
+            render_queues.renderNoDetail();
+        }
         render_queues.getInstancedRenderer().renderAll(context, frustum_state);
 
         assert ShaderProgram.activeShader() == null : "Shader still active=" + ShaderProgram.activeShader();
@@ -467,7 +456,6 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
             ringMesh.close();
             tree_renderer.close();
             landscape_renderer.close();
-            treeSpriteRenderer.close();
             postProcessor.close();
         }
     }

@@ -27,7 +27,7 @@ public final class PatchGroup extends AbstractPatchGroup {
 
         setBounds(children[0]);
         for (int i = 1; i < 4; i++) {
-            checkBounds(children[i]);
+            expandBounds(children[i]);
         }
     }
 

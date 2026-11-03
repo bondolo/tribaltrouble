@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Unified interface for accessing the visual state of renderable world objects.
  */
-public interface ModelState<M extends Model> extends LODObject {
+public interface ModelState<M extends Model> {
     Matrix4f getTransform(Matrix4f dest);
 
     int getAnimation();

@@ -1,23 +1,23 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.render.LODObject;
-import com.oddlabs.tt.engine.render.PolyDetail;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.SpriteList;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.SpriteFile;
-import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeLeaf;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import org.joml.FrustumIntersection;
+import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,10 +32,8 @@ sealed class TreePicker permits TreeRenderer {
 
     private final EnumMap<TreeType, List<TreeSupply>> render_lists = createTreeListMap();
     private final EnumMap<TreeType, List<TreeSupply>> respond_render_lists = createTreeListMap();
-    private final BoundingBox picking_selection_box = new BoundingBox();
-    private final RenderStateCache<TreeRenderState> render_state_cache
-            = new RenderStateCache<>(() -> new TreeRenderState(TreePicker.this));
     private final Map<TreeType, Tree> trees = loadTrees();
+    private final IdentityHashMap<TreeSupply, TreeRenderState> render_states = new IdentityHashMap<>();
     private final RespondManager respond_manager;
     private @Nullable CameraState camera;
 
@@ -80,32 +78,37 @@ sealed class TreePicker permits TreeRenderer {
         return Collections.unmodifiableMap(trees);
     }
 
-    static void initTreeBounds(AbstractTreeGroup root, Map<TreeType, Tree> visuals) {
-        updateSuppliesRecursive(root, visuals);
-        root.initBounds();
+    final void initTreeBounds(AbstractTreeGroup root) {
+        populateStatesRecursive(root);
     }
 
-    private static void updateSuppliesRecursive(AbstractTreeGroup node, Map<TreeType, Tree> visuals) {
+    private void populateStatesRecursive(AbstractTreeGroup node) {
         switch (node) {
             case TreeGroup group -> {
                 for (AbstractTreeGroup child : group.children()) {
-                    updateSuppliesRecursive(child, visuals);
+                    populateStatesRecursive(child);
                 }
             }
             case TreeLeaf leaf -> {
                 for (TreeSupply tree : leaf.getTrees()) {
-                    updateTreeBounds(tree, visuals);
+                    getOrCreateState(tree);
                 }
             }
-            case TreeSupply tree -> updateTreeBounds(tree, visuals);
+            case TreeSupply tree -> getOrCreateState(tree);
         }
     }
 
-    private static void updateTreeBounds(TreeSupply tree, Map<TreeType, Tree> visuals) {
-        Tree visual = visuals.get(tree.getTreeType());
+    final TreeRenderState getOrCreateState(TreeSupply tree) {
+        return render_states.computeIfAbsent(tree, this::createRenderState);
+    }
+
+    private TreeRenderState createRenderState(TreeSupply tree) {
+        Tree visual = trees.get(tree.getTreeType());
+        BoundingBox visualBounds = new BoundingBox();
         if (visual != null) {
-            tree.updateBounds(visual.modelBounds());
+            visualBounds.setTransformedBounds(visual.modelBounds(), tree.getMatrix());
         }
+        return new TreeRenderState(tree, new Matrix4f(tree.getMatrix()), visualBounds);
     }
 
     final Map<TreeType, Tree> getTrees() {
@@ -131,19 +134,12 @@ sealed class TreePicker permits TreeRenderer {
         }
     }
 
-    private void addToHighDetailList(TreeType type, TreeSupply tree, boolean respond) {
+    private void addToRenderList(TreeType type, TreeSupply tree, boolean respond) {
         (respond ? respond_render_lists : render_lists).get(type).add(tree);
-    }
-
-    final void markDetailPolygon(TreeSupply tree_supply, PolyDetail level) {
-        // Always render high detail (Instanced Sprites)
-        addToHighDetailList(tree_supply.getTreeType(), tree_supply, respond_manager.isResponding(
-                tree_supply));
     }
 
     final void setup(CameraState camera_state) {
         this.camera = camera_state;
-        render_state_cache.clear();
     }
 
     final void visit(AbstractTreeGroup node) {
@@ -175,43 +171,38 @@ sealed class TreePicker permits TreeRenderer {
         }
     }
 
-    private boolean pickingInFrustum(TreeSupply tree_supply, FrustumIntersection frustum) {
+    private boolean pickingInFrustum(TreeRenderState state, FrustumIntersection frustum) {
+        TreeSupply tree_supply = state.tree();
         float heightScale = trees.get(tree_supply.getTreeType()).heightScale();
-        picking_selection_box.setBounds(-SELECTION_RADIUS + tree_supply.getPositionX(),
-                SELECTION_RADIUS + tree_supply.getPositionX(),
-                -SELECTION_RADIUS + tree_supply.getPositionY(),
-                SELECTION_RADIUS + tree_supply.getPositionY(),
-                tree_supply.bmin_z,
-                tree_supply.bmin_z + (tree_supply.bmax_z - tree_supply.bmin_z) * heightScale);
-        return picking_selection_box.testFrustum(frustum);
-    }
-
-    private void addToRenderList(TreeSupply tree, CameraState camera) {
-        markDetailPolygon(tree, PolyDetail.HIGH_POLY);
-    }
-
-    private LODObject getRenderState(TreeSupply tree_supply) {
-        TreeRenderState render_state = render_state_cache.get();
-        render_state.setup(tree_supply);
-        return render_state;
+        float posX = tree_supply.getPositionX();
+        float posY = tree_supply.getPositionY();
+        BoundingBox bounds = state.visualBounds();
+        return frustum.testAab(
+                posX - SELECTION_RADIUS,
+                posY - SELECTION_RADIUS,
+                bounds.bmin_z,
+                posX + SELECTION_RADIUS,
+                posY + SELECTION_RADIUS,
+                bounds.bmin_z + (bounds.bmax_z - bounds.bmin_z) * heightScale);
     }
 
     private void visitTree(TreeSupply tree_supply, boolean fullyInside) {
         if (tree_supply.isEmpty() && !isFalling(tree_supply))
             return;
 
+        TreeRenderState state = getOrCreateState(tree_supply);
         boolean in_view;
         if (fullyInside) {
             in_view = !isPicking() || !tree_supply.isDead();
         } else if (camera == null) {
             in_view = false;
         } else if (isPicking()) {
-            in_view = !tree_supply.isDead() && pickingInFrustum(tree_supply, camera.getFrustum());
+            in_view = !tree_supply.isDead() && pickingInFrustum(state, camera.getFrustum());
         } else {
-            in_view = tree_supply.testFrustum(camera.getFrustum());
+            in_view = state.visualBounds().testFrustum(camera.getFrustum());
         }
         if (in_view && camera != null) {
-            addToRenderList(tree_supply, camera);
+            addToRenderList(tree_supply.getTreeType(), tree_supply, respond_manager.isResponding(tree_supply));
         }
     }
 

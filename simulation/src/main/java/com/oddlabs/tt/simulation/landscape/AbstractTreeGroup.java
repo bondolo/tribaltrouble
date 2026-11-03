@@ -16,15 +16,29 @@ import java.util.List;
 public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeGroup, TreeLeaf, TreeSupply {
 
     public enum TreeType {
-        JUNGLE,
-        PALM,
-        OAK,
-        PINE
+        JUNGLE(6.8f, 16.0f),
+        PALM(7.0f, 20.0f),
+        OAK(7.0f, 20.0f),
+        PINE(5.0f, 12.0f);
+
+        private final float canopyRadius;
+        private final float nominalHeight;
+
+        TreeType(float canopyRadius, float nominalHeight) {
+            this.canopyRadius = canopyRadius;
+            this.nominalHeight = nominalHeight;
+        }
+
+        public float canopyRadius() {
+            return canopyRadius;
+        }
+
+        public float nominalHeight() {
+            return nominalHeight;
+        }
     }
 
     private final @Nullable AbstractTreeGroup parent;
-
-    private int num_responding_trees = 0;
 
     public AbstractTreeGroup(@Nullable AbstractTreeGroup parent) {
         this.parent = parent;
@@ -32,16 +46,6 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
 
     protected final @Nullable AbstractTreeGroup getParent() {
         return parent;
-    }
-
-    public final void changeRespondingTrees(int delta) {
-        num_responding_trees += delta;
-        if (parent != null)
-            parent.changeRespondingTrees(delta);
-    }
-
-    public final boolean hasRespondingTrees() {
-        return num_responding_trees > 0;
     }
 
     public static AbstractTreeGroup newRoot(World world, List<TreePlacement> treePositions,
@@ -138,11 +142,12 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
         };
     }
 
+    @Override
     public final void expandBounds(BoundingBox box) {
         if (!isValid()) {
             setBounds(box);
         } else {
-            checkBounds(box);
+            super.expandBounds(box);
         }
         if (parent != null) {
             parent.expandBounds(box);

@@ -9,7 +9,6 @@ import java.nio.file.Path;
 public final class AppConfig {
     public static final String GAME_NAME = "TribalTrouble";
     public static final Path SETTINGS_FILE_NAME = Path.of("settings");
-    public static final int DEFAULT_DETAIL_NORMAL = 1;
     /**
      * Default baked terrain texture resolution of 8 texels per 2-meter grid unit (25 cm/texel),
      * providing smooth macro-level colour transitions while fine surface detail is supplied by

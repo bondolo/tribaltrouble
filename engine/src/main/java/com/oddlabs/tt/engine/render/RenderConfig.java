@@ -14,10 +14,6 @@ public final class RenderConfig {
     public static final float MSAA_DPI_THRESHOLD_LOW = 130.0f;
     public static final int MSAA_MAX_HEIGHT_TIER1 = 1440;
 
-    public static final int[] UNIT_HIGH_POLY_COUNT = new int[]{20000, 80000, 200000};
-    public static final int[] LANDSCAPE_POLY_COUNT = new int[]{10000, 40000, 100000};
-    public static final boolean[] INSERT_PLANTS = new boolean[]{false, true, true};
-
     private RenderConfig() {
     }
 }

@@ -21,13 +21,11 @@ import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.EmojiType;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
-import com.oddlabs.tt.engine.settings.GraphicsSettings;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.landscape.LandscapeBaker;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.client.resource.LandscapeAssetsLoader;
 import com.oddlabs.tt.engine.render.IconQuad;
-import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.Texture;
@@ -135,8 +133,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.world = ProgressListener.subTask(0.10f,
                 () -> World.newWorld(races_resources, landscape_geometry, NotificationListener.EMPTY, world_params,
                         world_info.landscape(), player_infos, AccessibilitySettings.from(peer
-                                .getSettings()).linear_player_colours,
-                        RenderConfig.INSERT_PLANTS[GraphicsSettings.from(peer.getSettings()).graphic_detail]));
+                                .getSettings()).linear_player_colours));
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);
         peer.setPathfindCountSupplier(world.getUnitGrid()::getAndResetPathfindCount);

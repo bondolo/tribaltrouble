@@ -48,8 +48,7 @@ public final class LegacyValidationMatchRunner {
                 config.worldParameters(),
                 landscape,
                 playerInfos,
-                HeadlessSimulationInstance.DEFAULT_PLAYER_COLORS,
-                true
+                HeadlessSimulationInstance.DEFAULT_PLAYER_COLORS
         );
 
         for (int i = 0; i < config.players().size(); i++) {

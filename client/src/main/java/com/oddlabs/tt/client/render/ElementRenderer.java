@@ -20,10 +20,10 @@ final class ElementRenderer<T extends Element<T>> implements AutoCloseable {
     private CameraState camera;
 
     ElementRenderer(Player local_player, RenderQueues render_queues, Picker picker,
-            boolean picking, SpriteSorter sprite_sorter, Selection selection,
+            boolean picking, Selection selection,
             AudioImplementation audio) {
         this.picking = picking;
-        this.render_state = new RenderState(local_player, sprite_sorter, render_queues, picker, selection, audio);
+        this.render_state = new RenderState(local_player, render_queues, picker, selection, audio);
     }
 
     RenderState getRenderState() {

@@ -137,8 +137,7 @@ class UnitGridTest {
                 worldParams,
                 landscape,
                 playerInfos,
-                playerColors,
-                false
+                playerColors
         );
         unitGrid = world.getUnitGrid();
     }

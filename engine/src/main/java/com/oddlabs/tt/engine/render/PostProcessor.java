@@ -123,6 +123,16 @@ public final class PostProcessor implements AutoCloseable {
      * @param context the active render context
      */
     public void renderComposite(RenderContext context) {
+        renderComposite(context, false);
+    }
+
+    /**
+     * Resolves multisample buffers if enabled and composites post-processing effects onto the default framebuffer.
+     *
+     * @param context the active render context
+     * @param inNoDetailMode whether the camera is in strategic overview (no detail) mode
+     */
+    public void renderComposite(RenderContext context, boolean inNoDetailMode) {
         FBO activeSceneFBO = getActiveSceneFBO();
 
         // 1. If MSAA was used for 3D rendering, resolve activeSceneFBO to sceneFBO
@@ -139,7 +149,7 @@ public final class PostProcessor implements AutoCloseable {
         try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.NONE); var _ = context.withDepthMode(
                 DepthMode.NONE); var _ = context.withCullMode(CullMode.NONE)) {
 
-            shader.updateAccessibility(accessibility);
+            shader.updateAccessibility(accessibility, !inNoDetailMode);
 
             context.setTexture(0, sceneFBO.getColorTexture());
             context.setTexture(1, sceneFBO.getMaskTexture());

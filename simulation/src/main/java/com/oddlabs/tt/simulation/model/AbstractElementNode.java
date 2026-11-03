@@ -33,8 +33,8 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
     }
 
     protected final AbstractElementNode<T> insertElement(T model) {
-        checkBoundsZ(model.bmin_z);
-        checkBoundsZ(model.bmax_z);
+        expandBoundsZ(model.bmin_z);
+        expandBoundsZ(model.bmax_z);
         return doInsertElement(model);
     }
 
@@ -80,13 +80,10 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
     }
 
     public static void buildSupplies(World world, List<SupplyPlacement> ironPlacements, List<
-            SupplyPlacement> rockPlacements, List<PlantLocation>[] plants, Terrain terrain,
-            boolean insertPlants) {
+            SupplyPlacement> rockPlacements, List<PlantLocation>[] plants, Terrain terrain) {
         buildRockSupplies(world, rockPlacements);
         buildIronSupplies(world, ironPlacements);
-        if (insertPlants) {
-            addPlants(world, plants, terrain);
-        }
+        addPlants(world, plants, terrain);
     }
 
     private static void buildRockSupplies(World world, List<SupplyPlacement> placements) {
@@ -117,7 +114,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
         });
     }
 
-    public static void addPlants(World world, List<PlantLocation>[] plants,
+    private static void addPlants(World world, List<PlantLocation>[] plants,
             Terrain terrain) {
         int num_plants = 0;
         for (int t = 0; t < plants.length; t++) {

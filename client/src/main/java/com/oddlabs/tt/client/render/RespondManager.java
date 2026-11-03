@@ -36,23 +36,16 @@ public final class RespondManager implements Animated {
         while ((entry = respond_timeouts.firstEntry()) != null && entry.getKey().timeout <= time) {
             respond_timeouts.pollFirstEntry();
             respond_targets.remove(entry.getValue());
-            if (entry.getKey().stop_action != null) {
-                entry.getKey().stop_action.run();
-            }
         }
     }
 
     public void addResponder(Object target) {
-        addResponder(target, null);
+        addResponder(SECONDS_PER_PICK_RESPOND, target);
     }
 
-    public void addResponder(Object target, @Nullable Runnable stop_action) {
-        addResponder(SECONDS_PER_PICK_RESPOND, target, stop_action);
-    }
-
-    private void addResponder(float respond_time, Object target, @Nullable Runnable stop_action) {
+    private void addResponder(float respond_time, Object target) {
         removeResponder(target);
-        Timeout timeout = new Timeout(time + respond_time, current_id++, target, stop_action);
+        Timeout timeout = new Timeout(time + respond_time, current_id++, target);
         respond_targets.put(target, timeout);
         respond_timeouts.put(timeout, target);
     }
@@ -61,9 +54,6 @@ public final class RespondManager implements Animated {
         Timeout timeout = respond_targets.remove(target);
         if (timeout != null) {
             respond_timeouts.remove(timeout);
-            if (timeout.stop_action != null) {
-                timeout.stop_action.run();
-            }
         }
     }
 
@@ -83,8 +73,7 @@ public final class RespondManager implements Animated {
         return time_diff > 0 && (time_diff >= SECONDS_PER_PICK_RESPOND - blink || time_diff <= blink);
     }
 
-    private record Timeout(float timeout, int id, Object target,
-                           @Nullable Runnable stop_action) implements Comparable<Timeout> {
+    private record Timeout(float timeout, int id, Object target) implements Comparable<Timeout> {
 
         @Override
         public boolean equals(@Nullable Object other) {

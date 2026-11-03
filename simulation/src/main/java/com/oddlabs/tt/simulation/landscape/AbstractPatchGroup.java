@@ -13,7 +13,7 @@ public abstract sealed class AbstractPatchGroup extends BoundingBox permits Patc
     }
 
     final void editHeight(float height) {
-        checkBoundsZ(height);
+        expandBoundsZ(height);
         if (parent != null)
             parent.editHeight(height);
     }
@@ -26,7 +26,7 @@ public abstract sealed class AbstractPatchGroup extends BoundingBox permits Patc
         for (int grid_y = 0; grid_y <= size_x; grid_y++) {
             for (int grid_x = 0; grid_x <= size_y; grid_x++) {
                 float height = heightmap.getWrappedHeight(start_x + grid_x, start_y + grid_y);
-                checkBoundsZ(height);
+                expandBoundsZ(height);
             }
         }
     }

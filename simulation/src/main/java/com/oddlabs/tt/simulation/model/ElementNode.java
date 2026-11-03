@@ -22,10 +22,10 @@ public final class ElementNode<T extends Element<T>> extends AbstractElementNode
                 createChild(child_size, x + child_size, y + child_size)
         };
 
-        checkBoundsXY(children[0]);
-        checkBoundsXY(children[1]);
-        checkBoundsXY(children[2]);
-        checkBoundsXY(children[3]);
+        expandBoundsXY(children[0]);
+        expandBoundsXY(children[1]);
+        expandBoundsXY(children[2]);
+        expandBoundsXY(children[3]);
     }
 
     private AbstractElementNode<T> createChild(int size, int x, int y) {

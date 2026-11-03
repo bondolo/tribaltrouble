@@ -3,8 +3,6 @@ package com.oddlabs.tt.client.settings;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.client.DisplayModeController;
 import com.oddlabs.tt.client.Peer;
-import com.oddlabs.tt.engine.render.RenderConfig;
-import com.oddlabs.tt.engine.settings.GraphicsSettings;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.DisplayChangeForm;
@@ -12,18 +10,13 @@ import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.gui.Label;
-import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.MultiColumnComboBox;
 import com.oddlabs.tt.gui.Panel;
-import com.oddlabs.tt.gui.PulldownButton;
-import com.oddlabs.tt.gui.PulldownItem;
-import com.oddlabs.tt.gui.PulldownMenu;
 import com.oddlabs.tt.gui.Row;
 import com.oddlabs.tt.gui.Slider;
 import com.oddlabs.tt.gui.SortedLabel;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.gui.GUISettings;
-import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import com.oddlabs.tt.window.Window;
 import com.oddlabs.tt.window.WindowSettings;
@@ -65,7 +58,6 @@ public final class GraphicsPanel extends Panel {
 
         WindowSettings windowSettings = WindowSettings.from(settings);
         GUISettings guiSettings = GUISettings.from(settings);
-        GraphicsSettings graphicsSettings = GraphicsSettings.from(settings);
 
         // Fullscreen
         Group group_fullscreen = new Group(gui_root);
@@ -127,33 +119,6 @@ public final class GraphicsPanel extends Panel {
         slider_ui_scale.place(label_ui_scale, BOTTOM_LEFT);
         group_ui_scale.compileCanvas();
 
-        // Detail
-        Group group_detail = new Group(gui_root);
-        addChild(group_detail);
-
-        Label label_detail = new Label(AbstractOptionsMenu.i18n("graphical_detail"), labelFont);
-        group_detail.addChild(label_detail);
-
-        int initial_detail_value = graphicsSettings.graphic_detail;
-        PulldownMenu<Integer> pm_detail = new PulldownMenu<>(gui_root);
-        pm_detail.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("low"), 0));
-        pm_detail.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("medium"), 1));
-        pm_detail.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("high"), 2));
-        PulldownButton<Integer> pb_detail = new PulldownButton<>(gui_root, pm_detail, initial_detail_value, 150);
-
-        group_detail.addChild(pb_detail);
-        options.addCloseListener(() -> {
-            int slider_value = pm_detail.getChosenItem().map(PulldownItem::getAttachment).orElse(initial_detail_value);
-            if (initial_detail_value != slider_value) {
-                graphicsSettings.graphic_detail = slider_value;
-                World.updatePlantsDetail(RenderConfig.INSERT_PLANTS[slider_value]);
-                gui_root.addModalForm(new MessageForm(gui_root, AbstractOptionsMenu.i18n("change_next_run")));
-            }
-        });
-        label_detail.place();
-        pb_detail.place(label_detail, BOTTOM_LEFT);
-        group_detail.compileCanvas();
-
         refreshResolutionList(windowSettings.fullscreen, mode_list_box);
 
         mode_list_box.addRowListener(new RowListener<>() {
@@ -184,8 +149,7 @@ public final class GraphicsPanel extends Panel {
 
         // Placement
         mode_group.place();
-        group_detail.place(mode_group, RIGHT_TOP);
-        group_ui_scale.place(group_detail, BOTTOM_LEFT);
+        group_ui_scale.place(mode_group, RIGHT_TOP);
         group_fullscreen.place(group_ui_scale, BOTTOM_LEFT);
         compileCanvas();
     }

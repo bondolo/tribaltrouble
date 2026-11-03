@@ -127,7 +127,7 @@ final class Optimizer {
         skin_weights[vertexIndex] = newWeights;
     }
 
-    static ModelInfo optimize(/*String tex_name, */int num_vertices, float[] vertices,
+    static ModelInfo optimize(int num_vertices, float[] vertices,
             float[] normals, float[] colors, float[] uvs, float[] uvs2,
             byte[][] skin_names, float[][] skin_weights) {
         for (int i = 0; i < num_vertices; i++) {
@@ -192,8 +192,7 @@ final class Optimizer {
 
         ShortBuffer index_buffer = ShortBuffer.wrap(indices);
         IndexListOptimizer.optimize(index_buffer);
-//		System.out.println("resulting vertices = " + index);
-        return new ModelInfo(/*tex_name,*/ indices, r_vertices, r_normals, r_colors, r_uvs, r_uvs2, r_skin_names,
+        return new ModelInfo(indices, r_vertices, r_normals, r_colors, r_uvs, r_uvs2, r_skin_names,
                 r_skin_weights);
     }
 
@@ -215,7 +214,7 @@ final class Optimizer {
                 .texcoords(), model_info.texcoords2(), model_info.skin_names(), model_info.skin_weights(), clear_color);
     }
 
-    static AnimationInfo convertToAnimation(/*float[] skeleton_vertices,*/ Bone skeleton,
+    static AnimationInfo convertToAnimation(Bone skeleton,
             Map<String, float[]> initial_pose, Map<String, float[]>[] anim_map,
             AnimationInfo.AnimationType type, float wpc, String name) {
         // animations format: [frames] [bones] [matrix]
@@ -224,14 +223,13 @@ final class Optimizer {
         for (int frame_index = 0; frame_index < num_frames; frame_index++) {
             float[] bones = new float[initial_pose.size() * 12];
             frames[frame_index] = bones;
-            normalizeSkeleton(/*new float[]{0, 0, 0}, skeleton_vertices,*/ bones, skeleton, initial_pose,
-                    anim_map[frame_index]);
+            normalizeSkeleton(bones, skeleton, initial_pose, anim_map[frame_index]);
         }
         return new AnimationInfo(frames, type, wpc, name);
     }
 
     private static void normalizeSkeleton(
-            /*float[] parent_bone_vertex, float[] skeleton_vertices,*/ float[] bones,
+            float[] bones,
             Bone current_bone, Map<String, float[]> initial_pose_map, Map<String,
                     float[]> frame_map) {
         assert initial_pose_map.size() == bones.length / 12;
@@ -262,22 +260,8 @@ final class Optimizer {
         bones[offset++] = resulting_matrix.m22();
         bones[offset++] = resulting_matrix.m32();
 
-        /*Vector4f bone_point = new Vector4f();
-        Vector4f bone_point_transformed = new Vector4f();
-        bone_point.set(0, 0, 0, 1);
-        Matrix4f.transform(absolute_frame_matrix, bone_point, bone_point_transformed);
-        skeleton_vertices[current_bone.getIndex()*6 + 0] = parent_bone_vertex[0];
-        skeleton_vertices[current_bone.getIndex()*6 + 1] = parent_bone_vertex[1];
-        skeleton_vertices[current_bone.getIndex()*6 + 2] = parent_bone_vertex[2];
-        skeleton_vertices[current_bone.getIndex()*6 + 3] = bone_point_transformed.x;
-        skeleton_vertices[current_bone.getIndex()*6 + 4] = bone_point_transformed.y;
-        skeleton_vertices[current_bone.getIndex()*6 + 5] = bone_point_transformed.z;
-        System.out.println("bone_point_transformed.x = " + bone_point_transformed.x + " | bone_point_transformed.y = " + bone_point_transformed.y + " | bone_point_transformed.z = " + bone_point_transformed.z);
-        System.out.println(absolute_frame_matrix);*/
         for (Bone child_bone : current_bone.children()) {
-            normalizeSkeleton(
-                    /*new float[]{bone_point_transformed.x, bone_point_transformed.y, bone_point_transformed.z}, skeleton_vertices,*/ bones,
-                    child_bone, initial_pose_map, frame_map);
+            normalizeSkeleton(bones, child_bone, initial_pose_map, frame_map);
         }
     }
 }

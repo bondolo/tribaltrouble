@@ -48,17 +48,17 @@ public final class TreeGroup extends AbstractTreeGroup {
         boolean node_bounds = false;
         for (AbstractTreeGroup child : children) {
             boolean child_bounds = child.initBounds();
-            node_bounds = checkBounds(child, child_bounds, node_bounds);
+            node_bounds = includeChildBounds(child, child_bounds, node_bounds);
         }
         super.initBounds();
         return node_bounds;
     }
 
-    private boolean checkBounds(AbstractTreeGroup child, boolean child_bounds, boolean node_bounds) {
+    private boolean includeChildBounds(AbstractTreeGroup child, boolean child_bounds, boolean node_bounds) {
         if (!child_bounds)
             return node_bounds;
         if (node_bounds)
-            checkBounds(child);
+            super.expandBounds(child);
         else
             setBounds(child);
         return true;

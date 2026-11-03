@@ -24,28 +24,14 @@ public final class Sprite {
     public final boolean lighted;
     public final boolean culled;
     public final boolean modulate_color;
-    public final int indices_offset;
-    public final int texcoords_offset;
-    public final int vertices_offset;
-    public final int normals_offset;
-    public final int bone_indices_offset;
-    public final int bone_weights_offset;
 
     /**
      * Dummy constructor for creating a simple quad sprite.
      */
-    Sprite(int num_vertices, int num_triangles, int indices_offset, int texcoords_offset,
-            int vertices_offset, int normals_offset, int bone_indices_offset, int bone_weights_offset,
-            boolean modulate_color) {
+    Sprite(int num_vertices, int num_triangles, boolean modulate_color) {
         this.textures = new Texture[0][0];
         this.num_vertices = num_vertices;
         this.num_triangles = num_triangles;
-        this.indices_offset = indices_offset;
-        this.texcoords_offset = texcoords_offset;
-        this.vertices_offset = vertices_offset;
-        this.normals_offset = normals_offset;
-        this.bone_indices_offset = bone_indices_offset;
-        this.bone_weights_offset = bone_weights_offset;
         this.clear_color = new float[]{1f, 1f, 1f, 1f};
         this.alpha = true;
         this.lighted = false;
@@ -54,19 +40,11 @@ public final class Sprite {
     }
 
     public Sprite(SpriteInfo sprite_info, boolean alpha, boolean lighted, boolean culled,
-            boolean modulate_color, boolean max_alpha, int mipmap_cutoff, int indices_offset,
-            int texcoords_offset, int vertices_offset, int normals_offset, int bone_indices_offset,
-            int bone_weights_offset) {
+            boolean modulate_color, boolean max_alpha, int mipmap_cutoff) {
         this.culled = culled;
         this.alpha = alpha;
         this.lighted = lighted;
         this.modulate_color = modulate_color;
-        this.indices_offset = indices_offset;
-        this.texcoords_offset = texcoords_offset;
-        this.vertices_offset = vertices_offset;
-        this.normals_offset = normals_offset;
-        this.bone_indices_offset = bone_indices_offset;
-        this.bone_weights_offset = bone_weights_offset;
 
         short[] tmp_indices = sprite_info.getIndices();
         float[] tmp_texcoords = sprite_info.getTexCoords();

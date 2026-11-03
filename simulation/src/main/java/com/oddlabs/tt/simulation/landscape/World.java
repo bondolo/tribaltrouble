@@ -6,7 +6,6 @@ import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.simulation.model.AbstractElementNode;
 import com.oddlabs.tt.simulation.model.Distributable;
 import com.oddlabs.tt.simulation.model.DistributableTable;
-import com.oddlabs.tt.simulation.model.Plants;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.SupplyManager;
 import com.oddlabs.tt.simulation.model.SupplyManagers;
@@ -22,7 +21,6 @@ import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -60,8 +58,6 @@ public final class World implements SimulationClock {
     private final @Nullable RaceData races_resources;
     private final LandscapeBoundsProvider landscape_resources;
     private final Terrain terrain;
-    private final List<PlantLocation>[] plantCoordinates;
-    private final List<Plants> activePlants = new ArrayList<>();
     private final DistributableTable distributable_table = new DistributableTable();
 
     private int global_checksum;
@@ -73,10 +69,10 @@ public final class World implements SimulationClock {
             @Nullable LandscapeBoundsProvider landscape_resources,
             NotificationListener notification_listener, WorldParameters world_params,
             Landscape landscape, List<PlayerInfo> player_infos,
-            Color.Linear[] playerColors, boolean insertPlants) {
+            Color.Linear[] playerColors) {
         ProgressListener.progress();
         World world = new World(races_resources, landscape_resources, notification_listener,
-                world_params, landscape, player_infos, playerColors, insertPlants);
+                world_params, landscape, player_infos, playerColors);
         ProgressListener.progress();
         ProgressListener.progress(1 / 5f);
         ProgressListener.progress();
@@ -182,11 +178,9 @@ public final class World implements SimulationClock {
             @Nullable LandscapeBoundsProvider landscape_resources,
             NotificationListener notification_listener,
             WorldParameters world_params, Landscape landscape,
-            List<PlayerInfo> player_infos, Color.Linear[] playerColors,
-            boolean insertPlants) {
+            List<PlayerInfo> player_infos, Color.Linear[] playerColors) {
         IO.println("****************** Generating landscape ********************");
         this.terrain = landscape.terrain();
-        this.plantCoordinates = landscape.plants();
         this.landscape_resources = landscape_resources != null ? landscape_resources : new LandscapeGeometry();
         this.races_resources = races_resources;
         this.max_unit_count = world_params.maxUnitCount();
@@ -216,8 +210,8 @@ public final class World implements SimulationClock {
         this.patch_root = new PatchGroup(this);
         this.tree_root = AbstractTreeGroup.newRoot(this, landscape.trees(), landscape.palmTrees(), terrain);
         this.element_root = AbstractElementNode.newRoot(world);
-        AbstractElementNode.buildSupplies(this, landscape.iron(), landscape.rocks(), plantCoordinates,
-                terrain, insertPlants);
+        AbstractElementNode.buildSupplies(this, landscape.iron(), landscape.rocks(), landscape.plants(),
+                terrain);
         activeWorlds.add(new WeakReference<>(this));
     }
 
@@ -288,44 +282,6 @@ public final class World implements SimulationClock {
         return random;
     }
 
-    public void registerPlant(Plants plant) {
-        synchronized (activePlants) {
-            activePlants.add(plant);
-        }
-    }
-
-    private void removeAllPlants() {
-        synchronized (activePlants) {
-            activePlants.forEach(Plants::remove);
-            activePlants.clear();
-        }
-    }
-
-    public void setPlantsDetail(boolean insertPlants) {
-        synchronized (activePlants) {
-            if (insertPlants) {
-                if (activePlants.isEmpty()) {
-                    AbstractElementNode.addPlants(this, plantCoordinates, terrain);
-                }
-            } else {
-                removeAllPlants();
-            }
-        }
-    }
-
-    private static final Set<WeakReference<World>> activeWorlds = new CopyOnWriteArraySet<>();
-
-    public static void updatePlantsDetail(boolean insertPlants) {
-        for (var ref : activeWorlds) {
-            World w = ref.get();
-            if (w != null) {
-                w.setPlantsDetail(insertPlants);
-            } else {
-                activeWorlds.remove(ref);
-            }
-        }
-    }
-
     /**
      * Updates the player colours of all players in this world.
      *
@@ -336,6 +292,8 @@ public final class World implements SimulationClock {
             players.get(i).setColor(playerColors[i % playerColors.length]);
         }
     }
+
+    private static final Set<WeakReference<World>> activeWorlds = new CopyOnWriteArraySet<>();
 
     /**
      * Updates the player colors across all active world instances.

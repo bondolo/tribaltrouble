@@ -22,6 +22,7 @@ import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -42,9 +43,18 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
     private final Matrix4f tempMatrix = new Matrix4f();
     private final AnimationManager animationManager;
     private final @Nullable LandscapeRenderer landscapeRenderer;
+    private final Map<AbstractTreeGroup.TreeType, TreeRenderBatches> treeBatches;
     private final Map<TreeSupply, Float> fallingTrees = new HashMap<>();
     private final Map<TreeSupply, Float> spawningTrees = new HashMap<>();
     private int lastRenderedTreeCount;
+
+    private record TreeRenderBatches(
+                                     InstancedSpriteRenderer.RenderBatch crownBatch,
+                                     InstancedSpriteRenderer.RenderBatch trunkBatch,
+                                     InstancedSpriteRenderer.RenderBatch respondCrownBatch,
+                                     InstancedSpriteRenderer.RenderBatch respondTrunkBatch
+    ) {
+    }
 
     TreeRenderer(@Nullable Cheat cheat,
             RespondManager respond_manager,
@@ -57,7 +67,38 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
         this.instancedSpriteRenderer = instancedSpriteRenderer;
         this.animationManager = animationManager;
         this.landscapeRenderer = landscapeRenderer;
+        this.treeBatches = createTreeBatches(instancedSpriteRenderer);
         animationManager.registerAnimation(this);
+    }
+
+    private Map<AbstractTreeGroup.TreeType, TreeRenderBatches> createTreeBatches(
+            InstancedSpriteRenderer renderer) {
+        var map = new EnumMap<AbstractTreeGroup.TreeType, TreeRenderBatches>(AbstractTreeGroup.TreeType.class);
+        for (var entry : getTrees().entrySet()) {
+            Tree tree = entry.getValue();
+            SpriteList crownList = tree.crown();
+            SpriteList trunkList = tree.trunk();
+
+            Sprite crownSprite = crownList.getSprite();
+            Texture crownTexture = crownSprite.textures[0][Sprite.TEXTURE_NORMAL];
+            Texture crownTeam = crownSprite.textures[0][Sprite.TEXTURE_TEAM];
+
+            Sprite trunkSprite = trunkList.getSprite();
+            Texture trunkTexture = trunkSprite.textures[0][Sprite.TEXTURE_NORMAL];
+            Texture trunkTeam = trunkSprite.textures[0][Sprite.TEXTURE_TEAM];
+            Texture trunkBump = trunkSprite.hasBumpMap(0) ? trunkSprite.textures[0][Sprite.TEXTURE_BUMP] : null;
+
+            var crownBatch = renderer.getBatch(crownList, crownTexture, crownTeam, null, false, false, true, true);
+            var trunkBatch = renderer.getBatch(trunkList, trunkTexture, trunkTeam, trunkBump, false, false, true, true);
+            var respondCrownBatch = renderer.getBatch(crownList, crownTexture, crownTeam, null, true, false, true,
+                    true);
+            var respondTrunkBatch = renderer.getBatch(trunkList, trunkTexture, trunkTeam, trunkBump, true, false, true,
+                    true);
+
+            map.put(entry.getKey(), new TreeRenderBatches(crownBatch, trunkBatch, respondCrownBatch,
+                    respondTrunkBatch));
+        }
+        return Collections.unmodifiableMap(map);
     }
 
     void onTreeFelled(TreeSupply tree) {
@@ -69,11 +110,7 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
     }
 
     void onTreeSpawned(TreeSupply tree) {
-        Tree visual = getTrees().get(tree.getTreeType());
-        if (visual != null) {
-            tree.updateBounds(visual.modelBounds());
-        }
-        tree.propagateBoundsUp();
+        getOrCreateState(tree);
         fallingTrees.remove(tree);
         spawningTrees.put(tree, 0f);
     }
@@ -200,14 +237,14 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
             List<TreeSupply> list = entry.getValue();
             if (!list.isEmpty()) {
                 count += list.size();
-                renderList(getTrees().get(entry.getKey()), list, false);
+                renderList(entry.getKey(), list, false);
             }
         }
         for (var entry : getRespondRenderLists().entrySet()) {
             List<TreeSupply> list = entry.getValue();
             if (!list.isEmpty()) {
                 count += list.size();
-                renderList(getTrees().get(entry.getKey()), list, true);
+                renderList(entry.getKey(), list, true);
             }
         }
         lastRenderedTreeCount = count;
@@ -227,7 +264,7 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
     }
 
     private void prepareMatrix(TreeSupply tree) {
-        tempMatrix.set(tree.getMatrix());
+        tempMatrix.set(getOrCreateState(tree).matrix());
         Float fallProgress = fallingTrees.get(tree);
         if (fallProgress != null) {
             float time = fallProgress;
@@ -245,7 +282,7 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
         }
     }
 
-    private void renderList(Tree tree, List<TreeSupply> render_list, boolean respond) {
+    private void renderList(AbstractTreeGroup.TreeType type, List<TreeSupply> render_list, boolean respond) {
         CameraState camera = getCamera();
         if (camera != null && render_list.size() > 1) {
             float camX = camera.getCurrentX();
@@ -257,30 +294,16 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
             ));
         }
 
-        SpriteList crownList = tree.crown();
-        SpriteList trunkList = tree.trunk();
-
-        Sprite crownSprite = crownList.getSprite(0);
-        Texture crownTexture = crownSprite.textures[0][Sprite.TEXTURE_NORMAL];
-        Texture crownTeam = crownSprite.textures[0][Sprite.TEXTURE_TEAM];
-        Texture crownBump = crownSprite.hasBumpMap(0) ? crownSprite.textures[0][Sprite.TEXTURE_BUMP] : null;
-
-        Sprite trunkSprite = trunkList.getSprite(0);
-        Texture trunkTexture = trunkSprite.textures[0][Sprite.TEXTURE_NORMAL];
-        Texture trunkTeam = trunkSprite.textures[0][Sprite.TEXTURE_TEAM];
-        Texture trunkBump = trunkSprite.hasBumpMap(0) ? trunkSprite.textures[0][Sprite.TEXTURE_BUMP] : null;
-
-        var crownBatch = instancedSpriteRenderer.getBatch(crownList, crownTexture, crownTeam, null, respond,
-                false, true, true);
-        var trunkBatch = instancedSpriteRenderer.getBatch(trunkList, trunkTexture, trunkTeam, trunkBump, respond,
-                false, true, true);
+        TreeRenderBatches batches = treeBatches.get(type);
+        var crownBatch = respond ? batches.respondCrownBatch() : batches.crownBatch();
+        var trunkBatch = respond ? batches.respondTrunkBatch() : batches.trunkBatch();
 
         for (TreeSupply supply : render_list) {
             prepareMatrix(supply);
-            // Render Crown (Sprite 0). Blend = false, DepthWrite = true for opaque trees.
-            crownBatch.addInstance(0, tempMatrix, Color.Standard.WHITE, Color.Standard.TRANSPARENT);
-            // Render Trunk (Sprite 0). Blend = false, DepthWrite = true.
-            trunkBatch.addInstance(0, tempMatrix, Color.Standard.WHITE, Color.Standard.TRANSPARENT);
+            // Render Crown. Blend = false, DepthWrite = true for opaque trees.
+            crownBatch.addInstance(tempMatrix, Color.Standard.WHITE, Color.Standard.TRANSPARENT);
+            // Render Trunk. Blend = false, DepthWrite = true.
+            trunkBatch.addInstance(tempMatrix, Color.Standard.WHITE, Color.Standard.TRANSPARENT);
         }
         render_list.clear();
     }
@@ -290,12 +313,12 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
         if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
             for (List<TreeSupply> list : render_lists.values()) {
                 for (TreeSupply tree : list) {
-                    RenderTools.draw(tree);
+                    RenderTools.draw(getOrCreateState(tree).visualBounds());
                 }
             }
             for (List<TreeSupply> list : respond_render_lists.values()) {
                 for (TreeSupply tree : list) {
-                    RenderTools.draw(tree);
+                    RenderTools.draw(getOrCreateState(tree).visualBounds());
                 }
             }
         }

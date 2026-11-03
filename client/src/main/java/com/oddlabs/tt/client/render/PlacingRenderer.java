@@ -103,15 +103,11 @@ public final class PlacingRenderer implements AutoCloseable {
     private void drawSprite(Sprite sprite, SpriteList spriteList, VertexArray vao) {
         vao.bind();
         try {
-            spriteList.getTexcoords().vertexAttribPointer(shader.locTexCoord, 2, 0,
-                    (long) sprite.texcoords_offset * Float.BYTES);
-            spriteList.getPositions().vertexAttribPointer(shader.locPosition, 3, 0,
-                    (long) sprite.vertices_offset * Float.BYTES);
-            spriteList.getNormals().vertexAttribPointer(shader.locNormal, 3, 0,
-                    (long) sprite.normals_offset * Float.BYTES);
+            spriteList.getTexcoords().vertexAttribPointer(shader.locTexCoord, 2, 0, 0L);
+            spriteList.getPositions().vertexAttribPointer(shader.locPosition, 3, 0, 0L);
+            spriteList.getNormals().vertexAttribPointer(shader.locNormal, 3, 0, 0L);
 
-            spriteList.getIndices().drawElements(GL11.GL_TRIANGLES, sprite.getTriangleCount() * 3,
-                    sprite.indices_offset);
+            spriteList.getIndices().drawElements(GL11.GL_TRIANGLES, sprite.getTriangleCount() * 3, 0);
         } finally {
             vao.unbind();
         }

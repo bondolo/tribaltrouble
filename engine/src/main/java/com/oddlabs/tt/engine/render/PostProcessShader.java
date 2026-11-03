@@ -285,12 +285,17 @@ final class PostProcessShader extends ShaderProgram {
         setUniform(locTexelSize, 1.0f / width, 1.0f / height);
     }
 
+    void updateAccessibility(AccessibilitySettings settings) {
+        updateAccessibility(settings, true);
+    }
+
     /**
      * Uploads accessibility and visual filter uniform values, uploading only parameters that have changed.
      *
      * @param settings the active accessibility settings
+     * @param allowTeamStencil whether the team stencil overlay is permitted in the current camera mode
      */
-    void updateAccessibility(AccessibilitySettings settings) {
+    void updateAccessibility(AccessibilitySettings settings, boolean allowTeamStencil) {
         if (!initialized || lastCvdMode != settings.cvd_mode) {
             setUniform(locCvdMode, settings.cvd_mode);
             lastCvdMode = settings.cvd_mode;
@@ -319,9 +324,10 @@ final class PostProcessShader extends ShaderProgram {
             setUniform(locContrastClarity, settings.contrast_clarity);
             lastContrastClarity = settings.contrast_clarity;
         }
-        if (!initialized || lastTeamStencil != settings.team_stencil) {
-            setUniform(locTeamStencil, settings.team_stencil);
-            lastTeamStencil = settings.team_stencil;
+        boolean effectiveTeamStencil = settings.team_stencil && allowTeamStencil;
+        if (!initialized || lastTeamStencil != effectiveTeamStencil) {
+            setUniform(locTeamStencil, effectiveTeamStencil);
+            lastTeamStencil = effectiveTeamStencil;
         }
         initialized = true;
     }

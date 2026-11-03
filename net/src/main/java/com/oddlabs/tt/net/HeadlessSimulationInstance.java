@@ -91,8 +91,7 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
                 worldParams,
                 landscape,
                 playerInfos,
-                DEFAULT_PLAYER_COLORS,
-                false
+                DEFAULT_PLAYER_COLORS
         );
 
         initPlayers(

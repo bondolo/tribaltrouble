@@ -36,8 +36,6 @@ public final class MeshLoader {
 
     private static ModelInfo createModelInfo(Node node, @Nullable Map<String, Bone> name_to_bone_map,
             float scale) {
-//		String texture_name = cutTextureName(node.getAttributes().getNamedItem("texture").getNodeValue());
-
         NodeList polygon_list = ConvertToBinary.getNodeByName("polygons", node).getChildNodes();
         int num_polygons = countPolys(polygon_list);
         int num_vertices = num_polygons * 3;

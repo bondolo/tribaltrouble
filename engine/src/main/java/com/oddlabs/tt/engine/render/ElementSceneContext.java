@@ -89,24 +89,12 @@ public final class ElementSceneContext<M extends Model> implements ModelState<M>
         resetColor();
     }
 
-    @Override
     public void markDetailPoint() {
         visitor.markDetailPoint(this);
     }
 
-    @Override
-    public void markDetailPolygon(PolyDetail detail) {
-        visitor.markDetailPolygon(this, detail);
-    }
-
-    @Override
-    public int getTriangleCount(PolyDetail detail) {
-        return visitor.getTriangleCount(this, detail);
-    }
-
-    @Override
-    public float getEyeDistanceSquared() {
-        return visitor.getEyeDistanceSquared(this);
+    public void addToRenderList() {
+        visitor.addToRenderList(this);
     }
 
     public SpriteRenderer getRenderer(SpriteKey key) {

@@ -1,24 +1,18 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.effects.render.*;
-
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Caches render state objects for reuse.
  */
-final class RenderStateCache<RS extends LODObject> {
-    private final RenderStateFactory<RS> factory;
+final class RenderStateCache<RS> {
+    private final Supplier<RS> factory;
     private final List<RS> cache = new ArrayList<>();
     private int current_index;
 
-    public RenderStateCache(RenderStateFactory<RS> factory) {
+    public RenderStateCache(Supplier<RS> factory) {
         this.factory = factory;
     }
 
@@ -28,7 +22,7 @@ final class RenderStateCache<RS extends LODObject> {
 
     public RS get() {
         if (current_index == cache.size()) {
-            cache.add(factory.create());
+            cache.add(factory.get());
         }
         return cache.get(current_index++);
     }

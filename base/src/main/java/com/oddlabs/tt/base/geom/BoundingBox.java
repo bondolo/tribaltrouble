@@ -1,8 +1,7 @@
 package com.oddlabs.tt.base.geom;
 
 import org.joml.FrustumIntersection;
-import org.joml.Matrix4f;
-import org.joml.Vector4f;
+import org.joml.Matrix4fc;
 
 /**
  * Provides world-space bounding volumes for collision detection, frustum culling, and spatial sorting.
@@ -23,6 +22,10 @@ public class BoundingBox {
     public BoundingBox() {
     }
 
+    public BoundingBox(BoundingBox other) {
+        setBounds(other);
+    }
+
     public BoundingBox(float bmin_x, float bmax_x, float bmin_y, float bmax_y, float bmin_z, float bmax_z) {
         setBounds(bmin_x, bmax_x, bmin_y, bmax_y, bmin_z, bmax_z);
     }
@@ -37,40 +40,10 @@ public class BoundingBox {
         return bmin_x <= bmax_x && bmin_y <= bmax_y && bmin_z <= bmax_z;
     }
 
-    protected final boolean collides(float bmin_x, float bmax_x, float bmin_y, float bmax_y, float bmin_z,
-            float bmax_z) {
-        return (bmin_x <= this.bmax_x && bmax_x > this.bmin_x &&
-                bmin_y <= this.bmax_y && bmax_y > this.bmin_y &&
-                bmin_z <= this.bmax_z && bmax_z > this.bmin_z);
-    }
-
-    public final boolean collides(BoundingBox other) {
-        return collides(other.bmin_x, other.bmax_x, other.bmin_y, other.bmax_y, other.bmin_z, other.bmax_z);
-    }
-
-    protected final boolean contains(float bmin_x, float bmax_x, float bmin_y, float bmax_y, float bmin_z,
-            float bmax_z) {
-        return (bmax_x <= this.bmax_x && bmin_x > this.bmin_x &&
-                bmax_y <= this.bmax_y && bmin_y > this.bmin_y &&
-                bmax_z <= this.bmax_z && bmin_z > this.bmin_z);
-    }
-
     public final boolean contains(BoundingBox other) {
-        return contains(other.bmin_x, other.bmax_x, other.bmin_y, other.bmax_y, other.bmin_z, other.bmax_z);
-    }
-
-    public final float computeMinDistanceSquared(float min_dist_to_box) {
-        float box_radius = computeCenteredRadius();
-        box_radius += min_dist_to_box;
-        return box_radius * box_radius;
-    }
-
-    private float computeCenteredRadius() {
-        float radius_squared_x = cx - bmin_x;
-        float radius_squared_y = cy - bmin_y;
-        float radius_squared_z = cz - bmin_z;
-        return (float) Math.sqrt(radius_squared_x * radius_squared_x + radius_squared_y * radius_squared_y
-                + radius_squared_z * radius_squared_z);
+        return (other.bmax_x <= this.bmax_x && other.bmin_x > this.bmin_x &&
+                other.bmax_y <= this.bmax_y && other.bmin_y > this.bmin_y &&
+                other.bmax_z <= this.bmax_z && other.bmin_z > this.bmin_z);
     }
 
     public final float getCX() {
@@ -85,7 +58,7 @@ public class BoundingBox {
         return cz;
     }
 
-    public final void checkBoundsY(float y) {
+    public final void expandBoundsY(float y) {
         if (y < bmin_y)
             bmin_y = y;
         else if (y > bmax_y)
@@ -93,7 +66,7 @@ public class BoundingBox {
         cy = (bmax_y + bmin_y) * 0.5f;
     }
 
-    public final void checkBoundsX(float x) {
+    public final void expandBoundsX(float x) {
         if (x < bmin_x)
             bmin_x = x;
         else if (x > bmax_x)
@@ -101,7 +74,7 @@ public class BoundingBox {
         cx = (bmax_x + bmin_x) * 0.5f;
     }
 
-    public final void checkBoundsZ(float z) {
+    public final void expandBoundsZ(float z) {
         if (z < bmin_z)
             bmin_z = z;
         else if (z > bmax_z)
@@ -109,26 +82,32 @@ public class BoundingBox {
         cz = (bmax_z + bmin_z) * 0.5f;
     }
 
-    public final void checkBounds(float bmin_x, float bmax_x, float bmin_y, float bmax_y, float bmin_z, float bmax_z) {
-        checkBoundsX(bmin_x);
-        checkBoundsX(bmax_x);
-        checkBoundsY(bmin_y);
-        checkBoundsY(bmax_y);
-        checkBoundsZ(bmin_z);
-        checkBoundsZ(bmax_z);
+    public final void expandBounds(float bmin_x, float bmax_x, float bmin_y, float bmax_y, float bmin_z, float bmax_z) {
+        if (bmin_x < this.bmin_x) this.bmin_x = bmin_x;
+        if (bmax_x > this.bmax_x) this.bmax_x = bmax_x;
+        if (bmin_y < this.bmin_y) this.bmin_y = bmin_y;
+        if (bmax_y > this.bmax_y) this.bmax_y = bmax_y;
+        if (bmin_z < this.bmin_z) this.bmin_z = bmin_z;
+        if (bmax_z > this.bmax_z) this.bmax_z = bmax_z;
+        computeCenter();
     }
 
-    public final void checkBoundsXY(BoundingBox other) {
-        checkBoundsX(other.bmin_x);
-        checkBoundsX(other.bmax_x);
-        checkBoundsY(other.bmin_y);
-        checkBoundsY(other.bmax_y);
+    public final void expandBoundsXY(BoundingBox other) {
+        if (other.bmin_x < bmin_x) bmin_x = other.bmin_x;
+        if (other.bmax_x > bmax_x) bmax_x = other.bmax_x;
+        if (other.bmin_y < bmin_y) bmin_y = other.bmin_y;
+        if (other.bmax_y > bmax_y) bmax_y = other.bmax_y;
+        computeXYCenter();
     }
 
-    public final void checkBounds(BoundingBox other) {
-        checkBoundsXY(other);
-        checkBoundsZ(other.bmin_z);
-        checkBoundsZ(other.bmax_z);
+    public void expandBounds(BoundingBox other) {
+        if (other.bmin_x < bmin_x) bmin_x = other.bmin_x;
+        if (other.bmax_x > bmax_x) bmax_x = other.bmax_x;
+        if (other.bmin_y < bmin_y) bmin_y = other.bmin_y;
+        if (other.bmax_y > bmax_y) bmax_y = other.bmax_y;
+        if (other.bmin_z < bmin_z) bmin_z = other.bmin_z;
+        if (other.bmax_z > bmax_z) bmax_z = other.bmax_z;
+        computeCenter();
     }
 
     public final void resetBounds() {
@@ -141,15 +120,6 @@ public class BoundingBox {
         this.cx = 0f;
         this.cy = 0f;
         this.cz = 0f;
-    }
-
-    public final void setInfiniteBounds() {
-        this.bmin_x = Float.NEGATIVE_INFINITY;
-        this.bmax_x = Float.POSITIVE_INFINITY;
-        this.bmin_y = Float.NEGATIVE_INFINITY;
-        this.bmax_y = Float.POSITIVE_INFINITY;
-        this.bmin_z = Float.NEGATIVE_INFINITY;
-        this.bmax_z = Float.POSITIVE_INFINITY;
     }
 
     public final void setBounds(BoundingBox other) {
@@ -174,36 +144,107 @@ public class BoundingBox {
         computeCenter();
     }
 
+    /**
+     * Sets this bounding box to the minimal axis-aligned bounding box enclosing
+     * the source bounding box transformed by an affine matrix.
+     *
+     * @param source the source bounding box to transform
+     * @param matrix the affine transformation matrix
+     */
+    public final void setTransformedBounds(BoundingBox source, Matrix4fc matrix) {
+        float minX = matrix.m30();
+        float maxX = minX;
+        float m00 = matrix.m00();
+        if (m00 > 0f) {
+            minX += m00 * source.bmin_x;
+            maxX += m00 * source.bmax_x;
+        } else {
+            minX += m00 * source.bmax_x;
+            maxX += m00 * source.bmin_x;
+        }
+        float m10 = matrix.m10();
+        if (m10 > 0f) {
+            minX += m10 * source.bmin_y;
+            maxX += m10 * source.bmax_y;
+        } else {
+            minX += m10 * source.bmax_y;
+            maxX += m10 * source.bmin_y;
+        }
+        float m20 = matrix.m20();
+        if (m20 > 0f) {
+            minX += m20 * source.bmin_z;
+            maxX += m20 * source.bmax_z;
+        } else {
+            minX += m20 * source.bmax_z;
+            maxX += m20 * source.bmin_z;
+        }
+
+        float minY = matrix.m31();
+        float maxY = minY;
+        float m01 = matrix.m01();
+        if (m01 > 0f) {
+            minY += m01 * source.bmin_x;
+            maxY += m01 * source.bmax_x;
+        } else {
+            minY += m01 * source.bmax_x;
+            maxY += m01 * source.bmin_x;
+        }
+        float m11 = matrix.m11();
+        if (m11 > 0f) {
+            minY += m11 * source.bmin_y;
+            maxY += m11 * source.bmax_y;
+        } else {
+            minY += m11 * source.bmax_y;
+            maxY += m11 * source.bmin_y;
+        }
+        float m21 = matrix.m21();
+        if (m21 > 0f) {
+            minY += m21 * source.bmin_z;
+            maxY += m21 * source.bmax_z;
+        } else {
+            minY += m21 * source.bmax_z;
+            maxY += m21 * source.bmin_z;
+        }
+
+        float minZ = matrix.m32();
+        float maxZ = minZ;
+        float m02 = matrix.m02();
+        if (m02 > 0f) {
+            minZ += m02 * source.bmin_x;
+            maxZ += m02 * source.bmax_x;
+        } else {
+            minZ += m02 * source.bmax_x;
+            maxZ += m02 * source.bmin_x;
+        }
+        float m12 = matrix.m12();
+        if (m12 > 0f) {
+            minZ += m12 * source.bmin_y;
+            maxZ += m12 * source.bmax_y;
+        } else {
+            minZ += m12 * source.bmax_y;
+            maxZ += m12 * source.bmin_y;
+        }
+        float m22 = matrix.m22();
+        if (m22 > 0f) {
+            minZ += m22 * source.bmin_z;
+            maxZ += m22 * source.bmax_z;
+        } else {
+            minZ += m22 * source.bmax_z;
+            maxZ += m22 * source.bmin_z;
+        }
+
+        setBounds(minX, maxX, minY, maxY, minZ, maxZ);
+    }
+
     private void computeXYCenter() {
         cx = (bmax_x + bmin_x) * 0.5f;
         cy = (bmax_y + bmin_y) * 0.5f;
-    }
-
-    public final float computeCenteredXYRadius() {
-        float radius_squared_x = cx - bmin_x;
-        float radius_squared_y = cy - bmin_y;
-        return (float) Math.sqrt(radius_squared_x * radius_squared_x + radius_squared_y * radius_squared_y);
     }
 
     private float computeXYRadius() {
         float longest_x = Math.max(bmax_x, -bmin_x);
         float longest_y = Math.max(bmax_y, -bmin_y);
         return (float) Math.sqrt(longest_x * longest_x + longest_y * longest_y);
-    }
-
-    public final void transformBounds(Matrix4f matrix) {
-        Vector4f v = new Vector4f(bmin_x, bmin_y, bmin_z, 1f);
-        matrix.transform(v, v);
-        bmin_x = v.x;
-        bmin_y = v.y;
-        bmin_z = v.z;
-
-        v.set(bmax_x, bmax_y, bmax_z, 1f);
-        matrix.transform(v, v);
-        bmax_x = v.x;
-        bmax_y = v.y;
-        bmax_z = v.z;
-        computeCenter();
     }
 
     private void computeCenter() {

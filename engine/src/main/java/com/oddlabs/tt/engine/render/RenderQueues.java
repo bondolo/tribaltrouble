@@ -5,7 +5,6 @@ import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.SpriteFile;
-import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Utils;
 import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
@@ -16,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -39,8 +37,13 @@ public final class RenderQueues implements AutoCloseable {
 
     private final InstancedSpriteRenderer spriteRenderer = new InstancedSpriteRenderer();
     private final DecalRenderer decalRenderer = new DecalRenderer();
+    private final MapDotRenderer mapDotRenderer = new MapDotRenderer(spriteRenderer);
 
     public RenderQueues() {
+    }
+
+    public MapDotRenderer getMapDotRenderer() {
+        return mapDotRenderer;
     }
 
     public TextureArray getEffectTextureArray() {
@@ -208,7 +211,7 @@ public final class RenderQueues implements AutoCloseable {
     }
 
     private void registerSpriteRenderer(SpriteRenderer sprite_renderer, String location) {
-        if (sprite_renderer.getSpriteList().getSprite(0).modulateColor()) {
+        if (sprite_renderer.getSpriteList().getSprite().modulateColor()) {
             blend_sprite_renderers.add(sprite_renderer);
         } else if (location.contains("plant") || location.contains("leaf")) {
             plant_renderers.add(sprite_renderer);
@@ -217,17 +220,10 @@ public final class RenderQueues implements AutoCloseable {
         }
     }
 
-    public void getAllPicks(Consumer<Target> pick_list) {
-        for (SpriteRenderer spriteRenderer : sprite_renderers) {
-            spriteRenderer.getAllPicks(pick_list);
-        }
-        for (SpriteRenderer spriteRenderer : plant_renderers) {
-            spriteRenderer.getAllPicks(pick_list);
-        }
-    }
-
     public void renderAll(RenderContext context, CameraState camera_state) {
-        sprite_renderers.forEach(SpriteRenderer::renderAll);
+        if (DebugFlags.process_misc) {
+            sprite_renderers.forEach(SpriteRenderer::renderAll);
+        }
         spriteRenderer.renderAll(context, camera_state);
     }
 
@@ -242,9 +238,7 @@ public final class RenderQueues implements AutoCloseable {
     }
 
     public void renderNoDetail() {
-        sprite_renderers.forEach(SpriteRenderer::renderNoDetail);
-        plant_renderers.forEach(SpriteRenderer::renderNoDetail);
-        blend_sprite_renderers.forEach(SpriteRenderer::renderNoDetail);
+        mapDotRenderer.render();
     }
 
     public void renderShadows(RenderContext context, float worldSize, Texture heightTexture,

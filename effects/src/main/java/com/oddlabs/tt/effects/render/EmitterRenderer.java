@@ -6,7 +6,6 @@ import com.oddlabs.tt.effects.particle.Particle;
 import com.oddlabs.tt.engine.render.BoundingMode;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.engine.render.PolyDetail;
 import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
@@ -56,6 +55,7 @@ public final class EmitterRenderer implements AutoCloseable {
     private final VertexArray vao = new VertexArray();
     private int vbo_offset = 0;
     private final Matrix4f cachedViewMatrix = new Matrix4f();
+    private final Matrix4f particleMatrix = new Matrix4f();
 
     private static final class BatchGroup {
         int srcBlend;
@@ -100,6 +100,7 @@ public final class EmitterRenderer implements AutoCloseable {
     private final List<BatchGroup> groupPool = new ArrayList<>();
     private final List<BatchEntry> entryPool = new ArrayList<>();
     private int entryPoolIndex = 0;
+    private final List<Emitter<?>> activeSpriteEmitters = new ArrayList<>();
 
     public EmitterRenderer() {
         int floatsPerParticle = VERTEX_LAYOUT.getStride() / Float.BYTES;
@@ -163,6 +164,7 @@ public final class EmitterRenderer implements AutoCloseable {
             entryPool.get(i).clear();
         }
         entryPoolIndex = 0;
+        activeSpriteEmitters.clear();
     }
 
     /**
@@ -184,35 +186,96 @@ public final class EmitterRenderer implements AutoCloseable {
 
     public void render(RenderContext context, RenderQueues render_queues, CameraState state,
             Matrix4fc modelView, Texture depthTexture) {
-        if (activeGroups.isEmpty()) return;
+        if (activeGroups.isEmpty() && activeSpriteEmitters.isEmpty()) return;
 
-        // Reset offset and orphan at start of frame to prevent flickering
-        vbo_offset = 0;
-        particle_vbo.orphan();
+        cachedViewMatrix.set(modelView);
 
-        vao.bind();
-        try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ALPHA); var _ = context.withDepthMode(
-                DepthMode.READ_ONLY)) {
+        if (!activeGroups.isEmpty()) {
+            // Reset offset and orphan at start of frame to prevent flickering
+            vbo_offset = 0;
+            particle_vbo.orphan();
 
-            shader.setUniform(shader.locModelViewMatrix, modelView);
+            vao.bind();
+            try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ALPHA); var _ = context.withDepthMode(
+                    DepthMode.READ_ONLY)) {
 
-            // Bind global effect texture array to unit 2
-            context.setTexture(2, render_queues.getEffectTextureArray().getHandle(),
-                    render_queues.getEffectTextureArray().getTarget());
-            shader.setUniform(shader.locTextureArray, 2);
+                shader.setUniform(shader.locModelViewMatrix, modelView);
 
-            context.setActiveTexture(1);
-            context.setTexture(1, depthTexture.getHandle());
-            shader.setUniform(shader.locDepthMap, 1);
+                // Bind global effect texture array to unit 2
+                context.setTexture(2, render_queues.getEffectTextureArray().getHandle(),
+                        render_queues.getEffectTextureArray().getTarget());
+                shader.setUniform(shader.locTextureArray, 2);
 
-            shader.setUniform(shader.locNearFar, RenderConfig.VIEW_MIN, RenderConfig.VIEW_MAX);
-            shader.setUniform(shader.locSoftRange, DEFAULT_SOFT_RANGE);
+                context.setActiveTexture(1);
+                context.setTexture(1, depthTexture.getHandle());
+                shader.setUniform(shader.locDepthMap, 1);
 
-            flushBatches(context);
+                shader.setUniform(shader.locNearFar, RenderConfig.VIEW_MIN, RenderConfig.VIEW_MAX);
+                shader.setUniform(shader.locSoftRange, DEFAULT_SOFT_RANGE);
+
+                flushBatches(context);
+            } finally {
+                vao.unbind();
+                context.setTexture(1, null);
+                context.setTexture(2, null);
+            }
+        }
+
+        if (!activeSpriteEmitters.isEmpty()) {
+            renderSpriteEmitters(render_queues, context, state);
+        }
+    }
+
+    private void renderSpriteEmitters(RenderQueues render_queues, RenderContext context, CameraState state) {
+        try {
+            boolean hasInstances = false;
+            for (int i = 0; i < activeSpriteEmitters.size(); i++) {
+                Emitter<?> emitter = activeSpriteEmitters.get(i);
+                SpriteKey[] sprite_renderers = emitter.getSpriteRenderers();
+                if (sprite_renderers == null) continue;
+                List<? extends Particle>[] particles = emitter.getParticles();
+                for (int j = 0; j < particles.length; j++) {
+                    if (j >= sprite_renderers.length) break;
+                    List<? extends Particle> pList = particles[j];
+                    if (pList.isEmpty()) continue;
+                    SpriteRenderer renderer = render_queues.getRenderer(sprite_renderers[j]);
+                    for (int k = 0; k < pList.size(); k++) {
+                        Particle particle = pList.get(k);
+                        particleMatrix.translation(particle.getPosX(), particle.getPosY(), particle.getPosZ());
+                        particleMatrix.m00(cachedViewMatrix.m00());
+                        particleMatrix.m01(cachedViewMatrix.m10());
+                        particleMatrix.m02(cachedViewMatrix.m20());
+                        particleMatrix.m10(cachedViewMatrix.m01());
+                        particleMatrix.m11(cachedViewMatrix.m11());
+                        particleMatrix.m12(cachedViewMatrix.m21());
+                        particleMatrix.m20(cachedViewMatrix.m02());
+                        particleMatrix.m21(cachedViewMatrix.m12());
+                        particleMatrix.m22(cachedViewMatrix.m22());
+                        particleMatrix.rotate(particle.getAngle(), 0f, 0f, 1f);
+                        particleMatrix.scale(particle.getRadiusX(), particle.getRadiusY(), particle.getRadiusZ());
+
+                        renderer.addInstance(
+                                0,
+                                0f,
+                                false,
+                                true,
+                                false,
+                                true,
+                                particleMatrix,
+                                particle.getColor(),
+                                particle.getColor()
+                        );
+                        hasInstances = true;
+                    }
+                }
+            }
+            if (hasInstances) {
+                try (var _ = context.withDrawBuffers(false)) {
+                    render_queues.getInstancedRenderer().renderAll(context, state);
+                }
+            }
         } finally {
-            vao.unbind();
-            context.setTexture(1, null);
-            context.setTexture(2, null);
+            activeSpriteEmitters.clear();
         }
     }
 
@@ -248,14 +311,15 @@ public final class EmitterRenderer implements AutoCloseable {
                 group.entries.add(obtainEntry(emitter, pList, texture));
             }
         } else if (sprite_renderers != null) {
+            boolean hasParticles = false;
             for (int j = 0; j < particles.length; j++) {
-                SpriteRenderer renderer = render_queues.getRenderer(sprite_renderers[j]);
-                List<P> pList = particles[j];
-                for (int k = 0; k < pList.size(); k++) {
-                    Particle particle = pList.get(k);
-                    renderer.addToRenderList(PolyDetail.LOW_POLY, new ParticleModelState(particle, cachedViewMatrix),
-                            false);
+                if (!particles[j].isEmpty()) {
+                    hasParticles = true;
+                    break;
                 }
+            }
+            if (hasParticles) {
+                activeSpriteEmitters.add(emitter);
             }
         }
     }

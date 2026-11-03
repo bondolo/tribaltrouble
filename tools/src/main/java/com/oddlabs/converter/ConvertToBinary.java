@@ -87,9 +87,8 @@ public final class ConvertToBinary {
         }
     }
 
-    private static ModelObjectInfo[] getModelObjectInfos(Node n, Path src_dir) {
+    private static ModelObjectInfo getModelObjectInfo(Node n, Path src_dir) {
         NodeList nl = n.getChildNodes();
-        List<ModelObjectInfo> object_infos = new ArrayList<>();
         for (int i = 0; i < nl.getLength(); i++) {
             Node item = nl.item(i);
             if (item.getNodeName().equals("model")) {
@@ -97,11 +96,10 @@ public final class ConvertToBinary {
                 float g = getInt(item, "g") / 255f;
                 float b = getInt(item, "b") / 255f;
                 String[][] textures = getTextureInfos(item, src_dir);
-                object_infos.add(new ModelObjectInfo(src_dir.resolve(getText(item)), textures, new float[]{r, g, b}));
+                return new ModelObjectInfo(src_dir.resolve(getText(item)), textures, new float[]{r, g, b});
             }
         }
-        ModelObjectInfo[] infos = new ModelObjectInfo[object_infos.size()];
-        return object_infos.toArray(infos);
+        throw new NoSuchElementException("Missing model node in sprite: " + getName(n));
     }
 
     private static AnimObjectInfo[] getAnimObjectInfos(Node n, Path src_dir) {
@@ -146,23 +144,16 @@ public final class ConvertToBinary {
             Path xml_file) {
         String name = getName(n);
         AnimObjectInfo[] anim_object_infos = getAnimObjectInfos(n, src_dir);
-        ModelObjectInfo[] model_object_infos = getModelObjectInfos(n, src_dir);
+        ModelObjectInfo model_object_info = getModelObjectInfo(n, src_dir);
         Path build_file = build_dir.resolve(name + ".binsprite");
 
         ObjectInfo skeleton_info = getSkeletonObjectInfo(n, src_dir);
         boolean modified = isModified(xml_file, build_file)
-                || (skeleton_info != null && isModified(skeleton_info.getFile(), build_file));
+                || (skeleton_info != null && isModified(skeleton_info.getFile(), build_file))
+                || isModified(model_object_info.getFile(), build_file);
         if (!modified) {
             for (AnimObjectInfo anim_object_info : anim_object_infos) {
                 if (isModified(anim_object_info.getFile(), build_file)) {
-                    modified = true;
-                    break;
-                }
-            }
-        }
-        if (!modified) {
-            for (ModelObjectInfo model_object_info : model_object_infos) {
-                if (isModified(model_object_info.getFile(), build_file)) {
                     modified = true;
                     break;
                 }
@@ -201,20 +192,15 @@ public final class ConvertToBinary {
                 name_to_bone_map = null;
                 skeleton_data = null;
             }
-            SpriteInfo[] sprite_models = new SpriteInfo[model_object_infos.length];
-            for (int i = 0; i < model_object_infos.length; i++) {
-                ModelObjectInfo current = model_object_infos[i];
-                ModelInfo model_info = MeshLoader.loadMesh(current.getFile(), name_to_bone_map, scale);
-                assert sprite_models[i] == null;
-                sprite_models[i] = Optimizer.convertToSprite(current.getTextures(), model_info, current
-                        .getClearColor());
-            }
-            BoundsData[] bounds_data = computeBounds(sprite_models, animations);
-            write(new Object[]{sprite_models, animations, skeleton_data, bounds_data}, build_file);
+            ModelInfo model_info = MeshLoader.loadMesh(model_object_info.getFile(), name_to_bone_map, scale);
+            SpriteInfo sprite_model = Optimizer.convertToSprite(model_object_info.getTextures(), model_info,
+                    model_object_info.getClearColor());
+            BoundsData[] bounds_data = computeBounds(sprite_model, animations);
+            write(new Object[]{sprite_model, animations, skeleton_data, bounds_data}, build_file);
         }
     }
 
-    private static BoundsData[] computeBounds(SpriteInfo[] sprites, AnimationInfo[] animations) {
+    private static BoundsData[] computeBounds(SpriteInfo sprite, AnimationInfo[] animations) {
         BoundsData[] bounds = new BoundsData[animations.length];
         Vector4f v = new Vector4f();
         Vector4f temp = new Vector4f();
@@ -241,47 +227,45 @@ public final class ConvertToBinary {
                     );
                 }
 
-                for (SpriteInfo sprite : sprites) {
-                    float[] vertices = sprite.getVertices();
-                    byte[][] skinNames = sprite.getSkinNames();
-                    float[][] skinWeights = sprite.getSkinWeights();
-                    int numVertices = vertices.length / 3;
+                float[] vertices = sprite.getVertices();
+                byte[][] skinNames = sprite.getSkinNames();
+                float[][] skinWeights = sprite.getSkinWeights();
+                int numVertices = vertices.length / 3;
 
-                    for (int vert = 0; vert < numVertices; vert++) {
-                        float vx = vertices[vert * 3 + 0];
-                        float vy = vertices[vert * 3 + 1];
-                        float vz = vertices[vert * 3 + 2];
-                        v.set(vx, vy, vz, 1.0f);
+                for (int vert = 0; vert < numVertices; vert++) {
+                    float vx = vertices[vert * 3 + 0];
+                    float vy = vertices[vert * 3 + 1];
+                    float vz = vertices[vert * 3 + 2];
+                    v.set(vx, vy, vz, 1.0f);
 
-                        byte[] vertSkinNames = skinNames[vert];
-                        float[] vertSkinWeights = skinWeights[vert];
+                    byte[] vertSkinNames = skinNames[vert];
+                    float[] vertSkinWeights = skinWeights[vert];
 
-                        float rx = 0f;
-                        float ry = 0f;
-                        float rz = 0f;
+                    float rx = 0f;
+                    float ry = 0f;
+                    float rz = 0f;
 
-                        for (int b = 0; b < vertSkinNames.length; b++) {
-                            float weight = vertSkinWeights[b];
-                            int boneIdx = vertSkinNames[b] & 0xFF;
-                            if (boneIdx < frameBones.length) {
-                                frameBones[boneIdx].transform(v, temp);
-                                rx += temp.x * weight;
-                                ry += temp.y * weight;
-                                rz += temp.z * weight;
-                            } else {
-                                rx += vx * weight;
-                                ry += vy * weight;
-                                rz += vz * weight;
-                            }
+                    for (int b = 0; b < vertSkinNames.length; b++) {
+                        float weight = vertSkinWeights[b];
+                        int boneIdx = vertSkinNames[b] & 0xFF;
+                        if (boneIdx < frameBones.length) {
+                            frameBones[boneIdx].transform(v, temp);
+                            rx += temp.x * weight;
+                            ry += temp.y * weight;
+                            rz += temp.z * weight;
+                        } else {
+                            rx += vx * weight;
+                            ry += vy * weight;
+                            rz += vz * weight;
                         }
-
-                        if (rx < minX) minX = rx;
-                        if (rx > maxX) maxX = rx;
-                        if (ry < minY) minY = ry;
-                        if (ry > maxY) maxY = ry;
-                        if (rz < minZ) minZ = rz;
-                        if (rz > maxZ) maxZ = rz;
                     }
+
+                    if (rx < minX) minX = rx;
+                    if (rx > maxX) maxX = rx;
+                    if (ry < minY) minY = ry;
+                    if (ry > maxY) maxY = ry;
+                    if (rz < minZ) minZ = rz;
+                    if (rz > maxZ) maxZ = rz;
                 }
             }
             bounds[anim] = new BoundsData(minX, maxX, minY, maxY, minZ, maxZ);

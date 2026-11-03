@@ -65,8 +65,8 @@ public final class AttachedRenderState implements ModelState<Model> {
     public Color getTeamColor() {
         assert parentState != null;
         return accessory != null && !accessory.hasTeamColor()
-               ? Color.Linear.TRANSPARENT
-               : parentState.getTeamColor();
+                ? Color.Linear.TRANSPARENT
+                : parentState.getTeamColor();
     }
 
     @Override
@@ -105,34 +105,16 @@ public final class AttachedRenderState implements ModelState<Model> {
         return parentState.model;
     }
 
-    @Override
-    public void markDetailPoint() {
-        // Accessories typically don't have their own detail markers in the current model
-    }
-
-    @Override
-    public void markDetailPolygon(PolyDetail detail) {
+    public void addToRenderList() {
         assert accessory != null;
         assert parentState != null;
 
         // Standard sprite rendering
         SpriteKey key = accessory.getSpriteRenderer();
         if (key != null) {
-            parentState.sceneContext.getRenderQueues().getRenderer(key).addToRenderList(detail, this,
+            parentState.sceneContext.getRenderQueues().getRenderer(key).addToRenderList(this,
                     parentState.sceneContext.isResponding(parentState.model));
         }
-    }
-
-    @Override
-    public int getTriangleCount(PolyDetail detail) {
-        assert accessory != null;
-        assert parentState != null;
-
-        SpriteKey key = accessory.getSpriteRenderer();
-        if (key != null) {
-            return parentState.sceneContext.getRenderQueues().getRenderer(key).getTriangleCount(detail);
-        }
-        return 0;
     }
 
     @Override
@@ -148,13 +130,5 @@ public final class AttachedRenderState implements ModelState<Model> {
         assert parentState != null;
 
         return accessory.getAnimationTicks(parentState.model);
-    }
-
-    @Override
-    public float getEyeDistanceSquared() {
-        assert accessory != null;
-        assert parentState != null;
-
-        return parentState.getEyeDistanceSquared();
     }
 }

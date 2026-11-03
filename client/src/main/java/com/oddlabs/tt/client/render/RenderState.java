@@ -18,8 +18,6 @@ import com.oddlabs.tt.engine.render.AttachedRenderState;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DecalRenderer;
 import com.oddlabs.tt.engine.render.ElementSceneContext;
-import com.oddlabs.tt.engine.render.LODObject;
-import com.oddlabs.tt.engine.render.ModelState;
 import com.oddlabs.tt.engine.render.ModelVisitor;
 import com.oddlabs.tt.engine.render.WaveAnimation;
 import com.oddlabs.tt.engine.render.WhiteModelVisitor;
@@ -31,7 +29,6 @@ import com.oddlabs.tt.engine.render.ShadowListKey;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.StaticAccessory;
 import com.oddlabs.tt.client.resource.AssetRegistry;
-import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
@@ -76,7 +73,6 @@ public final class RenderState implements SceneContext {
     private final Queue<Emitter<?>> emitter_queue = new ArrayDeque<>();
     private final Queue<Lightning> lightning_queue = new ArrayDeque<>();
     private final Queue<SonicBlastEffect> sonic_blast_queue = new ArrayDeque<>();
-    private final SpriteSorter sprite_sorter;
     private final RenderStateCache<ElementSceneContext<Model>> render_state_cache;
     private final RenderStateCache<AttachedRenderState> attached_state_cache;
     private final RenderQueues render_queues;
@@ -95,13 +91,12 @@ public final class RenderState implements SceneContext {
     private boolean visible_override;
     private @Nullable CameraState camera;
 
-    public RenderState(Player local_player, SpriteSorter sprite_sorter,
+    public RenderState(Player local_player,
             RenderQueues render_queues, Picker picker, @Nullable Selection selection,
             AudioImplementation audio) {
         this.local_player = local_player;
         this.selection = selection;
         this.picker = picker;
-        this.sprite_sorter = sprite_sorter;
         this.render_queues = render_queues;
         this.audio = audio;
         var respondDesc = new GeneratorRing(DecalRenderer.HALO_LUT_RESOLUTION,
@@ -141,14 +136,14 @@ public final class RenderState implements SceneContext {
             case DirectedThrowingWeapon weapon -> {
                 if (!picking) {
                     var state = getCachedState(directed_weapon_model_visitor, weapon);
-                    addToRenderList(state);
+                    state.addToRenderList();
                     visitAccessories(weapon, state);
                 }
             }
             case RotatingThrowingWeapon weapon -> {
                 if (!picking) {
                     var state = getCachedState(rotating_weapon_model_visitor, weapon);
-                    addToRenderList(state);
+                    state.addToRenderList();
                     visitAccessories(weapon, state);
                 }
             }
@@ -312,10 +307,6 @@ public final class RenderState implements SceneContext {
         return camera;
     }
 
-    boolean isPicking() {
-        return picking;
-    }
-
     boolean overrideVisibility() {
         return visible_override;
     }
@@ -348,11 +339,12 @@ public final class RenderState implements SceneContext {
 
     private static boolean pickingInFrustum(Target target, FrustumIntersection frustum, float z_offset,
             float selection_radius, float selection_height) {
-        BoundingBox picking_selection_box = new BoundingBox();
-        picking_selection_box.setBounds(-selection_radius + target.getPositionX(), selection_radius + target
-                .getPositionX(), -selection_radius + target.getPositionY(), selection_radius + target
-                        .getPositionY(), z_offset, z_offset + selection_height);
-        return picking_selection_box.testFrustum(frustum);
+        float posX = target.getPositionX();
+        float posY = target.getPositionY();
+        return frustum.testAab(
+                posX - selection_radius, posY - selection_radius, z_offset,
+                posX + selection_radius, posY + selection_radius, z_offset + selection_height
+        );
     }
 
     boolean isHovered(Selectable<?> selectable) {
@@ -368,31 +360,40 @@ public final class RenderState implements SceneContext {
         boolean in_view = !picking || (selectable.isEnabled() && (visible_override || pickingInFrustum(selectable,
                 camera.getFrustum(), z_offset, selection_radius, selection_height)));
         if (in_view) {
+            if (picking) {
+                picker.addPick(selectable);
+                return;
+            }
             Player owner = selectable.getOwnerNoCheck();
-            boolean point_on_map = !local_player.isEnemy(owner) || (!owner.teamHasBuilding() && PeerHub
-                    .getFreeQuitTimeLeft(local_player.getWorld()) < 0f);
+            boolean isMapPoint = camera != null && camera.inNoDetailMode() && (!local_player.isEnemy(owner) || (!owner
+                    .teamHasBuilding() && PeerHub
+                            .getFreeQuitTimeLeft(local_player.getWorld()) < 0f));
             ElementSceneContext<S> state = (ElementSceneContext<S>) getCachedState(visitor, selectable, z_offset);
-            SpriteSorter.DetailMode sort_status = addToRenderList(state, point_on_map);
-            if (!picking && selectable.isEnabled() && sort_status == SpriteSorter.DetailMode.POLYGON) {
-                ShadowListKey shadowKey = null;
-                Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
-                if (selectable instanceof Unit) {
-                    shadowKey = AssetRegistry.getInstance().getDefaultUnitShadow();
-                } else if (selectable instanceof Building building) {
-                    BuildingType bvt = building.getTemplate().getBuildingType();
-                    shadowKey = AssetRegistry.getInstance().getBuildingVisuals(race, bvt).shadow();
-                }
-                if (shadowKey != null) {
-                    SelectableShadowRenderer shadow_renderer = (SelectableShadowRenderer) render_queues
-                            .getShadowRenderer(shadowKey);
-                    if (isHovered(selectable) || isSelected(selectable)) {
-                        shadow_renderer.addToSelectionList(state);
-                    } else if (selectable instanceof Unit && selectable.getShadowDiameter() > 0f) {
-                        shadow_renderer.addToShadowList(state);
+            if (isMapPoint) {
+                state.markDetailPoint();
+            } else {
+                state.addToRenderList();
+                if (selectable.isEnabled()) {
+                    ShadowListKey shadowKey = null;
+                    Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
+                    if (selectable instanceof Unit) {
+                        shadowKey = AssetRegistry.getInstance().getDefaultUnitShadow();
+                    } else if (selectable instanceof Building building) {
+                        BuildingType bvt = building.getTemplate().getBuildingType();
+                        shadowKey = AssetRegistry.getInstance().getBuildingVisuals(race, bvt).shadow();
+                    }
+                    if (shadowKey != null) {
+                        SelectableShadowRenderer shadow_renderer = (SelectableShadowRenderer) render_queues
+                                .getShadowRenderer(shadowKey);
+                        if (isHovered(selectable) || isSelected(selectable)) {
+                            shadow_renderer.addToSelectionList(state);
+                        } else if (selectable instanceof Unit && selectable.getShadowDiameter() > 0f) {
+                            shadow_renderer.addToShadowList(state);
+                        }
                     }
                 }
+                visitAccessories(selectable, state);
             }
-            visitAccessories(selectable, state);
         }
     }
 
@@ -430,12 +431,12 @@ public final class RenderState implements SceneContext {
             case StaticAccessory s -> {
                 AttachedRenderState state = attached_state_cache.get();
                 state.setup(parentState, s);
-                addToRenderList(state);
+                state.addToRenderList();
             }
             default -> {
                 AttachedRenderState state = attached_state_cache.get();
                 state.setup(parentState, accessory);
-                addToRenderList(state);
+                state.addToRenderList();
             }
         }
     }
@@ -496,15 +497,7 @@ public final class RenderState implements SceneContext {
                 getBuildingSelectionHeight(building));
     }
 
-    SpriteSorter.DetailMode addToRenderList(LODObject model) {
-        return addToRenderList(model, false);
-    }
-
-    SpriteSorter.DetailMode addToRenderList(LODObject model, boolean point_on_map) {
-        return sprite_sorter.add(model, camera, point_on_map);
-    }
-
-    private final ModelVisitor<SupplyModel> supply_model_visitor = new SupplyModelVisitor<>() {
+    private final ModelVisitor<SupplyModel> supply_model_visitor = new WhiteModelVisitor<>() {
         @Override
         public @Nullable SpriteKey getSpriteKey(ElementSceneContext<SupplyModel> render_state) {
             SupplyModel model = render_state.getModel();
@@ -538,13 +531,16 @@ public final class RenderState implements SceneContext {
 
     private void visitSupplyModel(final SupplyModel model) {
         float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY());
-        if (picking && !pickingInFrustum(model, camera.getFrustum(), z_offset, Math.max(1.0f, model.getSize()), 2.0f)) {
+        if (picking) {
+            if (pickingInFrustum(model, camera.getFrustum(), z_offset, Math.max(1.0f, model.getSize()), 2.0f)) {
+                picker.addPick(model);
+            }
             return;
         }
         ElementSceneContext<SupplyModel> state = (ElementSceneContext<SupplyModel>) getCachedState(
                 supply_model_visitor, model);
-        addToRenderList(state);
-        if (!picking && getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
+        state.addToRenderList();
+        if (getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
             var decal = svm.getDecalProperties();
             if (decal.opacity() > 0.0f) {
                 crack_shadow_renderer.addToCrackList(new Shadowable() {
@@ -584,7 +580,7 @@ public final class RenderState implements SceneContext {
         visitAccessories(model, state);
     }
 
-    private static final ModelVisitor<RubberSupply> rubber_model_visitor = new SupplyModelVisitor<>() {
+    private static final ModelVisitor<RubberSupply> rubber_model_visitor = new WhiteModelVisitor<>() {
         @Override
         public @Nullable SpriteKey getSpriteKey(ElementSceneContext<RubberSupply> render_state) {
             return AssetRegistry.getInstance().getChickenSprite();
@@ -607,14 +603,17 @@ public final class RenderState implements SceneContext {
 
     private void visitRubberSupply(final RubberSupply model) {
         float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY()) + model.getOffsetZ();
-        if (picking && !pickingInFrustum(model, camera.getFrustum(), z_offset, Math.max(1.0f, model.getSize()), 2.0f)) {
+        if (picking) {
+            if (pickingInFrustum(model, camera.getFrustum(), z_offset, Math.max(1.0f, model.getSize()), 2.0f)) {
+                picker.addPick(model);
+            }
             return;
         }
         ElementSceneContext<RubberSupply> state = (ElementSceneContext<RubberSupply>) getCachedState(
                 rubber_model_visitor,
                 model, z_offset);
-        addToRenderList(state);
-        if (!picking && !model.isHit())
+        state.addToRenderList();
+        if (!model.isHit())
             default_shadow_renderer.addToShadowList(state);
         visitAccessories(model, state);
     }
@@ -636,11 +635,14 @@ public final class RenderState implements SceneContext {
     };
 
     private void visitSceneryModel(final SceneryModel model) {
-        if (picking && !visible_override && !model.testFrustum(camera.getFrustum())) {
+        if (picking) {
+            if (visible_override || model.testFrustum(camera.getFrustum())) {
+                picker.addPick(model);
+            }
             return;
         }
-        ModelState<SceneryModel> state = getCachedState(scenery_model_visitor, model);
-        addToRenderList(state);
+        ElementSceneContext<SceneryModel> state = getCachedState(scenery_model_visitor, model);
+        state.addToRenderList();
     }
 
     private static final float START_FADE_DIST = 120f;
@@ -685,7 +687,7 @@ public final class RenderState implements SceneContext {
             float camera_dist_sqr = RenderTools.getEyeDistanceSquared(plants, camera.getCurrentX(), camera
                     .getCurrentY(), camera.getCurrentZ());
             if (camera_dist_sqr <= PLANTS_CUT_DIST * PLANTS_CUT_DIST)
-                addToRenderList(getCachedState(plants_model_visitor, plants, camera_dist_sqr));
+                getCachedState(plants_model_visitor, plants, camera_dist_sqr).addToRenderList();
         }
     }
 
@@ -714,11 +716,6 @@ public final class RenderState implements SceneContext {
                 public Color getTeamColor(ElementSceneContext<DirectedThrowingWeapon> render_state) {
                     return render_state.getModel().getSrc().getOwner().getColor();
                 }
-
-                @Override
-                public float getNoDetailSize(ElementSceneContext<DirectedThrowingWeapon> render_state) {
-                    return 0.5f;
-                }
             };
 
     private static final ModelVisitor<RotatingThrowingWeapon> rotating_weapon_model_visitor
@@ -745,11 +742,6 @@ public final class RenderState implements SceneContext {
                 @Override
                 public Color getTeamColor(ElementSceneContext<RotatingThrowingWeapon> render_state) {
                     return render_state.getModel().getSrc().getOwner().getColor();
-                }
-
-                @Override
-                public float getNoDetailSize(ElementSceneContext<RotatingThrowingWeapon> render_state) {
-                    return 0.5f;
                 }
             };
 

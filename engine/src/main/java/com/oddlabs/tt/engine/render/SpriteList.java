@@ -10,7 +10,6 @@ import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.engine.vbo.ByteVBO;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
-import com.oddlabs.tt.engine.vbo.VertexArray;
 import com.oddlabs.util.Utils;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -30,7 +29,7 @@ public final class SpriteList implements AutoCloseable {
     private static final SpriteList QUAD_INSTANCE = new SpriteList(new float[]{0, 0, 1, 0, 1, 1, 0, 1});
 
     private final BoundingBox[] bounds;
-    private final Sprite[] sprites;
+    private final Sprite sprite;
     private final AnimationInfo.AnimationType[] type_array;
     private final String[] animation_names;
     private final AnimationInfo @Nullable [] animation_infos;
@@ -45,7 +44,6 @@ public final class SpriteList implements AutoCloseable {
     private final FloatVBO texcoords;
     private final @Nullable ByteVBO bone_indices;
     private final @Nullable FloatVBO bone_weights;
-    private @Nullable VertexArray vao;
 
     public static SpriteList getQuadInstance() {
         return QUAD_INSTANCE;
@@ -94,12 +92,13 @@ public final class SpriteList implements AutoCloseable {
         this.bone_indices = null;
         this.bone_weights = null;
 
-        this.sprites = new Sprite[]{new Sprite(4, 2, 0, 0, 0, 0, 0, 0, true)};
+        this.sprite = new Sprite(4, 2, true);
     }
 
     public SpriteList(SpriteFile sprite_file) {
         Object[] sprites_and_animations = Utils.loadObject(Object[].class, sprite_file.getURL());
-        SpriteInfo[] sprite_infos = (SpriteInfo[]) sprites_and_animations[0];
+        SpriteInfo info = sprites_and_animations[0] instanceof SpriteInfo[] arr ? arr[0]
+                : (SpriteInfo) sprites_and_animations[0];
         AnimationInfo[] animation_infos = (AnimationInfo[]) sprites_and_animations[1];
         this.animation_infos = animation_infos;
         this.skeleton_data = sprites_and_animations.length > 2 && sprites_and_animations[2] instanceof SkeletonData sd
@@ -123,12 +122,8 @@ public final class SpriteList implements AutoCloseable {
             this.bounds[i] = new BoundingBox(bd.minX(), bd.maxX(), bd.minY(), bd.maxY(), bd.minZ(), bd.maxZ());
         }
 
-        int total_indices = 0;
-        int total_vertices = 0;
-        for (SpriteInfo sprite_info : sprite_infos) {
-            total_indices += sprite_info.getIndices().length;
-            total_vertices += sprite_info.getTexCoords().length / 2;
-        }
+        int total_indices = info.getIndices().length;
+        int total_vertices = info.getTexCoords().length / 2;
 
         ShortBuffer all_indices = BufferUtils.createShortBuffer(total_indices);
         FloatBuffer all_positions = BufferUtils.createFloatBuffer(total_vertices * 3);
@@ -150,46 +145,34 @@ public final class SpriteList implements AutoCloseable {
             animation_length_array[i] = animation_infos[i].getFrames().length;
         }
 
-        sprites = new Sprite[sprite_infos.length];
-        for (int s = 0; s < sprite_infos.length; s++) {
-            SpriteInfo info = sprite_infos[s];
-            int idxOffset = all_indices.position();
-            int vertOffset = all_positions.position();
-            int normOffset = all_normals.position();
-            int texOffset = all_texcoords.position();
-            int boneIdxOffset = all_bone_indices != null ? all_bone_indices.position() : 0;
-            int boneWeightOffset = all_bone_weights != null ? all_bone_weights.position() : 0;
+        all_indices.put(info.getIndices());
+        all_positions.put(info.getVertices());
+        all_normals.put(info.getNormals());
+        all_texcoords.put(info.getTexCoords());
 
-            all_indices.put(info.getIndices());
-            all_positions.put(info.getVertices());
-            all_normals.put(info.getNormals());
-            all_texcoords.put(info.getTexCoords());
-
-            if (all_bone_indices != null && all_bone_weights != null) {
-                byte[][] skinNames = info.getSkinNames();
-                float[][] skinWeights = info.getSkinWeights();
-                int vCount = info.getTexCoords().length / 2;
-                for (int v = 0; v < vCount; v++) {
-                    byte[] bones = (skinNames != null && v < skinNames.length) ? skinNames[v] : null;
-                    float[] weights = (skinWeights != null && v < skinWeights.length) ? skinWeights[v] : null;
-                    int bLen = bones != null ? bones.length : 0;
-                    for (int i = 0; i < 4; i++) {
-                        if (i < bLen) {
-                            all_bone_indices.put(bones[i]);
-                            all_bone_weights.put(weights[i]);
-                        } else {
-                            all_bone_indices.put((byte) 0);
-                            all_bone_weights.put(0.0f);
-                        }
+        if (all_bone_indices != null && all_bone_weights != null) {
+            byte[][] skinNames = info.getSkinNames();
+            float[][] skinWeights = info.getSkinWeights();
+            int vCount = info.getTexCoords().length / 2;
+            for (int v = 0; v < vCount; v++) {
+                byte[] bones = (skinNames != null && v < skinNames.length) ? skinNames[v] : null;
+                float[] weights = (skinWeights != null && v < skinWeights.length) ? skinWeights[v] : null;
+                int bLen = bones != null ? bones.length : 0;
+                for (int i = 0; i < 4; i++) {
+                    if (i < bLen) {
+                        all_bone_indices.put(bones[i]);
+                        all_bone_weights.put(weights[i]);
+                    } else {
+                        all_bone_indices.put((byte) 0);
+                        all_bone_weights.put(0.0f);
                     }
                 }
             }
-
-            sprites[s] = new Sprite(info, sprite_file.hasAlpha(), sprite_file.isLighted(),
-                    sprite_file.isCulled(), sprite_file.hasModulateColor(), sprite_file.hasMaxAlpha(),
-                    sprite_file.getMipmapCutoff(), idxOffset, texOffset, vertOffset, normOffset,
-                    boneIdxOffset, boneWeightOffset);
         }
+
+        this.sprite = new Sprite(info, sprite_file.hasAlpha(), sprite_file.isLighted(),
+                sprite_file.isCulled(), sprite_file.hasModulateColor(), sprite_file.hasMaxAlpha(),
+                sprite_file.getMipmapCutoff());
 
         all_indices.flip();
         indices = new ShortVBO(GL15.GL_STATIC_DRAW, all_indices);
@@ -220,19 +203,15 @@ public final class SpriteList implements AutoCloseable {
     }
 
     public float[] getClearColor() {
-        return getSprite(0).getClearColor();
+        return getSprite().getClearColor();
     }
 
     public BoundingBox[] getBounds() {
         return bounds;
     }
 
-    public int getNumSprites() {
-        return sprites.length;
-    }
-
-    public Sprite getSprite(int index) {
-        return sprites[index];
+    public Sprite getSprite() {
+        return sprite;
     }
 
     public AnimationInfo.AnimationType[] getAnimationTypes() {
@@ -491,10 +470,6 @@ public final class SpriteList implements AutoCloseable {
 
     @Override
     public void close() {
-        if (vao != null) {
-            vao.close();
-            vao = null;
-        }
         indices.close();
         positions.close();
         normals.close();

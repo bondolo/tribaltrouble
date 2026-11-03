@@ -248,8 +248,7 @@ class AIDecouplingTest {
                 worldParams,
                 landscape,
                 playerInfos,
-                playerColors,
-                false
+                playerColors
         );
 
         player = world.getPlayers().getFirst();

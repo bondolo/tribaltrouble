@@ -2,7 +2,6 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
-import com.oddlabs.tt.engine.settings.GraphicsSettings;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 
 import com.oddlabs.tt.base.animation.AnimationManager;
@@ -44,7 +43,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.function.Consumer;
 
 /**
  * Handles world element picking and selection by unprojecting screen coordinates
@@ -97,12 +95,10 @@ public final class Picker implements Updatable<TimerAnimation> {
     private final Vector3f dir_vector = new Vector3f();
 
     private final List<Target> element_pick_list = new ArrayList<>();
-    private final Consumer<Target> element_pick_consumer = element_pick_list::add;
     private final List<TreeSupply> tree_pick_list = new ArrayList<>();
 
     private final CameraState tmp_camera = new CameraState();
     private final SortedSet<LandscapeLeaf> patch_pick_set = new TreeSet<>(new LandscapeLeafComparator());
-    private final SpriteSorter sprite_sorter;
     private final AnimationManager manager;
     private final TimerAnimation tool_tip_timer;
     private final LandscapeRenderer landscape_renderer;
@@ -157,13 +153,12 @@ public final class Picker implements Updatable<TimerAnimation> {
         this.tool_tip_timer = new TimerAnimation(manager, this, TOOL_TIP_DELAY);
         this.local_player = local_player;
         this.gui_root = gui_root;
-        this.sprite_sorter = new SpriteSorter(GraphicsSettings.from(gui_root.getGUI().getSettings()).graphic_detail);
         this.render_queues = render_queues;
         this.respond_manager = new RespondManager(manager);
-        this.element_renderer = new ElementRenderer<>(local_player, render_queues, this, true, sprite_sorter,
+        this.element_renderer = new ElementRenderer<>(local_player, render_queues, this, true,
                 selection, audio);
         this.tree_renderer = new TreePicker(respond_manager);
-        TreePicker.initTreeBounds(local_player.getWorld().getTreeRoot(), tree_renderer.getTrees());
+        this.tree_renderer.initTreeBounds(local_player.getWorld().getTreeRoot());
         this.landscape_renderer = landscape_renderer;
         this.icons = icons;
     }
@@ -213,8 +208,7 @@ public final class Picker implements Updatable<TimerAnimation> {
             pickResources();
             final TreeSupply supply = getNearestPick(tree_pick_list, TreeSupply.class);
             if (supply != null) {
-                respond_manager.addResponder(supply, () -> supply.changeRespondingTrees(-1));
-                supply.changeRespondingTrees(1);
+                respond_manager.addResponder(supply);
                 if (isNewSetTarget(selection, supply, action, aggressive))
                     player_interface.setTarget(selection, supply, action, aggressive);
             } else if (nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport)) {
@@ -573,6 +567,10 @@ public final class Picker implements Updatable<TimerAnimation> {
         return current_hovered;
     }
 
+    void addPick(Target target) {
+        element_pick_list.add(target);
+    }
+
     private boolean canRenderToolTip() {
         return render_tool_tip;
     }
@@ -627,15 +625,12 @@ public final class Picker implements Updatable<TimerAnimation> {
         element_pick_list.clear();
         element_renderer.setup(tmp_camera);
         element_renderer.visit(local_player.getWorld().getElementRoot());
-        sprite_sorter.distributeModels();
-        render_queues.getAllPicks(element_pick_consumer);
     }
 
     private void pickResources() {
         tree_pick_list.clear();
         tree_renderer.setup(tmp_camera);
         tree_renderer.visit(local_player.getWorld().getTreeRoot());
-        sprite_sorter.distributeModels();
         tree_renderer.getAllPicks(tree_pick_list);
     }
 

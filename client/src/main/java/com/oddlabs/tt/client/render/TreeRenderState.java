@@ -1,51 +1,15 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.render.LODObject;
-import com.oddlabs.tt.engine.render.PolyDetail;
-import com.oddlabs.tt.engine.render.RenderTools;
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
+import org.joml.Matrix4f;
 
 /**
- * Tracks the level of detail (LOD) and spatial state for rendering a tree supply element.
+ * Client-side visual state for a tree supply, managing its visual transform and render bounds.
  */
-final class TreeRenderState implements LODObject {
-    private final TreePicker tree_renderer;
-    private TreeSupply tree_supply;
-
-    TreeRenderState(TreePicker tree_renderer) {
-        this.tree_renderer = tree_renderer;
-    }
-
-    void setup(TreeSupply tree_supply) {
-        this.tree_supply = tree_supply;
-    }
-
-    @Override
-    public void markDetailPoint() {
-        markDetailPolygon(PolyDetail.HIGH_POLY);
-    }
-
-    @Override
-    public void markDetailPolygon(PolyDetail level) {
-        tree_renderer.markDetailPolygon(tree_supply, level);
-    }
-
-    @Override
-    public int getTriangleCount(PolyDetail level) {
-        Tree tree = tree_renderer.getTrees().get(tree_supply.getTreeType());
-        return switch (level) {
-            case HIGH_POLY ->
-                tree.trunk().getSprite(0).getTriangleCount() + tree.crown().getSprite(0).getTriangleCount();
-            case LOW_POLY -> 0;
-        };
-    }
-
-    @Override
-    public float getEyeDistanceSquared() {
-        CameraState camera = tree_renderer.getCamera();
-        assert camera != null;
-        return RenderTools.getEyeDistanceSquared(tree_supply, camera.getCurrentX(), camera.getCurrentY(), camera
-                .getCurrentZ());
-    }
+record TreeRenderState(
+                       TreeSupply tree,
+                       Matrix4f matrix,
+                       BoundingBox visualBounds
+) {
 }

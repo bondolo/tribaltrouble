@@ -28,7 +28,8 @@ public record SpriteGeometry(
 
     public static SpriteGeometry load(URL url) {
         Object[] spritesAndAnimations = Utils.loadObject(Object[].class, url);
-        SpriteInfo[] spriteInfos = (SpriteInfo[]) spritesAndAnimations[0];
+        SpriteInfo spriteInfo = spritesAndAnimations[0] instanceof SpriteInfo[] arr ? arr[0]
+                : (SpriteInfo) spritesAndAnimations[0];
         AnimationInfo[] animationInfos = (AnimationInfo[]) spritesAndAnimations[1];
 
         BoundingBox[] bounds = Stream.generate(BoundingBox::new)
@@ -39,9 +40,7 @@ public record SpriteGeometry(
                 .map(AnimationInfo::getType)
                 .toArray(AnimationInfo.AnimationType[]::new);
 
-        for (SpriteInfo spriteInfo : spriteInfos) {
-            calculateBounds(spriteInfo, animationInfos, bounds);
-        }
+        calculateBounds(spriteInfo, animationInfos, bounds);
 
         for (BoundingBox bound : bounds) {
             bound.maximizeXYPlane();
@@ -100,7 +99,7 @@ public record SpriteGeometry(
                         resultY += temp.y * weight;
                         resultZ += temp.z * weight;
                     }
-                    boundingBox.checkBounds(resultX, resultX, resultY, resultY, resultZ, resultZ);
+                    boundingBox.expandBounds(resultX, resultX, resultY, resultY, resultZ, resultZ);
                 }
             }
         }

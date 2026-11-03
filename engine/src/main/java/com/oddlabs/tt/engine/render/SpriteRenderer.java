@@ -1,144 +1,73 @@
 package com.oddlabs.tt.engine.render;
 
-import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Manages the geometry and textures for a single sprite type.
  */
 public final class SpriteRenderer {
     private final SpriteList sprite_list;
-    private final List<ModelState<?>>[] render_lists;
-    private final List<ModelState<?>>[] respond_render_lists;
-    private final Texture[] textures;
-    private final @Nullable Texture[] team_textures;
-    private final @Nullable Texture[] bump_textures;
-    private final List<ModelState<?>> no_detail_render_list = new ArrayList<>();
+    private final List<ModelState<?>> render_list = new ArrayList<>();
+    private final List<ModelState<?>> respond_render_list = new ArrayList<>();
+    private final Texture texture;
+    private final @Nullable Texture team_texture;
+    private final @Nullable Texture bump_texture;
     private final InstancedSpriteRenderer instancedSpriteRenderer;
     private final Matrix4f tempMatrix = new Matrix4f();
+    private final InstancedSpriteRenderer.RenderBatch opaqueBatch;
+    private final InstancedSpriteRenderer.RenderBatch respondBatch;
 
-    @SuppressWarnings("unchecked")
     SpriteRenderer(SpriteList sprite_list, int tex_index,
             InstancedSpriteRenderer instancedSpriteRenderer) {
         this.sprite_list = sprite_list;
         this.instancedSpriteRenderer = instancedSpriteRenderer;
 
-        int numSprites = sprite_list.getNumSprites();
-        this.textures = new Texture[numSprites];
-        this.team_textures = new Texture[numSprites];
-        this.bump_textures = new Texture[numSprites];
-
-        for (int i = 0; i < numSprites; i++) {
-            Sprite sprite = sprite_list.getSprite(i);
-            textures[i] = sprite.textures[tex_index][Sprite.TEXTURE_NORMAL];
-            team_textures[i] = sprite.textures[tex_index][Sprite.TEXTURE_TEAM];
-            if (sprite.hasBumpMap(tex_index)) {
-                bump_textures[i] = sprite.textures[tex_index][Sprite.TEXTURE_BUMP];
-            }
-        }
-
-        this.render_lists = (List<ModelState<?>>[]) new ArrayList<?>[numSprites];
-        this.respond_render_lists = (List<ModelState<?>>[]) new ArrayList[numSprites];
-        for (int i = 0; i < numSprites; i++) {
-            render_lists[i] = new ArrayList<>();
-            respond_render_lists[i] = new ArrayList<>();
-        }
+        Sprite sprite = sprite_list.getSprite();
+        this.texture = sprite.textures[tex_index][Sprite.TEXTURE_NORMAL];
+        this.team_texture = sprite.textures[tex_index][Sprite.TEXTURE_TEAM];
+        this.bump_texture = sprite.hasBumpMap(tex_index)
+                ? sprite.textures[tex_index][Sprite.TEXTURE_BUMP]
+                : null;
+        boolean modulate = sprite.modulateColor();
+        this.opaqueBatch = instancedSpriteRenderer.getBatch(sprite_list, texture, team_texture, bump_texture, false,
+                modulate, !modulate, true);
+        this.respondBatch = instancedSpriteRenderer.getBatch(sprite_list, texture, team_texture, bump_texture, true,
+                true, false, true);
     }
 
-    @SuppressWarnings("unchecked")
     SpriteRenderer(SpriteList sprite_list, Texture texture,
             InstancedSpriteRenderer instancedSpriteRenderer) {
         this.sprite_list = sprite_list;
         this.instancedSpriteRenderer = instancedSpriteRenderer;
-
-        int numSprites = sprite_list.getNumSprites();
-        this.textures = new Texture[numSprites];
-        Arrays.fill(textures, texture);
-        this.team_textures = new Texture[numSprites];
-        this.bump_textures = new Texture[numSprites];
-
-        this.render_lists = (List<ModelState<?>>[]) new ArrayList<?>[numSprites];
-        this.respond_render_lists = (List<ModelState<?>>[]) new ArrayList[numSprites];
-        for (int i = 0; i < numSprites; i++) {
-            render_lists[i] = new ArrayList<>();
-            respond_render_lists[i] = new ArrayList<>();
-        }
+        this.texture = texture;
+        this.team_texture = null;
+        this.bump_texture = null;
+        boolean modulate = sprite_list.getSprite().modulateColor();
+        this.opaqueBatch = instancedSpriteRenderer.getBatch(sprite_list, texture, team_texture, bump_texture, false,
+                modulate, !modulate, true);
+        this.respondBatch = instancedSpriteRenderer.getBatch(sprite_list, texture, team_texture, bump_texture, true,
+                true, false, true);
     }
 
     public SpriteList getSpriteList() {
         return sprite_list;
     }
 
-    void addToNoDetailList(ModelState<?> model) {
-        no_detail_render_list.add(model);
-    }
-
-    public void addToRenderList(PolyDetail detail, ModelState<?> model, boolean respond) {
-        int index = detail.ordinal();
-        index = Math.min(sprite_list.getNumSprites() - 1, index);
+    public void addToRenderList(ModelState<?> model, boolean respond) {
         if (respond) {
-            respond_render_lists[index].add(model);
+            respond_render_list.add(model);
         } else {
-            render_lists[index].add(model);
-        }
-    }
-
-    int getTriangleCount(PolyDetail detail) {
-        int index = detail.ordinal();
-        index = Math.min(sprite_list.getNumSprites() - 1, index);
-        return sprite_list.getSprite(index).getTriangleCount();
-    }
-
-    private void clearRenderLists() {
-        no_detail_render_list.clear();
-    }
-
-    public void getAllPicks(Consumer<Target> picks) {
-        for (int i = 0; i < sprite_list.getNumSprites(); i++) {
-            pickFromList(render_lists[i], picks);
-            render_lists[i].clear();
-            pickFromList(respond_render_lists[i], picks);
-            respond_render_lists[i].clear();
-        }
-        int noDetailCount = no_detail_render_list.size();
-        for (int i = 0; i < noDetailCount; i++) {
-            picks.accept((Target) no_detail_render_list.get(i).getModel());
-        }
-        clearRenderLists();
-    }
-
-    private void pickFromList(List<@Nullable ModelState<?>> render_list, Consumer<
-            Target> picks) {
-        for (int i = 0; i < render_list.size(); i++) {
-            ModelState<?> model = render_list.get(i);
-            render_list.set(i, null);
-            if (model.getModel() instanceof Target target) {
-                picks.accept(target);
-            }
+            render_list.add(model);
         }
     }
 
     void renderAll() {
-        for (int i = 0; i < sprite_list.getNumSprites(); i++) {
-            renderAll(i, textures[i], team_textures[i], bump_textures[i]);
-        }
-    }
-
-    private void renderAll(int index, Texture texture, @Nullable Texture teamTexture,
-            @Nullable Texture bumpTexture) {
-        List<ModelState<?>> render_list = render_lists[index];
-        boolean modulate = sprite_list.getSprite(index).modulateColor();
-
         if (!render_list.isEmpty()) {
-            var batch = instancedSpriteRenderer.getBatch(sprite_list, texture, teamTexture, bumpTexture, false,
-                    modulate, !modulate, true);
             boolean skeletal = sprite_list.isSkeletal();
             for (ModelState<?> modelState : render_list) {
                 if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
@@ -148,7 +77,7 @@ public final class SpriteRenderer {
                         ? instancedSpriteRenderer.getOrEvaluateBoneOffset(sprite_list, modelState.getAnimation(),
                                 modelState.getAnimationTicks())
                         : -1;
-                batch.addInstance(index, boneBaseOffset, modelState.getTransform(tempMatrix),
+                opaqueBatch.addInstance(boneBaseOffset, modelState.getTransform(tempMatrix),
                         modelState.getColorR(), modelState.getColorG(), modelState.getColorB(), modelState.getColorA(),
                         modelState.getTeamColorR(), modelState.getTeamColorG(), modelState.getTeamColorB(), modelState
                                 .getTeamColorA());
@@ -156,12 +85,9 @@ public final class SpriteRenderer {
             render_list.clear();
         }
 
-        render_list = respond_render_lists[index];
-        if (!render_list.isEmpty()) {
-            var batch = instancedSpriteRenderer.getBatch(sprite_list, texture, teamTexture, bumpTexture, true, true,
-                    false, true);
+        if (!respond_render_list.isEmpty()) {
             boolean skeletal = sprite_list.isSkeletal();
-            for (ModelState<?> model : render_list) {
+            for (ModelState<?> model : respond_render_list) {
                 if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
                     RenderTools.draw(model.getModel());
                 }
@@ -169,45 +95,19 @@ public final class SpriteRenderer {
                         ? instancedSpriteRenderer.getOrEvaluateBoneOffset(sprite_list, model.getAnimation(),
                                 model.getAnimationTicks())
                         : -1;
-                batch.addInstance(index, boneBaseOffset, model.getTransform(tempMatrix),
+                respondBatch.addInstance(boneBaseOffset, model.getTransform(tempMatrix),
                         1f, 1f, 1f, 1f,
                         model.getTeamColorR(), model.getTeamColorG(), model.getTeamColorB(), model.getTeamColorA());
             }
-            render_list.clear();
+            respond_render_list.clear();
         }
     }
 
-    void renderNoDetail() {
-        if (DebugFlags.draw_misc && !no_detail_render_list.isEmpty()) {
-            SpriteList quadList = SpriteList.getQuadInstance();
-            var batch = instancedSpriteRenderer.getBatch(quadList, instancedSpriteRenderer.getWhiteTexture(), null,
-                    null, false, true, false, false);
-            int size = no_detail_render_list.size();
-            for (int i = 0; i < size; i++) {
-                ModelState<?> model = no_detail_render_list.get(i);
-                if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
-                    RenderTools.draw(model.getModel());
-                }
-                float x = model.getModel().getPositionX();
-                float y = model.getModel().getPositionY();
-                float z = model.getModel().getPositionZ();
-                float r = model.getNoDetailSize();
-                tempMatrix.identity().translation(x, y, z + 0.1f).scale(r * 2);
-                // Quads don't have animation, so pass -1
-                // Disable depth test for no-detail sprites (overlays). Enable blend. No Depth Write.
-                batch.addInstance(0, -1, tempMatrix,
-                        model.getTeamColorR(), model.getTeamColorG(), model.getTeamColorB(), model.getTeamColorA(),
-                        0f, 0f, 0f, 0f);
-            }
-        }
-        clearRenderLists();
-    }
-
-    public void addInstance(int spriteIndex, int animation, float animTicks,
+    public void addInstance(int animation, float animTicks,
             boolean respond, boolean blend, boolean depthWrite, boolean depthTest,
             Matrix4f modelMatrix, Color color, Color decalColor) {
-        instancedSpriteRenderer.add(sprite_list, spriteIndex, animation, animTicks,
-                textures[spriteIndex], team_textures[spriteIndex], bump_textures[spriteIndex],
+        instancedSpriteRenderer.add(sprite_list, animation, animTicks,
+                texture, team_texture, bump_texture,
                 respond, blend, depthWrite, depthTest, modelMatrix, color, decalColor);
     }
 }

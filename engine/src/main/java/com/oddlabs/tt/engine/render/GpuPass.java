@@ -4,8 +4,7 @@ package com.oddlabs.tt.engine.render;
 public enum GpuPass {
     LANDSCAPE,
     SHADOWS,
-    UNITS,
-    TREES,
+    SPRITES,
     PLANTS,
     WATER,
     SKY,

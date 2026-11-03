@@ -133,14 +133,14 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         return boneBaseOffset;
     }
 
-    public void add(SpriteList spriteList, int spriteIndex, int animation, float animTicks,
+    public void add(SpriteList spriteList, int animation, float animTicks,
             Texture texture, @Nullable Texture teamTexture, @Nullable Texture bumpTexture,
             boolean respond, boolean blend, boolean depthWrite, boolean depthTest, Matrix4fc modelMatrix,
             Color color, Color decalColor) {
         int boneBaseOffset = getOrEvaluateBoneOffset(spriteList, animation, animTicks);
         RenderBatch batch = getBatch(spriteList, texture, teamTexture, bumpTexture, respond, blend, depthWrite,
                 depthTest);
-        batch.addInstance(spriteIndex, boneBaseOffset, modelMatrix, color, decalColor);
+        batch.addInstance(boneBaseOffset, modelMatrix, color, decalColor);
     }
 
     public void renderAll(RenderContext context, CameraState cameraState) {
@@ -210,13 +210,12 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
     /** Manages grouped instance buffer data and draw call submission for identical batch keys. */
     public static final class RenderBatch implements AutoCloseable {
         private final BatchKey key;
-        private final @Nullable InstanceGroup[] groups;
+        private @Nullable InstanceGroup group;
 
         // mat4 (16) + color (4) + decalColor (4) + boneBaseOffset (1)
         private static final int FLOATS_PER_INSTANCE = 16 + 4 + 4 + 1;
 
         private static class InstanceGroup implements AutoCloseable {
-            private final int spriteIndex;
             private final SpriteList spriteList;
             private FloatVBO vbo;
             private final VertexArray vao;
@@ -224,8 +223,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             private int count = 0;
             private int capacity = 32;
 
-            InstanceGroup(int spriteIndex, BatchKey key, int floatsPerInstance) {
-                this.spriteIndex = spriteIndex;
+            InstanceGroup(BatchKey key, int floatsPerInstance) {
                 this.spriteList = key.spriteList;
                 this.buffer = BufferUtils.createFloatBuffer(capacity * floatsPerInstance);
                 this.vbo = new FloatVBO(GL15.GL_STREAM_DRAW, capacity * floatsPerInstance);
@@ -243,18 +241,17 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 // Position (Location 0)
                 positionsVBO.bind();
                 GL20.glEnableVertexAttribArray(0);
-                Sprite sprite = spriteList.getSprite(spriteIndex);
-                GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 0, (long) sprite.vertices_offset * Float.BYTES);
+                GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 0, 0L);
 
                 // Normal (Location 1)
                 normalsVBO.bind();
                 GL20.glEnableVertexAttribArray(1);
-                GL20.glVertexAttribPointer(1, 3, GL11.GL_FLOAT, false, 0, (long) sprite.normals_offset * Float.BYTES);
+                GL20.glVertexAttribPointer(1, 3, GL11.GL_FLOAT, false, 0, 0L);
 
                 // TexCoord (Location 2)
                 texCoordVBO.bind();
                 GL20.glEnableVertexAttribArray(2);
-                GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT, false, 0, (long) sprite.texcoords_offset * Float.BYTES);
+                GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT, false, 0, 0L);
 
                 // If skeletal: Bone Indices (Location 3) and Bone Weights (Location 11)
                 if (spriteList.isSkeletal()) {
@@ -264,13 +261,12 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                     if (boneIndicesVBO != null) {
                         boneIndicesVBO.bind();
                         GL20.glEnableVertexAttribArray(3);
-                        GL30.glVertexAttribIPointer(3, 4, GL11.GL_UNSIGNED_BYTE, 0, sprite.bone_indices_offset);
+                        GL30.glVertexAttribIPointer(3, 4, GL11.GL_UNSIGNED_BYTE, 0, 0L);
                     }
                     if (boneWeightsVBO != null) {
                         boneWeightsVBO.bind();
                         GL20.glEnableVertexAttribArray(11);
-                        GL20.glVertexAttribPointer(11, 4, GL11.GL_FLOAT, false, 0,
-                                (long) sprite.bone_weights_offset * Float.BYTES);
+                        GL20.glVertexAttribPointer(11, 4, GL11.GL_FLOAT, false, 0, 0L);
                     }
                 }
 
@@ -362,10 +358,10 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
             void draw(RenderContext context) {
                 vao.bind();
-                Sprite sprite = spriteList.getSprite(spriteIndex);
+                Sprite sprite = spriteList.getSprite();
                 context.setCullMode(sprite.culled ? CullMode.BACK : CullMode.NONE);
                 GL31.glDrawElementsInstanced(GL11.GL_TRIANGLES, sprite.getTriangleCount() * 3, GL11.GL_UNSIGNED_SHORT,
-                        (long) sprite.indices_offset * Short.BYTES, count);
+                        0L, count);
             }
 
             void clear() {
@@ -408,77 +404,56 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
         private RenderBatch(BatchKey key) {
             this.key = key;
-            this.groups = new InstanceGroup[key.spriteList.getNumSprites()];
         }
 
-        public void addInstance(int spriteIndex, int boneBaseOffset, Matrix4fc modelMatrix, Color color,
+        public void addInstance(int boneBaseOffset, Matrix4fc modelMatrix, Color color,
                 Color decalColor) {
-            InstanceGroup group = groups[spriteIndex];
             if (group == null) {
-                group = new InstanceGroup(spriteIndex, key, FLOATS_PER_INSTANCE);
-                groups[spriteIndex] = group;
+                group = new InstanceGroup(key, FLOATS_PER_INSTANCE);
             }
             group.add(boneBaseOffset, modelMatrix, color, decalColor);
         }
 
-        public void addInstance(int spriteIndex, int boneBaseOffset, Matrix4fc modelMatrix,
+        public void addInstance(int boneBaseOffset, Matrix4fc modelMatrix,
                 float r, float g, float b, float a,
                 float dr, float dg, float db, float da) {
-            InstanceGroup group = groups[spriteIndex];
             if (group == null) {
-                group = new InstanceGroup(spriteIndex, key, FLOATS_PER_INSTANCE);
-                groups[spriteIndex] = group;
+                group = new InstanceGroup(key, FLOATS_PER_INSTANCE);
             }
             group.add(boneBaseOffset, modelMatrix, r, g, b, a, dr, dg, db, da);
         }
 
-        public void addInstance(int spriteIndex, Matrix4fc modelMatrix, Color color, Color decalColor) {
-            addInstance(spriteIndex, -1, modelMatrix, color, decalColor);
+        public void addInstance(Matrix4fc modelMatrix, Color color, Color decalColor) {
+            addInstance(-1, modelMatrix, color, decalColor);
         }
 
         boolean hasInstances() {
-            for (InstanceGroup group : groups) {
-                if (group != null && group.count > 0) {
-                    return true;
-                }
-            }
-            return false;
+            return group != null && group.count > 0;
         }
 
         void render(RenderContext context, InstancedSpriteShader shader, Texture whiteTexture,
                 Texture respondTexture) {
-            InstanceGroup representativeGroup = null;
-            for (InstanceGroup group : groups) {
-                if (group != null && group.count > 0) {
-                    representativeGroup = group;
-                    break;
-                }
-            }
-            if (representativeGroup == null) return;
+            if (group == null || group.count == 0) return;
 
             SpriteList spriteList = key.spriteList;
-            Sprite representativeSprite = spriteList.getSprite(representativeGroup.spriteIndex);
-            setupTextures(context, shader, representativeSprite, whiteTexture, respondTexture);
+            Sprite sprite = spriteList.getSprite();
+            setupTextures(context, shader, sprite, whiteTexture, respondTexture);
 
-            for (InstanceGroup group : groups) {
-                if (group != null && group.count > 0) {
-                    group.upload(context);
-                }
-            }
+            group.upload(context);
 
             if (key.respond) {
                 try (var _ = context.withColorMask(false, false, false, false); var _ = context.withDepthMode(
                         DepthMode.READ_WRITE); var _ = context.withDepthFunc(GL11.GL_LEQUAL); var _ = context
                                 .withBlendMode(BlendMode.NONE); var _ = context.withSampleAlphaToCoverage(false); var _
                                         = context.withDrawBuffers(false)) {
-                    drawAll(context);
+                    group.draw(context);
                 }
 
                 try (var _ = context.withColorMask(true, true, true, true); var _ = context.withDepthMode(
                         DepthMode.READ_ONLY); var _ = context.withDepthFunc(GL11.GL_EQUAL); var _ = context
                                 .withBlendMode(BlendMode.ALPHA); var _ = context.withSampleAlphaToCoverage(false); var _
                                         = context.withDrawBuffers(true)) {
-                    drawAll(context);
+                    group.draw(context);
                 }
             } else {
                 context.setDepthMode(key.depthTest ? key.depthWrite ? DepthMode.READ_WRITE : DepthMode.READ_ONLY
@@ -487,20 +462,12 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 if (key.blend) {
                     context.setBlendMode(BlendMode.ALPHA);
                     context.setSampleAlphaToCoverage(false);
-                    drawAll(context);
+                    group.draw(context);
                 } else {
                     context.setBlendMode(BlendMode.NONE);
                     try (var _ = context.withSampleAlphaToCoverage(true)) {
-                        drawAll(context);
+                        group.draw(context);
                     }
-                }
-            }
-        }
-
-        private void drawAll(RenderContext context) {
-            for (InstanceGroup group : groups) {
-                if (group != null && group.count > 0) {
-                    group.draw(context);
                 }
             }
         }
@@ -542,20 +509,16 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         }
 
         void clear() {
-            for (InstanceGroup group : groups) {
-                if (group != null) {
-                    group.clear();
-                }
+            if (group != null) {
+                group.clear();
             }
         }
 
         @Override
         public void close() {
-            for (int i = 0; i < groups.length; i++) {
-                if (groups[i] != null) {
-                    groups[i].close();
-                    groups[i] = null;
-                }
+            if (group != null) {
+                group.close();
+                group = null;
             }
         }
     }

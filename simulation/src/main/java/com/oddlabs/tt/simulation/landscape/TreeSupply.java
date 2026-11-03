@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.landscape;
 
-import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.model.Distributable;
 import com.oddlabs.tt.simulation.model.Supply;
 import com.oddlabs.tt.simulation.model.SupplyType;
@@ -9,7 +8,6 @@ import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.model.Target;
 import org.joml.Matrix4f;
-import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -45,38 +43,17 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         this.size = size;
         this.tree_type = tree_type;
         this.matrix = matrix;
-        checkBoundsX(x - size);
-        checkBoundsX(x + size);
-        checkBoundsY(y - size);
-        checkBoundsY(y + size);
-        checkBoundsZ(matrix.m32());
-        checkBoundsZ(matrix.m32() + 15f);
+        float canopy = tree_type.canopyRadius();
+        expandBoundsX(x - canopy);
+        expandBoundsX(x + canopy);
+        expandBoundsY(y - canopy);
+        expandBoundsY(y + canopy);
+        float z = matrix.m32();
+        expandBoundsZ(z);
+        expandBoundsZ(z + tree_type.nominalHeight());
         if (world.getUnitGrid().getOccupant(grid_x, grid_y) == null)
             occupyTree();
         world.getSupplyManager(getSupplyType()).newSupply();
-    }
-
-    public void updateBounds(BoundingBox modelBounds) {
-        resetBounds();
-        Vector4f src = new Vector4f();
-        Vector4f dest = new Vector4f();
-        float[] corners = new float[]{
-                modelBounds.bmin_x, modelBounds.bmin_y, modelBounds.bmin_z,
-                modelBounds.bmax_x, modelBounds.bmin_y, modelBounds.bmin_z,
-                modelBounds.bmax_x, modelBounds.bmax_y, modelBounds.bmin_z,
-                modelBounds.bmin_x, modelBounds.bmax_y, modelBounds.bmin_z,
-                modelBounds.bmin_x, modelBounds.bmin_y, modelBounds.bmax_z,
-                modelBounds.bmax_x, modelBounds.bmin_y, modelBounds.bmax_z,
-                modelBounds.bmax_x, modelBounds.bmax_y, modelBounds.bmax_z,
-                modelBounds.bmin_x, modelBounds.bmax_y, modelBounds.bmax_z
-        };
-        for (int i = 0; i < corners.length; i += 3) {
-            src.set(corners[i], corners[i + 1], corners[i + 2], 1f);
-            matrix.transform(src, dest);
-            checkBoundsX(dest.x);
-            checkBoundsY(dest.y);
-            checkBoundsZ(dest.z);
-        }
     }
 
     @Override

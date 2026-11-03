@@ -12,7 +12,6 @@ import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.client.delegate.FormFactory;
 import com.oddlabs.tt.client.render.FullSceneRenderer;
 import com.oddlabs.tt.client.render.Picker;
-import com.oddlabs.tt.engine.settings.GraphicsSettings;
 import com.oddlabs.tt.client.viewer.Selection;
 import com.oddlabs.tt.client.settings.OptionsMenu;
 import com.oddlabs.tt.client.match.ProgressForm;
@@ -24,7 +23,6 @@ import com.oddlabs.tt.client.screen.DefaultScreen;
 import com.oddlabs.tt.client.screen.Screen;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.client.resource.LandscapeAssetsLoader;
-import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
@@ -335,8 +333,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 () -> World.newWorld(null, null,
                         new NotificationListener() {
                         }, world_params, world_info.landscape(), players,
-                        AccessibilitySettings.from(peer.getSettings()).linear_player_colours,
-                        RenderConfig.INSERT_PLANTS[GraphicsSettings.from(peer.getSettings()).graphic_detail]));
+                        AccessibilitySettings.from(peer.getSettings()).linear_player_colours));
         AnimationManager menuAnimationManager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, menuAnimationManager);
         Player local_player = world.getPlayers().getFirst();
