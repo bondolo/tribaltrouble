@@ -4,6 +4,9 @@ package com.oddlabs.tt.simulation.landscape;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Base class for hierarchical terrain patch spatial bounds in the quadtree.
+ */
 public abstract sealed class AbstractPatchGroup extends BoundingBox permits PatchGroup, LandscapeLeaf {
     private final @Nullable AbstractPatchGroup parent;
 

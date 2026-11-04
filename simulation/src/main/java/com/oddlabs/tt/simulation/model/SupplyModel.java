@@ -8,7 +8,7 @@ import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 
 /**
- * Abstract base class for non-tree harvestable resources in the world such as rocks and iron.
+ * Base class for non-tree harvestable resources in the world such as rocks and iron.
  */
 public abstract sealed class SupplyModel extends Model implements Supply, Target permits IronSupply,
         RubberSupply, RockSupply {

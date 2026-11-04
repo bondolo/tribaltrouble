@@ -6,7 +6,7 @@ import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.geom.BoundsProvider;
 
 /**
- * A render queue key identifying a sprite list, holding local bounds and animation types.
+ * Render queue key identifying a sprite list, holding local bounds and animation types.
  */
 public record SpriteKey(
                         int key,

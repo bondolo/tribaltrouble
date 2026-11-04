@@ -2,6 +2,9 @@ package com.oddlabs.tt.simulation.landscape;
 
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Interior quadtree node grouping four child terrain patch regions.
+ */
 public final class PatchGroup extends AbstractPatchGroup {
     /*
      * child[2] | child[3]

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Abstract base class for spatial partition tree nodes in the world entity grid.
+ * Base class for spatial partition tree nodes in the world entity grid.
  */
 public abstract sealed class AbstractElementNode<T extends Element<T>> extends BoundingBox permits ElementNode,
         ElementLeaf {

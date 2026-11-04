@@ -10,7 +10,7 @@ import com.oddlabs.tt.base.event.StateChecksum;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A world entity that represents static or ambient environment detail (scenery).
+ * World entity that represents static or ambient environment detail (scenery).
  * Decoupled from rendering-bound keys; stores its bounding box array directly.
  */
 public abstract sealed class SceneryModel extends Model implements Occupant, ModelToolTip, Animated

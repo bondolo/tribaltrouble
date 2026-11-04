@@ -6,7 +6,7 @@ import com.oddlabs.tt.simulation.model.weapon.WeaponFactory;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A template defining the base characteristics and assets for a unit type.
+ * Template defining the base characteristics and assets for a unit type.
  */
 public final class UnitTemplate extends Template {
     private final float meters_per_second;

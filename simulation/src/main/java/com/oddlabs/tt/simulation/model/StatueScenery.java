@@ -5,7 +5,7 @@ import com.oddlabs.tt.simulation.landscape.World;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A world entity that represents a decorative statue or treasure scenery item.
+ * World entity that represents a decorative statue or treasure scenery item.
  */
 public final class StatueScenery extends SceneryModel {
     private final int treasureIndex;

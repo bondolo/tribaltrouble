@@ -5,7 +5,7 @@ import com.oddlabs.tt.simulation.landscape.World;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A world entity that represents a captive unit scenery item.
+ * World entity that represents a captive unit scenery item.
  */
 public final class CaptiveScenery extends SceneryModel {
     private final Race race;
