@@ -71,6 +71,8 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
         public static final Color.Linear GREEN = new Linear(Standard.GREEN);
         public static final Color.Linear BLUE = new Linear(Standard.BLUE);
         public static final Color.Linear YELLOW = new Linear(Standard.YELLOW);
+        public static final Color.Linear CYAN = new Linear(Standard.CYAN);
+        public static final Color.Linear MAGENTA = new Linear(Standard.MAGENTA);
         public static final Color.Linear TRANSPARENT = new Linear(Standard.TRANSPARENT);
 
         public Linear(Color color) {

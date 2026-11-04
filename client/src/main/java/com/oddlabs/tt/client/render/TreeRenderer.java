@@ -226,11 +226,14 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
         }
 
         if (!DebugFlags.draw_trees || (cheat != null && !cheat.draw_trees)) {
+            debugRender();
             // Just clear lists if not drawing
             clearLists();
             lastRenderedTreeCount = 0;
             return;
         }
+
+        debugRender();
 
         int count = 0;
         for (var entry : getRenderLists().entrySet()) {
@@ -308,17 +311,16 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
         render_list.clear();
     }
 
-    void debugRender(EnumMap<AbstractTreeGroup.TreeType, List<TreeSupply>> render_lists, EnumMap<
-            AbstractTreeGroup.TreeType, List<TreeSupply>> respond_render_lists) {
-        if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
-            for (List<TreeSupply> list : render_lists.values()) {
+    void debugRender() {
+        if (DebugFlags.isBoundsEnabled(BoundingMode.TREES)) {
+            for (List<TreeSupply> list : getRenderLists().values()) {
                 for (TreeSupply tree : list) {
-                    RenderTools.draw(getOrCreateState(tree).visualBounds());
+                    RenderTools.draw(getOrCreateState(tree).visualBounds(), BoundingMode.TREES, Color.Linear.GREEN);
                 }
             }
-            for (List<TreeSupply> list : respond_render_lists.values()) {
+            for (List<TreeSupply> list : getRespondRenderLists().values()) {
                 for (TreeSupply tree : list) {
-                    RenderTools.draw(getOrCreateState(tree).visualBounds());
+                    RenderTools.draw(getOrCreateState(tree).visualBounds(), BoundingMode.TREES, Color.Linear.GREEN);
                 }
             }
         }

@@ -16,6 +16,7 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
+import com.oddlabs.util.Color;
 import org.joml.Matrix4fc;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -102,8 +103,7 @@ public final class LightningRenderer implements AutoCloseable {
             if (DebugFlags.draw_particles) {
                 for (int i = 0; i < activeLightnings.size(); i++) {
                     Lightning emitter = activeLightnings.get(i);
-                    if (state.inNoDetailMode()
-                            || emitter.getBounds().testFrustum(state.getFrustum())) {
+                    if (state.inNoDetailMode() || emitter.getBounds().testFrustum(state.getFrustum())) {
                         renderInternal(context, render_queues, emitter);
                     }
                 }
@@ -183,10 +183,10 @@ public final class LightningRenderer implements AutoCloseable {
         vbo_offset += count;
     }
 
-    public void debugRender(Queue<Lightning> emitter_queue) {
+    public void debugRender() {
         if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
-            for (Lightning emitter : emitter_queue) {
-                RenderTools.draw(emitter.getBounds(), 1f, 1f, 1f);
+            for (Lightning emitter : activeLightnings) {
+                RenderTools.draw(emitter.getBounds(), BoundingMode.PLAYERS, Color.Linear.WHITE);
             }
         }
     }

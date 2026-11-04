@@ -48,7 +48,7 @@ public final class PathfinderDebugRenderer {
             float next_x = prev_x + HeightMap.METERS_PER_UNIT_GRID * node.direction().directionX();
             float next_y = prev_y + HeightMap.METERS_PER_UNIT_GRID * node.direction().directionY();
             float z = heightmap.getNearestHeight(next_x, next_y) + PATH_OFFSET;
-            DebugRender.drawLine(prev_x, prev_y, prev_z, next_x, next_y, z, 1f, 0f, 0f);
+            DebugRender.drawLine(prev_x, prev_y, prev_z, next_x, next_y, z, Color.Linear.RED);
             prev_x = next_x;
             prev_y = next_y;
             prev_z = z;
@@ -62,7 +62,7 @@ public final class PathfinderDebugRenderer {
             float y = UnitGrid.coordinateFromGrid(region_node.region().getGridY());
             float z = heightmap.getNearestHeight(x, y) + PATH_OFFSET;
             if (!first) {
-                DebugRender.drawLine(prev_x, prev_y, prev_z, x, y, z, 0f, 0f, 1f);
+                DebugRender.drawLine(prev_x, prev_y, prev_z, x, y, z, Color.Linear.BLUE);
             }
             prev_x = x;
             prev_y = y;
@@ -86,7 +86,7 @@ public final class PathfinderDebugRenderer {
             float y = samplePoint[1];
             float z = heightmap.getHeight(x, y) + 0.5f;
             if (!first) {
-                DebugRender.drawLine(prev_x, prev_y, prev_z, x, y, z, 1f, 1f, 1f);
+                DebugRender.drawLine(prev_x, prev_y, prev_z, x, y, z, Color.Linear.WHITE);
             }
             prev_x = x;
             prev_y = y;
@@ -117,8 +117,8 @@ public final class PathfinderDebugRenderer {
                     float yf = (gy + .5f) * s;
                     float z = heightmap.getNearestHeight(xf, yf) + OFFSET;
                     Color.Linear c = Color.Linear.YELLOW;
-                    DebugRender.drawLine(xf - HALF, yf - HALF, z, xf + HALF, yf + HALF, z, c.r(), c.g(), c.b());
-                    DebugRender.drawLine(xf + HALF, yf - HALF, z, xf - HALF, yf + HALF, z, c.r(), c.g(), c.b());
+                    DebugRender.drawLine(xf - HALF, yf - HALF, z, xf + HALF, yf + HALF, z, c);
+                    DebugRender.drawLine(xf + HALF, yf - HALF, z, xf - HALF, yf + HALF, z, c);
                 }
             }
         }
@@ -145,13 +145,12 @@ public final class PathfinderDebugRenderer {
                 float zf = heightmap.getNearestHeight(xf, yf) + 2f;
                 @Nullable Region region = unitGrid.getRegion(gx, gy);
                 if (region == null) {
-                    DebugRender.drawPoint(xf, yf, zf, 3f,
-                            Color.Linear.RED.r(), Color.Linear.RED.g(), Color.Linear.RED.b());
+                    DebugRender.drawPoint(xf, yf, zf, 3f, Color.Linear.RED);
                 } else {
                     last_region = region;
                     Color c = new Color.Linear(DebugRender.debug_colors[region.hashCode()
                             % DebugRender.debug_colors.length]);
-                    DebugRender.drawPoint(xf, yf, zf, 3f, c.r(), c.g(), c.b());
+                    DebugRender.drawPoint(xf, yf, zf, 3f, c);
                 }
             }
         }
@@ -169,7 +168,7 @@ public final class PathfinderDebugRenderer {
             float x2 = UnitGrid.coordinateFromGrid(neighbour.getGridX());
             float y2 = UnitGrid.coordinateFromGrid(neighbour.getGridY());
             float z2 = heightmap.getNearestHeight(x2, y2) + 2f;
-            DebugRender.drawLine(x1, y1, z1, x2, y2, z2, 1f, 1f, 0f);
+            DebugRender.drawLine(x1, y1, z1, x2, y2, z2, Color.Linear.YELLOW);
             renderRegionConnections(neighbour, heightmap, visited);
         }
     }

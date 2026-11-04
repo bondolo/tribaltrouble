@@ -238,7 +238,7 @@ public final class LandscapeRenderer implements SubSceneRenderer, Animated, Auto
     public void debugRender(CameraState frustum_state) {
         if (DebugFlags.isBoundsEnabled(BoundingMode.LANDSCAPE)) {
             for (LandscapeLeaf patch : render_list) {
-                RenderTools.draw(patch, BoundingMode.LANDSCAPE, 1f, 0f, 0f);
+                RenderTools.draw(patch, BoundingMode.LANDSCAPE, Color.Linear.RED);
             }
         }
     }

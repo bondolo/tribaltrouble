@@ -1,5 +1,6 @@
 package com.oddlabs.tt.engine.util;
 
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.engine.render.shader.DebugShaderRenderer;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4fc;
@@ -97,62 +98,69 @@ public final class DebugRender {
     /**
      * Draws a wireframe box.
      */
-    public static void drawBox(float bmin_x, float bmax_x, float bmin_y, float bmax_y, float bmin_z, float bmax_z,
-            float r, float g, float b) {
-        if (null == shaderRenderer) return;
-
-        // Bottom face
-        drawLine(bmin_x, bmin_y, bmin_z, bmax_x, bmin_y, bmin_z, r, g, b);
-        drawLine(bmax_x, bmin_y, bmin_z, bmax_x, bmax_y, bmin_z, r, g, b);
-        drawLine(bmax_x, bmax_y, bmin_z, bmin_x, bmax_y, bmin_z, r, g, b);
-        drawLine(bmin_x, bmax_y, bmin_z, bmin_x, bmin_y, bmin_z, r, g, b);
-
-        // Top face
-        drawLine(bmin_x, bmin_y, bmax_z, bmax_x, bmin_y, bmax_z, r, g, b);
-        drawLine(bmax_x, bmin_y, bmax_z, bmax_x, bmax_y, bmax_z, r, g, b);
-        drawLine(bmax_x, bmax_y, bmax_z, bmin_x, bmax_y, bmax_z, r, g, b);
-        drawLine(bmin_x, bmax_y, bmax_z, bmin_x, bmin_y, bmax_z, r, g, b);
-
-        // Vertical connectors
-        drawLine(bmin_x, bmin_y, bmin_z, bmin_x, bmin_y, bmax_z, r, g, b);
-        drawLine(bmax_x, bmin_y, bmin_z, bmax_x, bmin_y, bmax_z, r, g, b);
-        drawLine(bmax_x, bmax_y, bmin_z, bmax_x, bmax_y, bmax_z, r, g, b);
-        drawLine(bmin_x, bmax_y, bmin_z, bmin_x, bmax_y, bmax_z, r, g, b);
+    public static void drawBox(BoundingBox box, Color color) {
+        drawBox(box.bmin_x, box.bmax_x, box.bmin_y, box.bmax_y, box.bmin_z, box.bmax_z, color);
     }
 
     /**
-     * Draws a point. Color is assumed to be linear.
+     * Draws a wireframe box.
      */
-    public static void drawPoint(float x, float y, float z, float size, float r, float g, float b) {
+    public static void drawBox(float bmin_x, float bmax_x, float bmin_y, float bmax_y, float bmin_z, float bmax_z,
+            Color color) {
+        if (null == shaderRenderer) return;
+
+        // Bottom face
+        drawLine(bmin_x, bmin_y, bmin_z, bmax_x, bmin_y, bmin_z, color);
+        drawLine(bmax_x, bmin_y, bmin_z, bmax_x, bmax_y, bmin_z, color);
+        drawLine(bmax_x, bmax_y, bmin_z, bmin_x, bmax_y, bmin_z, color);
+        drawLine(bmin_x, bmax_y, bmin_z, bmin_x, bmin_y, bmin_z, color);
+
+        // Top face
+        drawLine(bmin_x, bmin_y, bmax_z, bmax_x, bmin_y, bmax_z, color);
+        drawLine(bmax_x, bmin_y, bmax_z, bmax_x, bmax_y, bmax_z, color);
+        drawLine(bmax_x, bmax_y, bmax_z, bmin_x, bmax_y, bmax_z, color);
+        drawLine(bmin_x, bmax_y, bmax_z, bmin_x, bmin_y, bmax_z, color);
+
+        // Vertical connectors
+        drawLine(bmin_x, bmin_y, bmin_z, bmin_x, bmin_y, bmax_z, color);
+        drawLine(bmax_x, bmin_y, bmin_z, bmax_x, bmin_y, bmax_z, color);
+        drawLine(bmax_x, bmax_y, bmin_z, bmax_x, bmax_y, bmax_z, color);
+        drawLine(bmin_x, bmax_y, bmin_z, bmin_x, bmax_y, bmax_z, color);
+    }
+
+    /**
+     * Draws a point.
+     */
+    public static void drawPoint(float x, float y, float z, float size, Color color) {
         if (null == shaderRenderer) return;
         currentPointSize = size;
 
         pointsBuffer.add(x);
         pointsBuffer.add(y);
         pointsBuffer.add(z);
-        pointsBuffer.add(r);
-        pointsBuffer.add(g);
-        pointsBuffer.add(b);
+        pointsBuffer.add(color.r());
+        pointsBuffer.add(color.g());
+        pointsBuffer.add(color.b());
     }
 
     /**
-     * Draws a line segment. Color is assumed to be linear.
+     * Draws a line segment.
      */
-    public static void drawLine(float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b) {
+    public static void drawLine(float x1, float y1, float z1, float x2, float y2, float z2, Color color) {
         if (null == shaderRenderer) return;
         linesBuffer.add(x1);
         linesBuffer.add(y1);
         linesBuffer.add(z1);
-        linesBuffer.add(r);
-        linesBuffer.add(g);
-        linesBuffer.add(b);
+        linesBuffer.add(color.r());
+        linesBuffer.add(color.g());
+        linesBuffer.add(color.b());
 
         linesBuffer.add(x2);
         linesBuffer.add(y2);
         linesBuffer.add(z2);
-        linesBuffer.add(r);
-        linesBuffer.add(g);
-        linesBuffer.add(b);
+        linesBuffer.add(color.r());
+        linesBuffer.add(color.g());
+        linesBuffer.add(color.b());
     }
 
     /**
@@ -161,34 +169,34 @@ public final class DebugRender {
     public static void drawAxes(float center, float z) {
         if (null == shaderRenderer) return;
         // X axis - red
-        drawLine(center, center, z, center + 10, center, z, AXIS_X_COLOR.r(), AXIS_X_COLOR.g(), AXIS_X_COLOR.b());
+        drawLine(center, center, z, center + 10, center, z, AXIS_X_COLOR);
         // Y axis - green
-        drawLine(center, center, z, center, center + 10, z, AXIS_Y_COLOR.r(), AXIS_Y_COLOR.g(), AXIS_Y_COLOR.b());
+        drawLine(center, center, z, center, center + 10, z, AXIS_Y_COLOR);
         // Z axis - blue
-        drawLine(center, center, z, center, center, z + 10, AXIS_Z_COLOR.r(), AXIS_Z_COLOR.g(), AXIS_Z_COLOR.b());
+        drawLine(center, center, z, center, center, z + 10, AXIS_Z_COLOR);
     }
 
     /**
-     * Draws a wireframe quad. color is assumed to be linear.
+     * Draws a wireframe quad.
      */
     public static void drawQuad(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float z,
-            float r, float g, float b) {
+            Color color) {
         if (null == shaderRenderer) return;
-        drawLine(x1, y1, z, x2, y2, z, r, g, b);
-        drawLine(x2, y2, z, x3, y3, z, r, g, b);
-        drawLine(x3, y3, z, x4, y4, z, r, g, b);
-        drawLine(x4, y4, z, x1, y1, z, r, g, b);
+        drawLine(x1, y1, z, x2, y2, z, color);
+        drawLine(x2, y2, z, x3, y3, z, color);
+        drawLine(x3, y3, z, x4, y4, z, color);
+        drawLine(x4, y4, z, x1, y1, z, color);
     }
 
     /**
-     * Draws a wireframe cylinder composed of multiple circles. color is assumed to be linear.
+     * Draws a wireframe cylinder composed of multiple circles.
      */
     public static void drawCylinder(float origin_x, float origin_y, float origin_z, float radius, int num_circles,
-            float r, float g, float b) {
+            Color color) {
         if (null == shaderRenderer) return;
         float z = 0f;
         for (int i = 0; i < num_circles; i++) {
-            drawCircle(radius, origin_x, origin_y, origin_z + z, r, g, b);
+            drawCircle(radius, origin_x, origin_y, origin_z + z, color);
             z += SUBDIV;
         }
     }
@@ -196,8 +204,7 @@ public final class DebugRender {
     /**
      * Draws a wireframe circle.
      */
-    private static void drawCircle(float radius, float origin_x, float origin_y, float origin_z, float r, float g,
-            float b) {
+    private static void drawCircle(float radius, float origin_x, float origin_y, float origin_z, Color color) {
         if (null == shaderRenderer) return;
         float prevX = radius * (float) Math.cos(0) + origin_x;
         float prevY = radius * (float) Math.sin(0) + origin_y;
@@ -207,18 +214,17 @@ public final class DebugRender {
         for (float phi = ANGLE_DELTA; phi < (float) Math.PI * 2; phi += ANGLE_DELTA) {
             float x = radius * (float) Math.cos(phi) + origin_x;
             float y = radius * (float) Math.sin(phi) + origin_y;
-            drawLine(prevX, prevY, origin_z, x, y, origin_z, r, g, b);
+            drawLine(prevX, prevY, origin_z, x, y, origin_z, color);
             prevX = x;
             prevY = y;
         }
-        drawLine(prevX, prevY, origin_z, startX, startY, origin_z, r, g, b);
+        drawLine(prevX, prevY, origin_z, startX, startY, origin_z, color);
     }
 
     /**
      * Draws a wireframe sphere.
      */
-    public static void drawSphere(float origin_x, float origin_y, float origin_z, float radius, float r, float g,
-            float b) {
+    public static void drawSphere(float origin_x, float origin_y, float origin_z, float radius, Color color) {
         if (null == shaderRenderer) return;
         for (float phi = 0; phi < (float) Math.PI; phi += CIRCLE_DELTA) {
             float prevX = 0, prevY = 0, prevZ = 0;
@@ -236,7 +242,7 @@ public final class DebugRender {
                 float worldZ = z_local + origin_z;
 
                 if (!first) {
-                    drawLine(prevX, prevY, prevZ, worldX, worldY, worldZ, r, g, b);
+                    drawLine(prevX, prevY, prevZ, worldX, worldY, worldZ, color);
                 } else {
                     startX = worldX;
                     startY = worldY;
@@ -248,10 +254,10 @@ public final class DebugRender {
                 prevZ = worldZ;
             }
             if (!first) {
-                drawLine(prevX, prevY, prevZ, startX, startY, startZ, r, g, b);
+                drawLine(prevX, prevY, prevZ, startX, startY, startZ, color);
             }
         }
-        drawCircle(radius, origin_x, origin_y, origin_z, r, g, b);
+        drawCircle(radius, origin_x, origin_y, origin_z, color);
     }
 
     private static class FloatList {

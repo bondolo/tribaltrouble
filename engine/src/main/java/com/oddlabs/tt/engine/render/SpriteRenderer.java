@@ -70,9 +70,7 @@ public final class SpriteRenderer {
         if (!render_list.isEmpty()) {
             boolean skeletal = sprite_list.isSkeletal();
             for (ModelState<?> modelState : render_list) {
-                if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
-                    RenderTools.draw(modelState.getModel());
-                }
+                RenderTools.draw(modelState.getModel());
                 int boneBaseOffset = skeletal
                         ? instancedSpriteRenderer.getOrEvaluateBoneOffset(sprite_list, modelState.getAnimation(),
                                 modelState.getAnimationTicks())
@@ -88,9 +86,7 @@ public final class SpriteRenderer {
         if (!respond_render_list.isEmpty()) {
             boolean skeletal = sprite_list.isSkeletal();
             for (ModelState<?> model : respond_render_list) {
-                if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
-                    RenderTools.draw(model.getModel());
-                }
+                RenderTools.draw(model.getModel());
                 int boneBaseOffset = skeletal
                         ? instancedSpriteRenderer.getOrEvaluateBoneOffset(sprite_list, model.getAnimation(),
                                 model.getAnimationTicks())

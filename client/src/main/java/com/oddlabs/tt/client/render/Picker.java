@@ -22,15 +22,17 @@ import com.oddlabs.tt.simulation.model.ModelToolTip;
 import com.oddlabs.tt.simulation.model.SceneryModel;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.client.gui.GUIIcons;
 import com.oddlabs.tt.simulation.model.Target;
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.gui.ToolTip;
 import com.oddlabs.tt.client.viewer.Selection;
+import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
@@ -93,6 +95,7 @@ public final class Picker implements Updatable<TimerAnimation> {
     private final Vector3f hit_result = new Vector3f();
     private final Vector3f hit_far = new Vector3f();
     private final Vector3f dir_vector = new Vector3f();
+    private final Vector2f nearFar = new Vector2f();
 
     private final List<Target> element_pick_list = new ArrayList<>();
     private final List<TreeSupply> tree_pick_list = new ArrayList<>();
@@ -176,7 +179,7 @@ public final class Picker implements Updatable<TimerAnimation> {
         T nearest_pickable = null;
         float nearest_squared_distance = Float.POSITIVE_INFINITY;
         for (Target pickable : pick_list) {
-            float squared_distance = RenderTools.getCameraDistanceSquared(((BoundingBox) pickable), tmp_camera
+            float squared_distance = RenderTools.getEyeDistanceSquared((BoundingBox) pickable, tmp_camera
                     .getCurrentX(), tmp_camera.getCurrentY(), tmp_camera.getCurrentZ());
             if (filter.isInstance(pickable) && squared_distance < nearest_squared_distance) {
                 nearest_squared_distance = squared_distance;
@@ -357,42 +360,17 @@ public final class Picker implements Updatable<TimerAnimation> {
                 dir_vector.z());
     }
 
-    private static float computeTMax(float bmin, float bmax, float c, float d) {
-        if (d == 0) {
-            return Float.POSITIVE_INFINITY;
-        }
-        float t1 = (bmin - c) / d;
-        float t2 = (bmax - c) / d;
-        return Math.max(t1, t2);
-    }
-
-    private static float computeTMin(float bmin, float bmax, float c, float d) {
-        if (d == 0) {
-            return Float.NEGATIVE_INFINITY;
-        }
-        float t1 = (bmin - c) / d;
-        float t2 = (bmax - c) / d;
-        return Math.min(t1, t2);
-    }
-
     private boolean doNearestLandscape(float x, float y, float z, float dx, float dy, float dz) {
         if (getHeight(x, y) > z) {
             return false;
         }
         while (!patch_pick_set.isEmpty()) {
             BoundingBox bb = patch_pick_set.removeFirst();
-            float tx_min = computeTMin(bb.bmin_x, bb.bmax_x, x, dx);
-            float ty_min = computeTMin(bb.bmin_y, bb.bmax_y, y, dy);
-            float tz_min = computeTMin(bb.bmin_z, bb.bmax_z, z, dz);
-            float tx_max = computeTMax(bb.bmin_x, bb.bmax_x, x, dx);
-            float ty_max = computeTMax(bb.bmin_y, bb.bmax_y, y, dy);
-            float tz_max = computeTMax(bb.bmin_z, bb.bmax_z, z, dz);
-
-            float t_min = Math.max(tx_min, Math.max(ty_min, tz_min));
-            float t_max = Math.min(tx_max, Math.min(ty_max, tz_max));
-            if (t_min < 0)
-                t_min = 0;
-            // If t_min is greater than t_max, the pick ray does not intersect the BB, therefore we skip it
+            if (!bb.intersectsRay(x, y, z, dx, dy, dz, nearFar)) {
+                continue;
+            }
+            float t_min = Math.max(0f, nearFar.x);
+            float t_max = nearFar.y;
             if (t_min >= t_max) {
                 continue;
             }
@@ -635,7 +613,7 @@ public final class Picker implements Updatable<TimerAnimation> {
     }
 
     public void debugRender() {
-        DebugRender.drawPoint(patch_hit_x, patch_hit_y, patch_hit_z, 10f, 1f, 1f, 1f);
+        DebugRender.drawPoint(patch_hit_x, patch_hit_y, patch_hit_z, 10f, Color.Linear.WHITE);
     }
 
     private final class LandscapeLeafComparator implements Comparator<LandscapeLeaf> {

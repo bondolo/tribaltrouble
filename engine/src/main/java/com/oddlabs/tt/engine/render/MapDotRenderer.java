@@ -27,9 +27,7 @@ public final class MapDotRenderer {
             var batch = instancedSpriteRenderer.getBatch(quadList, instancedSpriteRenderer.getWhiteTexture(), null,
                     null, false, true, false, false);
             for (ModelState<?> model : mapDots) {
-                if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
-                    RenderTools.draw(model.getModel());
-                }
+                RenderTools.draw(model.getModel());
                 float x = model.getModel().getPositionX();
                 float y = model.getModel().getPositionY();
                 float z = model.getModel().getPositionZ();

@@ -201,9 +201,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
     private void renderDebugElements(CameraState frustum_state) {
         if (DebugFlags.draw_axes) drawAxes();
         landscape_renderer.debugRender(frustum_state);
-        lightningRenderer.debugRender(element_renderer.getRenderState().getLightningQueue());
         emitterRenderer.debugRender(element_renderer.getRenderState().getEmitterQueue());
-        tree_renderer.debugRender(tree_renderer.getRenderLists(), tree_renderer.getRespondRenderLists());
 
         if (DebugFlags.isBoundsEnabled(BoundingMode.REGIONS))
             PathfinderDebugRenderer.renderRegions(world.getUnitGrid(), frustum_state.getCurrentX(), frustum_state
@@ -356,10 +354,6 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
         if (gui_root.getDelegate() instanceof Delegate delegate) {
             delegate.render3D(context, landscape_renderer, render_queues, frustum_state, frustum_state.getModelView());
         }
-
-        if (DebugFlags.debugRenderingEnabled()) {
-            renderDebugElements(frustum_state);
-        }
     }
 
     private void renderWater(ScenePassContext pass) {
@@ -388,6 +382,9 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
                 postProcessor.copyDepthBuffer();
             }
 
+            if (DebugFlags.debugRenderingEnabled()) {
+                lightningRenderer.debugRender();
+            }
             lightningRenderer.render(context, render_queues, frustum_state, frustum_state.getModelView());
             emitterRenderer.render(context, render_queues, frustum_state, frustum_state.getModelView(), postProcessor
                     .getDepthCopyTexture());
@@ -402,6 +399,10 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
             render_queues.renderNoDetail();
         }
         render_queues.getInstancedRenderer().renderAll(context, frustum_state);
+
+        if (DebugFlags.debugRenderingEnabled()) {
+            renderDebugElements(frustum_state);
+        }
 
         assert ShaderProgram.activeShader() == null : "Shader still active=" + ShaderProgram.activeShader();
 

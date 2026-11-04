@@ -13,7 +13,7 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * An emitter that spawns particles whose movement is defined by a parametric function.
+ * Emitter that spawns particles whose movement is defined by a parametric function.
  */
 public class ParametricEmitter extends Emitter<ParametricParticle> {
     private static final float SQRT_2 = (float) Math.sqrt(2f);
@@ -136,7 +136,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
 
     @Override
     public void debugRender() {
-        RenderTools.draw(bounds, 1f, 1f, 1f);
+        RenderTools.draw(bounds, Color.Linear.WHITE);
     }
 
     @Override

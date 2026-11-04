@@ -18,7 +18,11 @@ public enum BoundingMode {
      */
     LANDSCAPE,
     /**
-     * Show player unit/building bounding boxes
+     * Show tree bounding boxes
+     */
+    TREES,
+    /**
+     * Show player unit/building/supply bounding boxes
      */
     PLAYERS,
     /**
