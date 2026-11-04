@@ -1,7 +1,9 @@
 package com.oddlabs.tt.base.geom;
 
 import org.joml.FrustumIntersection;
+import org.joml.Intersectionf;
 import org.joml.Matrix4fc;
+import org.joml.Vector2f;
 
 /**
  * Provides world-space bounding volumes for collision detection, frustum culling, and spatial sorting.
@@ -14,10 +16,6 @@ public class BoundingBox {
     public float bmax_x = Float.NEGATIVE_INFINITY;
     public float bmax_y = Float.NEGATIVE_INFINITY;
     public float bmax_z = Float.NEGATIVE_INFINITY;
-
-    private float cx;
-    private float cy;
-    private float cz;
 
     public BoundingBox() {
     }
@@ -41,45 +39,48 @@ public class BoundingBox {
     }
 
     public final boolean contains(BoundingBox other) {
-        return (other.bmax_x <= this.bmax_x && other.bmin_x > this.bmin_x &&
-                other.bmax_y <= this.bmax_y && other.bmin_y > this.bmin_y &&
-                other.bmax_z <= this.bmax_z && other.bmin_z > this.bmin_z);
+        return other.bmax_x <= this.bmax_x && other.bmin_x >= this.bmin_x
+                && other.bmax_y <= this.bmax_y && other.bmin_y >= this.bmin_y
+                && other.bmax_z <= this.bmax_z && other.bmin_z >= this.bmin_z;
     }
 
     public final float getCX() {
-        return cx;
+        return (bmax_x + bmin_x) * 0.5f;
     }
 
     public final float getCY() {
-        return cy;
+        return (bmax_y + bmin_y) * 0.5f;
     }
 
     public final float getCZ() {
-        return cz;
-    }
-
-    public final void expandBoundsY(float y) {
-        if (y < bmin_y)
-            bmin_y = y;
-        else if (y > bmax_y)
-            bmax_y = y;
-        cy = (bmax_y + bmin_y) * 0.5f;
+        return (bmax_z + bmin_z) * 0.5f;
     }
 
     public final void expandBoundsX(float x) {
-        if (x < bmin_x)
+        if (x < bmin_x) {
             bmin_x = x;
-        else if (x > bmax_x)
+        }
+        if (x > bmax_x) {
             bmax_x = x;
-        cx = (bmax_x + bmin_x) * 0.5f;
+        }
+    }
+
+    public final void expandBoundsY(float y) {
+        if (y < bmin_y) {
+            bmin_y = y;
+        }
+        if (y > bmax_y) {
+            bmax_y = y;
+        }
     }
 
     public final void expandBoundsZ(float z) {
-        if (z < bmin_z)
+        if (z < bmin_z) {
             bmin_z = z;
-        else if (z > bmax_z)
+        }
+        if (z > bmax_z) {
             bmax_z = z;
-        cz = (bmax_z + bmin_z) * 0.5f;
+        }
     }
 
     public final void expandBounds(float bmin_x, float bmax_x, float bmin_y, float bmax_y, float bmin_z, float bmax_z) {
@@ -89,7 +90,6 @@ public class BoundingBox {
         if (bmax_y > this.bmax_y) this.bmax_y = bmax_y;
         if (bmin_z < this.bmin_z) this.bmin_z = bmin_z;
         if (bmax_z > this.bmax_z) this.bmax_z = bmax_z;
-        computeCenter();
     }
 
     public final void expandBoundsXY(BoundingBox other) {
@@ -97,7 +97,6 @@ public class BoundingBox {
         if (other.bmax_x > bmax_x) bmax_x = other.bmax_x;
         if (other.bmin_y < bmin_y) bmin_y = other.bmin_y;
         if (other.bmax_y > bmax_y) bmax_y = other.bmax_y;
-        computeXYCenter();
     }
 
     public void expandBounds(BoundingBox other) {
@@ -107,7 +106,6 @@ public class BoundingBox {
         if (other.bmax_y > bmax_y) bmax_y = other.bmax_y;
         if (other.bmin_z < bmin_z) bmin_z = other.bmin_z;
         if (other.bmax_z > bmax_z) bmax_z = other.bmax_z;
-        computeCenter();
     }
 
     public final void resetBounds() {
@@ -117,9 +115,6 @@ public class BoundingBox {
         this.bmax_x = Float.NEGATIVE_INFINITY;
         this.bmax_y = Float.NEGATIVE_INFINITY;
         this.bmax_z = Float.NEGATIVE_INFINITY;
-        this.cx = 0f;
-        this.cy = 0f;
-        this.cz = 0f;
     }
 
     public final void setBounds(BoundingBox other) {
@@ -129,9 +124,6 @@ public class BoundingBox {
         this.bmax_y = other.bmax_y;
         this.bmin_z = other.bmin_z;
         this.bmax_z = other.bmax_z;
-        this.cx = other.cx;
-        this.cy = other.cy;
-        this.cz = other.cz;
     }
 
     public final void setBounds(float bmin_x, float bmax_x, float bmin_y, float bmax_y, float bmin_z, float bmax_z) {
@@ -141,7 +133,6 @@ public class BoundingBox {
         this.bmax_y = bmax_y;
         this.bmin_z = bmin_z;
         this.bmax_z = bmax_z;
-        computeCenter();
     }
 
     /**
@@ -236,20 +227,10 @@ public class BoundingBox {
         setBounds(minX, maxX, minY, maxY, minZ, maxZ);
     }
 
-    private void computeXYCenter() {
-        cx = (bmax_x + bmin_x) * 0.5f;
-        cy = (bmax_y + bmin_y) * 0.5f;
-    }
-
     private float computeXYRadius() {
         float longest_x = Math.max(bmax_x, -bmin_x);
         float longest_y = Math.max(bmax_y, -bmin_y);
         return (float) Math.sqrt(longest_x * longest_x + longest_y * longest_y);
-    }
-
-    private void computeCenter() {
-        computeXYCenter();
-        cz = (bmax_z + bmin_z) * 0.5f;
     }
 
     /**
@@ -262,8 +243,6 @@ public class BoundingBox {
         bmax_x = len;
         bmin_y = -len;
         bmax_y = len;
-
-        computeXYCenter();
     }
 
     /**
@@ -286,5 +265,28 @@ public class BoundingBox {
      */
     public final int intersectFrustum(FrustumIntersection frustum) {
         return frustum.intersectAab(bmin_x, bmin_y, bmin_z, bmax_x, bmax_y, bmax_z);
+    }
+
+    /**
+     * Tests whether the given ray intersects this bounding box and stores the near and far
+     * ray parameter values in {@code result}.
+     *
+     * @param originX ray origin X
+     * @param originY ray origin Y
+     * @param originZ ray origin Z
+     * @param dirX ray direction X
+     * @param dirY ray direction Y
+     * @param dirZ ray direction Z
+     * @param result vector receiving {@code (tNear, tFar)} on intersection
+     * @return {@code true} if the ray intersects this bounding box
+     */
+    public final boolean intersectsRay(float originX, float originY, float originZ,
+            float dirX, float dirY, float dirZ, Vector2f result) {
+        return Intersectionf.intersectRayAab(
+                originX, originY, originZ,
+                dirX, dirY, dirZ,
+                bmin_x, bmin_y, bmin_z,
+                bmax_x, bmax_y, bmax_z,
+                result);
     }
 }

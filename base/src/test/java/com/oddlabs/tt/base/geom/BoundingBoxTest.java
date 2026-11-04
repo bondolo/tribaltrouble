@@ -2,6 +2,7 @@ package com.oddlabs.tt.base.geom;
 
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.junit.jupiter.api.Test;
 
@@ -66,6 +67,45 @@ final class BoundingBoxTest {
         assertEquals(original.getCX(), copy.getCX());
         assertEquals(original.getCY(), copy.getCY());
         assertEquals(original.getCZ(), copy.getCZ());
+    }
+
+    @Test
+    void testExpandSinglePointInitializesBothMinAndMax() {
+        BoundingBox box = new BoundingBox();
+        box.expandBoundsX(3f);
+        box.expandBoundsY(-4f);
+        box.expandBoundsZ(5f);
+
+        assertTrue(box.isValid());
+        assertEquals(3f, box.bmin_x);
+        assertEquals(3f, box.bmax_x);
+        assertEquals(-4f, box.bmin_y);
+        assertEquals(-4f, box.bmax_y);
+        assertEquals(5f, box.bmin_z);
+        assertEquals(5f, box.bmax_z);
+        assertEquals(3f, box.getCX());
+        assertEquals(-4f, box.getCY());
+        assertEquals(5f, box.getCZ());
+    }
+
+    @Test
+    void testContainsIncludesBoundaryEquality() {
+        BoundingBox outer = new BoundingBox(0f, 10f, 0f, 10f, -2f, 5f);
+        BoundingBox touchingMin = new BoundingBox(0f, 5f, 0f, 5f, -2f, 3f);
+
+        assertTrue(outer.contains(touchingMin));
+        assertTrue(outer.contains(outer));
+    }
+
+    @Test
+    void testIntersectsRay() {
+        BoundingBox box = new BoundingBox(-1f, 1f, -1f, 1f, -1f, 1f);
+        Vector2f nearFar = new Vector2f();
+
+        assertTrue(box.intersectsRay(0f, 0f, 5f, 0f, 0f, -1f, nearFar));
+        assertEquals(4f, nearFar.x, 1e-5f);
+        assertEquals(6f, nearFar.y, 1e-5f);
+        assertFalse(box.intersectsRay(5f, 5f, 5f, 0f, 0f, -1f, nearFar));
     }
 
     @Test

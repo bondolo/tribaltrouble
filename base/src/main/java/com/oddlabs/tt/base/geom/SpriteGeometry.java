@@ -99,7 +99,9 @@ public record SpriteGeometry(
                         resultY += temp.y * weight;
                         resultZ += temp.z * weight;
                     }
-                    boundingBox.expandBounds(resultX, resultX, resultY, resultY, resultZ, resultZ);
+                    boundingBox.expandBoundsX(resultX);
+                    boundingBox.expandBoundsY(resultY);
+                    boundingBox.expandBoundsZ(resultZ);
                 }
             }
         }

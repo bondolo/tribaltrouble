@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.viewer;
 
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.tt.audio.AudioManager;
@@ -12,7 +13,6 @@ import com.oddlabs.tt.simulation.landscape.TreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeLeaf;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.client.resource.AudioRegistry;
 import org.joml.Vector3f;
 

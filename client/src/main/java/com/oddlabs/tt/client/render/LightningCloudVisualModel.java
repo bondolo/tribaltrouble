@@ -13,6 +13,8 @@ import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.weapon.LightningCloud;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
@@ -78,7 +80,13 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
     }
 
     @Override
-    public void triggerStrike(float tx, float ty, float tz) {
+    public void triggerStrike(Target target) {
+        float tx = target.getPositionX();
+        float ty = target.getPositionY();
+        float hitOffsetZ = target instanceof Selectable<?> selectable ? selectable.getHitOffsetZ() : 0f;
+        float tz = cloud.getWorld().getHeightMap().getNearestHeight(tx, ty) + hitOffsetZ;
+        Vector3f cloudPos = new Vector3f(cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ()
+                + cloud.getCloudOffsetZ());
         if (lightningTimer <= 0f) {
             emitter.adjustColor(BRIGHTNESS, BRIGHTNESS, BRIGHTNESS, 0f);
             lightningTimer = LIGHTNING_TIME;
@@ -89,13 +97,14 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
                         AudioRegistry.SFX_FLASH, AudioRegistry.AUDIO_RANK_MAGIC,
                         AudioRegistry.AUDIO_DISTANCE_MAGIC, AudioRegistry.AUDIO_GAIN_LIGHTNING,
                         AudioRegistry.AUDIO_RADIUS_LIGHTNING);
-                audio.newAudio(tx, ty, tz, params);
+                float midX = (cloudPos.x + tx) * 0.5f;
+                float midY = (cloudPos.y + ty) * 0.5f;
+                float midZ = (cloudPos.z + tz) * 0.5f;
+                audio.newAudio(midX, midY, midZ, params);
                 strikeAudioCooldown = 0.8f;
             }
         }
 
-        Vector3f cloudPos = new Vector3f(cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ()
-                + cloud.getCloudOffsetZ());
         Lightning lightning = new Lightning(cloudPos, new Vector3f(tx, ty, tz), .5f,
                 15, Color.Linear.WHITE, DELTA_COLOR,
                 AssetRegistry.getInstance().getLightningTexture(), LIGHTNING_TIME);
@@ -108,14 +117,19 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
             lightning.animate(dt);
         }
         activeLightnings.removeIf(Lightning::isFinished);
-        if (firstRun) {
-            cloudSound = audio.newAudio(cloud.getPositionX(), cloud.getPositionY(), cloud
-                    .getPositionZ(),
-                    AudioRegistry.LIGHTNING_CLOUD);
-            firstRun = false;
-        }
-        if (cloudSound != null) {
-            cloudSound.setPosition(cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ());
+        float cloudZ = cloud.getPositionZ() + cloud.getCloudOffsetZ();
+        if (!cloud.isDead()) {
+            if (firstRun) {
+                cloudSound = audio.newAudio(cloud.getPositionX(), cloud.getPositionY(), cloudZ,
+                        AudioRegistry.LIGHTNING_CLOUD);
+                firstRun = false;
+            }
+            if (cloudSound != null) {
+                cloudSound.setPosition(cloud.getPositionX(), cloud.getPositionY(), cloudZ);
+            }
+        } else if (cloudSound != null) {
+            cloudSound.stop(15.0f);
+            cloudSound = null;
         }
         if (strikeAudioCooldown > 0f) {
             strikeAudioCooldown -= dt;

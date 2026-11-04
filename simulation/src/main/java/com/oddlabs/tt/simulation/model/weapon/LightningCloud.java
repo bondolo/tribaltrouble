@@ -1,9 +1,9 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Unit;
@@ -94,8 +94,8 @@ public final class LightningCloud extends Model implements Magic {
     public void animate(float dt) {
         seconds_to_live -= dt;
         if (seconds_to_live <= 0f) {
-            owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
             remove();
+            return;
         }
 
         hit_timer += dt;
@@ -144,10 +144,6 @@ public final class LightningCloud extends Model implements Magic {
     }
 
     private void strike(Target target) {
-        float x = target.getPositionX();
-        float y = target.getPositionY();
-        float z = owner.getWorld().getHeightMap().getNearestHeight(x, y);
-
         if (AppConfig.LEGACY_DETERMINISTIC) {
             var rand = owner.getWorld().getRandom();
             for (int i = 0; i < 31; i++) {
@@ -155,7 +151,7 @@ public final class LightningCloud extends Model implements Magic {
             }
         }
 
-        owner.getWorld().getNotificationListener().onLightningStrike(this, x, y, z);
+        owner.getWorld().getNotificationListener().onLightningStrike(this, target);
     }
 
     @Override

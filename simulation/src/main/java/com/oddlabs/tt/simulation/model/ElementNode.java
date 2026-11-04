@@ -2,6 +2,10 @@ package com.oddlabs.tt.simulation.model;
 
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Interior quadtree node partitioning world entities across four child quadrants.
+ */
+@SuppressWarnings("unchecked")
 public final class ElementNode<T extends Element<T>> extends AbstractElementNode<T> {
     private static final int MIN_NODE_SIZE = 4;
     /*
@@ -22,10 +26,9 @@ public final class ElementNode<T extends Element<T>> extends AbstractElementNode
                 createChild(child_size, x + child_size, y + child_size)
         };
 
-        expandBoundsXY(children[0]);
-        expandBoundsXY(children[1]);
-        expandBoundsXY(children[2]);
-        expandBoundsXY(children[3]);
+        for (AbstractElementNode<T> child : children) {
+            expandBoundsXY(child);
+        }
     }
 
     private AbstractElementNode<T> createChild(int size, int x, int y) {

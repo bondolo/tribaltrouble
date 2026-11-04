@@ -8,7 +8,7 @@ import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 
 /**
- * A transient expanding-ring effect rendered by {@link com.oddlabs.tt.effects.render.SonicBlastRenderer}.
+ * Transient expanding-ring effect rendered by {@link com.oddlabs.tt.effects.render.SonicBlastRenderer}.
  * Advances through its animation each game tick and removes itself when its duration elapses.
  */
 public final class SonicBlastEffect implements Animated, BoundsProvider {
@@ -18,6 +18,7 @@ public final class SonicBlastEffect implements Animated, BoundsProvider {
     private final float duration;
     private final Color.Linear color;
     private final BoundingBox bounds;
+    private final BoundingBox[] boundsArray;
     private float time;
     private boolean dead;
 
@@ -35,12 +36,14 @@ public final class SonicBlastEffect implements Animated, BoundsProvider {
         this.time = 0;
         this.dead = false;
 
-        float visualRadius = maxRadius * 1.2f;
         this.bounds = new BoundingBox();
+        float visualRadius = maxRadius * 1.2f;
         this.bounds.setBounds(
                 position.x - visualRadius, position.x + visualRadius,
                 position.y - visualRadius, position.y + visualRadius,
-                position.z - 5f, position.z + 5f);
+                position.z - 5f, position.z + 5f
+        );
+        this.boundsArray = new BoundingBox[]{this.bounds};
 
         world.getAnimationManagerGameTime().registerAnimation(this);
     }
@@ -111,6 +114,6 @@ public final class SonicBlastEffect implements Animated, BoundsProvider {
 
     @Override
     public BoundingBox[] bounds() {
-        return new BoundingBox[]{bounds};
+        return boundsArray;
     }
 }

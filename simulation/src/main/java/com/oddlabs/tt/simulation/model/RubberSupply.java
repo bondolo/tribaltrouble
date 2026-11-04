@@ -160,8 +160,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                         float move_random = getWorld().getRandom().nextFloat();
                         if (move_random < .25f) {
                             setNewAnimation(Animation.FLYING);
-                            getWorld().getNotificationListener().onChickenPeck(getPositionX(), getPositionY(),
-                                    getPositionZ());
+                            getWorld().getNotificationListener().onChickenPeck(this);
                         } else {
                             setNewAnimation(Animation.RUNNING);
                         }
@@ -170,7 +169,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             } else {
                 setNewAnimation(Animation.PECKING);
                 if (random > .98f) {
-                    getWorld().getNotificationListener().onChickenPeck(getPositionX(), getPositionY(), getPositionZ());
+                    getWorld().getNotificationListener().onChickenPeck(this);
                 }
             }
         }

@@ -16,8 +16,6 @@ import java.util.concurrent.ThreadLocalRandom;
  * Visual effect representing a lightning strike.
  */
 public final class Lightning implements Animated, BoundsProvider {
-    private static final float SQRT_2 = (float) Math.sqrt(2f);
-
     private final List<StretchParticle> particles = new ArrayList<>();
     private final Vector3fc src;
     private final Vector3fc dst;

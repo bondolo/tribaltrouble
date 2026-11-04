@@ -757,15 +757,15 @@ public final class RenderState implements SceneContext {
         return sonic_blast_queue;
     }
 
-    public void onLightningStrike(Model model, float x, float y, float z) {
+    public void onLightningStrike(Model model, Target target) {
         if (getOrCreateVisualModel(model) instanceof LightningAccessory la) {
-            la.triggerStrike(x, y, z);
+            la.triggerStrike(target);
         }
     }
 
-    public void onSonicBlast(Model model, float x, float y, float z, float radius, float duration) {
+    public void onSonicBlast(Model model) {
         if (getOrCreateVisualModel(model) instanceof SonicBlastAccessory sba) {
-            sba.triggerBlast(x, y, z, radius, duration);
+            sba.triggerBlast();
         }
     }
 

@@ -119,7 +119,9 @@ public final class SpriteList implements AutoCloseable {
         this.bounds = new BoundingBox[bounds_data.length];
         for (int i = 0; i < bounds_data.length; i++) {
             BoundsData bd = bounds_data[i];
-            this.bounds[i] = new BoundingBox(bd.minX(), bd.maxX(), bd.minY(), bd.maxY(), bd.minZ(), bd.maxZ());
+            BoundingBox b = new BoundingBox(bd.minX(), bd.maxX(), bd.minY(), bd.maxY(), bd.minZ(), bd.maxZ());
+            b.maximizeXYPlane();
+            this.bounds[i] = b;
         }
 
         int total_indices = info.getIndices().length;
@@ -195,10 +197,6 @@ public final class SpriteList implements AutoCloseable {
         } else {
             bone_indices = null;
             bone_weights = null;
-        }
-
-        for (BoundingBox bound : bounds) {
-            bound.maximizeXYPlane();
         }
     }
 

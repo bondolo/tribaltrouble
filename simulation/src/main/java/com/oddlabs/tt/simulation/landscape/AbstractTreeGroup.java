@@ -1,5 +1,4 @@
 package com.oddlabs.tt.simulation.landscape;
-/**/
 
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.model.Terrain;
@@ -144,11 +143,7 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
 
     @Override
     public final void expandBounds(BoundingBox box) {
-        if (!isValid()) {
-            setBounds(box);
-        } else {
-            super.expandBounds(box);
-        }
+        super.expandBounds(box);
         if (parent != null) {
             parent.expandBounds(box);
         }

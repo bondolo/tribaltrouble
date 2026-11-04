@@ -7,6 +7,9 @@ import org.jspecify.annotations.Nullable;
 import java.io.Serial;
 import java.io.Serializable;
 
+/**
+ * Serializable mesh geometry, skinning weights, and texture references for a sprite.
+ */
 public final class SpriteInfo implements Serializable {
     @Serial
     private static final long serialVersionUID = 1;
@@ -67,10 +70,6 @@ public final class SpriteInfo implements Serializable {
         return textures;
     }
 
-    /*	public final BoundingBox getBounds() {
-            return bounds;
-        }
-    */
     public float[] getClearColor() {
         return clear_color;
     }

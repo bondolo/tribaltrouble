@@ -22,7 +22,8 @@ record Tree(
     }
 
     private static BoundingBox computeModelBounds(SpriteList trunk, SpriteList crown) {
-        BoundingBox box = new BoundingBox(trunk.getBounds()[0]);
+        BoundingBox box = new BoundingBox();
+        box.setBounds(trunk.getBounds()[0]);
         box.expandBounds(crown.getBounds()[0]);
         box.expandBoundsZ(0f);
         return box;

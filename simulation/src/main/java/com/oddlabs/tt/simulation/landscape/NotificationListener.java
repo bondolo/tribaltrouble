@@ -1,12 +1,11 @@
 package com.oddlabs.tt.simulation.landscape;
 
+import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.model.UnitType;
 
 /**
  * Listener interface for observing simulation events such as combat notifications,
@@ -59,31 +58,28 @@ public interface NotificationListener {
     default void onRepair(Model model) {
     }
 
-    default void onBuildingHit(float x, float y, float z) {
+    default void onBuildingHit(Building building) {
     }
 
-    default void onUnitDeath(Unit unit, UnitType unitType, Race race) {
+    default void onUnitDeath(Unit unit) {
     }
 
-    default void onUnitAttack(UnitType unitType, Race race, float x, float y, float z) {
+    default void onUnitAttack(Unit attacker, Unit target) {
     }
 
     default void onChickenCluck(Model model) {
     }
 
-    default void onChickenPeck(float x, float y, float z) {
+    default void onChickenPeck(Model model) {
     }
 
     default void onChickenDeath(Model model) {
     }
 
-    default void onLightningStrike(Model model, float x, float y, float z) {
+    default void onLightningStrike(Model model, Target target) {
     }
 
-    default void onSonicBlast(Model model, float targetX, float targetY, float targetZ, float radius, float duration) {
-    }
-
-    default void onWeaponThrow(float x, float y, float z) {
+    default void onSonicBlast(Model model) {
     }
 
     default void onModelRemoved(Model model) {

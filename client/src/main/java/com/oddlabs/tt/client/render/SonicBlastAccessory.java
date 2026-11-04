@@ -7,13 +7,7 @@ import com.oddlabs.tt.engine.render.AnimatedAccessory;
  */
 interface SonicBlastAccessory extends AnimatedAccessory {
     /**
-     * Triggers a sonic blast shockwave effect at the specified target coordinates.
-     *
-     * @param targetX target x coordinate
-     * @param targetY target y coordinate
-     * @param targetZ target z coordinate
-     * @param radius shockwave radius
-     * @param duration shockwave duration
+     * Triggers a sonic blast shockwave effect.
      */
-    void triggerBlast(float targetX, float targetY, float targetZ, float radius, float duration);
+    void triggerBlast();
 }

@@ -23,8 +23,8 @@ final class LandscapeTargetRespond implements Animated, BoundsProvider {
         this.animation_manager = animation_manager;
         this.x = x;
         this.y = y;
-        this.bounds.setBounds(x - SIZE / 2f, x + SIZE / 2f, y - SIZE / 2f, y + SIZE / 2f,
-                Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
+        this.bounds.setBounds(x - SIZE / 2f, x + SIZE / 2f, y - SIZE / 2f, y + SIZE / 2f, Float.NEGATIVE_INFINITY,
+                Float.POSITIVE_INFINITY);
         this.time = SECOND_PER_PICK_RESPOND;
         animation_manager.registerAnimation(this);
     }

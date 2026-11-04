@@ -44,13 +44,8 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         this.tree_type = tree_type;
         this.matrix = matrix;
         float canopy = tree_type.canopyRadius();
-        expandBoundsX(x - canopy);
-        expandBoundsX(x + canopy);
-        expandBoundsY(y - canopy);
-        expandBoundsY(y + canopy);
         float z = matrix.m32();
-        expandBoundsZ(z);
-        expandBoundsZ(z + tree_type.nominalHeight());
+        setBounds(x - canopy, x + canopy, y - canopy, y + canopy, z, z + tree_type.nominalHeight());
         if (world.getUnitGrid().getOccupant(grid_x, grid_y) == null)
             occupyTree();
         world.getSupplyManager(getSupplyType()).newSupply();

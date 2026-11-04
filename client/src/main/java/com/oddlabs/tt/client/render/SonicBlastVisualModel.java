@@ -31,17 +31,19 @@ public final class SonicBlastVisualModel extends AbstractVisualModel implements 
                 AudioRegistry.SONIC_BLAST_LUR[world.getRandom().nextInt(AudioRegistry.SONIC_BLAST_LUR.length)]);
         this.rumble = audio.newAudio(blast.getPositionX(), blast.getPositionY(), blast.getPositionZ(),
                 AudioRegistry.SONIC_BLAST_RUMBLE);
-        triggerBlast(blast.getPositionX(), blast.getPositionY(), blast.getPositionZ(), blast.getHitRadius(), blast
-                .getSeconds());
+        triggerBlast();
     }
 
     @Override
-    public void triggerBlast(float x, float y, float z, float radius, float duration) {
+    public void triggerBlast() {
         if (effect != null) {
             effect.abort();
         }
         World world = blast.getWorld();
-        this.effect = new SonicBlastEffect(world, new Vector3f(x, y, z), radius, duration);
+        float x = blast.getPositionX();
+        float y = blast.getPositionY();
+        float z = blast.getPositionZ();
+        this.effect = new SonicBlastEffect(world, new Vector3f(x, y, z), blast.getHitRadius(), blast.getSeconds());
         audio.newAudio(x, y, z, AudioRegistry.SONIC_BLAST);
         lur.stop(10.0f);
         rumble.stop(15.0f);

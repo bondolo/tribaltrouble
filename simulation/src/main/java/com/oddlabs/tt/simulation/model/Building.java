@@ -1,7 +1,7 @@
 package com.oddlabs.tt.simulation.model;
 
-import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.behaviour.AttackController;
@@ -701,7 +701,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 getWorld().getRandom().nextInt(4);
             }
             adjustHitPoints(-damage);
-            getWorld().getNotificationListener().onBuildingHit(getPositionX(), getPositionY(), getPositionZ());
+            getWorld().getNotificationListener().onBuildingHit(this);
             if (hit_points <= 0) {
                 // stats
                 getOwner().buildingLost();

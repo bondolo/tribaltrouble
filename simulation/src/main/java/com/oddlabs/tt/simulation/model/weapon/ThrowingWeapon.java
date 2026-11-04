@@ -66,7 +66,6 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
 
         // stats
         src.getOwner().weaponThrown();
-        src.getOwner().getWorld().getNotificationListener().onWeaponThrow(x, y, start_z);
     }
 
     public final Unit getSrc() {
@@ -168,8 +167,14 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         setPosition(x, y, z);
     }
 
-    protected void hitTarget(boolean hit, Player owner, Selectable<?> target) {
+    @Override
+    public void remove() {
+        super.remove();
         getWorld().getAnimationManagerGameTime().removeAnimation(this);
+        getWorld().getNotificationListener().onModelRemoved(this);
+    }
+
+    protected void hitTarget(boolean hit, Player owner, Selectable<?> target) {
         remove();
         if (hit)
             damageTarget(target);
@@ -181,9 +186,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
                 getSrc().getWorld().getRandom().nextInt(5);
                 getSrc().getWorld().getRandom().nextFloat();
             }
-            getSrc().getWorld().getNotificationListener().onUnitAttack(unitTarget.getTemplate().getUnitType(),
-                    unitTarget.getOwner().getRaceInfo().getRaceType(), target.getPositionX(), target.getPositionY(),
-                    target.getPositionZ());
+            getSrc().getWorld().getNotificationListener().onUnitAttack(getSrc(), unitTarget);
         }
         target.hit(getDamage(), dir_x, dir_y, getSrc().getOwner());
     }

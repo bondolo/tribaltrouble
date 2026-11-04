@@ -131,7 +131,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
 
     private void triggerCollapseEffects() {
         audio.newAudio(building.getPositionX(), building.getPositionY(),
-                building.getPositionZ(), AudioRegistry.BUILDING_COLLAPSE);
+                building.getPositionZ() + hitOffsetZ, AudioRegistry.BUILDING_COLLAPSE);
         final Terrain terrain = building.getOwner().getWorld().getTerrainType();
         final Color.Linear dustColor = terrain.getDustColor().desaturate(0.5f);
 

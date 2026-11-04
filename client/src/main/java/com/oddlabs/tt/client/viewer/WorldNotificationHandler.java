@@ -110,32 +110,38 @@ final class WorldNotificationHandler implements NotificationListener {
 
     @Override
     public void treeFelled(TreeSupply tree) {
-        audioManager.newAudio(tree.getCX(), tree.getCY(), tree.getCZ(),
+        float hitOffsetZ = viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.PEON).getHitOffsetZ(0);
+        audioManager.newAudio(tree.getPositionX(), tree.getPositionY(), tree.bmin_z + hitOffsetZ,
                 AudioRegistry.TREE_FALL[tree.getTreeType().ordinal() % 2]);
         renderer.onTreeFelled(tree);
     }
 
     @Override
     public void onHarvest(Model model, SupplyType supplyType) {
-        playAudioWithVisual(model, AudioRegistry.getHarvestSound(supplyType),
+        float zOffset = model instanceof Selectable<?> selectable ? selectable.getHitOffsetZ() : 0f;
+        playAudioWithVisual(model, zOffset, AudioRegistry.getHarvestSound(supplyType),
                 EmojiType.fromSupply(supplyType));
     }
 
     @Override
     public void onRepair(Model model) {
+        float zOffset = model instanceof Selectable<?> selectable ? selectable.getHitOffsetZ() : 0f;
         var emoji = ThreadLocalRandom.current().nextBoolean() ? EmojiType.REPAIR_SAW : EmojiType.REPAIR_HAMMER;
-        playAudioWithVisual(model, AudioRegistry.getHarvestSound(SupplyType.WOOD), emoji);
+        playAudioWithVisual(model, zOffset, AudioRegistry.getHarvestSound(SupplyType.WOOD), emoji);
     }
 
     @Override
-    public void onBuildingHit(float x, float y, float z) {
-        audioManager.newAudio(x, y, z,
+    public void onBuildingHit(Building building) {
+        audioManager.newAudio(building.getPositionX(), building.getPositionY(),
+                building.getPositionZ() + building.getHitOffsetZ(),
                 AudioRegistry.BUILDING_HITS[ThreadLocalRandom.current().nextInt(
                         AudioRegistry.BUILDING_HITS.length)]);
     }
 
     @Override
-    public void onUnitDeath(Unit unit, UnitType unitType, Race race) {
+    public void onUnitDeath(Unit unit) {
+        UnitType unitType = unit.getTemplate().getUnitType();
+        Race race = unit.getOwner().getRaceInfo().getRaceType();
         AudioFile deathSound = switch (unitType) {
             case PEON -> AudioRegistry.SFX_DEATH_PEON;
             case WARRIOR_ROCK -> (race == Race.VIKINGS)
@@ -148,11 +154,13 @@ final class WorldNotificationHandler implements NotificationListener {
         var params = new AudioParameters(deathSound, AudioRegistry.AUDIO_RANK_DEATH,
                 AudioRegistry.AUDIO_DISTANCE_DEATH, AudioRegistry.AUDIO_GAIN_DEATH,
                 AudioRegistry.AUDIO_RADIUS_DEATH);
-        playAudioWithVisual(unit, params, EmojiType.GRAVESTONE);
+        playAudioWithVisual(unit, unit.getTemplate().getStunZ(), params, EmojiType.GRAVESTONE);
     }
 
     @Override
-    public void onUnitAttack(UnitType unitType, Race race, float x, float y, float z) {
+    public void onUnitAttack(Unit attacker, Unit target) {
+        UnitType unitType = attacker.getTemplate().getUnitType();
+        Race race = attacker.getOwner().getRaceInfo().getRaceType();
         AudioFile sound;
         if (unitType == UnitType.CHIEFTAIN) {
             AudioFile[] hits = (race == Race.VIKINGS)
@@ -166,7 +174,8 @@ final class WorldNotificationHandler implements NotificationListener {
         var params = new AudioParameters(sound, AudioRegistry.AUDIO_RANK_WEAPON_HIT,
                 AudioRegistry.AUDIO_DISTANCE_WEAPON_HIT, AudioRegistry.AUDIO_GAIN_WEAPON_HIT,
                 AudioRegistry.AUDIO_RADIUS_WEAPON_HIT);
-        audioManager.newAudio(x, y, z, params);
+        audioManager.newAudio(target.getPositionX(), target.getPositionY(),
+                target.getPositionZ() + target.getHitOffsetZ(), params);
     }
 
     @Override
@@ -177,8 +186,9 @@ final class WorldNotificationHandler implements NotificationListener {
     }
 
     @Override
-    public void onChickenPeck(float x, float y, float z) {
-        audioManager.newAudio(x, y, z, AudioRegistry.CHICKEN_PECK);
+    public void onChickenPeck(Model model) {
+        audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
+                AudioRegistry.CHICKEN_PECK);
     }
 
     @Override
@@ -206,22 +216,13 @@ final class WorldNotificationHandler implements NotificationListener {
     }
 
     @Override
-    public void onLightningStrike(Model model, float x, float y, float z) {
-        renderer.getRenderState().onLightningStrike(model, x, y, z);
+    public void onLightningStrike(Model model, Target target) {
+        renderer.getRenderState().onLightningStrike(model, target);
     }
 
     @Override
-    public void onSonicBlast(Model model, float targetX, float targetY, float targetZ, float radius,
-            float duration) {
-        renderer.getRenderState().onSonicBlast(model, targetX, targetY, targetZ, radius, duration);
-    }
-
-    @Override
-    public void onWeaponThrow(float x, float y, float z) {
-        var params = new AudioParameters(AudioRegistry.SFX_WEAPON_SPEAR, AudioRegistry.AUDIO_RANK_WEAPON_ATTACK,
-                AudioRegistry.AUDIO_DISTANCE_WEAPON_ATTACK, AudioRegistry.AUDIO_GAIN_WEAPON_ATTACK,
-                AudioRegistry.AUDIO_RADIUS_WEAPON_ATTACK);
-        audioManager.newAudio(x, y, z, params);
+    public void onSonicBlast(Model model) {
+        renderer.getRenderState().onSonicBlast(model);
     }
 
     @Override
@@ -236,7 +237,11 @@ final class WorldNotificationHandler implements NotificationListener {
     }
 
     private void playAudioWithVisual(Model model, AudioParameters sound, EmojiType emoji) {
-        audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(), sound);
+        playAudioWithVisual(model, 0f, sound, emoji);
+    }
+
+    private void playAudioWithVisual(Model model, float zOffset, AudioParameters sound, EmojiType emoji) {
+        audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ() + zOffset, sound);
         if (AccessibilitySettings.from(peer.getSettings()).sound_emojis) {
             addVisualSound(model, emoji, sound.distance());
         }

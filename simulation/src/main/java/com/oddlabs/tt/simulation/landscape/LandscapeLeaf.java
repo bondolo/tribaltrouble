@@ -2,6 +2,9 @@ package com.oddlabs.tt.simulation.landscape;
 
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Quadtree leaf node representing a single terrain patch in the world heightmap.
+ */
 public final class LandscapeLeaf extends AbstractPatchGroup {
     private final int patch_x;
     private final int patch_y;
@@ -15,8 +18,6 @@ public final class LandscapeLeaf extends AbstractPatchGroup {
         HeightMap heightmap = world.getHeightMap();
         this.patch_x = index_x;
         this.patch_y = index_y;
-        int patch_offset_x = index_x * heightmap.getMetersPerPatch();
-        int patch_offset_y = index_y * heightmap.getMetersPerPatch();
         setBoundsFromLandscape(heightmap, index_x * heightmap.getGridUnitsPerPatch(), index_y * heightmap
                 .getGridUnitsPerPatch(), heightmap.getGridUnitsPerPatch(), heightmap.getGridUnitsPerPatch());
         expandBoundsZ(heightmap.getSeaLevelMeters());

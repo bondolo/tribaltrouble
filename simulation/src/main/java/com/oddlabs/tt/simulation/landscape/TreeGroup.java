@@ -58,7 +58,7 @@ public final class TreeGroup extends AbstractTreeGroup {
         if (!child_bounds)
             return node_bounds;
         if (node_bounds)
-            super.expandBounds(child);
+            expandBounds(child);
         else
             setBounds(child);
         return true;

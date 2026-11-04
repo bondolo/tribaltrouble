@@ -88,8 +88,7 @@ public final class SonicBlastRenderer implements AutoCloseable {
             for (int i = 0; i < activeEffects.size(); i++) {
                 SonicBlastEffect effect = activeEffects.get(i);
                 if (effect.isDead()) continue;
-                if (!state.inNoDetailMode()
-                        && !effect.getBounds().testFrustum(state.getFrustum())) {
+                if (!state.inNoDetailMode() && !effect.getBounds().testFrustum(state.getFrustum())) {
                     continue;
                 }
 

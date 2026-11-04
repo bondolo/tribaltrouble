@@ -29,7 +29,7 @@ public final class TreeLeaf extends AbstractTreeGroup {
             for (int i = 1; i < infos.length; i++) {
                 info = infos[i];
                 info.initBounds();
-                super.expandBounds(info);
+                expandBounds(info);
             }
             super.initBounds();
             return true;

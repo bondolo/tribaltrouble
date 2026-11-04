@@ -107,7 +107,8 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
         if (isProducing) {
             if (productionPlayer == null) {
                 productionPlayer = audio.newAudio(
-                        building.getPositionX(), building.getPositionY(), building.getPositionZ(),
+                        building.getPositionX(), building.getPositionY(),
+                        building.getPositionZ() + building.getHitOffsetZ(),
                         AudioRegistry.WEAPONS_PRODUCTION);
             }
         } else {

@@ -177,13 +177,15 @@ sealed class TreePicker permits TreeRenderer {
         float posX = tree_supply.getPositionX();
         float posY = tree_supply.getPositionY();
         BoundingBox bounds = state.visualBounds();
+        float minZ = bounds.bmin_z;
+        float maxZ = bounds.bmax_z;
         return frustum.testAab(
                 posX - SELECTION_RADIUS,
                 posY - SELECTION_RADIUS,
-                bounds.bmin_z,
+                minZ,
                 posX + SELECTION_RADIUS,
                 posY + SELECTION_RADIUS,
-                bounds.bmin_z + (bounds.bmax_z - bounds.bmin_z) * heightScale);
+                minZ + (maxZ - minZ) * heightScale);
     }
 
     private void visitTree(TreeSupply tree_supply, boolean fullyInside) {

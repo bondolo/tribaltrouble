@@ -37,9 +37,7 @@ public final class InstantHitFactory extends WeaponFactory {
                 src.getWorld().getRandom().nextInt(soundCount);
                 src.getWorld().getRandom().nextFloat();
             }
-            src.getWorld().getNotificationListener().onUnitAttack(unitTarget.getTemplate().getUnitType(), unitTarget
-                    .getOwner().getRaceInfo().getRaceType(), target.getPositionX(), target.getPositionY(), target
-                            .getPositionZ());
+            src.getWorld().getNotificationListener().onUnitAttack(src, unitTarget);
         }
         target.hit(damage, dx * dir_len_inv, dy * dir_len_inv, src.getOwner());
     }

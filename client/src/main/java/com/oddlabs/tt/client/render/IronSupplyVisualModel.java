@@ -29,6 +29,9 @@ import java.util.Deque;
 public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronSupply> implements EmitterAccessory {
     private static final float FALL_DURATION_RATIO = 0.12f;
     private static final float SMOKE_PARTICLES_PER_SECOND = 30.0f;
+    private static final float AIRBURST_HEIGHT = 25.0f;
+    private static final float AIRBURST_AUDIO_DISTANCE = 300.0f;
+    private static final float AIRBURST_AUDIO_RADIUS = 60.0f;
     private static final Color.Linear COLOR_WHITE_HOT = new Color.Linear(2.0f, 2.0f, 2.0f, 1.0f);
 
     private static final Color.Linear IRON_COLOR_FALLING = new Color.Linear(2.0f, 0.5f, 0.05f, 1.0f);
@@ -156,10 +159,10 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
                 if (!airBurstPlayed) {
                     airBurstPlayed = true;
                     audio.newAudio(ironSupply.getPositionX(), ironSupply.getPositionY(),
-                            ironSupply.getPositionZ(),
+                            ironSupply.getPositionZ() + AIRBURST_HEIGHT,
                             new AudioParameters(AudioRegistry.SFX_LURBLAST, AudioRegistry.AUDIO_RANK_SUPPLY_ACTION,
-                                    AudioRegistry.AUDIO_DISTANCE_SUPPLY_ACTION, AudioRegistry.AUDIO_GAIN_SUPPLY_ACTION,
-                                    AudioRegistry.AUDIO_RADIUS_SUPPLY_ACTION, 0.8f
+                                    AIRBURST_AUDIO_DISTANCE, AudioRegistry.AUDIO_GAIN_SUPPLY_ACTION,
+                                    AIRBURST_AUDIO_RADIUS, 0.8f
                             ));
                 }
 
