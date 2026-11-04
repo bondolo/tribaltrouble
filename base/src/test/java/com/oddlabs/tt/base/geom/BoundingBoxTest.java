@@ -1,5 +1,6 @@
 package com.oddlabs.tt.base.geom;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -93,8 +94,13 @@ final class BoundingBoxTest {
         BoundingBox outer = new BoundingBox(0f, 10f, 0f, 10f, -2f, 5f);
         BoundingBox touchingMin = new BoundingBox(0f, 5f, 0f, 5f, -2f, 3f);
 
-        assertTrue(outer.contains(touchingMin));
-        assertTrue(outer.contains(outer));
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            assertFalse(outer.contains(touchingMin));
+            assertFalse(outer.contains(outer));
+        } else {
+            assertTrue(outer.contains(touchingMin));
+            assertTrue(outer.contains(outer));
+        }
     }
 
     @Test

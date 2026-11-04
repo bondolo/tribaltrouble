@@ -1,5 +1,6 @@
 package com.oddlabs.tt.base.geom;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import org.joml.FrustumIntersection;
 import org.joml.Intersectionf;
 import org.joml.Matrix4fc;
@@ -39,6 +40,17 @@ public class BoundingBox {
     }
 
     public final boolean contains(BoundingBox other) {
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            // Legacy simulation containment used an asymmetric strict inequality on minimum planes
+            // (other.bmin > this.bmin), excluding boundary-coincident models. Preserved for bit-exact
+            // legacy deterministic replay parity.
+            return other.bmax_x <= this.bmax_x && other.bmin_x > this.bmin_x
+                    && other.bmax_y <= this.bmax_y && other.bmin_y > this.bmin_y
+                    && other.bmax_z <= this.bmax_z && other.bmin_z > this.bmin_z;
+        }
+        // Modern containment uses inclusive checks on all planes to ensure reflexivity (a box contains
+        // itself), align with standard AABB conventions and ElementNode.doInsertElement partition
+        // logic, and avoid spurious tree reinsertions for boundary models.
         return other.bmax_x <= this.bmax_x && other.bmin_x >= this.bmin_x
                 && other.bmax_y <= this.bmax_y && other.bmin_y >= this.bmin_y
                 && other.bmax_z <= this.bmax_z && other.bmin_z >= this.bmin_z;
