@@ -30,6 +30,10 @@ public interface PlayerSlotHandler {
 
     boolean isReady(Serializable slot);
 
+    default boolean isNetworkPeer(Serializable slot) {
+        return slot instanceof PlayerSlot ps && ps.isNetworkPeer();
+    }
+
     @Nullable
     Serializable getInfo(Serializable slot);
 

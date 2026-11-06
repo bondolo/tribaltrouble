@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.OptionalInt;
 
 /**
  * Maps distributable simulation objects to integer identifiers for ARMI serialization.
@@ -38,6 +39,13 @@ public final class DistributableTable {
         int id = distributable.getId();
         assert id != Distributable.NO_ID : distributable + " is not registered.";
         return id;
+    }
+
+    public OptionalInt findName(Distributable distributable) {
+        int id = distributable.getId();
+        return (id != Distributable.NO_ID && distributables.containsKey(id))
+                ? OptionalInt.of(id)
+                : OptionalInt.empty();
     }
 
     public @Nullable Distributable getDistributable(int name) {

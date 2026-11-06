@@ -3,6 +3,8 @@ package com.oddlabs.tt.net;
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.JitterConfig;
 import com.oddlabs.net.TickTimeManager;
+import com.oddlabs.tt.simulation.player.CommandRejectedListener;
+import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.Landscape;
@@ -26,6 +28,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -41,6 +44,10 @@ class HeadlessMultiplayerHarnessTest {
                                  List<List<SpawnLocation>> startingLocations) implements Landscape {
 
         static TestLandscape create(int size) {
+            return create(size, 2);
+        }
+
+        static TestLandscape create(int size, int numPlayers) {
             float[] heightmap = new float[size * size];
             Arrays.fill(heightmap, 5.0f);
 
@@ -50,13 +57,16 @@ class HeadlessMultiplayerHarnessTest {
             }
 
             byte[][] buildGrid = new byte[size][size];
+            for (byte[] row : buildGrid) {
+                Arrays.fill(row, (byte) 10);
+            }
 
             List<List<SpawnLocation>> startingLocations = new ArrayList<>();
-            for (int p = 0; p < 2; p++) {
+            for (int p = 0; p < numPlayers; p++) {
                 List<SpawnLocation> playerLocations = new ArrayList<>();
                 for (int i = 0; i < 20; i++) {
-                    float baseX = (p == 0) ? 10.0f : 40.0f;
-                    float baseY = (p == 0) ? 10.0f : 40.0f;
+                    float baseX = 35.0f + (p * 15.0f);
+                    float baseY = 35.0f + (p * 15.0f);
                     playerLocations.add(new SpawnLocation(baseX + (i % 5) * 1.5f, baseY + (i / 5f) * 1.5f));
                 }
                 startingLocations.add(playerLocations);
@@ -125,19 +135,21 @@ class HeadlessMultiplayerHarnessTest {
         slot0.setType(PlayerSlot.AI);
         slot0.setAIDifficulty(difficulty0);
         slot0.setInfo(new PlayerInfo(0, Race.VIKINGS, name0));
+        slot0.setNetworkPeer(true);
         slots.add(slot0);
 
         PlayerSlot slot1 = new PlayerSlot(1);
         slot1.setType(PlayerSlot.AI);
         slot1.setAIDifficulty(difficulty1);
         slot1.setInfo(new PlayerInfo(1, Race.NATIVES, name1));
+        slot1.setNetworkPeer(true);
         slots.add(slot1);
         return slots;
     }
 
     @Test
     void testMultiInstanceHeadlessSession() throws Exception {
-        int gridSize = 32; // 2 patches of 16
+        int gridSize = 64; // 2 patches of 16
         Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_NORMAL, "VikingPlayer",
@@ -163,6 +175,15 @@ class HeadlessMultiplayerHarnessTest {
 
             // Validate that both instances start with equal initial checksums
             assertEquals(instance0.getChecksum(), instance1.getChecksum(), "Initial checksums should match");
+
+            // Attach rejected command observer across all players in all instances
+            List<String> rejections = new java.util.concurrent.CopyOnWriteArrayList<>();
+            for (HeadlessSimulationInstance instance : harness.getInstances()) {
+                for (Player p : instance.getWorld().getPlayers()) {
+                    p.setCommandRejectedListener((action, entityId, reason) ->
+                            rejections.add(action + ":" + entityId + ":" + reason));
+                }
+            }
 
             // Complete network session login handshake
             harness.awaitSynchronized(Duration.ofSeconds(5));
@@ -190,12 +211,13 @@ class HeadlessMultiplayerHarnessTest {
             harness.runUntilTick(80, Duration.ofSeconds(10));
             harness.verifyChecksums();
             assertEquals(instance0.getChecksum(), instance1.getChecksum(), "Checksums must match after network action");
+            assertTrue(rejections.isEmpty(), "No commands should be rejected during clean headless session: " + rejections);
         }
     }
 
     @Test
     void testAiPeerHeadlessSession() throws Exception {
-        int gridSize = 32;
+        int gridSize = 64;
         Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_EASY, "VikingBot1",
@@ -207,8 +229,7 @@ class HeadlessMultiplayerHarnessTest {
                 worldParams,
                 playerSlots,
                 unitInfos,
-                com.oddlabs.net.TimeManager.DEFAULT,
-                true)) {
+                com.oddlabs.net.TimeManager.DEFAULT)) {
 
             assertEquals(2, harness.getInstances().size());
             HeadlessSimulationInstance bot0 = harness.getInstance(0);
@@ -231,7 +252,7 @@ class HeadlessMultiplayerHarnessTest {
 
     @Test
     void testMultiInstanceHeadlessSessionWithJitter() throws Exception {
-        int gridSize = 32;
+        int gridSize = 64;
         Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_NORMAL, "VikingJitter0",
@@ -271,7 +292,7 @@ class HeadlessMultiplayerHarnessTest {
 
     @Test
     void testAiPeerHeadlessSessionWithLaggyJitter() throws Exception {
-        int gridSize = 32;
+        int gridSize = 64;
         Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_EASY, "VikingLagBot",
@@ -305,7 +326,7 @@ class HeadlessMultiplayerHarnessTest {
 
     @Test
     void testMultiInstanceConcurrentVirtualThreadStepping() throws Exception {
-        int gridSize = 32;
+        int gridSize = 64;
         Landscape landscapeData = TestLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_NORMAL, "VikingConcurrent0",
@@ -333,6 +354,121 @@ class HeadlessMultiplayerHarnessTest {
             harness.verifyChecksums();
             assertEquals(instance0.getChecksum(), instance1.getChecksum(),
                     "State checksums must match after concurrent virtual thread stepping");
+        }
+    }
+
+    @Test
+    void testMultiInstanceHeadlessSessionWithPassiveAiWandering() throws Exception {
+        int gridSize = 64;
+        Landscape landscapeData = TestLandscape.create(gridSize);
+        WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
+        List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_PASSIVE_CAMPAIGN, "VikingPassive",
+                PlayerSlot.AI_PASSIVE_CAMPAIGN, "NativePassive");
+        List<UnitInfo> unitInfos = createDefaultUnitInfos();
+
+        try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.create(
+                landscapeData,
+                worldParams,
+                playerSlots,
+                unitInfos,
+                com.oddlabs.net.TimeManager.DEFAULT)) {
+
+            assertEquals(2, harness.getInstances().size());
+            HeadlessSimulationInstance bot0 = harness.getInstance(0);
+            HeadlessSimulationInstance bot1 = harness.getInstance(1);
+
+            assertTrue(bot0.getAI() instanceof com.oddlabs.tt.simulation.player.PassiveAI);
+            assertTrue(bot1.getAI() instanceof com.oddlabs.tt.simulation.player.PassiveAI);
+
+            harness.awaitSynchronized(Duration.ofSeconds(5));
+            assertTrue(bot0.isSynchronized());
+            assertTrue(bot1.isSynchronized());
+
+            harness.runUntilTick(100, Duration.ofSeconds(10));
+            harness.verifyChecksums();
+            assertEquals(bot0.getChecksum(), bot1.getChecksum(),
+                    "Checksums must match after PassiveAI roaming decisions and lockstep execution");
+        }
+    }
+
+    @Test
+    void testMixedThreePlayerSessionWithHumanAndAiPeersAndLockstepAi() throws Exception {
+        int gridSize = 64;
+        Landscape landscapeData = TestLandscape.create(gridSize, 3);
+        WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
+
+        List<PlayerSlot> playerSlots = new ArrayList<>(3);
+
+        // Player 0: Scripted Human peer (isNetworkPeer = true)
+        PlayerSlot slot0 = new PlayerSlot(0);
+        slot0.setType(PlayerSlot.HUMAN);
+        slot0.setInfo(new PlayerInfo(0, Race.VIKINGS, "ScriptedPeer"));
+        playerSlots.add(slot0);
+
+        // Player 1: Networked AI peer (isNetworkPeer = true)
+        PlayerSlot slot1 = new PlayerSlot(1);
+        slot1.setType(PlayerSlot.AI);
+        slot1.setAIDifficulty(PlayerSlot.AI_EASY);
+        slot1.setNetworkPeer(true);
+        slot1.setInfo(new PlayerInfo(1, Race.NATIVES, "NetworkAiPeer"));
+        playerSlots.add(slot1);
+
+        // Player 2: Local Lockstep AI (isNetworkPeer = false)
+        PlayerSlot slot2 = new PlayerSlot(2);
+        slot2.setType(PlayerSlot.AI);
+        slot2.setAIDifficulty(PlayerSlot.AI_PASSIVE_CAMPAIGN);
+        slot2.setNetworkPeer(false);
+        slot2.setInfo(new PlayerInfo(2, Race.VIKINGS, "LocalLockstepAi"));
+        playerSlots.add(slot2);
+
+        List<UnitInfo> unitInfos = List.of(
+                new UnitInfo(false, false, 0, false, 5, 0, 0, 0),
+                new UnitInfo(false, false, 0, false, 5, 0, 0, 0),
+                new UnitInfo(false, false, 0, false, 5, 0, 0, 0)
+        );
+
+        try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.create(
+                landscapeData,
+                worldParams,
+                playerSlots,
+                unitInfos)) {
+
+            // Only the 2 network peers (Player 0 and Player 1) have participant simulation instances
+            assertEquals(2, harness.getInstances().size());
+            HeadlessSimulationInstance humanPeer = harness.getInstance(0);
+            HeadlessSimulationInstance aiPeer = harness.getInstance(1);
+
+            assertEquals(0, humanPeer.getPlayerIndex());
+            assertEquals(1, aiPeer.getPlayerIndex());
+
+            // Human peer has no attached AI controller; AI peer has an AdvancedAI controller
+            assertNull(humanPeer.getAI());
+            assertTrue(aiPeer.getAI() instanceof com.oddlabs.tt.simulation.player.AdvancedAI);
+
+            // Both instances must have Player 2 running a local lockstep PassiveAI controller
+            assertTrue(humanPeer.getWorld().getPlayers().get(2).getAI().isPresent());
+            assertTrue(humanPeer.getWorld().getPlayers().get(2).getAI()
+                    .get() instanceof com.oddlabs.tt.simulation.player.PassiveAI);
+            assertTrue(aiPeer.getWorld().getPlayers().get(2).getAI().isPresent());
+            assertTrue(aiPeer.getWorld().getPlayers().get(2).getAI()
+                    .get() instanceof com.oddlabs.tt.simulation.player.PassiveAI);
+
+            harness.awaitSynchronized(Duration.ofSeconds(5));
+            assertTrue(humanPeer.isSynchronized());
+            assertTrue(aiPeer.isSynchronized());
+
+            // Advance simulation in lockstep
+            harness.runUntilTick(40, Duration.ofSeconds(10));
+            harness.verifyChecksums();
+
+            // Dispatch a command through the scripted human peer's interface over the network
+            humanPeer.getPlayerInterface().setPreferredGamespeed(Game.GAMESPEED_NORMAL);
+
+            // Continue lockstep ticking past tick 80
+            harness.runUntilTick(80, Duration.ofSeconds(10));
+            harness.verifyChecksums();
+            assertEquals(humanPeer.getChecksum(), aiPeer.getChecksum(),
+                    "Checksums must match across scripted human peer, network AI peer, and local lockstep AI");
         }
     }
 }

@@ -2,6 +2,7 @@ package com.oddlabs.tt.headless;
 
 import com.oddlabs.tt.net.HeadlessSimulationInstance;
 import com.oddlabs.tt.procedural.landscape.IslandGenerator;
+import com.oddlabs.tt.simulation.player.CommandRejectedListener;
 import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
@@ -13,12 +14,14 @@ import com.oddlabs.tt.simulation.player.AdvancedAI;
 import com.oddlabs.tt.simulation.player.PassiveAI;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
+import com.oddlabs.tt.simulation.player.PlayerInitializer;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -54,26 +57,31 @@ public final class LegacyValidationMatchRunner {
         for (int i = 0; i < config.players().size(); i++) {
             var pConfig = config.players().get(i);
             Player player = world.getPlayers().get(i);
-            player.setPreferredGamespeed(config.worldParameters().initialGameSpeed());
-
-            List<com.oddlabs.tt.simulation.landscape.SpawnLocation> locs = landscape.startingLocations().get(i);
-            for (int j = 0; j < pConfig.unitInfo().numPeons(); j++) {
-                var loc = locs.get(j);
-                new com.oddlabs.tt.simulation.model.Unit(player, loc.x(), loc.y(), null,
-                        player.getRaceInfo().getUnitTemplate(com.oddlabs.tt.simulation.model.UnitType.PEON));
-            }
+            PlayerInitializer.initializePlayerArmy(
+                    player,
+                    landscape.startingLocations().get(i),
+                    pConfig.unitInfo(),
+                    config.worldParameters().initialGameSpeed(),
+                    null
+            );
 
             AI ai = switch (pConfig.aiDifficulty()) {
-                case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, player, null, Difficulty.NORMAL);
-                case PlayerSlot.AI_HARD -> new AdvancedAI(player, player, null, Difficulty.HARD);
-                case PlayerSlot.AI_EASY -> new AdvancedAI(player, player, null, Difficulty.EASY);
+                case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, player, Difficulty.NORMAL);
+                case PlayerSlot.AI_HARD -> new AdvancedAI(player, player, Difficulty.HARD);
+                case PlayerSlot.AI_EASY -> new AdvancedAI(player, player, Difficulty.EASY);
                 case PlayerSlot.AI_BATTLE_TUTORIAL, PlayerSlot.AI_PASSIVE_CAMPAIGN ->
-                    new PassiveAI(player, player, null, true);
+                    new PassiveAI(player, player, true);
                 case PlayerSlot.AI_NEUTRAL_CAMPAIGN ->
-                    new PassiveAI(player, player, null, false);
+                    new PassiveAI(player, player, false);
                 default -> throw new IllegalArgumentException("Unsupported difficulty: " + pConfig.aiDifficulty());
             };
             player.setAI(ai);
+        }
+
+        for (Player p : world.getPlayers()) {
+            p.setCommandRejectedListener((action, entityId, reason) ->
+                    logger.log(Level.FINE, "Command rejected on player {0} for {1} (entity {2}): {3}",
+                            new Object[]{p.getPlayerInfo().name(), action, entityId, reason}));
         }
 
         int maxTicks = config.maxTicks();

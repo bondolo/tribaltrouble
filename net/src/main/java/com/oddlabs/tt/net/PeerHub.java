@@ -89,7 +89,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
             StallHandler stall_handler) {
         this(manager, is_multiplayer, is_rated, local_player, player_slots, network,
                 beacon_listener, matchmaking_client, chat_hub, distributable_table, session_id,
-                stall_handler, null, -1, false);
+                stall_handler, null, -1);
     }
 
     public PeerHub(AnimationManager manager, boolean is_multiplayer, boolean is_rated,
@@ -97,17 +97,6 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
             @Nullable BeaconListener beacon_listener, @Nullable MatchmakingClient matchmaking_client,
             @Nullable ChatHub chat_hub, DistributableTable distributable_table, SessionID session_id,
             StallHandler stall_handler, @Nullable String router_address, int router_port) {
-        this(manager, is_multiplayer, is_rated, local_player, player_slots, network,
-                beacon_listener, matchmaking_client, chat_hub, distributable_table, session_id,
-                stall_handler, router_address, router_port, false);
-    }
-
-    public PeerHub(AnimationManager manager, boolean is_multiplayer, boolean is_rated,
-            Player local_player, List<PlayerSlot> player_slots, NetworkSelector network,
-            @Nullable BeaconListener beacon_listener, @Nullable MatchmakingClient matchmaking_client,
-            @Nullable ChatHub chat_hub, DistributableTable distributable_table, SessionID session_id,
-            StallHandler stall_handler, @Nullable String router_address, int router_port,
-            boolean allow_ai_peers) {
         this.stall_handler = stall_handler;
         this.is_rated = is_rated;
         this.local_player = local_player;
@@ -141,8 +130,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
         }
         for (short i = 0; i < players.size(); i++) {
             Player player = players.get(i);
-            boolean is_peer = player_slots.get(i).getType() == PlayerSlot.HUMAN ||
-                    (allow_ai_peers && player_slots.get(i).getType() == PlayerSlot.AI);
+            boolean is_peer = player_slots.get(i).isNetworkPeer();
             if (!is_peer) {
                 nonhuman_players.add(player);
                 continue;

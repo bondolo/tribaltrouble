@@ -54,10 +54,9 @@ import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.simulation.player.AdvancedAI;
 import com.oddlabs.tt.simulation.player.NativeChieftainAI;
 import com.oddlabs.tt.simulation.player.PassiveAI;
-import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
+import com.oddlabs.tt.simulation.player.PlayerInitializer;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.player.VikingChieftainAI;
@@ -257,65 +256,53 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     private void initPlayer(ResourceBundle bundle, List<SpawnLocation> startingLocations, PlayerSlot slot,
             Player player, UnitInfo unit_info, int initial_gamespeed) {
+        String chieftainName = null;
+        if (slot.getType() != PlayerSlot.AI && unit_info.hasChieftain()) {
+            if (player.getRaceInfo().getChieftainAI() instanceof VikingChieftainAI)
+                chieftainName = Utils.getBundleString(bundle, "chieftain_name");
+            else if (player.getRaceInfo().getChieftainAI() instanceof NativeChieftainAI)
+                chieftainName = Utils.getBundleString(bundle, "native_chieftain_name");
+            else
+                throw new IllegalStateException("Unknown chieftain AI: " + player.getRaceInfo().getChieftainAI());
+        }
+        PlayerInitializer.initPlayer(player, slot, unit_info, startingLocations, initial_gamespeed, chieftainName);
+
         if (slot.getType() == PlayerSlot.AI) {
-            AI ai = switch (slot.getAIDifficulty()) {
-                case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, player, unit_info, Difficulty.NORMAL);
-                case PlayerSlot.AI_HARD -> new AdvancedAI(player, player, unit_info, Difficulty.HARD);
-                case PlayerSlot.AI_EASY -> new AdvancedAI(player, player, unit_info, Difficulty.EASY);
-                case PlayerSlot.AI_BATTLE_TUTORIAL -> new PassiveAI(player, player, unit_info, true);
-                case PlayerSlot.AI_TOWER_TUTORIAL -> null;
-                case PlayerSlot.AI_CHIEFTAIN_TUTORIAL -> {
-                    new Unit(player, 100, 100, null, player.getRaceInfo().getUnitTemplate(UnitType.PEON));
-                    new Unit(player, 200, 100, null, player.getRaceInfo().getUnitTemplate(UnitType.PEON));
-                    new Unit(player, 40, 200, null, player.getRaceInfo().getUnitTemplate(UnitType.PEON));
-                    yield null;
+            if (slot.isNetworkPeer()) {
+                if (player == local_player) {
+                    AI ai = switch (slot.getAIDifficulty()) {
+                        case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, peerhub.getPlayerInterface(),
+                                Difficulty.NORMAL);
+                        case PlayerSlot.AI_HARD -> new AdvancedAI(player, peerhub.getPlayerInterface(),
+                                Difficulty.HARD);
+                        case PlayerSlot.AI_EASY -> new AdvancedAI(player, peerhub.getPlayerInterface(),
+                                Difficulty.EASY);
+                        case PlayerSlot.AI_BATTLE_TUTORIAL, PlayerSlot.AI_PASSIVE_CAMPAIGN ->
+                            new PassiveAI(player, peerhub.getPlayerInterface(), true);
+                        case PlayerSlot.AI_NEUTRAL_CAMPAIGN ->
+                            new PassiveAI(player, peerhub.getPlayerInterface(), false);
+                        case PlayerSlot.AI_TOWER_TUTORIAL, PlayerSlot.AI_CHIEFTAIN_TUTORIAL -> null;
+                        default -> throw new IllegalArgumentException("unexpected difficulty: " + slot
+                                .getAIDifficulty());
+                    };
+                    if (ai != null) {
+                        player.setAI(ai);
+                    }
                 }
-                case PlayerSlot.AI_PASSIVE_CAMPAIGN -> new PassiveAI(player, player, unit_info, true);
-                case PlayerSlot.AI_NEUTRAL_CAMPAIGN -> new PassiveAI(player, player, unit_info, false);
-                default -> throw new IllegalArgumentException("unexpected difficulty: " + slot.getAIDifficulty());
-            };
-            if (ai != null) {
-                player.setAI(ai);
-            }
-        } else {
-            player.setPreferredGamespeed(initial_gamespeed);
-            int i = 0;
-            for (int j = 0; j < unit_info.numPeons(); j++, i++) {
-                SpawnLocation loc = startingLocations.get(i);
-                new Unit(player, loc.x(), loc.y(), null, player.getRaceInfo()
-                        .getUnitTemplate(UnitType.PEON));
-            }
-            for (int j = 0; j < unit_info.numRockWarriors(); j++, i++) {
-                SpawnLocation loc = startingLocations.get(i);
-                new Unit(player, loc.x(), loc.y(), null, player.getRaceInfo()
-                        .getUnitTemplate(UnitType.WARRIOR_ROCK));
-            }
-            for (int j = 0; j < unit_info.numIronWarriors(); j++, i++) {
-                SpawnLocation loc = startingLocations.get(i);
-                new Unit(player, loc.x(), loc.y(), null, player.getRaceInfo()
-                        .getUnitTemplate(UnitType.WARRIOR_IRON));
-            }
-            for (int j = 0; j < unit_info.numRubberWarriors(); j++, i++) {
-                SpawnLocation loc = startingLocations.get(i);
-                new Unit(player, loc.x(), loc.y(), null, player.getRaceInfo()
-                        .getUnitTemplate(UnitType.WARRIOR_RUBBER));
-            }
-            if (unit_info.hasChieftain()) {
-                SpawnLocation loc = startingLocations.get(i);
-                Unit chieftain;
-                if (player.getRaceInfo().getChieftainAI() instanceof VikingChieftainAI)
-                    chieftain = new Unit(player, loc.x(), loc.y(), null, player
-                            .getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(bundle,
-                                    "chieftain_name"), false);
-                else if (player.getRaceInfo().getChieftainAI() instanceof NativeChieftainAI)
-                    chieftain = new Unit(player, loc.x(), loc.y(), null, player
-                            .getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(bundle,
-                                    "native_chieftain_name"), false);
-                else
-                    throw new IllegalStateException("Unknown chieftain AI: " + player.getRaceInfo().getChieftainAI());
-                chieftain.getOwner().getRaceInfo().getMagics().forEach(chieftain::maxMagicEnergy);
-                player.setActiveChieftain(chieftain);
-                i++;
+            } else {
+                AI ai = switch (slot.getAIDifficulty()) {
+                    case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, player, Difficulty.NORMAL);
+                    case PlayerSlot.AI_HARD -> new AdvancedAI(player, player, Difficulty.HARD);
+                    case PlayerSlot.AI_EASY -> new AdvancedAI(player, player, Difficulty.EASY);
+                    case PlayerSlot.AI_BATTLE_TUTORIAL -> new PassiveAI(player, player, true);
+                    case PlayerSlot.AI_TOWER_TUTORIAL, PlayerSlot.AI_CHIEFTAIN_TUTORIAL -> null;
+                    case PlayerSlot.AI_PASSIVE_CAMPAIGN -> new PassiveAI(player, player, true);
+                    case PlayerSlot.AI_NEUTRAL_CAMPAIGN -> new PassiveAI(player, player, false);
+                    default -> throw new IllegalArgumentException("unexpected difficulty: " + slot.getAIDifficulty());
+                };
+                if (ai != null) {
+                    player.setAI(ai);
+                }
             }
         }
     }

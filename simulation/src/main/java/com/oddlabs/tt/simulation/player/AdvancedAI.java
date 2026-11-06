@@ -104,9 +104,8 @@ public final class AdvancedAI extends AI {
 
     private @Nullable LandscapeTarget defense_target = null;
 
-    public AdvancedAI(Player owner, PlayerInterface playerInterface, @Nullable UnitInfo unit_info,
-            Difficulty difficulty) {
-        super(owner, playerInterface, unit_info);
+    public AdvancedAI(Player owner, PlayerInterface playerInterface, Difficulty difficulty) {
+        super(owner, playerInterface);
         this.params = PARAMS.get(difficulty);
         this.numWarriors = params.numWarriorsDefault();
     }

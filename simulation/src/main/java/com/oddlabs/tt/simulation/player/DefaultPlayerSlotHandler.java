@@ -64,6 +64,11 @@ public final class DefaultPlayerSlotHandler implements PlayerSlotHandler {
     }
 
     @Override
+    public boolean isNetworkPeer(Serializable slot) {
+        return ((PlayerSlot) slot).isNetworkPeer();
+    }
+
+    @Override
     public @Nullable Serializable getInfo(Serializable slot) {
         return ((PlayerSlot) slot).getInfo();
     }

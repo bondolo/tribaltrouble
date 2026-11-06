@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
  * A harvestable tree resource in the game world.
  * Provides wood supplies when harvested by peon units.
  */
-public final class TreeSupply extends AbstractTreeGroup implements Supply, Target {
+public final class TreeSupply extends AbstractTreeGroup implements Supply, Target, Distributable {
     private static final int INITIAL_SUPPLIES = 10;
 
     private final Matrix4f matrix;

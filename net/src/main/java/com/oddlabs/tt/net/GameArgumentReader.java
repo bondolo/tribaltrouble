@@ -4,6 +4,7 @@ import com.oddlabs.net.ByteBufferInputStream;
 import com.oddlabs.net.DefaultARMIArgumentReader;
 import com.oddlabs.tt.simulation.model.Distributable;
 import com.oddlabs.tt.simulation.model.DistributableTable;
+import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -20,17 +21,17 @@ public final class GameArgumentReader extends DefaultARMIArgumentReader {
     @Override
     public @Nullable Object readArgument(Class<?> type, ByteBufferInputStream in) throws IOException,
             ClassNotFoundException {
-        if (Distributable.class.isAssignableFrom(type)) {
+        if (Distributable.class.isAssignableFrom(type) || Target.class.isAssignableFrom(type)) {
             int name = in.buffer().getInt();
             return distributable_table.getDistributable(name);
-        } else if (Distributable[].class.isAssignableFrom(type)) {
+        } else if (Distributable[].class.isAssignableFrom(type) || Target[].class.isAssignableFrom(type)) {
             short length = in.buffer().getShort();
-            Distributable[] distributables = (Distributable[]) Array.newInstance(type.getComponentType(), length);
-            for (int j = 0; j < distributables.length; j++) {
+            Object[] array = (Object[]) Array.newInstance(type.getComponentType(), length);
+            for (int j = 0; j < array.length; j++) {
                 int name = in.buffer().getInt();
-                distributables[j] = distributable_table.getDistributable(name);
+                array[j] = distributable_table.getDistributable(name);
             }
-            return distributables;
+            return array;
         } else {
             return super.readArgument(type, in);
         }

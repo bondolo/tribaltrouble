@@ -23,6 +23,7 @@ import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -31,7 +32,7 @@ import java.util.Optional;
 /**
  * Represents a player in the game simulation, managing units, buildings, color, and player metrics.
  */
-public final class Player implements PlayerInterface {
+public final class Player implements PlayerInterface, PlayerActions {
     public static final int INITIAL_UNIT_COUNT = 20;
     public static final int MAX_BUILDING_COUNT = 20;
     public static final int DEFAULT_MAX_UNIT_COUNT = 250;
@@ -82,6 +83,7 @@ public final class Player implements PlayerInterface {
     private float hit_bonus;
 
     private int preferred_speed = World.GAMESPEED_DONTCARE;
+    private @Nullable CommandRejectedListener command_rejected_listener = null;
 
     public Player(World world, PlayerInfo player_info, Color color) {
         this.world = world;
@@ -89,6 +91,16 @@ public final class Player implements PlayerInterface {
         this.player_info = player_info;
         this.unit_count = new SupplyContainer(world.getMaxUnitCount());
 //		this.team_tip = i18n("team", new Object[]{Integer.toString(player_info.getTeam() + 1)});
+    }
+
+    public void setCommandRejectedListener(@Nullable CommandRejectedListener listener) {
+        this.command_rejected_listener = listener;
+    }
+
+    private void notifyRejected(String action, int entityId, String reason) {
+        if (command_rejected_listener != null) {
+            command_rejected_listener.onCommandRejected(action, entityId, reason);
+        }
     }
 
     @Override
@@ -541,7 +553,7 @@ public final class Player implements PlayerInterface {
         }
     }
 
-    private boolean isValid(@Nullable Selectable<?> s) {
+    public boolean isValid(@Nullable Selectable<?> s) {
         return s != null && !s.isDead() && s.getOwner() == this;
     }
 
@@ -664,5 +676,210 @@ public final class Player implements PlayerInterface {
 
     public int getRubberHarvested() {
         return rubber_harvested;
+    }
+
+    @Override
+    public void deployUnits(int buildingId, DeployType deployType, int numUnits) {
+        var distributable = world.getDistributableTable().getDistributable(buildingId);
+        if (!(distributable instanceof Building building)) {
+            notifyRejected("deployUnits", buildingId, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("deployUnits", buildingId, "NOT_OWNED");
+            return;
+        }
+        deployUnits(building, deployType, numUnits);
+    }
+
+    @Override
+    public void createHarvesters(int buildingId, int numTree, int numRock, int numIron, int numRubber) {
+        var distributable = world.getDistributableTable().getDistributable(buildingId);
+        if (!(distributable instanceof Building building)) {
+            notifyRejected("createHarvesters", buildingId, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("createHarvesters", buildingId, "NOT_OWNED");
+            return;
+        }
+        createHarvesters(building, numTree, numRock, numIron, numRubber);
+    }
+
+    @Override
+    public void buildRockWeapons(int buildingId, int numWeapons, boolean infinite) {
+        var distributable = world.getDistributableTable().getDistributable(buildingId);
+        if (!(distributable instanceof Building building)) {
+            notifyRejected("buildRockWeapons", buildingId, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("buildRockWeapons", buildingId, "NOT_OWNED");
+            return;
+        }
+        buildRockWeapons(building, numWeapons, infinite);
+    }
+
+    @Override
+    public void buildIronWeapons(int buildingId, int numWeapons, boolean infinite) {
+        var distributable = world.getDistributableTable().getDistributable(buildingId);
+        if (!(distributable instanceof Building building)) {
+            notifyRejected("buildIronWeapons", buildingId, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("buildIronWeapons", buildingId, "NOT_OWNED");
+            return;
+        }
+        buildIronWeapons(building, numWeapons, infinite);
+    }
+
+    @Override
+    public void buildRubberWeapons(int buildingId, int numWeapons, boolean infinite) {
+        var distributable = world.getDistributableTable().getDistributable(buildingId);
+        if (!(distributable instanceof Building building)) {
+            notifyRejected("buildRubberWeapons", buildingId, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("buildRubberWeapons", buildingId, "NOT_OWNED");
+            return;
+        }
+        buildRubberWeapons(building, numWeapons, infinite);
+    }
+
+    @Override
+    public void doMagic(int chieftainId, MagicType magic) {
+        var distributable = world.getDistributableTable().getDistributable(chieftainId);
+        if (!(distributable instanceof Unit chief)) {
+            notifyRejected("doMagic", chieftainId, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(chief)) {
+            notifyRejected("doMagic", chieftainId, "NOT_OWNED");
+            return;
+        }
+        doMagic(chief, magic);
+    }
+
+    @Override
+    public void exitTower(int buildingId) {
+        var distributable = world.getDistributableTable().getDistributable(buildingId);
+        if (!(distributable instanceof Building building)) {
+            notifyRejected("exitTower", buildingId, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("exitTower", buildingId, "NOT_OWNED");
+            return;
+        }
+        exitTower(building);
+    }
+
+    @Override
+    public void trainChieftain(int buildingId, boolean start) {
+        var distributable = world.getDistributableTable().getDistributable(buildingId);
+        if (!(distributable instanceof Building building)) {
+            notifyRejected("trainChieftain", buildingId, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("trainChieftain", buildingId, "NOT_OWNED");
+            return;
+        }
+        trainChieftain(building, start);
+    }
+
+    @Override
+    public void placeBuilding(int[] selectionIds, BuildingType templateType, int gridX, int gridY) {
+        int gridSize = world.getHeightMap().getGridUnitsPerWorld();
+        if (gridX < 0 || gridX >= gridSize || gridY < 0 || gridY >= gridSize) {
+            throw new IllegalArgumentException("Grid coordinates out of bounds: (" + gridX + ", " + gridY + ")");
+        }
+        List<Selectable<?>> selectables = resolveSelectables(selectionIds);
+        if (selectables.isEmpty() && selectionIds.length > 0) {
+            notifyRejected("placeBuilding", selectionIds[0], "ENTITY_NOT_FOUND");
+            return;
+        }
+        placeBuilding(selectables.toArray(Selectable[]::new), templateType, gridX, gridY);
+    }
+
+    @Override
+    public void setRallyPoint(int buildingId, int targetEntityId) {
+        var buildingDistributable = world.getDistributableTable().getDistributable(buildingId);
+        if (!(buildingDistributable instanceof Building building)) {
+            notifyRejected("setRallyPoint", buildingId, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("setRallyPoint", buildingId, "NOT_OWNED");
+            return;
+        }
+        var targetDistributable = world.getDistributableTable().getDistributable(targetEntityId);
+        if (!(targetDistributable instanceof Target target)) {
+            notifyRejected("setRallyPoint", targetEntityId, "ENTITY_NOT_FOUND");
+            return;
+        }
+        setRallyPoint(building, target);
+    }
+
+    @Override
+    public void setRallyPoint(int buildingId, int gridX, int gridY) {
+        int gridSize = world.getHeightMap().getGridUnitsPerWorld();
+        if (gridX < 0 || gridX >= gridSize || gridY < 0 || gridY >= gridSize) {
+            throw new IllegalArgumentException("Grid coordinates out of bounds: (" + gridX + ", " + gridY + ")");
+        }
+        var buildingDistributable = world.getDistributableTable().getDistributable(buildingId);
+        if (!(buildingDistributable instanceof Building building)) {
+            notifyRejected("setRallyPoint", buildingId, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("setRallyPoint", buildingId, "NOT_OWNED");
+            return;
+        }
+        setRallyPoint(building, gridX, gridY);
+    }
+
+    @Override
+    public void setTarget(int[] selectionIds, int targetEntityId, Action action, boolean aggressive) {
+        var targetDistributable = world.getDistributableTable().getDistributable(targetEntityId);
+        if (!(targetDistributable instanceof Target target)) {
+            notifyRejected("setTarget", targetEntityId, "ENTITY_NOT_FOUND");
+            return;
+        }
+        List<Selectable<?>> selectables = resolveSelectables(selectionIds);
+        if (selectables.isEmpty() && selectionIds.length > 0) {
+            notifyRejected("setTarget", selectionIds[0], "ENTITY_NOT_FOUND");
+            return;
+        }
+        setTarget(selectables.toArray(Selectable[]::new), target, action, aggressive);
+    }
+
+    @Override
+    public void setLandscapeTarget(int[] selectionIds, int gridX, int gridY, Action action, boolean aggressive) {
+        int gridSize = world.getHeightMap().getGridUnitsPerWorld();
+        if (gridX < 0 || gridX >= gridSize || gridY < 0 || gridY >= gridSize) {
+            throw new IllegalArgumentException("Grid coordinates out of bounds: (" + gridX + ", " + gridY + ")");
+        }
+        List<Selectable<?>> selectables = resolveSelectables(selectionIds);
+        if (selectables.isEmpty() && selectionIds.length > 0) {
+            notifyRejected("setLandscapeTarget", selectionIds[0], "ENTITY_NOT_FOUND");
+            return;
+        }
+        setLandscapeTarget(selectables.toArray(Selectable[]::new), gridX, gridY, action,
+                aggressive);
+    }
+
+    private List<Selectable<?>> resolveSelectables(int[] entityIds) {
+        var table = world.getDistributableTable();
+        List<Selectable<?>> result = new ArrayList<>(entityIds.length);
+        for (int id : entityIds) {
+            var d = table.getDistributable(id);
+            if (d instanceof Selectable<?> s && isValid(s)) {
+                result.add(s);
+            }
+        }
+        return result;
     }
 }

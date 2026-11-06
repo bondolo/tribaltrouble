@@ -1,10 +1,6 @@
 package com.oddlabs.tt.simulation.player;
 
 import com.oddlabs.tt.base.global.AppConfig;
-import com.oddlabs.tt.simulation.model.BuildingType;
-
-import com.oddlabs.tt.simulation.model.UnitType;
-
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.simulation.SimulationConfig;
 import com.oddlabs.tt.simulation.model.Abilities;
@@ -21,14 +17,12 @@ import com.oddlabs.tt.simulation.behaviour.IdleController;
 import com.oddlabs.tt.simulation.behaviour.NullController;
 import com.oddlabs.tt.simulation.behaviour.PlaceBuildingController;
 import com.oddlabs.tt.simulation.behaviour.WalkController;
-import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.SplittableRandom;
 import java.util.random.RandomGenerator;
 
@@ -69,7 +63,7 @@ public abstract class AI {
     private boolean tower_under_construction = false;
     private float sleep_time;
 
-    public AI(Player owner, PlayerInterface playerInterface, @Nullable UnitInfo unit_info) {
+    public AI(Player owner, PlayerInterface playerInterface) {
         this.owner = owner;
         this.playerInterface = playerInterface;
         int playerIndex = owner.getWorld().getPlayers().indexOf(owner);
@@ -77,53 +71,6 @@ public abstract class AI {
         long seed = (mapSeed ^ 0x9E3779B97F4A7C15L) + 10007L * (playerIndex >= 0 ? playerIndex : 0);
         this.aiRandom = new SplittableRandom(seed);
         reset();
-
-        if (unit_info != null) {
-            int grid_start_x = UnitGrid.toGridCoordinate(owner.getStartX());
-            int grid_start_y = UnitGrid.toGridCoordinate(owner.getStartY());
-            if (unit_info.hasQuarters()) {
-                owner.buildBuilding(BuildingType.QUARTERS, grid_start_x, grid_start_y);
-            }
-            if (unit_info.hasArmory()) {
-                owner.buildBuilding(BuildingType.ARMORY, grid_start_x, grid_start_y);
-            }
-            for (int i = 0; i < unit_info.numTowers(); i++) {
-                int center = owner.getWorld().getHeightMap().getGridUnitsPerWorld() / 2;
-                int dx = center - grid_start_x;
-                int dy = center - grid_start_y;
-                float inv_dist = 1f / (float) Math.sqrt(dx * dx + dy * dy);
-                int tx = (int) (grid_start_x + 10f * dx * inv_dist);
-                int ty = (int) (grid_start_y + 10f * dy * inv_dist);
-                owner.buildBuilding(BuildingType.TOWER, tx, ty);
-            }
-            Random random = new Random(42);
-            if (unit_info.hasChieftain()) {
-                Target t = getTarget(random);
-                Unit chieftain = new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRaceInfo()
-                        .getUnitTemplate(UnitType.CHIEFTAIN));
-                owner.setActiveChieftain(chieftain);
-            }
-            for (int i = 0; i < unit_info.numPeons(); i++) {
-                Target t = getTarget(random);
-                new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRaceInfo().getUnitTemplate(
-                        UnitType.PEON));
-            }
-            for (int i = 0; i < unit_info.numRockWarriors(); i++) {
-                Target t = getTarget(random);
-                new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRaceInfo().getUnitTemplate(
-                        UnitType.WARRIOR_ROCK));
-            }
-            for (int i = 0; i < unit_info.numIronWarriors(); i++) {
-                Target t = getTarget(random);
-                new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRaceInfo().getUnitTemplate(
-                        UnitType.WARRIOR_IRON));
-            }
-            for (int i = 0; i < unit_info.numRubberWarriors(); i++) {
-                Target t = getTarget(random);
-                new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRaceInfo().getUnitTemplate(
-                        UnitType.WARRIOR_RUBBER));
-            }
-        }
     }
 
     protected final UnitGrid getUnitGrid() {
@@ -351,13 +298,6 @@ public abstract class AI {
     }
 
     protected final Target getTarget(RandomGenerator random) {
-        float RADIUS = 30;
-        float target_x = owner.getStartX() + random.nextFloat(-RADIUS, RADIUS);
-        float target_y = owner.getStartY() + random.nextFloat(-RADIUS, RADIUS);
-        Target target = getUnitGrid().findGridTarget(UnitGrid.toGridCoordinate(target_x),
-                UnitGrid.toGridCoordinate(target_y), false);
-        return target != null
-                ? target
-                : new LandscapeTarget(UnitGrid.toGridCoordinate(target_x), UnitGrid.toGridCoordinate(target_y));
+        return PlayerInitializer.getRadialTarget(owner, random);
     }
 }

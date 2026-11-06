@@ -34,6 +34,7 @@ public final class PlayerSlot implements Serializable {
     private @Nullable PlayerInfo player_info;
     private @Nullable TunnelAddress address;
     private int ai_difficulty = AI_NONE;
+    private transient @Nullable Boolean network_peer = null;
 
     public PlayerSlot(int slot) {
         this.slot = slot;
@@ -93,6 +94,17 @@ public final class PlayerSlot implements Serializable {
 
     public int getRating() {
         return rating;
+    }
+
+    public boolean isNetworkPeer() {
+        if (network_peer != null) {
+            return network_peer;
+        }
+        return type == HUMAN;
+    }
+
+    public void setNetworkPeer(boolean network_peer) {
+        this.network_peer = network_peer;
     }
 
     @Override

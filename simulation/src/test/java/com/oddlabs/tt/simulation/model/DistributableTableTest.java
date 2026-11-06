@@ -3,7 +3,9 @@ package com.oddlabs.tt.simulation.model;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for {@link DistributableTable}.
@@ -64,5 +66,20 @@ class DistributableTableTest {
     void testUnregisteredGetDistributableReturnsNull() {
         DistributableTable table = new DistributableTable();
         assertNull(table.getDistributable(999));
+    }
+
+    @Test
+    void testFindName() {
+        DistributableTable table = new DistributableTable();
+        TestDistributable d1 = new TestDistributable();
+
+        assertFalse(table.findName(d1).isPresent(), "Unregistered object should have empty findName");
+
+        int id = table.register(d1);
+        assertTrue(table.findName(d1).isPresent());
+        assertEquals(id, table.findName(d1).getAsInt());
+
+        table.unregister(d1);
+        assertFalse(table.findName(d1).isPresent(), "Unregistered object should have empty findName after removal");
     }
 }

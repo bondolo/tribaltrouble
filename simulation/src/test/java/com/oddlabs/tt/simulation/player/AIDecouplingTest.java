@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -257,7 +258,7 @@ class AIDecouplingTest {
 
     @Test
     void testAiCreationDoesNotRegisterWithRealTimeAnimationManager() {
-        AdvancedAI ai = new AdvancedAI(player, recordingInterface, null, Difficulty.NORMAL);
+        AdvancedAI ai = new AdvancedAI(player, recordingInterface, Difficulty.NORMAL);
         assertSame(recordingInterface, ai.getPlayerInterface());
 
         // Advance the world's real-time animation manager by 20 seconds.
@@ -269,7 +270,7 @@ class AIDecouplingTest {
 
     @Test
     void testManTowersDispatchesThroughPlayerInterface() {
-        AdvancedAI ai = new AdvancedAI(player, recordingInterface, null, Difficulty.NORMAL);
+        AdvancedAI ai = new AdvancedAI(player, recordingInterface, Difficulty.NORMAL);
 
         // Spawn a tower and an idle warrior for the AI player
         Building tower = new Building(player, player.getRaceInfo().getBuildingTemplate(BuildingType.TOWER), 10, 10);
@@ -330,5 +331,21 @@ class AIDecouplingTest {
 
         assertTrue(recordingInterface.calls.contains("doMagic:LIGHTNING_CLOUD"),
                 "Native chieftain magic should dispatch through playerInterface.doMagic");
+    }
+
+    @Test
+    void testPassiveAiWanderDispatchesThroughPlayerInterfaceSetLandscapeTarget() {
+        PassiveAI ai = new PassiveAI(player, recordingInterface, true);
+        new Unit(player, 10, 10, null, player.getRaceInfo().getUnitTemplate(UnitType.PEON));
+
+        // Advance ticks until random decision triggers wandering (decision cycle is every ~2-4s with 20% probability)
+        for (int i = 0; i < 2000 && recordingInterface.calls.isEmpty(); i++) {
+            ai.tick();
+        }
+
+        assertTrue(recordingInterface.calls.stream().anyMatch(c -> c.startsWith("setLandscapeTarget:")),
+                "PassiveAI with walk_around=true should dispatch roaming target through setLandscapeTarget");
+        assertFalse(recordingInterface.calls.stream().anyMatch(c -> c.startsWith("setTarget:")),
+                "PassiveAI roaming must not dispatch unregistered coordinates through setTarget");
     }
 }

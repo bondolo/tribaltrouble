@@ -11,7 +11,7 @@ import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.MagicType;
 
 /**
- * Interface defining actions a player can take, such as deploying units, building, and casting magic.
+ * Domain interface defining actions a player can take, such as deploying units, building, and casting magic.
  */
 public interface PlayerInterface {
     void deployUnits(Building building, DeployType type, int num_units);
