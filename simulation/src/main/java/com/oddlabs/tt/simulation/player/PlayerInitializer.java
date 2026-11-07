@@ -118,9 +118,11 @@ public final class PlayerInitializer {
             if (unitInfo.hasChieftain()) {
                 Target t = getLegacyTarget(player, random);
                 Unit chieftain = chieftainName != null
-                        ? new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(UnitType.CHIEFTAIN),
+                        ? new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(
+                                UnitType.CHIEFTAIN),
                                 chieftainName, false)
-                        : new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(UnitType.CHIEFTAIN));
+                        : new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(
+                                UnitType.CHIEFTAIN));
                 raceInfo.getMagics().forEach(chieftain::maxMagicEnergy);
                 player.setActiveChieftain(chieftain);
             }
@@ -130,15 +132,18 @@ public final class PlayerInitializer {
             }
             for (int j = 0; j < unitInfo.numRockWarriors(); j++) {
                 Target t = getLegacyTarget(player, random);
-                new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(UnitType.WARRIOR_ROCK));
+                new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(
+                        UnitType.WARRIOR_ROCK));
             }
             for (int j = 0; j < unitInfo.numIronWarriors(); j++) {
                 Target t = getLegacyTarget(player, random);
-                new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(UnitType.WARRIOR_IRON));
+                new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(
+                        UnitType.WARRIOR_IRON));
             }
             for (int j = 0; j < unitInfo.numRubberWarriors(); j++) {
                 Target t = getLegacyTarget(player, random);
-                new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(UnitType.WARRIOR_RUBBER));
+                new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(
+                        UnitType.WARRIOR_RUBBER));
             }
             return;
         }

@@ -8,8 +8,7 @@ public final class BuildProductionContainer extends SupplyContainer {
 
     private final SupplyContainer dest_container;
     private final Building building;
-    private final Cost cost;
-    private final float man_seconds_per_production;
+    private final WeaponTier tier;
 
     private float man_seconds = 0;
     private boolean infinite = false;
@@ -18,13 +17,21 @@ public final class BuildProductionContainer extends SupplyContainer {
     BuildProductionContainer(int max_supply_count,
             SupplyContainer dest_container,
             Building building,
-            Cost cost,
-            float man_seconds_per_production) {
+            WeaponTier tier) {
         super(max_supply_count);
         this.dest_container = dest_container;
         this.building = building;
-        this.cost = cost;
-        this.man_seconds_per_production = man_seconds_per_production;
+        this.tier = tier;
+    }
+
+    BuildProductionContainer(SupplyContainer dest_container,
+            Building building,
+            WeaponTier tier) {
+        this(INFINITE_LIMIT, dest_container, building, tier);
+    }
+
+    public WeaponTier getTier() {
+        return tier;
     }
 
     public void orderSupply(int amount) {
@@ -51,7 +58,7 @@ public final class BuildProductionContainer extends SupplyContainer {
     public boolean hasEnoughSupplies() {
         SupplyType[] types = SupplyType.getValues();
         for (SupplyType type : types) {
-            int needed = cost.getCost(type);
+            int needed = tier.getCost().getCost(type);
             if (needed > 0) {
                 SupplyContainer sc = building.getSupplyContainerDirect(type);
                 if (sc == null || sc.getNumSupplies() < needed) {
@@ -64,10 +71,10 @@ public final class BuildProductionContainer extends SupplyContainer {
 
     public void build(float delta) {
         man_seconds += delta;
-        if (man_seconds >= man_seconds_per_production) {
+        if (man_seconds >= tier.getBuildTime()) {
             man_seconds = 0;
             if (!dest_container.isSupplyFull()) {
-                cost.forEachCost((type, amount) -> {
+                tier.getCost().forEachCost((type, amount) -> {
                     SupplyContainer sc = building.getSupplyContainerDirect(type);
                     if (sc != null) {
                         sc.increaseSupply(-amount);
@@ -83,7 +90,7 @@ public final class BuildProductionContainer extends SupplyContainer {
     }
 
     public float getBuildProgress() {
-        return man_seconds / man_seconds_per_production;
+        return man_seconds / tier.getBuildTime();
     }
 
     private void stopProduction() {

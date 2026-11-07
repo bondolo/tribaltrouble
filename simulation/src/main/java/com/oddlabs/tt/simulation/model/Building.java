@@ -12,7 +12,6 @@ import com.oddlabs.tt.simulation.behaviour.TransferUnitController;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -28,23 +27,6 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
 
     private static final int PLACING_BORDER = 1;
     private static final int MAX_SUPPLY_COUNT = 200;
-
-    public static final Cost COST_ROCK_WEAPON = new Cost(Map.of(
-            SupplyType.WOOD, 2,
-            SupplyType.ROCK, 1));
-    public static final Cost COST_IRON_WEAPON = new Cost(Map.of(
-            SupplyType.WOOD, 2,
-            SupplyType.IRON, 1));
-    public static final Cost COST_RUBBER_WEAPON = new Cost(Map.of(
-            SupplyType.WOOD, 2,
-            SupplyType.ROCK, 1,
-            SupplyType.IRON, 1,
-            SupplyType.RUBBER, 1));
-
-    private static final Color.Linear DAMAGE_BASE_COLOR = new Color.Standard(0.3f, 0.8f).linear();
-    private static final Color.Linear DAMAGE_FACTOR_END = new Color.Linear(0.3f, 1.0f);
-    private static final Color.Linear SOOT_TINT = new Color.Linear(1.0f, 0.9f, 0.7f, 1.0f);
-    private static final Color.LinearDelta SOOT_DELTA = Color.LinearDelta.red(0.05f);
 
     private final Map<SupplyType, SupplyContainer> resource_containers
             = new EnumMap<>(SupplyType.class);
@@ -458,17 +440,10 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             for (WeaponTier tier : WeaponTier.values()) {
                 SupplyContainer weaponContainer = new SupplyContainer(MAX_SUPPLY_COUNT);
                 weapon_containers.put(tier, weaponContainer);
-                Cost cost = switch (tier) {
-                    case ROCK -> COST_ROCK_WEAPON;
-                    case IRON -> COST_IRON_WEAPON;
-                    case RUBBER -> COST_RUBBER_WEAPON;
-                };
                 BuildProductionContainer buildContainer = new BuildProductionContainer(
-                        BuildProductionContainer.INFINITE_LIMIT,
                         weaponContainer,
                         this,
-                        cost,
-                        tier.getBuildTime());
+                        tier);
                 weapon_build_containers.put(tier, buildContainer);
             }
 

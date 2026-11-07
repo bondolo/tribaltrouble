@@ -39,7 +39,6 @@ import com.oddlabs.tt.client.controller.QuartersActionController;
 import com.oddlabs.tt.client.controller.SubmenuType;
 import com.oddlabs.tt.client.controller.TowerActionController;
 import com.oddlabs.tt.client.controller.UnitActionController;
-import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.Nullable;
 
@@ -59,7 +58,6 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ActionButtonPanel.class.getName());
     private final ActionControllerStack controllerStack = new ActionControllerStack();
-    private final GUIIcons icons;
     private final Group unit_group;
     private final Group peon_group;
     private final Group chieftain_group;
@@ -85,7 +83,6 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
     private final NonFocusIconButton harvest_button;
     private final NonFocusIconButton build_button;
     private final NonFocusIconButton army_button;
-    private final NonFocusIconButton transport_button;
     private final StatusIcon unit_status;
     private final StatusIcon weapon_rock_status;
     private final StatusIcon weapon_iron_status;
@@ -132,7 +129,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         this.viewer = viewer;
         this.camera = camera;
         controllerStack.addListener(this::onControllerChanged);
-        this.icons = viewer.getIcons();
+        GUIIcons icons = viewer.getIcons();
 
         var race_icons = switch (viewer.getLocalPlayer().getRaceInfo().getRaceType()) {
             case Race.VIKINGS -> icons.getVikingIcons();
@@ -282,7 +279,8 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         status_group.compileCanvas(5, 5, 5, 5);
 
         quarters_unit_status = new WatchStatusIcon(font, label_width, race_icons.unitStatusIcon(), i18n(
-                "units_tip"), icons);
+                "units_tip"), icons
+        );
         quarters_status_group.addChild(quarters_unit_status);
         quarters_unit_status.place();
         quarters_status_group.compileCanvas(5, 5, 5, 5);
@@ -335,7 +333,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         army_button.setIconDisabler(() -> !viewer.getLocalPlayer().canBuildArmies());
         armory_group.addChild(army_button);
         bindAction(army_button, ArmoryActionController.class, a -> a.openSubmenu(SubmenuType.ARMY));
-        transport_button = new NonFocusIconButton(
+        NonFocusIconButton transport_button = new NonFocusIconButton(
                 guiRoot,
                 race_icons.transportIcon(), GameAction.PROD_TRANSPORT,
                 () -> i18n("transport_resources_tip", getBinding(GameAction.PROD_TRANSPORT))
@@ -397,19 +395,19 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
 
         build_weapon_rock_button = new BuildSpinner(
                 viewer, player_interface, race_icons.buildWeaponRockIcon(),
-                i18n("build_rock_tip"), icons.toIconList(Building.COST_ROCK_WEAPON),
+                i18n("build_rock_tip"), icons.toIconList(WeaponTier.ROCK.getCost()),
                 GameAction.RES_ROCK, GameAction.RES_ROCK_DEC, WeaponTier.ROCK
         );
         build_group.addChild(build_weapon_rock_button);
         build_weapon_iron_button = new BuildSpinner(
                 viewer, player_interface, race_icons.buildWeaponIronIcon(),
-                i18n("build_iron_tip"), icons.toIconList(Building.COST_IRON_WEAPON),
+                i18n("build_iron_tip"), icons.toIconList(WeaponTier.IRON.getCost()),
                 GameAction.RES_IRON, GameAction.RES_IRON_DEC, WeaponTier.IRON
         );
         build_group.addChild(build_weapon_iron_button);
         build_weapon_rubber_button = new BuildSpinner(
                 viewer, player_interface, race_icons.buildWeaponRubberIcon(),
-                i18n("build_chicken_tip"), icons.toIconList(Building.COST_RUBBER_WEAPON),
+                i18n("build_chicken_tip"), icons.toIconList(WeaponTier.RUBBER.getCost()),
                 GameAction.RES_CHICKEN, GameAction.RES_CHICKEN_DEC, WeaponTier.RUBBER
         );
         build_group.addChild(build_weapon_rubber_button);
