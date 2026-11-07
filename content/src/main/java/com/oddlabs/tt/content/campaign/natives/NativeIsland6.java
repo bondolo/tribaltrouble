@@ -147,9 +147,9 @@ final class NativeIsland6 extends Island {
         final Player enemy0 = getViewer().getWorld().getPlayers().get(2);
         final Player enemy1 = getViewer().getWorld().getPlayers().get(3);
 
-        friend.getAI().ifPresent(ai -> ai.manTowers(2)); // TODO: replace with insertGuardTower()
-        enemy0.getAI().ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
-        enemy1.getAI().ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
+        getViewer().getAI(friend).ifPresent(ai -> ai.manTowers(2)); // TODO: replace with insertGuardTower()
+        getViewer().getAI(enemy0).ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
+        getViewer().getAI(enemy1).ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
 
         // Defeat if friends eleminated
         runnable = () -> getCampaign().defeated(getViewer(), i18n("game_over"));

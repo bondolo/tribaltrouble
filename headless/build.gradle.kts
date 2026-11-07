@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":base"))
     implementation(project(":common"))
     implementation(project(":simulation"))
+    implementation(project(":ai"))
     implementation(project(":procedural"))
     implementation(project(":net"))
     compileOnlyApi(libs.jspecify)

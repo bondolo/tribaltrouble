@@ -19,8 +19,8 @@ pluginManagement {
 // Foundation and platform abstractions
 include("common", "base", "window", "input", "audio", "audio-openal")
 
-// Simulation, procedural generation, and networking
-include("simulation", "procedural", "net")
+// Simulation, procedural generation, networking, and artificial intelligence
+include("simulation", "procedural", "net", "ai")
 
 // Graphics engine, presentation, and scenery
 include("engine", "effects", "gui", "scenery")

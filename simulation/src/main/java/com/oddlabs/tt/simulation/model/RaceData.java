@@ -16,8 +16,6 @@ import com.oddlabs.tt.simulation.model.weapon.SonicBlastFactory;
 import com.oddlabs.tt.simulation.model.weapon.StunFactory;
 import com.oddlabs.tt.simulation.model.weapon.ThrowingFactory;
 import com.oddlabs.tt.simulation.model.weapon.WeaponFactory;
-import com.oddlabs.tt.simulation.player.NativeChieftainAI;
-import com.oddlabs.tt.simulation.player.VikingChieftainAI;
 import org.joml.Vector3f;
 
 import java.util.EnumMap;
@@ -262,8 +260,7 @@ public final class RaceData {
                 vikingWarriorRubber,
                 vikingPeon,
                 vikingChieftain,
-                vikingMagic,
-                new VikingChieftainAI()
+                vikingMagic
         );
     }
 
@@ -402,8 +399,7 @@ public final class RaceData {
                 nativeWarriorRubber,
                 nativePeon,
                 nativeChieftain,
-                nativeMagic,
-                new NativeChieftainAI()
+                nativeMagic
         );
     }
 }

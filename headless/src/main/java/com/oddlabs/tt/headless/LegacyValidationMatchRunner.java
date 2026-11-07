@@ -8,9 +8,9 @@ import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.RaceData;
-import com.oddlabs.tt.simulation.player.AI;
-import com.oddlabs.tt.simulation.player.AdvancedAI;
-import com.oddlabs.tt.simulation.player.PassiveAI;
+import com.oddlabs.tt.ai.AI;
+import com.oddlabs.tt.ai.AdvancedAI;
+import com.oddlabs.tt.ai.PassiveAI;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerInitializer;
@@ -67,7 +67,7 @@ public final class LegacyValidationMatchRunner {
                     new PassiveAI(player, player, false);
                 default -> throw new IllegalArgumentException("Unsupported difficulty: " + pConfig.aiDifficulty());
             };
-            player.setAI(ai);
+            world.addTickListener(ai::tick);
 
             PlayerInitializer.initializePlayerArmy(
                     player,

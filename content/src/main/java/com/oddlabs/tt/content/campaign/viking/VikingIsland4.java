@@ -175,7 +175,7 @@ final class VikingIsland4 extends Island {
         placePrisoners(captive, enemy, 0, 0, 0, 0, true);
 
         // Put warrior in tower
-        enemy.getAI().ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
+        getViewer().getAI(enemy).ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
 
         // Fill native armory with units and weapons
         int num_reinforcements = 100;

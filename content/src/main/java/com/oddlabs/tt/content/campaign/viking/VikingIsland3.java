@@ -110,7 +110,7 @@ final class VikingIsland3 extends Island {
         new VictoryTrigger(getViewer(), runnable);
 
         // Put warrior in tower
-        enemy.getAI().ifPresent(ai -> ai.manTowers(1)); // TODO: exchange with insertGuardTower()
+        getViewer().getAI(enemy).ifPresent(ai -> ai.manTowers(1)); // TODO: exchange with insertGuardTower()
 
         // Insert treasures
         float dir = (float) Math.sin(Math.PI / 4);

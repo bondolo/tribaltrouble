@@ -2,6 +2,7 @@ module com.oddlabs.tt.client {
     requires transitive com.oddlabs.common;
     requires transitive com.oddlabs.tt.base;
     requires transitive com.oddlabs.tt.simulation;
+    requires transitive com.oddlabs.tt.ai;
     requires com.oddlabs.tt.procedural;
     requires transitive com.oddlabs.tt.net;
     requires transitive com.oddlabs.tt.window;

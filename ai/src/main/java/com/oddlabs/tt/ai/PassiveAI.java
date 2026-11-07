@@ -1,10 +1,12 @@
-package com.oddlabs.tt.simulation.player;
+package com.oddlabs.tt.ai;
 
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.behaviour.IdleController;
 import com.oddlabs.tt.simulation.model.Target;
+import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerInterface;
 
 /**
  * Basic artificial intelligence controller for passive or idle units and chieftains.
@@ -35,7 +37,7 @@ public final class PassiveAI extends AI {
                     }
                 }
             }
-            getOwner().getChieftain().ifPresent(chieftain -> getOwner().getRaceInfo().getChieftainAI().decide(
+            getOwner().getChieftain().ifPresent(chieftain -> ChieftainAI.forRace(getOwner().getPlayerInfo().race()).decide(
                     chieftain, getPlayerInterface()));
         }
     }

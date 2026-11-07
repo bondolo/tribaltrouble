@@ -50,19 +50,19 @@ import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.RaceData;
-import com.oddlabs.tt.simulation.player.AI;
-import com.oddlabs.tt.simulation.player.AdvancedAI;
-import com.oddlabs.tt.simulation.player.NativeChieftainAI;
-import com.oddlabs.tt.simulation.player.PassiveAI;
+import com.oddlabs.tt.ai.AI;
+import com.oddlabs.tt.ai.AdvancedAI;
+import com.oddlabs.tt.ai.PassiveAI;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerInitializer;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import com.oddlabs.tt.simulation.player.VikingChieftainAI;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
@@ -97,6 +97,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
     private final ChatListener chat_listener;
     private final ChatSender chat_sender;
     private final InGameChatHistory in_game_chat_history;
+    private final Map<Player, AI> ai_bots = new LinkedHashMap<>();
 
     public WorldViewer(final GUIRoot gui_root,
             Peer peer,
@@ -254,16 +255,18 @@ public final class WorldViewer implements Animated, AutoCloseable {
         return local_player;
     }
 
+    public Optional<AI> getAI(Player player) {
+        return Optional.ofNullable(ai_bots.get(player));
+    }
+
     private void initPlayer(ResourceBundle bundle, List<SpawnLocation> startingLocations, PlayerSlot slot,
             Player player, UnitInfo unit_info, int initial_gamespeed) {
         String chieftainName = null;
         if (slot.getType() != PlayerSlot.AI && unit_info.hasChieftain()) {
-            if (player.getRaceInfo().getChieftainAI() instanceof VikingChieftainAI)
-                chieftainName = Utils.getBundleString(bundle, "chieftain_name");
-            else if (player.getRaceInfo().getChieftainAI() instanceof NativeChieftainAI)
-                chieftainName = Utils.getBundleString(bundle, "native_chieftain_name");
-            else
-                throw new IllegalStateException("Unknown chieftain AI: " + player.getRaceInfo().getChieftainAI());
+            chieftainName = Utils.getBundleString(bundle, switch (player.getPlayerInfo().race()) {
+                case VIKINGS -> "chieftain_name";
+                case NATIVES -> "native_chieftain_name";
+            });
         }
         PlayerInitializer.initPlayer(player, slot, unit_info, startingLocations, initial_gamespeed, chieftainName);
 
@@ -286,7 +289,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
                                 .getAIDifficulty());
                     };
                     if (ai != null) {
-                        player.setAI(ai);
+                        ai_bots.put(player, ai);
+                        world.addTickListener(ai::tick);
                     }
                 }
             } else {
@@ -301,7 +305,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
                     default -> throw new IllegalArgumentException("unexpected difficulty: " + slot.getAIDifficulty());
                 };
                 if (ai != null) {
-                    player.setAI(ai);
+                    ai_bots.put(player, ai);
+                    world.addTickListener(ai::tick);
                 }
             }
         }

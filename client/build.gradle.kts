@@ -17,6 +17,7 @@ dependencies {
     api(project(":base"))
     api(project(":common"))
     api(project(":simulation"))
+    api(project(":ai"))
     api(project(":procedural"))
     api(project(":net"))
     api(project(":window"))

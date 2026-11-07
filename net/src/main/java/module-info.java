@@ -2,6 +2,7 @@ module com.oddlabs.tt.net {
     requires com.oddlabs.common;
     requires com.oddlabs.tt.base;
     requires transitive com.oddlabs.tt.simulation;
+    requires transitive com.oddlabs.tt.ai;
     requires static org.jspecify;
     requires java.logging;
 

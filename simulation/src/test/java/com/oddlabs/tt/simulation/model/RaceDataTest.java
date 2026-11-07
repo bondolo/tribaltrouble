@@ -21,7 +21,6 @@ class RaceDataTest {
             RaceInfo raceInfo = raceData.getRaceInfo(race);
             assertNotNull(raceInfo, "RaceInfo missing for " + race);
             assertEquals(race, raceInfo.getRaceType());
-            assertNotNull(raceInfo.getChieftainAI());
 
             // Validate buildings
             for (BuildingType buildingType : BuildingType.values()) {

@@ -8,6 +8,7 @@ import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.landscape.SpawnLocation;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.pathfinder.BuildingSiteScanFilter;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.Army;
 import com.oddlabs.tt.simulation.model.Building;
@@ -44,8 +45,6 @@ public final class Player implements PlayerInterface, PlayerActions {
     private final SupplyContainer building_count = new SupplyContainer(MAX_BUILDING_COUNT);
 
     private Color.Linear color;
-
-    private @Nullable AI ai = null;
 
     private @Nullable Unit chieftain = null;
     private boolean training_chieftain = false;
@@ -269,21 +268,6 @@ public final class Player implements PlayerInterface, PlayerActions {
 
     public PlayerInfo getPlayerInfo() {
         return player_info;
-    }
-
-    public void setAI(@Nullable AI ai) {
-        this.ai = ai;
-    }
-
-    /**
-     * {@return the AI controller assigned to this player, or null if player is human or unassigned}
-     */
-    public @Nullable AI getRawAI() {
-        return ai;
-    }
-
-    public Optional<AI> getAI() {
-        return Optional.ofNullable(ai);
     }
 
     public Optional<Building> buildBuilding(BuildingType building_type, int grid_x, int grid_y) {

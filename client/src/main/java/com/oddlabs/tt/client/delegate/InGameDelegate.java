@@ -17,7 +17,7 @@ import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.tt.client.viewer.Cheat;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.simulation.player.AI;
+import com.oddlabs.tt.ai.AI;
 
 import java.util.ResourceBundle;
 import java.util.Set;

@@ -17,14 +17,17 @@ import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.model.Difficulty;
-import com.oddlabs.tt.simulation.player.AI;
-import com.oddlabs.tt.simulation.player.AdvancedAI;
-import com.oddlabs.tt.simulation.player.PassiveAI;
+import com.oddlabs.tt.ai.AI;
+import com.oddlabs.tt.ai.AdvancedAI;
+import com.oddlabs.tt.ai.PassiveAI;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Isolated headless simulation instance managing a local world and peer network endpoint.
@@ -43,6 +46,7 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
     private final World world;
     private final Player localPlayer;
     private final @Nullable AI ai;
+    private final Map<Player, AI> lockstepAis;
     private final AnimationManager animationManager;
     private final PeerHub peerHub;
 
@@ -50,14 +54,25 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
             int playerIndex,
             World world,
             @Nullable AI ai,
+            Map<Player, AI> lockstepAis,
             AnimationManager animationManager,
             PeerHub peerHub) {
         this.playerIndex = playerIndex;
         this.world = world;
         this.localPlayer = world.getPlayers().get(playerIndex);
         this.ai = ai;
+        this.lockstepAis = Map.copyOf(lockstepAis);
         this.animationManager = animationManager;
         this.peerHub = peerHub;
+    }
+
+    public HeadlessSimulationInstance(
+            int playerIndex,
+            World world,
+            @Nullable AI ai,
+            AnimationManager animationManager,
+            PeerHub peerHub) {
+        this(playerIndex, world, ai, Map.of(), animationManager, peerHub);
     }
 
     /**
@@ -155,10 +170,11 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
                 default -> throw new IllegalArgumentException("unexpected difficulty: " + localSlot.getAIDifficulty());
             };
             if (ai != null) {
-                localPlayer.setAI(ai);
+                world.addTickListener(ai::tick);
             }
         }
 
+        Map<Player, AI> lockstepAis = new LinkedHashMap<>();
         for (int k = 0; k < playerSlots.size(); k++) {
             if (k == playerIndex) {
                 continue;
@@ -178,12 +194,13 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
                     default -> throw new IllegalArgumentException("unexpected difficulty: " + slotK.getAIDifficulty());
                 };
                 if (lockstepAi != null) {
-                    otherPlayer.setAI(lockstepAi);
+                    lockstepAis.put(otherPlayer, lockstepAi);
+                    world.addTickListener(lockstepAi::tick);
                 }
             }
         }
 
-        return new HeadlessSimulationInstance(playerIndex, world, ai, animManager, peerHub);
+        return new HeadlessSimulationInstance(playerIndex, world, ai, lockstepAis, animManager, peerHub);
     }
 
     /**
@@ -221,6 +238,13 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
 
     public @Nullable AI getAI() {
         return ai;
+    }
+
+    public Optional<AI> getAI(Player player) {
+        if (player.equals(localPlayer)) {
+            return Optional.ofNullable(ai);
+        }
+        return Optional.ofNullable(lockstepAis.get(player));
     }
 
     public PeerHub getPeerHub() {

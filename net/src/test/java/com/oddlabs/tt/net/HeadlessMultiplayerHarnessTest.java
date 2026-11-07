@@ -17,6 +17,8 @@ import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
+import com.oddlabs.tt.ai.AdvancedAI;
+import com.oddlabs.tt.ai.PassiveAI;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -235,8 +237,8 @@ class HeadlessMultiplayerHarnessTest {
             HeadlessSimulationInstance bot0 = harness.getInstance(0);
             HeadlessSimulationInstance bot1 = harness.getInstance(1);
 
-            assertTrue(bot0.getAI() instanceof com.oddlabs.tt.simulation.player.AdvancedAI);
-            assertTrue(bot1.getAI() instanceof com.oddlabs.tt.simulation.player.AdvancedAI);
+            assertTrue(bot0.getAI() instanceof AdvancedAI);
+            assertTrue(bot1.getAI() instanceof AdvancedAI);
 
             harness.awaitSynchronized(Duration.ofSeconds(5));
             assertTrue(bot0.isSynchronized());
@@ -377,8 +379,8 @@ class HeadlessMultiplayerHarnessTest {
             HeadlessSimulationInstance bot0 = harness.getInstance(0);
             HeadlessSimulationInstance bot1 = harness.getInstance(1);
 
-            assertTrue(bot0.getAI() instanceof com.oddlabs.tt.simulation.player.PassiveAI);
-            assertTrue(bot1.getAI() instanceof com.oddlabs.tt.simulation.player.PassiveAI);
+            assertTrue(bot0.getAI() instanceof PassiveAI);
+            assertTrue(bot1.getAI() instanceof PassiveAI);
 
             harness.awaitSynchronized(Duration.ofSeconds(5));
             assertTrue(bot0.isSynchronized());
@@ -443,15 +445,15 @@ class HeadlessMultiplayerHarnessTest {
 
             // Human peer has no attached AI controller; AI peer has an AdvancedAI controller
             assertNull(humanPeer.getAI());
-            assertTrue(aiPeer.getAI() instanceof com.oddlabs.tt.simulation.player.AdvancedAI);
+            assertTrue(aiPeer.getAI() instanceof AdvancedAI);
 
             // Both instances must have Player 2 running a local lockstep PassiveAI controller
-            assertTrue(humanPeer.getWorld().getPlayers().get(2).getAI().isPresent());
-            assertTrue(humanPeer.getWorld().getPlayers().get(2).getAI()
-                    .get() instanceof com.oddlabs.tt.simulation.player.PassiveAI);
-            assertTrue(aiPeer.getWorld().getPlayers().get(2).getAI().isPresent());
-            assertTrue(aiPeer.getWorld().getPlayers().get(2).getAI()
-                    .get() instanceof com.oddlabs.tt.simulation.player.PassiveAI);
+            assertTrue(humanPeer.getAI(humanPeer.getWorld().getPlayers().get(2)).isPresent());
+            assertTrue(humanPeer.getAI(humanPeer.getWorld().getPlayers().get(2))
+                    .get() instanceof PassiveAI);
+            assertTrue(aiPeer.getAI(aiPeer.getWorld().getPlayers().get(2)).isPresent());
+            assertTrue(aiPeer.getAI(aiPeer.getWorld().getPlayers().get(2))
+                    .get() instanceof PassiveAI);
 
             harness.awaitSynchronized(Duration.ofSeconds(5));
             assertTrue(humanPeer.isSynchronized());

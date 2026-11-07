@@ -21,7 +21,7 @@ import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.client.viewer.WorldInitAction;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.simulation.player.AI;
+import com.oddlabs.tt.ai.AI;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.tt.simulation.model.Target;

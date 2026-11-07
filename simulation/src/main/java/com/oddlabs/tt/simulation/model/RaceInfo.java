@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.simulation.model.weapon.MagicFactory;
-import com.oddlabs.tt.simulation.player.ChieftainAI;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -17,15 +16,13 @@ public final class RaceInfo {
     private final EnumMap<UnitType, UnitTemplate> units = new EnumMap<>(UnitType.class);
     private final List<MagicType> magics;
     private final Map<MagicType, MagicFactory> magicFactories;
-    private final ChieftainAI chieftain_ai;
 
     public RaceInfo(Race race, BuildingTemplate quarters, BuildingTemplate armory,
             BuildingTemplate tower,
             UnitTemplate warrior_rock, UnitTemplate warrior_iron,
             UnitTemplate warrior_rubber,
             UnitTemplate peon, UnitTemplate chieftain,
-            Map<MagicType, MagicFactory> magicFactories,
-            ChieftainAI chieftain_ai) {
+            Map<MagicType, MagicFactory> magicFactories) {
         this.race = race;
         buildings.put(BuildingType.QUARTERS, quarters);
         buildings.put(BuildingType.ARMORY, armory);
@@ -40,7 +37,6 @@ public final class RaceInfo {
             case Race.VIKINGS -> List.of(MagicType.STUN, MagicType.SONIC_BLAST);
         };
         this.magicFactories = new EnumMap<>(magicFactories);
-        this.chieftain_ai = chieftain_ai;
     }
 
     public Race getRaceType() {
@@ -77,9 +73,5 @@ public final class RaceInfo {
             throw new IllegalArgumentException("No magic factory registered for magic type: " + type);
         }
         return factory;
-    }
-
-    public ChieftainAI getChieftainAI() {
-        return chieftain_ai;
     }
 }

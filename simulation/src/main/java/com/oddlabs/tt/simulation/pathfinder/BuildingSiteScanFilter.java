@@ -1,11 +1,8 @@
-package com.oddlabs.tt.simulation.player;
+package com.oddlabs.tt.simulation.pathfinder;
 
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingTemplate;
-import com.oddlabs.tt.simulation.pathfinder.Occupant;
-import com.oddlabs.tt.simulation.pathfinder.ScanFilter;
-import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;

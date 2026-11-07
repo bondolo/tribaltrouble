@@ -13,7 +13,7 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingTemplate;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.simulation.player.BuildingSiteScanFilter;
+import com.oddlabs.tt.simulation.pathfinder.BuildingSiteScanFilter;
 import com.oddlabs.tt.client.render.BuildingSiteRenderer;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import org.joml.Matrix4f;

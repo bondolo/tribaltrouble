@@ -1,4 +1,4 @@
-package com.oddlabs.tt.simulation.player;
+package com.oddlabs.tt.ai;
 
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.MagicType;
@@ -6,6 +6,7 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.CountOccupantScanFilter;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
+import com.oddlabs.tt.simulation.player.PlayerInterface;
 
 /**
  * AI logic controller for Native chieftains, determining when to cast Poison Fog and Lightning Cloud.

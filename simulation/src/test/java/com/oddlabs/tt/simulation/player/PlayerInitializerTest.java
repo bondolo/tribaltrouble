@@ -209,27 +209,6 @@ class PlayerInitializerTest {
     }
 
     @Test
-    void testAiCreationIsSideEffectFree() {
-        UnitInfo unitInfo = new UnitInfo(false, false, 0, false, 2, 0, 0, 0);
-        List<SpawnLocation> locations = List.of(
-                new SpawnLocation(5f, 5f),
-                new SpawnLocation(7f, 7f)
-        );
-        PlayerInitializer.initializePlayerArmy(player, locations, unitInfo, 0, null);
-
-        int initialUnitCount = player.getUnits().size();
-        int initialBuildingCount = player.getBuildingCountContainer().getNumSupplies();
-
-        AdvancedAI ai = new AdvancedAI(player, player, Difficulty.NORMAL);
-        assertNotNull(ai);
-
-        assertEquals(initialUnitCount, player.getUnits().size(),
-                "Instantiating AI controller must not alter player unit count");
-        assertEquals(initialBuildingCount, player.getBuildingCountContainer().getNumSupplies(),
-                "Instantiating AI controller must not alter player building count");
-    }
-
-    @Test
     void testInitPlayerWithAiNormalInitializesBase() {
         PlayerSlot slot = new PlayerSlot(0);
         slot.setType(PlayerSlot.AI);

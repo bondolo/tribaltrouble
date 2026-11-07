@@ -12,15 +12,16 @@ import com.oddlabs.tt.simulation.model.SupplyManagers;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Terrain;
+import com.oddlabs.tt.simulation.TickListener;
 import com.oddlabs.tt.simulation.pathfinder.RegionBuilder;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -59,6 +60,7 @@ public final class World implements SimulationClock {
     private final LandscapeBoundsProvider landscape_resources;
     private final Terrain terrain;
     private final DistributableTable distributable_table = new DistributableTable();
+    private final List<TickListener> tickListeners = new ArrayList<>();
 
     private int global_checksum;
     private int gamespeed;
@@ -133,20 +135,21 @@ public final class World implements SimulationClock {
         }
     }
 
+    public void addTickListener(TickListener listener) {
+        tickListeners.add(listener);
+    }
+
+    public void removeTickListener(TickListener listener) {
+        tickListeners.remove(listener);
+    }
+
     public void tick() {
         lastTickNanos = System.nanoTime();
         getAnimationManagerGameTime().runAnimations(getSecondsPerTick());
-        tickAI();
-        getAnimationManagerRealTime().runAnimations(AnimationManager.ANIMATION_SECONDS_PER_TICK);
-    }
-
-    private void tickAI() {
-        for (Player player : players) {
-            AI ai = player.getRawAI();
-            if (ai != null) {
-                ai.tick();
-            }
+        for (int i = 0; i < tickListeners.size(); i++) {
+            tickListeners.get(i).onTick();
         }
+        getAnimationManagerRealTime().runAnimations(AnimationManager.ANIMATION_SECONDS_PER_TICK);
     }
 
     @Override

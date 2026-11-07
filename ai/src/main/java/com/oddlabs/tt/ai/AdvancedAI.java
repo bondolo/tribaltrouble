@@ -1,4 +1,7 @@
-package com.oddlabs.tt.simulation.player;
+package com.oddlabs.tt.ai;
+
+import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerInterface;
 
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Difficulty;
@@ -13,6 +16,7 @@ import com.oddlabs.tt.simulation.model.DeployType;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.WeaponTier;
+import com.oddlabs.tt.simulation.pathfinder.BuildingSiteScanFilter;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
@@ -126,7 +130,7 @@ public final class AdvancedAI extends AI {
         nodeAttackWithWarriorsAndChieftain(numWarriors, numWarriors
                 >= params.numWarriorsForChieftain());
         nodeAssignIdlePeons();
-        getOwner().getChieftain().ifPresent(chieftain -> getOwner().getRaceInfo().getChieftainAI().decide(chieftain,
+        getOwner().getChieftain().ifPresent(chieftain -> ChieftainAI.forRace(getOwner().getPlayerInfo().race()).decide(chieftain,
                 getPlayerInterface()));
     }
 

@@ -1,4 +1,11 @@
-package com.oddlabs.tt.simulation.player;
+package com.oddlabs.tt.ai;
+
+import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerInfo;
+import com.oddlabs.tt.simulation.player.PlayerInitializer;
+import com.oddlabs.tt.simulation.player.PlayerInterface;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.UnitInfo;
 
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
@@ -35,6 +42,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -257,6 +265,20 @@ class AIDecouplingTest {
     }
 
     @Test
+    void testAiCreationIsSideEffectFree() {
+        int initialUnitCount = player.getUnits().size();
+        int initialBuildingCount = player.getBuildingCountContainer().getNumSupplies();
+
+        AdvancedAI ai = new AdvancedAI(player, recordingInterface, Difficulty.NORMAL);
+        assertSame(recordingInterface, ai.getPlayerInterface());
+
+        assertEquals(initialUnitCount, player.getUnits().size(),
+                "Instantiating AI controller must not alter player unit count");
+        assertEquals(initialBuildingCount, player.getBuildingCountContainer().getNumSupplies(),
+                "Instantiating AI controller must not alter player building count");
+    }
+
+    @Test
     void testAiCreationDoesNotRegisterWithRealTimeAnimationManager() {
         AdvancedAI ai = new AdvancedAI(player, recordingInterface, Difficulty.NORMAL);
         assertSame(recordingInterface, ai.getPlayerInterface());
@@ -331,6 +353,12 @@ class AIDecouplingTest {
 
         assertTrue(recordingInterface.calls.contains("doMagic:LIGHTNING_CLOUD"),
                 "Native chieftain magic should dispatch through playerInterface.doMagic");
+    }
+
+    @Test
+    void testChieftainAiForRace() {
+        assertInstanceOf(VikingChieftainAI.class, ChieftainAI.forRace(Race.VIKINGS));
+        assertInstanceOf(NativeChieftainAI.class, ChieftainAI.forRace(Race.NATIVES));
     }
 
     @Test

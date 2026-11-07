@@ -1,8 +1,11 @@
-package com.oddlabs.tt.simulation.player;
+package com.oddlabs.tt.ai;
 
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.simulation.SimulationConfig;
+import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerInitializer;
+import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.BuildProductionContainer;
