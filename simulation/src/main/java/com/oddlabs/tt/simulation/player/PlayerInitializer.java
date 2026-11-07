@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.player;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.landscape.SpawnLocation;
 import com.oddlabs.tt.simulation.model.BuildingType;
@@ -112,6 +113,36 @@ public final class PlayerInitializer {
         player.setPreferredGamespeed(initialGamespeed);
         var raceInfo = player.getRaceInfo();
 
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            Random random = new Random(42);
+            if (unitInfo.hasChieftain()) {
+                Target t = getLegacyTarget(player, random);
+                Unit chieftain = chieftainName != null
+                        ? new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(UnitType.CHIEFTAIN),
+                                chieftainName, false)
+                        : new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(UnitType.CHIEFTAIN));
+                raceInfo.getMagics().forEach(chieftain::maxMagicEnergy);
+                player.setActiveChieftain(chieftain);
+            }
+            for (int j = 0; j < unitInfo.numPeons(); j++) {
+                Target t = getLegacyTarget(player, random);
+                new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(UnitType.PEON));
+            }
+            for (int j = 0; j < unitInfo.numRockWarriors(); j++) {
+                Target t = getLegacyTarget(player, random);
+                new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(UnitType.WARRIOR_ROCK));
+            }
+            for (int j = 0; j < unitInfo.numIronWarriors(); j++) {
+                Target t = getLegacyTarget(player, random);
+                new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(UnitType.WARRIOR_IRON));
+            }
+            for (int j = 0; j < unitInfo.numRubberWarriors(); j++) {
+                Target t = getLegacyTarget(player, random);
+                new Unit(player, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(UnitType.WARRIOR_RUBBER));
+            }
+            return;
+        }
+
         int idx = 0;
         for (int j = 0; j < unitInfo.numPeons(); j++, idx++) {
             SpawnLocation loc = startingLocations.get(idx);
@@ -148,5 +179,18 @@ public final class PlayerInitializer {
         return target != null
                 ? target
                 : new LandscapeTarget(UnitGrid.toGridCoordinate(target_x), UnitGrid.toGridCoordinate(target_y));
+    }
+
+    private static Target getLegacyTarget(Player owner, Random random) {
+        float radius = 30f;
+        float target_x = owner.getStartX() + (random.nextFloat() * 2f - 1f) * radius;
+        float target_y = owner.getStartY() + (random.nextFloat() * 2f - 1f) * radius;
+        Target[] targets = owner.getWorld().getUnitGrid().findGridTargets(
+                UnitGrid.toGridCoordinate(target_x),
+                UnitGrid.toGridCoordinate(target_y),
+                1,
+                false
+        );
+        return targets[0];
     }
 }

@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.World;
 
 /**
@@ -26,7 +27,9 @@ public final class Plants extends SceneryModel {
 
     @Override
     protected void doRegister() {
-        register();
-        reinsert();
+        if (!AppConfig.LEGACY_DETERMINISTIC) {
+            register();
+            reinsert();
+        }
     }
 }

@@ -2,7 +2,6 @@ package com.oddlabs.tt.headless;
 
 import com.oddlabs.tt.net.HeadlessSimulationInstance;
 import com.oddlabs.tt.procedural.landscape.IslandGenerator;
-import com.oddlabs.tt.simulation.player.CommandRejectedListener;
 import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
@@ -57,13 +56,6 @@ public final class LegacyValidationMatchRunner {
         for (int i = 0; i < config.players().size(); i++) {
             var pConfig = config.players().get(i);
             Player player = world.getPlayers().get(i);
-            PlayerInitializer.initializePlayerArmy(
-                    player,
-                    landscape.startingLocations().get(i),
-                    pConfig.unitInfo(),
-                    config.worldParameters().initialGameSpeed(),
-                    null
-            );
 
             AI ai = switch (pConfig.aiDifficulty()) {
                 case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, player, Difficulty.NORMAL);
@@ -76,12 +68,20 @@ public final class LegacyValidationMatchRunner {
                 default -> throw new IllegalArgumentException("Unsupported difficulty: " + pConfig.aiDifficulty());
             };
             player.setAI(ai);
+
+            PlayerInitializer.initializePlayerArmy(
+                    player,
+                    landscape.startingLocations().get(i),
+                    pConfig.unitInfo(),
+                    config.worldParameters().initialGameSpeed(),
+                    null
+            );
         }
 
         for (Player p : world.getPlayers()) {
-            p.setCommandRejectedListener((action, entityId, reason) ->
-                    logger.log(Level.FINE, "Command rejected on player {0} for {1} (entity {2}): {3}",
-                            new Object[]{p.getPlayerInfo().name(), action, entityId, reason}));
+            p.setCommandRejectedListener((action, entityId, reason) -> logger.log(Level.FINE,
+                    "Command rejected on player {0} for {1} (entity {2}): {3}",
+                    new Object[]{p.getPlayerInfo().name(), action, entityId, reason}));
         }
 
         int maxTicks = config.maxTicks();
@@ -108,8 +108,9 @@ public final class LegacyValidationMatchRunner {
                             tgtStr = " tgt=(" + tgt.getPositionX() + "," + tgt.getPositionY() + ") grid=(" + tgt
                                     .getGridX() + "," + tgt.getGridY() + ")";
                         }
-                        System.out.printf("MODERN UNIT t=%d i=%d p=%s pos=(%.6f,%.6f) beh=%s ctrl=%s%s%n",
+                        System.out.printf("MODERN UNIT t=%d i=%d p=%s pos=(%.6f,%.6f) grid=(%d,%d) beh=%s ctrl=%s%s%n",
                                 currentTick, idx++, p.getPlayerInfo().name(), s.getPositionX(), s.getPositionY(),
+                                s.getGridX(), s.getGridY(),
                                 s.getCurrentBehaviour() != null ? s.getCurrentBehaviour().getClass().getSimpleName()
                                         : "null",
                                 s.getCurrentController() != null ? s.getCurrentController().getClass().getSimpleName()

@@ -3,7 +3,6 @@ package com.oddlabs.tt.net;
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.JitterConfig;
 import com.oddlabs.net.TickTimeManager;
-import com.oddlabs.tt.simulation.player.CommandRejectedListener;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
@@ -180,8 +179,8 @@ class HeadlessMultiplayerHarnessTest {
             List<String> rejections = new java.util.concurrent.CopyOnWriteArrayList<>();
             for (HeadlessSimulationInstance instance : harness.getInstances()) {
                 for (Player p : instance.getWorld().getPlayers()) {
-                    p.setCommandRejectedListener((action, entityId, reason) ->
-                            rejections.add(action + ":" + entityId + ":" + reason));
+                    p.setCommandRejectedListener((action, entityId, reason) -> rejections.add(action + ":" + entityId
+                            + ":" + reason));
                 }
             }
 
@@ -211,7 +210,8 @@ class HeadlessMultiplayerHarnessTest {
             harness.runUntilTick(80, Duration.ofSeconds(10));
             harness.verifyChecksums();
             assertEquals(instance0.getChecksum(), instance1.getChecksum(), "Checksums must match after network action");
-            assertTrue(rejections.isEmpty(), "No commands should be rejected during clean headless session: " + rejections);
+            assertTrue(rejections.isEmpty(), "No commands should be rejected during clean headless session: "
+                    + rejections);
         }
     }
 

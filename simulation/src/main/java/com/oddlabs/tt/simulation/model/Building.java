@@ -458,11 +458,16 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             for (WeaponTier tier : WeaponTier.values()) {
                 SupplyContainer weaponContainer = new SupplyContainer(MAX_SUPPLY_COUNT);
                 weapon_containers.put(tier, weaponContainer);
+                Cost cost = switch (tier) {
+                    case ROCK -> COST_ROCK_WEAPON;
+                    case IRON -> COST_IRON_WEAPON;
+                    case RUBBER -> COST_RUBBER_WEAPON;
+                };
                 BuildProductionContainer buildContainer = new BuildProductionContainer(
                         BuildProductionContainer.INFINITE_LIMIT,
                         weaponContainer,
                         this,
-                        new Cost(Map.of(SupplyType.WOOD, 1, tier.getSupplyType(), 1)),
+                        cost,
                         tier.getBuildTime());
                 weapon_build_containers.put(tier, buildContainer);
             }

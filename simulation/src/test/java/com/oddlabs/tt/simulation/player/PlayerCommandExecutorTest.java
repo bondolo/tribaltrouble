@@ -221,10 +221,10 @@ class PlayerCommandExecutorTest {
         int peonId = table.findName(peon).orElseThrow();
 
         // Invalid grid coordinate rejection throws IllegalArgumentException
-        assertThrows(IllegalArgumentException.class, () ->
-                player0.execute(new PlayerCommand.PlaceBuilding(new int[]{peonId}, BuildingType.TOWER, -1, 10)));
-        assertThrows(IllegalArgumentException.class, () ->
-                player0.execute(new PlayerCommand.PlaceBuilding(new int[]{peonId}, BuildingType.TOWER, 10, 1000)));
+        assertThrows(IllegalArgumentException.class, () -> player0.execute(new PlayerCommand.PlaceBuilding(new int[]{
+                peonId}, BuildingType.TOWER, -1, 10)));
+        assertThrows(IllegalArgumentException.class, () -> player0.execute(new PlayerCommand.PlaceBuilding(new int[]{
+                peonId}, BuildingType.TOWER, 10, 1000)));
 
         // Valid placement orders peon to target the new building construction site
         player0.execute(new PlayerCommand.PlaceBuilding(new int[]{peonId}, BuildingType.TOWER, 15, 15));

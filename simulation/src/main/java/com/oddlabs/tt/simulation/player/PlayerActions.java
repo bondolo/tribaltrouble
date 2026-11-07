@@ -183,35 +183,35 @@ public interface PlayerActions extends PlayerCommandExecutor {
     default void execute(PlayerCommand command) {
         switch (command) {
             case PlayerCommand.DeployUnits cmd ->
-                    deployUnits(cmd.buildingId(), cmd.deployType(), cmd.numUnits());
+                deployUnits(cmd.buildingId(), cmd.deployType(), cmd.numUnits());
             case PlayerCommand.CreateHarvesters cmd ->
-                    createHarvesters(cmd.buildingId(), cmd.numTree(), cmd.numRock(), cmd.numIron(), cmd.numRubber());
+                createHarvesters(cmd.buildingId(), cmd.numTree(), cmd.numRock(), cmd.numIron(), cmd.numRubber());
             case PlayerCommand.BuildRockWeapons cmd ->
-                    buildRockWeapons(cmd.buildingId(), cmd.numWeapons(), cmd.infinite());
+                buildRockWeapons(cmd.buildingId(), cmd.numWeapons(), cmd.infinite());
             case PlayerCommand.BuildIronWeapons cmd ->
-                    buildIronWeapons(cmd.buildingId(), cmd.numWeapons(), cmd.infinite());
+                buildIronWeapons(cmd.buildingId(), cmd.numWeapons(), cmd.infinite());
             case PlayerCommand.BuildRubberWeapons cmd ->
-                    buildRubberWeapons(cmd.buildingId(), cmd.numWeapons(), cmd.infinite());
+                buildRubberWeapons(cmd.buildingId(), cmd.numWeapons(), cmd.infinite());
             case PlayerCommand.DoMagic cmd ->
-                    doMagic(cmd.chieftainId(), cmd.magic());
+                doMagic(cmd.chieftainId(), cmd.magic());
             case PlayerCommand.ExitTower cmd ->
-                    exitTower(cmd.buildingId());
+                exitTower(cmd.buildingId());
             case PlayerCommand.TrainChieftain cmd ->
-                    trainChieftain(cmd.buildingId(), cmd.start());
+                trainChieftain(cmd.buildingId(), cmd.start());
             case PlayerCommand.PlaceBuilding cmd ->
-                    placeBuilding(cmd.selectionIds(), cmd.templateType(), cmd.gridX(), cmd.gridY());
+                placeBuilding(cmd.selectionIds(), cmd.templateType(), cmd.gridX(), cmd.gridY());
             case PlayerCommand.SetRallyPointTarget cmd ->
-                    setRallyPoint(cmd.buildingId(), cmd.targetEntityId());
+                setRallyPoint(cmd.buildingId(), cmd.targetEntityId());
             case PlayerCommand.SetRallyPointCoords cmd ->
-                    setRallyPoint(cmd.buildingId(), cmd.gridX(), cmd.gridY());
+                setRallyPoint(cmd.buildingId(), cmd.gridX(), cmd.gridY());
             case PlayerCommand.SetTarget cmd ->
-                    setTarget(cmd.selectionIds(), cmd.targetEntityId(), cmd.action(), cmd.aggressive());
+                setTarget(cmd.selectionIds(), cmd.targetEntityId(), cmd.action(), cmd.aggressive());
             case PlayerCommand.SetLandscapeTarget cmd ->
-                    setLandscapeTarget(cmd.selectionIds(), cmd.gridX(), cmd.gridY(), cmd.action(), cmd.aggressive());
+                setLandscapeTarget(cmd.selectionIds(), cmd.gridX(), cmd.gridY(), cmd.action(), cmd.aggressive());
             case PlayerCommand.SetPreferredGamespeed cmd ->
-                    setPreferredGamespeed(cmd.speed());
+                setPreferredGamespeed(cmd.speed());
             case PlayerCommand.ChangePreferredGamespeed cmd ->
-                    changePreferredGamespeed(cmd.delta());
+                changePreferredGamespeed(cmd.delta());
         }
     }
 }

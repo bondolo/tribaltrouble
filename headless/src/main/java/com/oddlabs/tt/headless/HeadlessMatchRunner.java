@@ -3,7 +3,6 @@ package com.oddlabs.tt.headless;
 import com.oddlabs.tt.net.HeadlessMultiplayerHarness;
 import com.oddlabs.tt.net.HeadlessSimulationInstance;
 import com.oddlabs.tt.procedural.landscape.IslandGenerator;
-import com.oddlabs.tt.simulation.player.CommandRejectedListener;
 import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
@@ -67,9 +66,9 @@ public final class HeadlessMatchRunner {
 
             for (HeadlessSimulationInstance instance : harness.getInstances()) {
                 for (Player player : instance.getWorld().getPlayers()) {
-                    player.setCommandRejectedListener((action, entityId, reason) ->
-                            logger.log(Level.FINE, "Command rejected on player {0} for {1} (entity {2}): {3}",
-                                    new Object[]{player.getPlayerInfo().name(), action, entityId, reason}));
+                    player.setCommandRejectedListener((action, entityId, reason) -> logger.log(Level.FINE,
+                            "Command rejected on player {0} for {1} (entity {2}): {3}",
+                            new Object[]{player.getPlayerInfo().name(), action, entityId, reason}));
                 }
             }
 
