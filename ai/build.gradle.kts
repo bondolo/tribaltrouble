@@ -8,5 +8,6 @@ dependencies {
     implementation(project(":common"))
     compileOnlyApi(libs.jspecify)
 
+    testImplementation(testFixtures(project(":simulation")))
     testRuntimeOnly(project(":assets"))
 }

@@ -20,6 +20,8 @@ import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.RallyPointScenery;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
+import java.util.ArrayList;
+import java.util.List;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
@@ -169,7 +171,7 @@ final class VikingIsland8 extends Island {
 
         // Insert first blocking army
         Unit bait = new Unit(enemy, 240 * 2, 137 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
-        final Selectable<?>[] army = Selectable.newArray(
+        final List<Selectable<?>> army = List.of(
                 new Unit(enemy, 213 * 2, 122 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER)),
                 new Unit(enemy, 213 * 2, 122 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK)),
                 new Unit(enemy, 213 * 2, 122 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON)),
@@ -196,7 +198,8 @@ final class VikingIsland8 extends Island {
                 new Unit(enemy, 289 * 2, 141 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON)),
                 new Unit(enemy, 289 * 2, 141 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON))
         );
-        new DeathTrigger(bait, () -> enemy.setLandscapeTarget(army, 238, 136, Action.ATTACK, true));
+        new DeathTrigger(bait, () -> enemy
+                .setLandscapeTarget(army, 238, 136, Action.ATTACK, true));
 
         // Insert second blocking army
         Unit bait2 = new Unit(enemy, 347 * 2, 455 * 2, null, enemy.getRaceInfo().getUnitTemplate(
@@ -207,50 +210,51 @@ final class VikingIsland8 extends Island {
             case Difficulty.HARD -> 20;
             default -> throw new IllegalArgumentException("Unrecognized difficulty");
         };
-        final Selectable<?>[] army2 = Selectable.newArray(num_hidden);
-        army2[0] = new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
-        army2[1] = new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
-        army2[2] = new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
-        army2[3] = new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
-        army2[4] = new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                UnitType.WARRIOR_RUBBER));
-        army2[5] = new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                UnitType.WARRIOR_RUBBER));
-        army2[6] = new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                UnitType.WARRIOR_RUBBER));
+        final List<Selectable<?>> army2 = new ArrayList<>(num_hidden);
+        army2.add(new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK)));
+        army2.add(new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK)));
+        army2.add(new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON)));
+        army2.add(new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON)));
+        army2.add(new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                UnitType.WARRIOR_RUBBER)));
+        army2.add(new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                UnitType.WARRIOR_RUBBER)));
+        army2.add(new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                UnitType.WARRIOR_RUBBER)));
 
         if (getCampaign().getState().getDifficulty() == Difficulty.HARD || getCampaign().getState()
                 .getDifficulty() == Difficulty.NORMAL) {
-            army2[7] = new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_ROCK));
-            army2[8] = new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_ROCK));
-            army2[9] = new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_ROCK));
-            army2[10] = new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_IRON));
-            army2[11] = new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_IRON));
-            army2[12] = new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_IRON));
+            army2.add(new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_ROCK)));
+            army2.add(new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_ROCK)));
+            army2.add(new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_ROCK)));
+            army2.add(new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_IRON)));
+            army2.add(new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_IRON)));
+            army2.add(new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_IRON)));
         }
         if (getCampaign().getState().getDifficulty() == Difficulty.HARD) {
-            army2[13] = new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_ROCK));
-            army2[14] = new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_ROCK));
-            army2[15] = new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_ROCK));
-            army2[16] = new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_IRON));
-            army2[17] = new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_RUBBER));
-            army2[18] = new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_RUBBER));
-            army2[19] = new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_RUBBER));
+            army2.add(new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_ROCK)));
+            army2.add(new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_ROCK)));
+            army2.add(new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_ROCK)));
+            army2.add(new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_IRON)));
+            army2.add(new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_RUBBER)));
+            army2.add(new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_RUBBER)));
+            army2.add(new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_RUBBER)));
         }
-        new DeathTrigger(bait2, () -> enemy.setLandscapeTarget(army2, 352, 480, Action.ATTACK, true));
+        new DeathTrigger(bait2, () -> enemy
+                .setLandscapeTarget(army2, 352, 480, Action.ATTACK, true));
 
         // Insert scattered resistance
         new Unit(enemy, 348 * 2, 315 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));

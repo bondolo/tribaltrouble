@@ -4,16 +4,10 @@ import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.JitterConfig;
 import com.oddlabs.net.TickTimeManager;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.landscape.IslandConfig;
+import com.oddlabs.tt.simulation.landscape.FlatLandscape;
 import com.oddlabs.tt.simulation.landscape.Landscape;
-import com.oddlabs.tt.simulation.landscape.PlantLocation;
-import com.oddlabs.tt.simulation.landscape.SpawnLocation;
-import com.oddlabs.tt.simulation.landscape.SupplyPlacement;
-import com.oddlabs.tt.simulation.landscape.TreePlacement;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
@@ -23,7 +17,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,90 +30,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class HeadlessMultiplayerHarnessTest {
 
-    private record TestLandscape(
-                                 int size,
-                                 float[] heightmap,
-                                 boolean[][] accessGrid,
-                                 byte[][] buildGrid,
-                                 List<List<SpawnLocation>> startingLocations) implements Landscape {
+    private static Landscape createTestLandscape(int size) {
+        return createTestLandscape(size, 2);
+    }
 
-        static TestLandscape create(int size) {
-            return create(size, 2);
-        }
-
-        static TestLandscape create(int size, int numPlayers) {
-            float[] heightmap = new float[size * size];
-            Arrays.fill(heightmap, 5.0f);
-
-            boolean[][] accessGrid = new boolean[size][size];
-            for (boolean[] row : accessGrid) {
-                Arrays.fill(row, true);
-            }
-
-            byte[][] buildGrid = new byte[size][size];
-            for (byte[] row : buildGrid) {
-                Arrays.fill(row, (byte) 10);
-            }
-
-            List<List<SpawnLocation>> startingLocations = new ArrayList<>();
-            for (int p = 0; p < numPlayers; p++) {
-                List<SpawnLocation> playerLocations = new ArrayList<>();
-                for (int i = 0; i < 20; i++) {
-                    float baseX = 35.0f + (p * 15.0f);
-                    float baseY = 35.0f + (p * 15.0f);
-                    playerLocations.add(new SpawnLocation(baseX + (i % 5) * 1.5f, baseY + (i / 5f) * 1.5f));
-                }
-                startingLocations.add(playerLocations);
-            }
-
-            return new TestLandscape(size, heightmap, accessGrid, buildGrid, startingLocations);
-        }
-
-        @Override
-        public IslandConfig config() {
-            return new IslandConfig(Terrain.NATIVE, metersPerWorld(), 0.5f, 0.5f, 0.5f, 42);
-        }
-
-        @Override
-        public Terrain terrain() {
-            return Terrain.NATIVE;
-        }
-
-        @Override
-        public int metersPerWorld() {
-            return size * HeightMap.METERS_PER_UNIT_GRID;
-        }
-
-        @Override
-        public float seaLevelMeters() {
-            return 0.0f;
-        }
-
-        @Override
-        public List<TreePlacement> trees() {
-            return List.of();
-        }
-
-        @Override
-        public List<TreePlacement> palmTrees() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> rocks() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> iron() {
-            return List.of();
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public List<PlantLocation>[] plants() {
-            return new ArrayList[0];
-        }
+    private static Landscape createTestLandscape(int size, int numPlayers) {
+        return FlatLandscape.create(size,
+                FlatLandscape.generateSteppedStartingLocations(numPlayers, 20, 35.0f, 15.0f));
     }
 
     private static List<UnitInfo> createDefaultUnitInfos() {
@@ -151,7 +67,7 @@ class HeadlessMultiplayerHarnessTest {
     @Test
     void testMultiInstanceHeadlessSession() throws Exception {
         int gridSize = 64; // 2 patches of 16
-        Landscape landscapeData = TestLandscape.create(gridSize);
+        Landscape landscapeData = createTestLandscape(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_NORMAL, "VikingPlayer",
                 PlayerSlot.AI_NORMAL, "NativePlayer");
@@ -220,7 +136,7 @@ class HeadlessMultiplayerHarnessTest {
     @Test
     void testAiPeerHeadlessSession() throws Exception {
         int gridSize = 64;
-        Landscape landscapeData = TestLandscape.create(gridSize);
+        Landscape landscapeData = createTestLandscape(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_EASY, "VikingBot1",
                 PlayerSlot.AI_NORMAL, "NativeBot2");
@@ -255,7 +171,7 @@ class HeadlessMultiplayerHarnessTest {
     @Test
     void testMultiInstanceHeadlessSessionWithJitter() throws Exception {
         int gridSize = 64;
-        Landscape landscapeData = TestLandscape.create(gridSize);
+        Landscape landscapeData = createTestLandscape(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_NORMAL, "VikingJitter0",
                 PlayerSlot.AI_NORMAL, "NativeJitter1");
@@ -295,7 +211,7 @@ class HeadlessMultiplayerHarnessTest {
     @Test
     void testAiPeerHeadlessSessionWithLaggyJitter() throws Exception {
         int gridSize = 64;
-        Landscape landscapeData = TestLandscape.create(gridSize);
+        Landscape landscapeData = createTestLandscape(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_EASY, "VikingLagBot",
                 PlayerSlot.AI_NORMAL, "NativeLagBot");
@@ -329,7 +245,7 @@ class HeadlessMultiplayerHarnessTest {
     @Test
     void testMultiInstanceConcurrentVirtualThreadStepping() throws Exception {
         int gridSize = 64;
-        Landscape landscapeData = TestLandscape.create(gridSize);
+        Landscape landscapeData = createTestLandscape(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_NORMAL, "VikingConcurrent0",
                 PlayerSlot.AI_NORMAL, "NativeConcurrent1");
@@ -362,7 +278,7 @@ class HeadlessMultiplayerHarnessTest {
     @Test
     void testMultiInstanceHeadlessSessionWithPassiveAiWandering() throws Exception {
         int gridSize = 64;
-        Landscape landscapeData = TestLandscape.create(gridSize);
+        Landscape landscapeData = createTestLandscape(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_PASSIVE_CAMPAIGN, "VikingPassive",
                 PlayerSlot.AI_PASSIVE_CAMPAIGN, "NativePassive");
@@ -396,7 +312,7 @@ class HeadlessMultiplayerHarnessTest {
     @Test
     void testMixedThreePlayerSessionWithHumanAndAiPeersAndLockstepAi() throws Exception {
         int gridSize = 64;
-        Landscape landscapeData = TestLandscape.create(gridSize, 3);
+        Landscape landscapeData = createTestLandscape(gridSize, 3);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
 
         List<PlayerSlot> playerSlots = new ArrayList<>(3);

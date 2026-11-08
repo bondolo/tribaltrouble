@@ -1,11 +1,8 @@
 package com.oddlabs.tt.ai;
 
-import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.pathfinder.CountOccupantScanFilter;
-import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 
 /**
@@ -22,8 +19,9 @@ public final class VikingChieftainAI extends ChieftainAI {
     }
 
     private void nodeStun(Unit chieftain, PlayerInterface playerInterface) {
-        if (chieftain.getMagicProgress(MagicType.STUN) < 1)
+        if (chieftain.getMagicProgress(MagicType.STUN) < 1) {
             return;
+        }
 
         float hit_radius = 30f;
         int num_enemy_units = numEnemyUnits(chieftain.getOwner());
@@ -36,8 +34,9 @@ public final class VikingChieftainAI extends ChieftainAI {
     }
 
     private void nodeBlast(Unit chieftain, PlayerInterface playerInterface) {
-        if (chieftain.getMagicProgress(MagicType.SONIC_BLAST) < 1)
+        if (chieftain.getMagicProgress(MagicType.SONIC_BLAST) < 1) {
             return;
+        }
 
         float hit_radius = chieftain.getOwner().getRaceInfo().getMagicFactory(MagicType.SONIC_BLAST).getHitRadius();
         int num_enemy_units = numEnemyUnits(chieftain.getOwner());
@@ -50,59 +49,5 @@ public final class VikingChieftainAI extends ChieftainAI {
                         || (chieftain.getHitPoints() <= 2 && num_enemy_units_close > 1))) {
             playerInterface.doMagic(chieftain, MagicType.SONIC_BLAST);
         }
-    }
-
-    private <S extends Selectable<?>> int getNumEnemyUnitsClose(Unit chieftain, float hit_radius, Class<
-            S> type) {
-        if (AppConfig.LEGACY_DETERMINISTIC) {
-            FindOccupantFilter<S> filter = new FindOccupantFilter<>(chieftain.getPositionX(), chieftain.getPositionY(),
-                    hit_radius, chieftain, type);
-            chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());
-            int num_enemy_units_close = 0;
-            for (Selectable<?> s : filter.getResult()) {
-                if (s.isDead())
-                    continue;
-
-                float dx = s.getPositionX() - chieftain.getPositionX();
-                float dy = s.getPositionY() - chieftain.getPositionY();
-                float squared_dist = dx * dx + dy * dy;
-                if (chieftain.getOwner().isEnemy(s.getOwner()) && squared_dist < hit_radius * hit_radius) {
-                    num_enemy_units_close++;
-                }
-            }
-            return num_enemy_units_close;
-        }
-        CountOccupantScanFilter<S> filter = new CountOccupantScanFilter<>(chieftain.getPositionX(), chieftain
-                .getPositionY(),
-                hit_radius, chieftain, type, s -> s.isAlive() && chieftain.getOwner().isEnemy(s.getOwner()));
-        chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());
-        return filter.getCount();
-    }
-
-    private int getNumFriendlyUnitsClose(Unit chieftain, float hit_radius) {
-        if (AppConfig.LEGACY_DETERMINISTIC) {
-            FindOccupantFilter<Selectable<?>> filter = new FindOccupantFilter<>(chieftain.getPositionX(), chieftain
-                    .getPositionY(),
-                    hit_radius, chieftain, Selectable.genericClass());
-            chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());
-            int num_friendly_units_close = 0;
-            for (Selectable<?> s : filter.getResult()) {
-                if (s.isDead())
-                    continue;
-
-                float dx = s.getPositionX() - chieftain.getPositionX();
-                float dy = s.getPositionY() - chieftain.getPositionY();
-                float squared_dist = dx * dx + dy * dy;
-                if (!chieftain.getOwner().isEnemy(s.getOwner()) && squared_dist < hit_radius * hit_radius) {
-                    num_friendly_units_close++;
-                }
-            }
-            return num_friendly_units_close;
-        }
-        var filter = new CountOccupantScanFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius,
-                chieftain,
-                Selectable.genericClass(), s -> s.isAlive() && !chieftain.getOwner().isEnemy(s.getOwner()));
-        chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());
-        return filter.getCount();
     }
 }

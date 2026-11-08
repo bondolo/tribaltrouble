@@ -1,6 +1,4 @@
-/**
- * Game players, AI agents, and campaign scripts.
- */
+/// Simulation player models, command records, execution, and interfaces.
 @NullMarked
 package com.oddlabs.tt.simulation.player;
 

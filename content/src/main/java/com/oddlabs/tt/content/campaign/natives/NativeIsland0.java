@@ -26,6 +26,7 @@ import com.oddlabs.tt.simulation.model.SceneryModel;
 import com.oddlabs.tt.simulation.model.StatueScenery;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
+import java.util.List;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
@@ -282,7 +283,7 @@ final class NativeIsland0 extends Island {
                 scenery_model.remove();
             }
             // Remove Vikings
-            Selectable<?>[] viking_units = enemy.getUnits().getSet().toArray(Selectable.newArray(0));
+            List<Selectable<?>> viking_units = List.copyOf(enemy.getUnits().getSet());
             for (Selectable<?> viking_unit : viking_units) {
                 if (viking_unit instanceof Unit unit && !unit.isDead()) {
                     unit.removeNow();
@@ -302,8 +303,7 @@ final class NativeIsland0 extends Island {
                         UnitType.PEON));
             }
             // Remove natives
-            Selectable<?>[] native_selectables = Selectable.newArray(natives.getUnits().getSet().size());
-            natives.getUnits().getSet().toArray(native_selectables);
+            List<Selectable<?>> native_selectables = List.copyOf(natives.getUnits().getSet());
             for (Selectable<?> native_selectable : native_selectables) {
                 if (!native_selectable.isDead()) {
                     native_selectable.hit(10000, 0, 1, enemy);

@@ -10,6 +10,9 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.player.Player;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Tutorial trigger that commands the AI player to attack the player's tower
  * to demonstrate battle mechanics and defense.
@@ -24,10 +27,10 @@ final class AttackTowerTrigger extends TutorialTrigger {
         super(.1f, 0f, "attack_tower");
         this.ai = tower.getOwner().getWorld().getPlayers().get(1);
         this.tower = tower;
-        Selectable<?>[] units = Selectable.newArray(NUM_UNITS);
-        for (int i = 0; i < units.length; i++) {
-            units[i] = new Unit(ai, tower.getPositionX() - 50, tower.getPositionY() - 50, null, ai.getRaceInfo()
-                    .getUnitTemplate(UnitType.WARRIOR_ROCK));
+        List<Selectable<?>> units = new ArrayList<>(NUM_UNITS);
+        for (int i = 0; i < NUM_UNITS; i++) {
+            units.add(new Unit(ai, tower.getPositionX() - 50, tower.getPositionY() - 50, null, ai.getRaceInfo()
+                    .getUnitTemplate(UnitType.WARRIOR_ROCK)));
         }
         ai.setTarget(units, tower, Action.ATTACK, false);
     }

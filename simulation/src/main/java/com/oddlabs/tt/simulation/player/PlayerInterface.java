@@ -10,9 +10,9 @@ import com.oddlabs.tt.simulation.model.BuildingType;
 
 import com.oddlabs.tt.simulation.model.MagicType;
 
-/**
- * Domain interface defining actions a player can take, such as deploying units, building, and casting magic.
- */
+import java.util.List;
+
+/// Domain interface defining actions a player can take, such as deploying units, building, and casting magic.
 public interface PlayerInterface {
     void deployUnits(Building building, DeployType type, int num_units);
 
@@ -30,12 +30,12 @@ public interface PlayerInterface {
 
     void trainChieftain(Building building, boolean start);
 
-    void placeBuilding(Selectable<?>[] selection, BuildingType template_type, int placing_grid_x,
+    void placeBuilding(List<? extends Selectable<?>> selection, BuildingType template_type, int placing_grid_x,
             int placing_grid_y);
 
     void setRallyPoint(Building building, Target target);
 
-    void setTarget(Selectable<?>[] selection, Target target, Action action,
+    void setTarget(List<? extends Selectable<?>> selection, Target target, Action action,
             boolean aggressive);
 
     void setTarget(Selectable<?> unit, Target target, Action action,
@@ -43,7 +43,7 @@ public interface PlayerInterface {
 
     void setRallyPoint(Building building, int grid_x, int grid_y);
 
-    void setLandscapeTarget(Selectable<?>[] selection, int grid_x, int grid_y, Action action,
+    void setLandscapeTarget(List<? extends Selectable<?>> selection, int grid_x, int grid_y, Action action,
             boolean aggressive);
 
     void setLandscapeTarget(Selectable<?> unit, int grid_x, int grid_y, Action action,

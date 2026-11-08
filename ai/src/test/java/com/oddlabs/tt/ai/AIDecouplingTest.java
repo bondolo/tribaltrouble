@@ -1,22 +1,12 @@
 package com.oddlabs.tt.ai;
 
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerConfig;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
-import com.oddlabs.tt.simulation.player.PlayerInitializer;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
-import com.oddlabs.tt.simulation.player.UnitInfo;
 
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.landscape.IslandConfig;
+import com.oddlabs.tt.simulation.landscape.FlatLandscape;
 import com.oddlabs.tt.simulation.landscape.Landscape;
-import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
-import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
-import com.oddlabs.tt.simulation.landscape.NotificationListener;
-import com.oddlabs.tt.simulation.landscape.PlantLocation;
-import com.oddlabs.tt.simulation.landscape.SpawnLocation;
-import com.oddlabs.tt.simulation.landscape.SupplyPlacement;
-import com.oddlabs.tt.simulation.landscape.TreePlacement;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Action;
@@ -26,10 +16,8 @@ import com.oddlabs.tt.simulation.model.DeployType;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Target;
-import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.util.Color;
@@ -37,12 +25,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -96,7 +84,8 @@ class AIDecouplingTest {
         }
 
         @Override
-        public void placeBuilding(Selectable<?>[] selection, BuildingType template_type, int placing_grid_x,
+        public void placeBuilding(List<? extends Selectable<?>> selection, BuildingType template_type,
+                int placing_grid_x,
                 int placing_grid_y) {
             calls.add("placeBuilding:" + template_type);
         }
@@ -107,7 +96,8 @@ class AIDecouplingTest {
         }
 
         @Override
-        public void setTarget(Selectable<?>[] selection, Target target, Action action, boolean aggressive) {
+        public void setTarget(List<? extends Selectable<?>> selection, Target target, Action action,
+                boolean aggressive) {
             calls.add("setTarget:" + action);
         }
 
@@ -122,7 +112,7 @@ class AIDecouplingTest {
         }
 
         @Override
-        public void setLandscapeTarget(Selectable<?>[] selection, int grid_x, int grid_y, Action action,
+        public void setLandscapeTarget(List<? extends Selectable<?>> selection, int grid_x, int grid_y, Action action,
                 boolean aggressive) {
             calls.add("setLandscapeTarget:" + action);
         }
@@ -144,87 +134,6 @@ class AIDecouplingTest {
         }
     }
 
-    private record TestLandscape(int size,
-                                 float[] heightmap,
-                                 boolean[][] accessGrid,
-                                 byte[][] buildGrid,
-                                 List<List<SpawnLocation>> startingLocations) implements Landscape {
-
-        static TestLandscape create(int size) {
-            float[] heightmap = new float[size * size];
-            Arrays.fill(heightmap, 5.0f);
-
-            boolean[][] accessGrid = new boolean[size][size];
-            for (boolean[] row : accessGrid) {
-                Arrays.fill(row, true);
-            }
-
-            byte[][] buildGrid = new byte[size][size];
-            for (byte[] row : buildGrid) {
-                Arrays.fill(row, (byte) 20);
-            }
-
-            List<List<SpawnLocation>> startingLocations = new ArrayList<>();
-            for (int p = 0; p < 2; p++) {
-                List<SpawnLocation> playerLocations = new ArrayList<>();
-                for (int i = 0; i < 20; i++) {
-                    float baseX = (p == 0) ? 10.0f : 40.0f;
-                    float baseY = (p == 0) ? 10.0f : 40.0f;
-                    playerLocations.add(new SpawnLocation(baseX + (i % 5) * 1.5f, baseY + (i / 5f) * 1.5f));
-                }
-                startingLocations.add(playerLocations);
-            }
-
-            return new TestLandscape(size, heightmap, accessGrid, buildGrid, startingLocations);
-        }
-
-        @Override
-        public IslandConfig config() {
-            return new IslandConfig(Terrain.NATIVE, metersPerWorld(), 0.5f, 0.5f, 0.5f, 42);
-        }
-
-        @Override
-        public Terrain terrain() {
-            return Terrain.NATIVE;
-        }
-
-        @Override
-        public int metersPerWorld() {
-            return size * HeightMap.METERS_PER_UNIT_GRID;
-        }
-
-        @Override
-        public float seaLevelMeters() {
-            return 0.0f;
-        }
-
-        @Override
-        public List<TreePlacement> trees() {
-            return List.of();
-        }
-
-        @Override
-        public List<TreePlacement> palmTrees() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> rocks() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> iron() {
-            return List.of();
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public List<PlantLocation>[] plants() {
-            return new ArrayList[0];
-        }
-    }
-
     private World world;
     private Player player;
     private RecordingPlayerInterface recordingInterface;
@@ -232,7 +141,8 @@ class AIDecouplingTest {
     @BeforeEach
     void setUp() {
         int gridSize = 32;
-        Landscape landscape = TestLandscape.create(gridSize);
+        Landscape landscape = FlatLandscape.create(gridSize,
+                FlatLandscape.generateStartingLocations(2, 20, 10.0f, 40.0f));
         WorldParameters worldParams = new WorldParameters(0, "1", 5, 20);
 
         List<PlayerInfo> playerInfos = List.of(
@@ -245,23 +155,14 @@ class AIDecouplingTest {
                 new Color.Linear(0f, 0f, 1f, 1f)
         };
 
-        LandscapeBoundsProvider boundsProvider = new LandscapeGeometry();
-        RaceData raceData = new RaceData();
-        NotificationListener noopListener = new NotificationListener() {
-        };
-
-        world = World.newWorld(
-                raceData,
-                boundsProvider,
-                noopListener,
-                worldParams,
-                landscape,
-                playerInfos,
-                playerColors
+        recordingInterface = new RecordingPlayerInterface();
+        List<PlayerConfig> playerConfigs = List.of(
+                new PlayerConfig(playerInfos.get(0), playerColors[0], recordingInterface),
+                new PlayerConfig(playerInfos.get(1), playerColors[1])
         );
+        world = new World(worldParams, landscape, playerConfigs);
 
         player = world.getPlayers().getFirst();
-        recordingInterface = new RecordingPlayerInterface();
     }
 
     @Test
@@ -269,8 +170,8 @@ class AIDecouplingTest {
         int initialUnitCount = player.getUnits().size();
         int initialBuildingCount = player.getBuildingCountContainer().getNumSupplies();
 
-        AdvancedAI ai = new AdvancedAI(player, recordingInterface, Difficulty.NORMAL);
-        assertSame(recordingInterface, ai.getPlayerInterface());
+        AdvancedAI ai = new AdvancedAI(player, Difficulty.NORMAL);
+        assertSame(recordingInterface, player.getPlayerInterface());
 
         assertEquals(initialUnitCount, player.getUnits().size(),
                 "Instantiating AI controller must not alter player unit count");
@@ -280,8 +181,8 @@ class AIDecouplingTest {
 
     @Test
     void testAiCreationDoesNotRegisterWithRealTimeAnimationManager() {
-        AdvancedAI ai = new AdvancedAI(player, recordingInterface, Difficulty.NORMAL);
-        assertSame(recordingInterface, ai.getPlayerInterface());
+        AdvancedAI ai = new AdvancedAI(player, Difficulty.NORMAL);
+        assertSame(recordingInterface, player.getPlayerInterface());
 
         // Advance the world's real-time animation manager by 20 seconds.
         // Because the AI was NOT automatically registered, no decision cycle runs and no commands are dispatched.
@@ -292,7 +193,7 @@ class AIDecouplingTest {
 
     @Test
     void testManTowersDispatchesThroughPlayerInterface() {
-        AdvancedAI ai = new AdvancedAI(player, recordingInterface, Difficulty.NORMAL);
+        AdvancedAI ai = new AdvancedAI(player, Difficulty.NORMAL);
 
         // Spawn a tower and an idle warrior for the AI player
         Building tower = new Building(player, player.getRaceInfo().getBuildingTemplate(BuildingType.TOWER), 10, 10);
@@ -312,7 +213,7 @@ class AIDecouplingTest {
         Unit warrior = new Unit(player, 15, 15, null, player.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
         Target target = java.util.Objects.requireNonNull(world.getUnitGrid().findGridTarget(15, 15, false));
 
-        int ordered = AI.attackLandscape(player, recordingInterface, target, 1);
+        int ordered = AI.attackLandscape(player, target, 1);
         assertEquals(1, ordered);
         assertTrue(recordingInterface.calls.contains("setLandscapeTarget:ATTACK"),
                 "attackLandscape should dispatch through playerInterface.setLandscapeTarget");
@@ -363,7 +264,7 @@ class AIDecouplingTest {
 
     @Test
     void testPassiveAiWanderDispatchesThroughPlayerInterfaceSetLandscapeTarget() {
-        PassiveAI ai = new PassiveAI(player, recordingInterface, true);
+        PassiveAI ai = new PassiveAI(player, true);
         new Unit(player, 10, 10, null, player.getRaceInfo().getUnitTemplate(UnitType.PEON));
 
         // Advance ticks until random decision triggers wandering (decision cycle is every ~2-4s with 20% probability)
@@ -375,5 +276,19 @@ class AIDecouplingTest {
                 "PassiveAI with walk_around=true should dispatch roaming target through setLandscapeTarget");
         assertFalse(recordingInterface.calls.stream().anyMatch(c -> c.startsWith("setTarget:")),
                 "PassiveAI roaming must not dispatch unregistered coordinates through setTarget");
+    }
+
+    @Test
+    void testPlayerEncapsulatesImmutablePlayerInterface() {
+        Player defaultPlayer = world.getPlayers().get(1);
+        assertNotNull(defaultPlayer.getPlayerInterface());
+
+        RecordingPlayerInterface custom = new RecordingPlayerInterface();
+        Player customPlayer = new Player(world, new PlayerConfig(defaultPlayer.getPlayerInfo(), defaultPlayer
+                .getColor(), custom));
+        assertSame(custom, customPlayer.getPlayerInterface());
+
+        customPlayer.getPlayerInterface().deployUnits(null, DeployType.PEON, 1);
+        assertTrue(custom.calls.contains("deployUnits:PEON:1"));
     }
 }

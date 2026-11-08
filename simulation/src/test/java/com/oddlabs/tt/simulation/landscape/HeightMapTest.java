@@ -1,10 +1,7 @@
 package com.oddlabs.tt.simulation.landscape;
 
-import com.oddlabs.tt.simulation.model.Terrain;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -12,64 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Tests terrain height calculation and planar triangle interpolation on {@link HeightMap}.
  */
 final class HeightMapTest {
-
-    private record TestLandscape(float[] heightmap, int metersPerWorld) implements Landscape {
-        @Override
-        public IslandConfig config() {
-            return new IslandConfig(Terrain.NATIVE, metersPerWorld(), 0.5f, 0.5f, 0.5f, 42);
-        }
-
-        @Override
-        public Terrain terrain() {
-            return Terrain.NATIVE;
-        }
-
-        @Override
-        public float seaLevelMeters() {
-            return 0f;
-        }
-
-        @Override
-        public List<TreePlacement> trees() {
-            return List.of();
-        }
-
-        @Override
-        public List<TreePlacement> palmTrees() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> rocks() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> iron() {
-            return List.of();
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public List<PlantLocation>[] plants() {
-            return new ArrayList[0];
-        }
-
-        @Override
-        public boolean[][] accessGrid() {
-            return new boolean[0][0];
-        }
-
-        @Override
-        public byte[][] buildGrid() {
-            return new byte[0][0];
-        }
-
-        @Override
-        public List<List<SpawnLocation>> startingLocations() {
-            return List.of();
-        }
-    }
 
     @Test
     void testPlanarTriangleInterpolation() {
@@ -87,7 +26,7 @@ final class HeightMapTest {
         heightmap[size] = 20f;      // (0,1)
         heightmap[size + 1] = 50f;  // (1,1)
 
-        Landscape data = new TestLandscape(heightmap, size * HeightMap.METERS_PER_UNIT_GRID);
+        Landscape data = FlatLandscape.withHeightmap(heightmap, size);
         HeightMap map = new HeightMap(null, data);
 
         // Grid unit is 2 meters.

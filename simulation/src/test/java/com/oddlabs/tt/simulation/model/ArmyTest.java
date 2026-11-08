@@ -1,30 +1,23 @@
 package com.oddlabs.tt.simulation.model;
 
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.landscape.IslandConfig;
+import com.oddlabs.tt.simulation.landscape.FlatLandscape;
 import com.oddlabs.tt.simulation.landscape.Landscape;
-import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
-import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
-import com.oddlabs.tt.simulation.landscape.NotificationListener;
-import com.oddlabs.tt.simulation.landscape.PlantLocation;
-import com.oddlabs.tt.simulation.landscape.SpawnLocation;
-import com.oddlabs.tt.simulation.landscape.SupplyPlacement;
-import com.oddlabs.tt.simulation.landscape.TreePlacement;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerConfig;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.util.Color;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -32,87 +25,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class ArmyTest {
 
-    private record TestLandscape(int size,
-                                 float[] heightmap,
-                                 boolean[][] accessGrid,
-                                 byte[][] buildGrid,
-                                 List<List<SpawnLocation>> startingLocations) implements Landscape {
-
-        static TestLandscape create(int size) {
-            float[] heightmap = new float[size * size];
-            Arrays.fill(heightmap, 5.0f);
-
-            boolean[][] accessGrid = new boolean[size][size];
-            for (boolean[] row : accessGrid) {
-                Arrays.fill(row, true);
-            }
-
-            byte[][] buildGrid = new byte[size][size];
-            for (byte[] row : buildGrid) {
-                Arrays.fill(row, (byte) 20);
-            }
-
-            List<List<SpawnLocation>> startingLocations = List.of(
-                    List.of(new SpawnLocation(10.0f, 10.0f)),
-                    List.of(new SpawnLocation(20.0f, 20.0f))
-            );
-
-            return new TestLandscape(size, heightmap, accessGrid, buildGrid, startingLocations);
-        }
-
-        @Override
-        public IslandConfig config() {
-            return new IslandConfig(Terrain.NATIVE, metersPerWorld(), 0.5f, 0.5f, 0.5f, 42);
-        }
-
-        @Override
-        public Terrain terrain() {
-            return Terrain.NATIVE;
-        }
-
-        @Override
-        public int metersPerWorld() {
-            return size * HeightMap.METERS_PER_UNIT_GRID;
-        }
-
-        @Override
-        public float seaLevelMeters() {
-            return 0.0f;
-        }
-
-        @Override
-        public List<TreePlacement> trees() {
-            return List.of();
-        }
-
-        @Override
-        public List<TreePlacement> palmTrees() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> rocks() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> iron() {
-            return List.of();
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public List<PlantLocation>[] plants() {
-            return new ArrayList[0];
-        }
-    }
-
     private Player player;
 
     @BeforeEach
     void setUp() {
         int gridSize = 32;
-        Landscape landscape = TestLandscape.create(gridSize);
+        Landscape landscape = FlatLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(0, "1", 5, 20);
 
         List<PlayerInfo> playerInfos = List.of(
@@ -125,19 +43,10 @@ class ArmyTest {
                 new Color.Linear(0f, 0f, 1f, 1f)
         };
 
-        LandscapeBoundsProvider boundsProvider = new LandscapeGeometry();
-        RaceData raceData = new RaceData();
-        NotificationListener noopListener = new NotificationListener() {
-        };
-
-        World world = World.newWorld(
-                raceData,
-                boundsProvider,
-                noopListener,
+        World world = new World(
                 worldParams,
                 landscape,
-                playerInfos,
-                playerColors
+                PlayerConfig.from(playerInfos, playerColors)
         );
 
         player = world.getPlayers().getFirst();
@@ -147,12 +56,14 @@ class ArmyTest {
     void testEmptyArmy() {
         Army army = new Army();
         assertEquals(0, army.size());
+        assertTrue(army.isEmpty());
         assertFalse(army.containsAbility(Abilities.BUILD));
         assertFalse(army.containsAbility(Abilities.ATTACK));
 
-        Selectable<?>[] filtered = army.filter(Abilities.BUILD);
-        assertEquals(0, filtered.length);
-        assertSame(filtered, army.filter(Abilities.ATTACK), "Empty filter should return shared empty array");
+        List<Selectable<?>> filtered = army.filter(Abilities.BUILD);
+        assertEquals(0, filtered.size());
+        assertTrue(filtered.isEmpty());
+        assertSame(filtered, army.filter(Abilities.ATTACK), "Empty filter should return shared empty list");
     }
 
     @Test
@@ -166,6 +77,7 @@ class ArmyTest {
         army.add(warrior);
 
         assertEquals(2, army.size());
+        assertFalse(army.isEmpty());
         assertTrue(army.contains(peon));
         assertTrue(army.contains(warrior));
 
@@ -173,21 +85,40 @@ class ArmyTest {
         assertTrue(army.containsAbility(Abilities.ATTACK));
         assertFalse(army.containsAbility(Abilities.MAGIC));
 
-        Selectable<?>[] builders = army.filter(Abilities.BUILD);
-        assertEquals(1, builders.length);
-        assertSame(peon, builders[0]);
+        List<Selectable<?>> builders = army.filter(Abilities.BUILD);
+        assertEquals(1, builders.size());
+        assertSame(peon, builders.getFirst());
 
-        Selectable<?>[] throwers = army.filter(Abilities.THROW);
-        assertEquals(1, throwers.length);
-        assertSame(warrior, throwers[0]);
+        List<Selectable<?>> throwers = army.filter(Abilities.THROW);
+        assertEquals(1, throwers.size());
+        assertSame(warrior, throwers.getFirst());
 
-        Selectable<?>[] attackers = army.filter(Abilities.ATTACK);
-        assertEquals(2, attackers.length);
+        List<Selectable<?>> attackers = army.filter(Abilities.ATTACK);
+        assertEquals(2, attackers.size());
 
-        Selectable<?>[] all = army.filter(Abilities.NONE);
-        assertEquals(2, all.length);
+        List<Selectable<?>> all = army.filter(Abilities.NONE);
+        assertEquals(2, all.size());
 
-        Selectable<?>[] magic = army.filter(Abilities.MAGIC);
-        assertEquals(0, magic.length);
+        List<Selectable<?>> magic = army.filter(Abilities.MAGIC);
+        assertEquals(0, magic.size());
+        assertTrue(magic.isEmpty());
+    }
+
+    @Test
+    void testEncapsulationAndIteration() {
+        Army army = new Army();
+        Unit peon = new Unit(player, 10, 10, null, player.getRaceInfo().getUnitTemplate(UnitType.PEON));
+        Unit warrior = new Unit(player, 11, 11, null, player.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        army.addAll(List.of(peon, warrior));
+
+        List<Selectable<?>> iterated = new ArrayList<>();
+        for (Selectable<?> s : army) {
+            iterated.add(s);
+        }
+        assertEquals(List.of(peon, warrior), iterated);
+        assertEquals(2, army.stream().count());
+
+        assertThrows(UnsupportedOperationException.class, () -> army.getSet().add(peon));
+        assertThrows(UnsupportedOperationException.class, () -> army.filter(Abilities.BUILD).add(peon));
     }
 }

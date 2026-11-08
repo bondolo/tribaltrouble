@@ -1,39 +1,35 @@
 package com.oddlabs.tt.simulation.model;
 
+import org.jspecify.annotations.NonNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
-/**
- * Collection of selectable units and structures representing an army or selection group.
- */
-public class Army {
-    private static final Selectable<?>[] EMPTY_SELECTION = new Selectable<?>[0];
+/// Collection of selectable units and structures representing an army or selection group.
+public class Army implements Iterable<Selectable<?>> {
 
     private final Set<Selectable<?>> selection = new LinkedHashSet<>();
 
-    public final Selectable<?>[] filter(int ability_filter) {
+    public final List<Selectable<?>> filter(int ability_filter) {
         if (selection.isEmpty()) {
-            return EMPTY_SELECTION;
+            return List.of();
         }
-        int count = 0;
+        List<Selectable<?>> result = new ArrayList<>();
         for (Selectable<?> s : selection) {
             if (s.getAbilities().hasAbilities(ability_filter)) {
-                count++;
+                result.add(s);
             }
         }
-        if (count == 0) {
-            return EMPTY_SELECTION;
+        if (result.isEmpty()) {
+            return List.of();
         }
-        Selectable<?>[] result = new Selectable<?>[count];
-        int idx = 0;
-        for (Selectable<?> s : selection) {
-            if (s.getAbilities().hasAbilities(ability_filter)) {
-                result[idx++] = s;
-            }
-        }
-        return result;
+        return Collections.unmodifiableList(result);
     }
 
     public final boolean containsAbility(int ability_filter) {
@@ -58,7 +54,16 @@ public class Army {
     }
 
     public final Set<Selectable<?>> getSet() {
-        return selection;
+        return Collections.unmodifiableSet(selection);
+    }
+
+    public final Stream<Selectable<?>> stream() {
+        return selection.stream();
+    }
+
+    @Override
+    public final @NonNull Iterator<Selectable<?>> iterator() {
+        return Collections.unmodifiableSet(selection).iterator();
     }
 
     public void add(Selectable<?> selectable) {
@@ -71,5 +76,9 @@ public class Army {
 
     public final int size() {
         return selection.size();
+    }
+
+    public final boolean isEmpty() {
+        return selection.isEmpty();
     }
 }

@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.player;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.MagicType;
 
@@ -13,31 +14,38 @@ import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.Army;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.DeployType;
+import com.oddlabs.tt.simulation.model.Distributable;
 import com.oddlabs.tt.simulation.model.RaceInfo;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.SupplyContainer;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.behaviour.NullController;
 import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.simulation.model.Target;
+import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
+import java.util.random.RandomGenerator;
 
-/**
- * Represents a player in the game simulation, managing units, buildings, color, and player metrics.
- */
-public final class Player implements PlayerInterface, PlayerActions {
+/// Simulation player managing units, buildings, colour, metrics, and command dispatch.
+public final class Player implements PlayerInterface, PlayerCommandExecutor {
     public static final int INITIAL_UNIT_COUNT = 20;
     public static final int MAX_BUILDING_COUNT = 20;
     public static final int DEFAULT_MAX_UNIT_COUNT = 250;
+    private static final float RADIAL_SEARCH_RADIUS = 30f;
 
+    private final PlayerConfig config;
+    private final @Nullable PlayerInterface playerInterface;
     private final World world;
     private final PlayerInfo player_info;
     private final Army units = new Army();
@@ -84,16 +92,33 @@ public final class Player implements PlayerInterface, PlayerActions {
     private int preferred_speed = World.GAMESPEED_DONTCARE;
     private @Nullable CommandRejectedListener command_rejected_listener = null;
 
-    public Player(World world, PlayerInfo player_info, Color color) {
+    public Player(World world, PlayerConfig config, SpawnLocation startLocation) {
         this.world = world;
-        this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
-        this.player_info = player_info;
+        this.config = config;
+        this.color = config.color();
+        this.player_info = config.info();
         this.unit_count = new SupplyContainer(world.getMaxUnitCount());
-//		this.team_tip = i18n("team", new Object[]{Integer.toString(player_info.getTeam() + 1)});
+        this.playerInterface = config.playerInterface();
+        this.start_x = startLocation.x();
+        this.start_y = startLocation.y();
+    }
+
+    public Player(World world, PlayerConfig config) {
+        this(world, config, new SpawnLocation(0f, 0f));
+    }
+
+    /// Returns the configuration record used to initialize this player.
+    public PlayerConfig getConfig() {
+        return config;
     }
 
     public void setCommandRejectedListener(@Nullable CommandRejectedListener listener) {
         this.command_rejected_listener = listener;
+    }
+
+    /// Returns the destination interface for domain actions dispatched on this player.
+    public PlayerInterface getPlayerInterface() {
+        return playerInterface != null ? playerInterface : this;
     }
 
     private void notifyRejected(String action, int entityId, String reason) {
@@ -283,12 +308,171 @@ public final class Player implements PlayerInterface, PlayerActions {
         });
     }
 
-    public Player init(List<SpawnLocation> startingLocations) {
-        SpawnLocation first = startingLocations.get(0);
-        this.start_x = first.x();
-        this.start_y = first.y();
+    /// Initializes starting entities for this player based on its configuration and spawn locations.
+    public void initializeStartingEntities(List<SpawnLocation> startingLocations, int initialGamespeed) {
+        UnitInfo unitInfo = config.unitInfo();
+        if (unitInfo == null) {
+            return;
+        }
+        switch (config.controllerType()) {
+            case HUMAN -> initializeStartingArmy(startingLocations, unitInfo, initialGamespeed, config.chieftainName());
+            case AI_STANDARD -> initializeStartingBase(unitInfo);
+            case AI_TOWER_TUTORIAL -> {
+            }
+            case AI_CHIEFTAIN_TUTORIAL -> {
+                new Unit(this, 100, 100, null, getRaceInfo().getUnitTemplate(UnitType.PEON));
+                new Unit(this, 200, 100, null, getRaceInfo().getUnitTemplate(UnitType.PEON));
+                new Unit(this, 40, 200, null, getRaceInfo().getUnitTemplate(UnitType.PEON));
+            }
+        }
+    }
 
-        return this;
+    /// Initializes this player's starting base (buildings, chieftain, and units) using radial placement.
+    public void initializeStartingBase(UnitInfo unit_info) {
+        int grid_start_x = UnitGrid.toGridCoordinate(start_x);
+        int grid_start_y = UnitGrid.toGridCoordinate(start_y);
+        if (unit_info.hasQuarters()) {
+            buildBuilding(BuildingType.QUARTERS, grid_start_x, grid_start_y);
+        }
+        if (unit_info.hasArmory()) {
+            buildBuilding(BuildingType.ARMORY, grid_start_x, grid_start_y);
+        }
+        for (int i = 0; i < unit_info.numTowers(); i++) {
+            int center = world.getHeightMap().getGridUnitsPerWorld() / 2;
+            int dx = center - grid_start_x;
+            int dy = center - grid_start_y;
+            float inv_dist = 1f / (float) Math.sqrt(dx * dx + dy * dy);
+            int tx = (int) (grid_start_x + 10f * dx * inv_dist);
+            int ty = (int) (grid_start_y + 10f * dy * inv_dist);
+            buildBuilding(BuildingType.TOWER, tx, ty);
+        }
+        Random random = new Random(42);
+        if (unit_info.hasChieftain()) {
+            Target t = getRadialTarget(random);
+            Unit chieftain = new Unit(this, t.getPositionX(), t.getPositionY(), null, getRaceInfo()
+                    .getUnitTemplate(UnitType.CHIEFTAIN));
+            setActiveChieftain(chieftain);
+        }
+        for (int i = 0; i < unit_info.numPeons(); i++) {
+            Target t = getRadialTarget(random);
+            new Unit(this, t.getPositionX(), t.getPositionY(), null, getRaceInfo().getUnitTemplate(
+                    UnitType.PEON));
+        }
+        for (int i = 0; i < unit_info.numRockWarriors(); i++) {
+            Target t = getRadialTarget(random);
+            new Unit(this, t.getPositionX(), t.getPositionY(), null, getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_ROCK));
+        }
+        for (int i = 0; i < unit_info.numIronWarriors(); i++) {
+            Target t = getRadialTarget(random);
+            new Unit(this, t.getPositionX(), t.getPositionY(), null, getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_IRON));
+        }
+        for (int i = 0; i < unit_info.numRubberWarriors(); i++) {
+            Target t = getRadialTarget(random);
+            new Unit(this, t.getPositionX(), t.getPositionY(), null, getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_RUBBER));
+        }
+    }
+
+    /// Initializes this player's starting army using explicit spawn locations.
+    public void initializeStartingArmy(
+            List<SpawnLocation> startingLocations,
+            UnitInfo unitInfo,
+            int initialGamespeed,
+            @Nullable String chieftainName) {
+        setPreferredGamespeed(initialGamespeed);
+        var raceInfo = getRaceInfo();
+
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            Random random = new Random(42);
+            if (unitInfo.hasChieftain()) {
+                Target t = getLegacyTarget(random);
+                Unit chieftain = chieftainName != null
+                        ? new Unit(this, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(
+                                UnitType.CHIEFTAIN),
+                                chieftainName, false)
+                        : new Unit(this, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(
+                                UnitType.CHIEFTAIN));
+                raceInfo.getMagics().forEach(chieftain::maxMagicEnergy);
+                setActiveChieftain(chieftain);
+            }
+            for (int j = 0; j < unitInfo.numPeons(); j++) {
+                Target t = getLegacyTarget(random);
+                new Unit(this, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(UnitType.PEON));
+            }
+            for (int j = 0; j < unitInfo.numRockWarriors(); j++) {
+                Target t = getLegacyTarget(random);
+                new Unit(this, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(
+                        UnitType.WARRIOR_ROCK));
+            }
+            for (int j = 0; j < unitInfo.numIronWarriors(); j++) {
+                Target t = getLegacyTarget(random);
+                new Unit(this, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(
+                        UnitType.WARRIOR_IRON));
+            }
+            for (int j = 0; j < unitInfo.numRubberWarriors(); j++) {
+                Target t = getLegacyTarget(random);
+                new Unit(this, t.getPositionX(), t.getPositionY(), null, raceInfo.getUnitTemplate(
+                        UnitType.WARRIOR_RUBBER));
+            }
+            return;
+        }
+
+        int idx = 0;
+        for (int j = 0; j < unitInfo.numPeons(); j++, idx++) {
+            SpawnLocation loc = startingLocations.get(idx);
+            new Unit(this, loc.x(), loc.y(), null, raceInfo.getUnitTemplate(UnitType.PEON));
+        }
+        for (int j = 0; j < unitInfo.numRockWarriors(); j++, idx++) {
+            SpawnLocation loc = startingLocations.get(idx);
+            new Unit(this, loc.x(), loc.y(), null, raceInfo.getUnitTemplate(UnitType.WARRIOR_ROCK));
+        }
+        for (int j = 0; j < unitInfo.numIronWarriors(); j++, idx++) {
+            SpawnLocation loc = startingLocations.get(idx);
+            new Unit(this, loc.x(), loc.y(), null, raceInfo.getUnitTemplate(UnitType.WARRIOR_IRON));
+        }
+        for (int j = 0; j < unitInfo.numRubberWarriors(); j++, idx++) {
+            SpawnLocation loc = startingLocations.get(idx);
+            new Unit(this, loc.x(), loc.y(), null, raceInfo.getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        }
+        if (unitInfo.hasChieftain()) {
+            SpawnLocation loc = startingLocations.get(idx);
+            Unit chieftain = chieftainName != null
+                    ? new Unit(this, loc.x(), loc.y(), null, raceInfo.getUnitTemplate(UnitType.CHIEFTAIN),
+                            chieftainName, false)
+                    : new Unit(this, loc.x(), loc.y(), null, raceInfo.getUnitTemplate(UnitType.CHIEFTAIN));
+            raceInfo.getMagics().forEach(chieftain::maxMagicEnergy);
+            setActiveChieftain(chieftain);
+        }
+    }
+
+    /// Finds a target position within radial distance from this player's starting coordinates.
+    public Target getRadialTarget(RandomGenerator random) {
+        float target_x = start_x + random.nextFloat(-RADIAL_SEARCH_RADIUS, RADIAL_SEARCH_RADIUS);
+        float target_y = start_y + random.nextFloat(-RADIAL_SEARCH_RADIUS, RADIAL_SEARCH_RADIUS);
+        Target target = world.getUnitGrid().findGridTarget(
+                UnitGrid.toGridCoordinate(target_x),
+                UnitGrid.toGridCoordinate(target_y),
+                false
+        );
+        return target != null
+                ? target
+                : new LandscapeTarget(UnitGrid.toGridCoordinate(target_x), UnitGrid.toGridCoordinate(target_y));
+    }
+
+    /// Finds a deterministic target position using the legacy search algorithm.
+    public Target getLegacyTarget(Random random) {
+        float radius = 30f;
+        float target_x = start_x + (random.nextFloat() * 2f - 1f) * radius;
+        float target_y = start_y + (random.nextFloat() * 2f - 1f) * radius;
+        Target[] targets = world.getUnitGrid().findGridTargets(
+                UnitGrid.toGridCoordinate(target_x),
+                UnitGrid.toGridCoordinate(target_y),
+                1,
+                false
+        );
+        return targets[0];
     }
 
     public Optional<Selectable<?>> findNearestEnemy(int start_x, int start_y) {
@@ -412,56 +596,170 @@ public final class Player implements PlayerInterface, PlayerActions {
     }
 
     @Override
-    public void deployUnits(Building building, DeployType type, int num_units) {
-        if (isValid(building))
-            building.deployUnits(type, num_units);
+    public void deployUnits(@Nullable Building building, DeployType type, int num_units) {
+        applyDeployUnits(building, type, num_units);
+    }
+
+    private void applyDeployUnits(@Nullable Building building, DeployType type, int num_units) {
+        if (building == null) {
+            notifyRejected("deployUnits", Distributable.NO_ID, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("deployUnits", building.getId(), "NOT_OWNED");
+            return;
+        }
+        building.deployUnits(type, num_units);
     }
 
     @Override
-    public void createHarvesters(Building building, int num_tree, int num_rock, int num_iron, int num_rubber) {
-        if (isValid(building))
-            building.createHarvesters(num_tree, num_rock, num_iron, num_rubber);
+    public void createHarvesters(@Nullable Building building, int num_tree, int num_rock, int num_iron,
+            int num_rubber) {
+        applyCreateHarvesters(building, num_tree, num_rock, num_iron, num_rubber);
+    }
+
+    private void applyCreateHarvesters(@Nullable Building building, int num_tree, int num_rock, int num_iron,
+            int num_rubber) {
+        if (building == null) {
+            notifyRejected("createHarvesters", Distributable.NO_ID, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("createHarvesters", building.getId(), "NOT_OWNED");
+            return;
+        }
+        building.createHarvesters(num_tree, num_rock, num_iron, num_rubber);
     }
 
     @Override
-    public void buildRockWeapons(Building building, int num_weapons, boolean infinite) {
-        if (isValid(building))
-            building.buildWeapons(WeaponTier.ROCK, num_weapons, infinite);
+    public void buildRockWeapons(@Nullable Building building, int num_weapons, boolean infinite) {
+        applyBuildRockWeapons(building, num_weapons, infinite);
+    }
+
+    private void applyBuildRockWeapons(@Nullable Building building, int num_weapons, boolean infinite) {
+        if (building == null) {
+            notifyRejected("buildRockWeapons", Distributable.NO_ID, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("buildRockWeapons", building.getId(), "NOT_OWNED");
+            return;
+        }
+        building.buildWeapons(WeaponTier.ROCK, num_weapons, infinite);
     }
 
     @Override
-    public void buildIronWeapons(Building building, int num_weapons, boolean infinite) {
-        if (isValid(building))
-            building.buildWeapons(WeaponTier.IRON, num_weapons, infinite);
+    public void buildIronWeapons(@Nullable Building building, int num_weapons, boolean infinite) {
+        applyBuildIronWeapons(building, num_weapons, infinite);
+    }
+
+    private void applyBuildIronWeapons(@Nullable Building building, int num_weapons, boolean infinite) {
+        if (building == null) {
+            notifyRejected("buildIronWeapons", Distributable.NO_ID, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("buildIronWeapons", building.getId(), "NOT_OWNED");
+            return;
+        }
+        building.buildWeapons(WeaponTier.IRON, num_weapons, infinite);
     }
 
     @Override
-    public void buildRubberWeapons(Building building, int num_weapons, boolean infinite) {
-        if (isValid(building))
-            building.buildWeapons(WeaponTier.RUBBER, num_weapons, infinite);
+    public void buildRubberWeapons(@Nullable Building building, int num_weapons, boolean infinite) {
+        applyBuildRubberWeapons(building, num_weapons, infinite);
+    }
+
+    private void applyBuildRubberWeapons(@Nullable Building building, int num_weapons, boolean infinite) {
+        if (building == null) {
+            notifyRejected("buildRubberWeapons", Distributable.NO_ID, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("buildRubberWeapons", building.getId(), "NOT_OWNED");
+            return;
+        }
+        building.buildWeapons(WeaponTier.RUBBER, num_weapons, infinite);
     }
 
     @Override
-    public void doMagic(Unit chieftain, MagicType magic) {
-        if (isValid(chieftain))
-            chieftain.doMagic(magic, true);
+    public void doMagic(@Nullable Unit chieftain, MagicType magic) {
+        applyDoMagic(chieftain, magic);
+    }
+
+    private void applyDoMagic(@Nullable Unit chieftain, MagicType magic) {
+        if (chieftain == null) {
+            notifyRejected("doMagic", Distributable.NO_ID, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(chieftain)) {
+            notifyRejected("doMagic", chieftain.getId(), "NOT_OWNED");
+            return;
+        }
+        chieftain.doMagic(magic, true);
     }
 
     @Override
-    public void exitTower(Building building) {
-        if (isValid(building))
-            building.exitTower();
+    public void exitTower(@Nullable Building building) {
+        applyExitTower(building);
+    }
+
+    private void applyExitTower(@Nullable Building building) {
+        if (building == null) {
+            notifyRejected("exitTower", Distributable.NO_ID, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("exitTower", building.getId(), "NOT_OWNED");
+            return;
+        }
+        building.exitTower();
     }
 
     @Override
-    public void trainChieftain(Building building, boolean start) {
-        if (isValid(building))
-            building.trainChieftain(start);
+    public void trainChieftain(@Nullable Building building, boolean start) {
+        applyTrainChieftain(building, start);
+    }
+
+    private void applyTrainChieftain(@Nullable Building building, boolean start) {
+        if (building == null) {
+            notifyRejected("trainChieftain", Distributable.NO_ID, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("trainChieftain", building.getId(), "NOT_OWNED");
+            return;
+        }
+        building.trainChieftain(start);
     }
 
     @Override
-    public void placeBuilding(Selectable<?>[] selection, BuildingType template_type,
+    public void placeBuilding(List<? extends Selectable<?>> selection, BuildingType template_type,
             int placing_grid_x, int placing_grid_y) {
+        applyPlaceBuilding(selection, template_type, placing_grid_x, placing_grid_y);
+    }
+
+    private void applyPlaceBuilding(List<? extends Selectable<?>> selection, BuildingType template_type,
+            int placing_grid_x, int placing_grid_y) {
+        int gridSize = world.getHeightMap().getGridUnitsPerWorld();
+        if (placing_grid_x < 0 || placing_grid_x >= gridSize || placing_grid_y < 0 || placing_grid_y >= gridSize) {
+            notifyRejected("placeBuilding", Distributable.NO_ID, "OUT_OF_BOUNDS");
+            return;
+        }
+        boolean anyOwned = false;
+        for (var s : selection) {
+            if (isValid(s)) {
+                anyOwned = true;
+                break;
+            }
+        }
+        if (!anyOwned) {
+            Selectable<?> first = !selection.isEmpty() ? selection.getFirst() : null;
+            int entityId = first != null ? first.getId() : Distributable.NO_ID;
+            String reason = (first != null && first.getOwner() != this) ? "NOT_OWNED" : "ENTITY_NOT_FOUND";
+            notifyRejected("placeBuilding", entityId, reason);
+            return;
+        }
         Building building = new Building(this, getRaceInfo().getBuildingTemplate(template_type),
                 placing_grid_x, placing_grid_y);
         for (var selectable : selection) {
@@ -472,19 +770,69 @@ public final class Player implements PlayerInterface, PlayerActions {
     }
 
     @Override
-    public void setRallyPoint(Building building, @Nullable Target target) {
-        if (isValid(building) && target != null)
-            building.setRallyPoint(target);
+    public void setRallyPoint(@Nullable Building building, @Nullable Target target) {
+        applySetRallyPoint(building, target);
+    }
+
+    private void applySetRallyPoint(@Nullable Building building, @Nullable Target target) {
+        if (building == null) {
+            notifyRejected("setRallyPoint", Distributable.NO_ID, "ENTITY_NOT_FOUND");
+            return;
+        }
+        if (!isValid(building)) {
+            notifyRejected("setRallyPoint", building.getId(), "NOT_OWNED");
+            return;
+        }
+        if (target == null) {
+            notifyRejected("setRallyPoint", Distributable.NO_ID, "ENTITY_NOT_FOUND");
+            return;
+        }
+        building.setRallyPoint(target);
     }
 
     @Override
-    public void setRallyPoint(Building building, int grid_x, int grid_y) {
-        setRallyPoint(building, new LandscapeTarget(grid_x, grid_y));
+    public void setRallyPoint(@Nullable Building building, int grid_x, int grid_y) {
+        applySetRallyPoint(building, grid_x, grid_y);
+    }
+
+    private void applySetRallyPoint(@Nullable Building building, int grid_x, int grid_y) {
+        int gridSize = world.getHeightMap().getGridUnitsPerWorld();
+        if (grid_x < 0 || grid_x >= gridSize || grid_y < 0 || grid_y >= gridSize) {
+            int buildingId = building != null ? building.getId() : Distributable.NO_ID;
+            notifyRejected("setRallyPoint", buildingId, "OUT_OF_BOUNDS");
+            return;
+        }
+        applySetRallyPoint(building, new LandscapeTarget(grid_x, grid_y));
     }
 
     @Override
-    public void setTarget(@Nullable Selectable<?>[] selection, Target target, Action action,
+    public void setTarget(@Nullable List<? extends Selectable<?>> selection, @Nullable Target target, Action action,
             boolean aggressive) {
+        if (selection != null) {
+            applySetTarget(selection, target, action, aggressive);
+        }
+    }
+
+    private void applySetTarget(List<? extends Selectable<?>> selection, @Nullable Target target, Action action,
+            boolean aggressive) {
+        if (target == null) {
+            notifyRejected("setTarget", Distributable.NO_ID, "ENTITY_NOT_FOUND");
+            return;
+        }
+        boolean anyOwned = false;
+        for (var s : selection) {
+            if (isValid(s)) {
+                anyOwned = true;
+                break;
+            }
+        }
+        if (!anyOwned && !selection.isEmpty()) {
+            Selectable<?> first = selection.getFirst();
+            int entityId = first != null ? first.getId() : Distributable.NO_ID;
+            String reason = (first != null && first.getOwner() != this) ? "NOT_OWNED" : "ENTITY_NOT_FOUND";
+            notifyRejected("setTarget", entityId, reason);
+            return;
+        }
         for (Selectable<?> selectable : selection) {
             if (isValid(selectable)) {
                 selectable.initTarget(target, action, aggressive);
@@ -493,46 +841,95 @@ public final class Player implements PlayerInterface, PlayerActions {
     }
 
     @Override
-    public void setTarget(Selectable<?> unit, Target target, Action action, boolean aggressive) {
-        if (isValid(unit)) {
-            unit.initTarget(target, action, aggressive);
+    public void setTarget(@Nullable Selectable<?> unit, @Nullable Target target, Action action, boolean aggressive) {
+        if (target == null) {
+            notifyRejected("setTarget", Distributable.NO_ID, "ENTITY_NOT_FOUND");
+            return;
         }
+        if (!isValid(unit)) {
+            int entityId = unit != null ? unit.getId() : Distributable.NO_ID;
+            String reason = (unit != null && unit.getOwner() != this) ? "NOT_OWNED" : "ENTITY_NOT_FOUND";
+            notifyRejected("setTarget", entityId, reason);
+            return;
+        }
+        unit.initTarget(target, action, aggressive);
     }
 
-    public void killSelection(Selectable<?>[] selection) {
+    public void killSelection(Collection<? extends Selectable<?>> selection) {
         for (Selectable<?> selectable : selection) {
-            selectable.hit(10000, 0f, 1f, this);
+            if (selectable != null) {
+                selectable.hit(10000, 0f, 1f, this);
+            }
         }
     }
 
     @Override
-    public void setLandscapeTarget(Selectable<?>[] selection, int grid_x, int grid_y,
+    public void setLandscapeTarget(@Nullable List<? extends Selectable<?>> selection, int grid_x, int grid_y,
             Action action,
             boolean aggressive) {
-        if (selection.length == 0)
-            return;
-        if (selection.length == 1) {
-            setLandscapeTarget(selection[0], grid_x, grid_y, action, aggressive);
+        if (selection != null) {
+            applySetLandscapeTarget(selection, grid_x, grid_y, action, aggressive);
+        }
+    }
+
+    private void applySetLandscapeTarget(List<? extends Selectable<?>> selection, int grid_x, int grid_y,
+            Action action, boolean aggressive) {
+        int grid_size = world.getUnitGrid().getGridSize();
+        if (grid_x < 0 || grid_x >= grid_size || grid_y < 0 || grid_y >= grid_size) {
+            notifyRejected("setLandscapeTarget", Distributable.NO_ID, "OUT_OF_BOUNDS");
             return;
         }
-        int grid_size = world.getUnitGrid().getGridSize();
-        if (grid_x < 0 || grid_x >= grid_size || grid_y < 0 || grid_y >= grid_size)
+        if (selection.isEmpty()) {
             return;
-        var targets = world.getUnitGrid().findGridTargets(grid_x, grid_y, selection.length, true);
-        for (int i = 0; i < selection.length; i++) {
-            if (isValid(selection[i]))
-                selection[i].initTarget(targets[i], action, aggressive);
+        }
+        if (selection.size() == 1) {
+            applySetLandscapeTarget(selection.getFirst(), grid_x, grid_y, action, aggressive);
+            return;
+        }
+        boolean anyOwned = false;
+        for (var s : selection) {
+            if (isValid(s)) {
+                anyOwned = true;
+                break;
+            }
+        }
+        if (!anyOwned) {
+            Selectable<?> first = selection.getFirst();
+            int entityId = first != null ? first.getId() : Distributable.NO_ID;
+            String reason = (first != null && first.getOwner() != this) ? "NOT_OWNED" : "ENTITY_NOT_FOUND";
+            notifyRejected("setLandscapeTarget", entityId, reason);
+            return;
+        }
+        var targets = world.getUnitGrid().findGridTargets(grid_x, grid_y, selection.size(), true);
+        for (int i = 0; i < selection.size(); i++) {
+            Selectable<?> selectable = selection.get(i);
+            if (isValid(selectable)) {
+                selectable.initTarget(targets[i], action, aggressive);
+            }
         }
     }
 
     @Override
-    public void setLandscapeTarget(Selectable<?> unit, int grid_x, int grid_y, Action action,
+    public void setLandscapeTarget(@Nullable Selectable<?> unit, int grid_x, int grid_y, Action action,
+            boolean aggressive) {
+        applySetLandscapeTarget(unit, grid_x, grid_y, action, aggressive);
+    }
+
+    private void applySetLandscapeTarget(@Nullable Selectable<?> unit, int grid_x, int grid_y, Action action,
             boolean aggressive) {
         int grid_size = world.getUnitGrid().getGridSize();
-        if (grid_x < 0 || grid_x >= grid_size || grid_y < 0 || grid_y >= grid_size)
+        if (grid_x < 0 || grid_x >= grid_size || grid_y < 0 || grid_y >= grid_size) {
+            notifyRejected("setLandscapeTarget", Distributable.NO_ID, "OUT_OF_BOUNDS");
             return;
+        }
+        if (!isValid(unit)) {
+            int entityId = unit != null ? unit.getId() : Distributable.NO_ID;
+            String reason = (unit != null && unit.getOwner() != this) ? "NOT_OWNED" : "ENTITY_NOT_FOUND";
+            notifyRejected("setLandscapeTarget", entityId, reason);
+            return;
+        }
         Target target = world.getUnitGrid().findGridTarget(grid_x, grid_y, false);
-        if (isValid(unit) && target != null) {
+        if (target != null) {
             unit.initTarget(target, action, aggressive);
         }
     }
@@ -663,7 +1060,42 @@ public final class Player implements PlayerInterface, PlayerActions {
     }
 
     @Override
-    public void deployUnits(int buildingId, DeployType deployType, int numUnits) {
+    public void execute(PlayerCommand command) {
+        switch (command) {
+            case PlayerCommand.DeployUnits cmd ->
+                deployUnits(cmd.buildingId(), cmd.deployType(), cmd.numUnits());
+            case PlayerCommand.CreateHarvesters cmd ->
+                createHarvesters(cmd.buildingId(), cmd.numTree(), cmd.numRock(), cmd.numIron(), cmd.numRubber());
+            case PlayerCommand.BuildRockWeapons cmd ->
+                buildRockWeapons(cmd.buildingId(), cmd.numWeapons(), cmd.infinite());
+            case PlayerCommand.BuildIronWeapons cmd ->
+                buildIronWeapons(cmd.buildingId(), cmd.numWeapons(), cmd.infinite());
+            case PlayerCommand.BuildRubberWeapons cmd ->
+                buildRubberWeapons(cmd.buildingId(), cmd.numWeapons(), cmd.infinite());
+            case PlayerCommand.DoMagic cmd ->
+                doMagic(cmd.chieftainId(), cmd.magic());
+            case PlayerCommand.ExitTower cmd ->
+                exitTower(cmd.buildingId());
+            case PlayerCommand.TrainChieftain cmd ->
+                trainChieftain(cmd.buildingId(), cmd.start());
+            case PlayerCommand.PlaceBuilding cmd ->
+                placeBuilding(cmd.selectionIds(), cmd.templateType(), cmd.gridX(), cmd.gridY());
+            case PlayerCommand.SetRallyPointTarget cmd ->
+                setRallyPoint(cmd.buildingId(), cmd.targetEntityId());
+            case PlayerCommand.SetRallyPointCoords cmd ->
+                setRallyPoint(cmd.buildingId(), cmd.gridX(), cmd.gridY());
+            case PlayerCommand.SetTarget cmd ->
+                setTarget(cmd.selectionIds(), cmd.targetEntityId(), cmd.action(), cmd.aggressive());
+            case PlayerCommand.SetLandscapeTarget cmd ->
+                setLandscapeTarget(cmd.selectionIds(), cmd.gridX(), cmd.gridY(), cmd.action(), cmd.aggressive());
+            case PlayerCommand.SetPreferredGamespeed cmd ->
+                setPreferredGamespeed(cmd.speed());
+            case PlayerCommand.ChangePreferredGamespeed cmd ->
+                changePreferredGamespeed(cmd.delta());
+        }
+    }
+
+    private void deployUnits(int buildingId, DeployType deployType, int numUnits) {
         var distributable = world.getDistributableTable().getDistributable(buildingId);
         if (!(distributable instanceof Building building)) {
             notifyRejected("deployUnits", buildingId, "ENTITY_NOT_FOUND");
@@ -673,11 +1105,10 @@ public final class Player implements PlayerInterface, PlayerActions {
             notifyRejected("deployUnits", buildingId, "NOT_OWNED");
             return;
         }
-        deployUnits(building, deployType, numUnits);
+        applyDeployUnits(building, deployType, numUnits);
     }
 
-    @Override
-    public void createHarvesters(int buildingId, int numTree, int numRock, int numIron, int numRubber) {
+    private void createHarvesters(int buildingId, int numTree, int numRock, int numIron, int numRubber) {
         var distributable = world.getDistributableTable().getDistributable(buildingId);
         if (!(distributable instanceof Building building)) {
             notifyRejected("createHarvesters", buildingId, "ENTITY_NOT_FOUND");
@@ -687,11 +1118,10 @@ public final class Player implements PlayerInterface, PlayerActions {
             notifyRejected("createHarvesters", buildingId, "NOT_OWNED");
             return;
         }
-        createHarvesters(building, numTree, numRock, numIron, numRubber);
+        applyCreateHarvesters(building, numTree, numRock, numIron, numRubber);
     }
 
-    @Override
-    public void buildRockWeapons(int buildingId, int numWeapons, boolean infinite) {
+    private void buildRockWeapons(int buildingId, int numWeapons, boolean infinite) {
         var distributable = world.getDistributableTable().getDistributable(buildingId);
         if (!(distributable instanceof Building building)) {
             notifyRejected("buildRockWeapons", buildingId, "ENTITY_NOT_FOUND");
@@ -701,11 +1131,10 @@ public final class Player implements PlayerInterface, PlayerActions {
             notifyRejected("buildRockWeapons", buildingId, "NOT_OWNED");
             return;
         }
-        buildRockWeapons(building, numWeapons, infinite);
+        applyBuildRockWeapons(building, numWeapons, infinite);
     }
 
-    @Override
-    public void buildIronWeapons(int buildingId, int numWeapons, boolean infinite) {
+    private void buildIronWeapons(int buildingId, int numWeapons, boolean infinite) {
         var distributable = world.getDistributableTable().getDistributable(buildingId);
         if (!(distributable instanceof Building building)) {
             notifyRejected("buildIronWeapons", buildingId, "ENTITY_NOT_FOUND");
@@ -715,11 +1144,10 @@ public final class Player implements PlayerInterface, PlayerActions {
             notifyRejected("buildIronWeapons", buildingId, "NOT_OWNED");
             return;
         }
-        buildIronWeapons(building, numWeapons, infinite);
+        applyBuildIronWeapons(building, numWeapons, infinite);
     }
 
-    @Override
-    public void buildRubberWeapons(int buildingId, int numWeapons, boolean infinite) {
+    private void buildRubberWeapons(int buildingId, int numWeapons, boolean infinite) {
         var distributable = world.getDistributableTable().getDistributable(buildingId);
         if (!(distributable instanceof Building building)) {
             notifyRejected("buildRubberWeapons", buildingId, "ENTITY_NOT_FOUND");
@@ -729,11 +1157,10 @@ public final class Player implements PlayerInterface, PlayerActions {
             notifyRejected("buildRubberWeapons", buildingId, "NOT_OWNED");
             return;
         }
-        buildRubberWeapons(building, numWeapons, infinite);
+        applyBuildRubberWeapons(building, numWeapons, infinite);
     }
 
-    @Override
-    public void doMagic(int chieftainId, MagicType magic) {
+    private void doMagic(int chieftainId, MagicType magic) {
         var distributable = world.getDistributableTable().getDistributable(chieftainId);
         if (!(distributable instanceof Unit chief)) {
             notifyRejected("doMagic", chieftainId, "ENTITY_NOT_FOUND");
@@ -743,11 +1170,10 @@ public final class Player implements PlayerInterface, PlayerActions {
             notifyRejected("doMagic", chieftainId, "NOT_OWNED");
             return;
         }
-        doMagic(chief, magic);
+        applyDoMagic(chief, magic);
     }
 
-    @Override
-    public void exitTower(int buildingId) {
+    private void exitTower(int buildingId) {
         var distributable = world.getDistributableTable().getDistributable(buildingId);
         if (!(distributable instanceof Building building)) {
             notifyRejected("exitTower", buildingId, "ENTITY_NOT_FOUND");
@@ -757,11 +1183,10 @@ public final class Player implements PlayerInterface, PlayerActions {
             notifyRejected("exitTower", buildingId, "NOT_OWNED");
             return;
         }
-        exitTower(building);
+        applyExitTower(building);
     }
 
-    @Override
-    public void trainChieftain(int buildingId, boolean start) {
+    private void trainChieftain(int buildingId, boolean start) {
         var distributable = world.getDistributableTable().getDistributable(buildingId);
         if (!(distributable instanceof Building building)) {
             notifyRejected("trainChieftain", buildingId, "ENTITY_NOT_FOUND");
@@ -771,25 +1196,24 @@ public final class Player implements PlayerInterface, PlayerActions {
             notifyRejected("trainChieftain", buildingId, "NOT_OWNED");
             return;
         }
-        trainChieftain(building, start);
+        applyTrainChieftain(building, start);
     }
 
-    @Override
-    public void placeBuilding(int[] selectionIds, BuildingType templateType, int gridX, int gridY) {
+    private void placeBuilding(int[] selectionIds, BuildingType templateType, int gridX, int gridY) {
         int gridSize = world.getHeightMap().getGridUnitsPerWorld();
         if (gridX < 0 || gridX >= gridSize || gridY < 0 || gridY >= gridSize) {
-            throw new IllegalArgumentException("Grid coordinates out of bounds: (" + gridX + ", " + gridY + ")");
+            notifyRejected("placeBuilding", Distributable.NO_ID, "OUT_OF_BOUNDS");
+            return;
         }
         List<Selectable<?>> selectables = resolveSelectables(selectionIds);
         if (selectables.isEmpty() && selectionIds.length > 0) {
             notifyRejected("placeBuilding", selectionIds[0], "ENTITY_NOT_FOUND");
             return;
         }
-        placeBuilding(selectables.toArray(Selectable[]::new), templateType, gridX, gridY);
+        applyPlaceBuilding(selectables, templateType, gridX, gridY);
     }
 
-    @Override
-    public void setRallyPoint(int buildingId, int targetEntityId) {
+    private void setRallyPoint(int buildingId, int targetEntityId) {
         var buildingDistributable = world.getDistributableTable().getDistributable(buildingId);
         if (!(buildingDistributable instanceof Building building)) {
             notifyRejected("setRallyPoint", buildingId, "ENTITY_NOT_FOUND");
@@ -804,14 +1228,14 @@ public final class Player implements PlayerInterface, PlayerActions {
             notifyRejected("setRallyPoint", targetEntityId, "ENTITY_NOT_FOUND");
             return;
         }
-        setRallyPoint(building, target);
+        applySetRallyPoint(building, target);
     }
 
-    @Override
-    public void setRallyPoint(int buildingId, int gridX, int gridY) {
+    private void setRallyPoint(int buildingId, int gridX, int gridY) {
         int gridSize = world.getHeightMap().getGridUnitsPerWorld();
         if (gridX < 0 || gridX >= gridSize || gridY < 0 || gridY >= gridSize) {
-            throw new IllegalArgumentException("Grid coordinates out of bounds: (" + gridX + ", " + gridY + ")");
+            notifyRejected("setRallyPoint", buildingId, "OUT_OF_BOUNDS");
+            return;
         }
         var buildingDistributable = world.getDistributableTable().getDistributable(buildingId);
         if (!(buildingDistributable instanceof Building building)) {
@@ -822,11 +1246,10 @@ public final class Player implements PlayerInterface, PlayerActions {
             notifyRejected("setRallyPoint", buildingId, "NOT_OWNED");
             return;
         }
-        setRallyPoint(building, gridX, gridY);
+        applySetRallyPoint(building, gridX, gridY);
     }
 
-    @Override
-    public void setTarget(int[] selectionIds, int targetEntityId, Action action, boolean aggressive) {
+    private void setTarget(int[] selectionIds, int targetEntityId, Action action, boolean aggressive) {
         var targetDistributable = world.getDistributableTable().getDistributable(targetEntityId);
         if (!(targetDistributable instanceof Target target)) {
             notifyRejected("setTarget", targetEntityId, "ENTITY_NOT_FOUND");
@@ -837,21 +1260,21 @@ public final class Player implements PlayerInterface, PlayerActions {
             notifyRejected("setTarget", selectionIds[0], "ENTITY_NOT_FOUND");
             return;
         }
-        setTarget(selectables.toArray(Selectable[]::new), target, action, aggressive);
+        applySetTarget(selectables, target, action, aggressive);
     }
 
-    @Override
-    public void setLandscapeTarget(int[] selectionIds, int gridX, int gridY, Action action, boolean aggressive) {
+    private void setLandscapeTarget(int[] selectionIds, int gridX, int gridY, Action action, boolean aggressive) {
         int gridSize = world.getHeightMap().getGridUnitsPerWorld();
         if (gridX < 0 || gridX >= gridSize || gridY < 0 || gridY >= gridSize) {
-            throw new IllegalArgumentException("Grid coordinates out of bounds: (" + gridX + ", " + gridY + ")");
+            notifyRejected("setLandscapeTarget", Distributable.NO_ID, "OUT_OF_BOUNDS");
+            return;
         }
         List<Selectable<?>> selectables = resolveSelectables(selectionIds);
         if (selectables.isEmpty() && selectionIds.length > 0) {
             notifyRejected("setLandscapeTarget", selectionIds[0], "ENTITY_NOT_FOUND");
             return;
         }
-        setLandscapeTarget(selectables.toArray(Selectable[]::new), gridX, gridY, action,
+        applySetLandscapeTarget(selectables, gridX, gridY, action,
                 aggressive);
     }
 

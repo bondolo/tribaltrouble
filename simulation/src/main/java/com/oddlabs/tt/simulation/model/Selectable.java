@@ -298,14 +298,4 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         //noinspection unchecked
         return (Class<Selectable<T>>) (Class<?>) Selectable.class;
     }
-
-    public static <T extends Template> Selectable<T>[] newArray(int length) {
-        //noinspection unchecked
-        return (Selectable<T>[]) new Selectable[length];
-    }
-
-    public static <T extends Template> Selectable<T>[] newArray(Selectable<
-            T>... selectables) {
-        return selectables;
-    }
 }

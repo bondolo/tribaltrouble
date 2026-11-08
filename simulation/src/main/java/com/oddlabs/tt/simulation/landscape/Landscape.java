@@ -3,11 +3,17 @@ package com.oddlabs.tt.simulation.landscape;
 import com.oddlabs.tt.simulation.model.Terrain;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * Spatial and topographical landscape defining the terrain and object placements of the world.
  */
 public interface Landscape {
+
+    /**
+     * Number of distinct cosmetic plant vegetation types.
+     */
+    int NUM_PLANT_TYPES = 4;
 
     /**
      * Returns the configuration used to generate the island.
@@ -39,7 +45,9 @@ public interface Landscape {
      *
      * @return the sea level in meters
      */
-    float seaLevelMeters();
+    default float seaLevelMeters() {
+        return 0f;
+    }
 
     /**
      * Returns the terrain height elevation values.
@@ -53,56 +61,75 @@ public interface Landscape {
      *
      * @return the standard tree placements list
      */
-    List<TreePlacement> trees();
+    default List<TreePlacement> trees() {
+        return List.of();
+    }
 
     /**
      * Returns the grid coordinates of palm tree placements.
      *
      * @return the palm tree placements list
      */
-    List<TreePlacement> palmTrees();
+    default List<TreePlacement> palmTrees() {
+        return List.of();
+    }
 
     /**
      * Returns the grid coordinates of rock supply deposits.
      *
      * @return the rock supply placements list
      */
-    List<SupplyPlacement> rocks();
+    default List<SupplyPlacement> rocks() {
+        return List.of();
+    }
 
     /**
      * Returns the grid coordinates of iron supply deposits.
      *
      * @return the iron supply placements list
      */
-    List<SupplyPlacement> iron();
+    default List<SupplyPlacement> iron() {
+        return List.of();
+    }
 
     /**
      * Returns the world coordinates of cosmetic ground vegetation, indexed by plant type.
      *
      * @return the plant placements indexed by type, then by placement
      */
-    List<PlantLocation>[] plants();
+    @SuppressWarnings("unchecked")
+    default List<PlantLocation>[] plants() {
+        return IntStream.range(0, NUM_PLANT_TYPES)
+                .mapToObj(_ -> List.<PlantLocation>of())
+                .toArray(List[]::new);
+    }
 
     /**
      * Returns the movement accessibility grid.
      *
      * @return the 2D accessibility boolean grid
      */
-    boolean[][] accessGrid();
+    default boolean[][] accessGrid() {
+        return new boolean[0][0];
+    }
 
     /**
      * Returns the structure building placement grid.
      *
      * @return the 2D building placement byte grid
      */
-    byte[][] buildGrid();
+    default byte[][] buildGrid() {
+        return new byte[0][0];
+    }
 
     /**
      * Returns the per-player spawn locations for initial units.
      *
      * @return the starting locations list indexed by player, then by unit
      */
-    List<List<SpawnLocation>> startingLocations();
+    default List<List<SpawnLocation>> startingLocations() {
+        return List.of();
+    }
 
     /**
      * Returns the vertical height scaling factor applied to the heightmap.

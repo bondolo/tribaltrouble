@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.landscape;
 
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.SimulationClock;
-import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.simulation.model.AbstractElementNode;
 import com.oddlabs.tt.simulation.model.Distributable;
 import com.oddlabs.tt.simulation.model.DistributableTable;
@@ -16,7 +15,8 @@ import com.oddlabs.tt.simulation.TickListener;
 import com.oddlabs.tt.simulation.pathfinder.RegionBuilder;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.simulation.player.PlayerInfo;
+import com.oddlabs.tt.simulation.player.PlayerConfig;
+import com.oddlabs.tt.simulation.player.TurnCommandBuffer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
@@ -60,27 +60,12 @@ public final class World implements SimulationClock {
     private final LandscapeBoundsProvider landscape_resources;
     private final Terrain terrain;
     private final DistributableTable distributable_table = new DistributableTable();
+    private final TurnCommandBuffer turnCommandBuffer = new TurnCommandBuffer();
     private final List<TickListener> tickListeners = new ArrayList<>();
 
     private int global_checksum;
     private int gamespeed;
     private long lastTickNanos = System.nanoTime();
-
-    public static World newWorld(
-            @Nullable RaceData races_resources,
-            @Nullable LandscapeBoundsProvider landscape_resources,
-            NotificationListener notification_listener, WorldParameters world_params,
-            Landscape landscape, List<PlayerInfo> player_infos,
-            Color.Linear[] playerColors) {
-        ProgressListener.progress();
-        World world = new World(races_resources, landscape_resources, notification_listener,
-                world_params, landscape, player_infos, playerColors);
-        ProgressListener.progress();
-        ProgressListener.progress(1 / 5f);
-        ProgressListener.progress();
-
-        return world;
-    }
 
     public Terrain getTerrainType() {
         return terrain;
@@ -145,6 +130,13 @@ public final class World implements SimulationClock {
 
     public void tick() {
         lastTickNanos = System.nanoTime();
+        List<TurnCommandBuffer.ScheduledCommand> scheduled = turnCommandBuffer.drainCommandsForTick(getTick());
+        for (int i = 0; i < scheduled.size(); i++) {
+            var cmd = scheduled.get(i);
+            if (cmd.playerSlot() >= 0 && cmd.playerSlot() < players.size()) {
+                players.get(cmd.playerSlot()).execute(cmd.command());
+            }
+        }
         getAnimationManagerGameTime().runAnimations(getSecondsPerTick());
         for (int i = 0; i < tickListeners.size(); i++) {
             tickListeners.get(i).onTick();
@@ -177,17 +169,23 @@ public final class World implements SimulationClock {
         return getAnimationManagerRealTime().getTick();
     }
 
-    private World(@Nullable RaceData races_resources,
+    /// Constructs a simulation world with default race data, geometry bounds, and no-op notification listener.
+    public World(WorldParameters worldParams, Landscape landscape, List<PlayerConfig> playerConfigs) {
+        this(null, null, NotificationListener.EMPTY, worldParams, landscape, playerConfigs);
+    }
+
+    /// Constructs a simulation world with the given resources, parameters, terrain, and player configurations.
+    public World(@Nullable RaceData races_resources,
             @Nullable LandscapeBoundsProvider landscape_resources,
-            NotificationListener notification_listener,
+            @Nullable NotificationListener notification_listener,
             WorldParameters world_params, Landscape landscape,
-            List<PlayerInfo> player_infos, Color.Linear[] playerColors) {
+            List<PlayerConfig> playerConfigs) {
         IO.println("****************** Generating landscape ********************");
         this.terrain = landscape.terrain();
         this.landscape_resources = landscape_resources != null ? landscape_resources : new LandscapeGeometry();
-        this.races_resources = races_resources;
+        this.races_resources = races_resources != null ? races_resources : new RaceData();
         this.max_unit_count = world_params.maxUnitCount();
-        this.notification_listener = notification_listener;
+        this.notification_listener = notification_listener != null ? notification_listener : NotificationListener.EMPTY;
         this.gamespeed = world_params.initialGameSpeed();
         this.worldParameters = world_params;
         long time_start = System.currentTimeMillis();
@@ -198,10 +196,13 @@ public final class World implements SimulationClock {
         random = new Random(42);
 
         List<List<SpawnLocation>> startingLocations = landscape.startingLocations();
-        players = List.of(IntStream.range(0, player_infos.size())
-                .mapToObj(i -> new Player(this, player_infos.get(i), playerColors[i % playerColors.length])
-                        .init(startingLocations.get(i))
-                ).toArray(Player[]::new));
+        players = List.of(IntStream.range(0, playerConfigs.size())
+                .mapToObj(i -> {
+                    SpawnLocation startLoc = startingLocations.size() > i && !startingLocations.get(i).isEmpty()
+                            ? startingLocations.get(i).getFirst()
+                            : new SpawnLocation(0f, 0f);
+                    return new Player(this, playerConfigs.get(i), startLoc);
+                }).toArray(Player[]::new));
 
         long time_stop = System.currentTimeMillis();
         IO.println("****************** Finished landscape in " + ((time_stop - time_start) / 1000f)
@@ -215,6 +216,10 @@ public final class World implements SimulationClock {
         this.element_root = AbstractElementNode.newRoot(world);
         AbstractElementNode.buildSupplies(this, landscape.iron(), landscape.rocks(), landscape.plants(),
                 terrain);
+        for (int i = 0; i < players.size(); i++) {
+            List<SpawnLocation> locations = startingLocations.size() > i ? startingLocations.get(i) : List.of();
+            players.get(i).initializeStartingEntities(locations, gamespeed);
+        }
         activeWorlds.add(new WeakReference<>(this));
     }
 
@@ -316,6 +321,11 @@ public final class World implements SimulationClock {
 
     public DistributableTable getDistributableTable() {
         return distributable_table;
+    }
+
+    /// Returns the buffer for commands scheduled by tick.
+    public TurnCommandBuffer getTurnCommandBuffer() {
+        return turnCommandBuffer;
     }
 
     public int registerTarget(Distributable target) {

@@ -1,126 +1,30 @@
 package com.oddlabs.tt.simulation.player;
 
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.landscape.IslandConfig;
+import com.oddlabs.tt.simulation.landscape.FlatLandscape;
 import com.oddlabs.tt.simulation.landscape.Landscape;
-import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
-import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
-import com.oddlabs.tt.simulation.landscape.NotificationListener;
-import com.oddlabs.tt.simulation.landscape.PlantLocation;
 import com.oddlabs.tt.simulation.landscape.SpawnLocation;
-import com.oddlabs.tt.simulation.landscape.SupplyPlacement;
-import com.oddlabs.tt.simulation.landscape.TreePlacement;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
-import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.Selectable;
-import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.util.Color;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Unit tests verifying deterministic world player initialization via {@link PlayerInitializer}
- * and side-effect-free controller attachment.
+ * Unit tests verifying player starting entity initialization and base placement.
  */
-class PlayerInitializerTest {
-
-    private record TestLandscape(
-                                 int size,
-                                 float[] heightmap,
-                                 boolean[][] accessGrid,
-                                 byte[][] buildGrid,
-                                 List<List<SpawnLocation>> startingLocations) implements Landscape {
-
-        static TestLandscape create(int size) {
-            float[] heightmap = new float[size * size];
-            Arrays.fill(heightmap, 5.0f);
-
-            boolean[][] accessGrid = new boolean[size][size];
-            for (boolean[] row : accessGrid) {
-                Arrays.fill(row, true);
-            }
-
-            byte[][] buildGrid = new byte[size][size];
-            for (byte[] row : buildGrid) {
-                Arrays.fill(row, (byte) 10);
-            }
-
-            List<List<SpawnLocation>> startingLocations = new ArrayList<>();
-            for (int p = 0; p < 2; p++) {
-                List<SpawnLocation> playerLocations = new ArrayList<>();
-                for (int i = 0; i < 20; i++) {
-                    float baseX = (p == 0) ? 10.0f : 20.0f;
-                    float baseY = (p == 0) ? 10.0f : 20.0f;
-                    playerLocations.add(new SpawnLocation(baseX + (i % 5) * 1.5f, baseY + (i / 5f) * 1.5f));
-                }
-                startingLocations.add(playerLocations);
-            }
-
-            return new TestLandscape(size, heightmap, accessGrid, buildGrid, startingLocations);
-        }
-
-        @Override
-        public IslandConfig config() {
-            return new IslandConfig(Terrain.NATIVE, metersPerWorld(), 0.5f, 0.5f, 0.5f, 42);
-        }
-
-        @Override
-        public Terrain terrain() {
-            return Terrain.NATIVE;
-        }
-
-        @Override
-        public int metersPerWorld() {
-            return size * HeightMap.METERS_PER_UNIT_GRID;
-        }
-
-        @Override
-        public float seaLevelMeters() {
-            return 0.0f;
-        }
-
-        @Override
-        public List<TreePlacement> trees() {
-            return List.of();
-        }
-
-        @Override
-        public List<TreePlacement> palmTrees() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> rocks() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> iron() {
-            return List.of();
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public List<PlantLocation>[] plants() {
-            return new ArrayList[0];
-        }
-    }
+class PlayerStartingEntitiesTest {
 
     private World world;
     private Player player;
@@ -128,7 +32,7 @@ class PlayerInitializerTest {
     @BeforeEach
     void setUp() {
         int gridSize = 128;
-        Landscape landscape = TestLandscape.create(gridSize);
+        Landscape landscape = FlatLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(0, "1", 5, 20);
 
         List<PlayerInfo> playerInfos = List.of(
@@ -141,19 +45,10 @@ class PlayerInitializerTest {
                 new Color.Linear(0f, 0f, 1f, 1f)
         };
 
-        LandscapeBoundsProvider boundsProvider = new LandscapeGeometry();
-        RaceData raceData = new RaceData();
-        NotificationListener noopListener = new NotificationListener() {
-        };
-
-        world = World.newWorld(
-                raceData,
-                boundsProvider,
-                noopListener,
+        world = new World(
                 worldParams,
                 landscape,
-                playerInfos,
-                playerColors
+                PlayerConfig.from(playerInfos, playerColors)
         );
 
         player = world.getPlayers().getFirst();
@@ -163,7 +58,7 @@ class PlayerInitializerTest {
     void testInitializePlayerBaseSpawnsStructuresAndUnits() {
         UnitInfo unitInfo = new UnitInfo(true, true, 1, true, 3, 2, 1, 0);
 
-        PlayerInitializer.initializePlayerBase(player, unitInfo);
+        player.initializeStartingBase(unitInfo);
 
         List<Building> buildings = player.getUnits().getSet().stream()
                 .filter(s -> s instanceof Building)
@@ -195,7 +90,7 @@ class PlayerInitializerTest {
                 new SpawnLocation(11f, 11f)
         );
 
-        PlayerInitializer.initializePlayerArmy(player, locations, unitInfo, 2, "TestChief");
+        player.initializeStartingArmy(locations, unitInfo, 2, "TestChief");
 
         assertEquals(2, player.getPreferredGamespeed());
         assertTrue(player.getChieftain().isPresent());
@@ -210,12 +105,12 @@ class PlayerInitializerTest {
 
     @Test
     void testInitPlayerWithAiNormalInitializesBase() {
-        PlayerSlot slot = new PlayerSlot(0);
-        slot.setType(PlayerSlot.AI);
-        slot.setAIDifficulty(PlayerSlot.AI_NORMAL);
         UnitInfo unitInfo = new UnitInfo(true, false, 0, false, 3, 0, 0, 0);
 
-        PlayerInitializer.initPlayer(player, slot, unitInfo, List.of(), 2, null);
+        player = new Player(world, new PlayerConfig(player.getPlayerInfo(), player.getColor(),
+                PlayerControllerType.AI_STANDARD, unitInfo),
+                new SpawnLocation(10f, 10f));
+        player.initializeStartingEntities(List.of(), 2);
 
         assertEquals(1, player.getBuildingCountContainer().getNumSupplies());
         assertEquals(3, player.getUnits().getSet().stream().filter(u -> u instanceof Unit).count());
@@ -223,12 +118,12 @@ class PlayerInitializerTest {
 
     @Test
     void testInitPlayerWithTowerTutorialSpawnsNothing() {
-        PlayerSlot slot = new PlayerSlot(0);
-        slot.setType(PlayerSlot.AI);
-        slot.setAIDifficulty(PlayerSlot.AI_TOWER_TUTORIAL);
         UnitInfo unitInfo = new UnitInfo(false, false, 0, false, 0, 0, 0, 0);
 
-        PlayerInitializer.initPlayer(player, slot, unitInfo, List.of(), 2, null);
+        player = new Player(world, new PlayerConfig(player.getPlayerInfo(), player.getColor(),
+                PlayerControllerType.AI_TOWER_TUTORIAL, unitInfo),
+                new SpawnLocation(10f, 10f));
+        player.initializeStartingEntities(List.of(), 2);
 
         assertEquals(0, player.getBuildingCountContainer().getNumSupplies());
         assertEquals(0, player.getUnits().size());
@@ -236,12 +131,12 @@ class PlayerInitializerTest {
 
     @Test
     void testInitPlayerWithChieftainTutorialSpawnsThreePeons() {
-        PlayerSlot slot = new PlayerSlot(0);
-        slot.setType(PlayerSlot.AI);
-        slot.setAIDifficulty(PlayerSlot.AI_CHIEFTAIN_TUTORIAL);
         UnitInfo unitInfo = new UnitInfo(false, false, 0, false, 0, 0, 0, 0);
 
-        PlayerInitializer.initPlayer(player, slot, unitInfo, List.of(), 2, null);
+        player = new Player(world, new PlayerConfig(player.getPlayerInfo(), player.getColor(),
+                PlayerControllerType.AI_CHIEFTAIN_TUTORIAL, unitInfo),
+                new SpawnLocation(10f, 10f));
+        player.initializeStartingEntities(List.of(), 2);
 
         assertEquals(0, player.getBuildingCountContainer().getNumSupplies());
         assertEquals(3, player.getUnits().getSet().stream().filter(u -> u instanceof Unit).count());
@@ -251,15 +146,16 @@ class PlayerInitializerTest {
 
     @Test
     void testInitPlayerWithHumanSlotInitializesArmy() {
-        PlayerSlot slot = new PlayerSlot(0);
-        slot.setType(PlayerSlot.HUMAN);
         UnitInfo unitInfo = new UnitInfo(false, false, 0, false, 2, 0, 0, 0);
         List<SpawnLocation> locations = List.of(
                 new SpawnLocation(5f, 5f),
                 new SpawnLocation(7f, 7f)
         );
 
-        PlayerInitializer.initPlayer(player, slot, unitInfo, locations, 2, null);
+        player = new Player(world, new PlayerConfig(player.getPlayerInfo(), player.getColor(),
+                PlayerControllerType.HUMAN, unitInfo),
+                new SpawnLocation(10f, 10f));
+        player.initializeStartingEntities(locations, 2);
 
         assertEquals(2, player.getPreferredGamespeed());
         assertEquals(2, player.getUnits().getSet().stream().filter(u -> u instanceof Unit).count());
@@ -273,7 +169,61 @@ class PlayerInitializerTest {
                 new SpawnLocation(7f, 7f)
         );
 
-        assertThrows(IndexOutOfBoundsException.class, () -> PlayerInitializer.initializePlayerArmy(player, locations,
+        assertThrows(IndexOutOfBoundsException.class, () -> player.initializeStartingArmy(locations,
                 unitInfo, 2, null));
+    }
+
+    @Test
+    void testWorldInitializesPlayerEntitiesViaConfig() {
+        int gridSize = 128;
+        Landscape landscape = FlatLandscape.create(gridSize);
+        WorldParameters worldParams = new WorldParameters(0, "1", 5, 20);
+        UnitInfo unitInfo = new UnitInfo(true, true, 1, true, 3, 2, 1, 0);
+
+        List<PlayerConfig> configs = List.of(
+                new PlayerConfig(
+                        new PlayerInfo(0, Race.VIKINGS, "VikingPlayer"),
+                        new Color.Linear(1f, 0f, 0f, 1f),
+                        null,
+                        PlayerControllerType.AI_STANDARD,
+                        unitInfo,
+                        null
+                )
+        );
+
+        World world = new World(
+                worldParams,
+                landscape,
+                configs
+        );
+
+        Player p = world.getPlayers().getFirst();
+        assertTrue(p.getChieftain().isPresent(), "Chieftain should be initialized during world construction");
+        assertEquals(3, p.getUnits().getSet().stream().filter(u -> u instanceof Unit unit
+                && unit.getTemplate().getUnitType() == UnitType.PEON).count());
+    }
+
+    @Test
+    void testPlayerControllerTypeFromSlotMapping() {
+        assertEquals(PlayerControllerType.HUMAN, PlayerControllerType.fromSlot(null));
+
+        PlayerSlot humanSlot = new PlayerSlot(0);
+        humanSlot.setType(PlayerSlot.HUMAN);
+        assertEquals(PlayerControllerType.HUMAN, PlayerControllerType.fromSlot(humanSlot));
+
+        PlayerSlot standardAiSlot = new PlayerSlot(1);
+        standardAiSlot.setType(PlayerSlot.AI);
+        standardAiSlot.setAIDifficulty(PlayerSlot.AI_NORMAL);
+        assertEquals(PlayerControllerType.AI_STANDARD, PlayerControllerType.fromSlot(standardAiSlot));
+
+        PlayerSlot towerAiSlot = new PlayerSlot(2);
+        towerAiSlot.setType(PlayerSlot.AI);
+        towerAiSlot.setAIDifficulty(PlayerSlot.AI_TOWER_TUTORIAL);
+        assertEquals(PlayerControllerType.AI_TOWER_TUTORIAL, PlayerControllerType.fromSlot(towerAiSlot));
+
+        PlayerSlot chieftainAiSlot = new PlayerSlot(3);
+        chieftainAiSlot.setType(PlayerSlot.AI);
+        chieftainAiSlot.setAIDifficulty(PlayerSlot.AI_CHIEFTAIN_TUTORIAL);
+        assertEquals(PlayerControllerType.AI_CHIEFTAIN_TUTORIAL, PlayerControllerType.fromSlot(chieftainAiSlot));
     }
 }

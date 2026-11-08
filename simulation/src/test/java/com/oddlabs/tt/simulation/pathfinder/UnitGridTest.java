@@ -1,21 +1,12 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.landscape.IslandConfig;
+import com.oddlabs.tt.simulation.landscape.FlatLandscape;
 import com.oddlabs.tt.simulation.landscape.Landscape;
-import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
-import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
-import com.oddlabs.tt.simulation.landscape.NotificationListener;
-import com.oddlabs.tt.simulation.landscape.PlantLocation;
-import com.oddlabs.tt.simulation.landscape.SpawnLocation;
-import com.oddlabs.tt.simulation.landscape.SupplyPlacement;
-import com.oddlabs.tt.simulation.landscape.TreePlacement;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.Target;
-import com.oddlabs.tt.simulation.model.Terrain;
+import com.oddlabs.tt.simulation.player.PlayerConfig;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
@@ -23,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,87 +25,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class UnitGridTest {
 
-    private record TestLandscape(int size,
-                                 float[] heightmap,
-                                 boolean[][] accessGrid,
-                                 byte[][] buildGrid,
-                                 List<List<SpawnLocation>> startingLocations) implements Landscape {
-
-        static TestLandscape create(int size) {
-            float[] heightmap = new float[size * size];
-            Arrays.fill(heightmap, 5.0f);
-
-            boolean[][] accessGrid = new boolean[size][size];
-            for (boolean[] row : accessGrid) {
-                Arrays.fill(row, true);
-            }
-
-            byte[][] buildGrid = new byte[size][size];
-            for (byte[] row : buildGrid) {
-                Arrays.fill(row, (byte) 20);
-            }
-
-            List<List<SpawnLocation>> startingLocations = List.of(
-                    List.of(new SpawnLocation(10.0f, 10.0f)),
-                    List.of(new SpawnLocation(20.0f, 20.0f))
-            );
-
-            return new TestLandscape(size, heightmap, accessGrid, buildGrid, startingLocations);
-        }
-
-        @Override
-        public IslandConfig config() {
-            return new IslandConfig(Terrain.NATIVE, metersPerWorld(), 0.5f, 0.5f, 0.5f, 42);
-        }
-
-        @Override
-        public Terrain terrain() {
-            return Terrain.NATIVE;
-        }
-
-        @Override
-        public int metersPerWorld() {
-            return size * HeightMap.METERS_PER_UNIT_GRID;
-        }
-
-        @Override
-        public float seaLevelMeters() {
-            return 0.0f;
-        }
-
-        @Override
-        public List<TreePlacement> trees() {
-            return List.of();
-        }
-
-        @Override
-        public List<TreePlacement> palmTrees() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> rocks() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> iron() {
-            return List.of();
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public List<PlantLocation>[] plants() {
-            return new ArrayList[0];
-        }
-    }
-
     private UnitGrid unitGrid;
 
     @BeforeEach
     void setUp() {
         int gridSize = 32;
-        Landscape landscape = TestLandscape.create(gridSize);
+        Landscape landscape = FlatLandscape.create(gridSize);
         WorldParameters worldParams = new WorldParameters(0, "1", 5, 20);
         List<PlayerInfo> playerInfos = List.of(
                 new PlayerInfo(0, Race.VIKINGS, "Viking"),
@@ -125,19 +40,10 @@ class UnitGridTest {
                 new Color.Linear(1f, 0f, 0f, 1f),
                 new Color.Linear(0f, 0f, 1f, 1f)
         };
-        LandscapeBoundsProvider boundsProvider = new LandscapeGeometry();
-        RaceData raceData = new RaceData();
-        NotificationListener noopListener = new NotificationListener() {
-        };
-
-        World world = World.newWorld(
-                raceData,
-                boundsProvider,
-                noopListener,
+        World world = new World(
                 worldParams,
                 landscape,
-                playerInfos,
-                playerColors
+                PlayerConfig.from(playerInfos, playerColors)
         );
         unitGrid = world.getUnitGrid();
     }

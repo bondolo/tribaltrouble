@@ -197,7 +197,7 @@ public abstract class Island {
     }
 
     protected final void attack(Player enemy, Target target, int num_units) {
-        AI.attackLandscape(enemy, enemy, target, num_units);
+        AI.attackLandscape(enemy, target, num_units);
     }
 
     protected final @Nullable Unit getWarrior(Player player) {

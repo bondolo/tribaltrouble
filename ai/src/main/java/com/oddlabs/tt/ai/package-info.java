@@ -1,6 +1,4 @@
-/**
- * Autonomous artificial intelligence agents and tactical decision controllers.
- */
+/// Autonomous artificial intelligence agents and tactical decision controllers.
 @NullMarked
 package com.oddlabs.tt.ai;
 

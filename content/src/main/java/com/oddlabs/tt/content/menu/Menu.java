@@ -42,13 +42,13 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.Landscape;
-import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerConfig;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
@@ -329,11 +329,10 @@ public abstract class Menu extends CameraDelegate<Camera> {
         RenderQueues render_queues = new RenderQueues();
         ProgressListener.subTask(0.15f,
                 () -> new LandscapeAssetsLoader(render_queues));
-        World world = ProgressListener.subTask(0.15f,
-                () -> World.newWorld(null, null,
-                        new NotificationListener() {
-                        }, world_params, world_info.landscape(), players,
-                        AccessibilitySettings.from(peer.getSettings()).linear_player_colours));
+        World world = new World(world_params, world_info.landscape(),
+                PlayerConfig.from(players, AccessibilitySettings.from(peer
+                        .getSettings()).linear_player_colours));
+        ProgressListener.progress(0.15f);
         AnimationManager menuAnimationManager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, menuAnimationManager);
         Player local_player = world.getPlayers().getFirst();

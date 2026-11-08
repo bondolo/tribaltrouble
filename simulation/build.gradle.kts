@@ -1,5 +1,6 @@
 plugins {
     `java-library`
+    `java-test-fixtures`
 }
 
 dependencies {
@@ -7,6 +8,7 @@ dependencies {
     api(project(":common"))
     api(libs.joml)
     compileOnlyApi(libs.jspecify)
+    testFixturesCompileOnly(libs.jspecify)
 
     testRuntimeOnly(project(":assets"))
 }

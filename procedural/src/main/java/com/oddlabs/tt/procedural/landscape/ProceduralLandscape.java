@@ -31,7 +31,6 @@ import java.util.stream.IntStream;
  */
 public final class ProceduralLandscape implements Landscape {
     private static final boolean DEBUG = false;
-    private static final int NUM_PLANT_TYPES = 4;
     private static final int VEGETATION_NOISE_SEED = 1;
 
     private record GenerationContext(

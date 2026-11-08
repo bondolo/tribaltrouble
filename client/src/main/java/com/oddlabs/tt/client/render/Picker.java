@@ -38,7 +38,6 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.List;
@@ -134,7 +133,7 @@ public final class Picker implements Updatable<TimerAnimation> {
     private float patch_hit_y;
     private float patch_hit_z;
 
-    private Selectable<?>[] old_target_selection = Selectable.newArray(0);
+    private List<Selectable<?>> old_target_selection = List.of();
     private @Nullable Action old_target_action;
     private boolean old_target_aggressive;
 
@@ -200,7 +199,7 @@ public final class Picker implements Updatable<TimerAnimation> {
         setupPicking(camera, x * scale, y * scale, PICK_SIZE, PICK_SIZE, viewport);
         pickObjects();
         Target nearest_pickable = getNearestPick(element_pick_list, Target.class);
-        Selectable<?>[] selection = selected_army.filter(Abilities.TARGET);
+        List<Selectable<?>> selection = selected_army.filter(Abilities.TARGET);
         boolean aggressive = GameplaySettings.from(gui_root.getGUI().getSettings()).aggressive_units;
         if (nearest_pickable != null) {
             if (!(nearest_pickable instanceof SceneryModel sceneryModel) || sceneryModel.isOccupying())
@@ -228,7 +227,7 @@ public final class Picker implements Updatable<TimerAnimation> {
         return target_responds;
     }
 
-    private boolean isNewSetTarget(Selectable<?>[] selection, Target target, Action action,
+    private boolean isNewSetTarget(List<Selectable<?>> selection, Target target, Action action,
             boolean aggressive) {
         old_landscape_target_grid_x = -1;
         old_landscape_target_grid_y = -1;
@@ -241,7 +240,7 @@ public final class Picker implements Updatable<TimerAnimation> {
         return new_target;
     }
 
-    private boolean isNewLandscapeTarget(Selectable<?>[] selection, int grid_x, int grid_y,
+    private boolean isNewLandscapeTarget(List<Selectable<?>> selection, int grid_x, int grid_y,
             Action action, boolean aggressive) {
         old_set_target_target = null;
 
@@ -255,8 +254,8 @@ public final class Picker implements Updatable<TimerAnimation> {
         return new_target;
     }
 
-    private boolean isNewOrder(Selectable<?>[] selection, Action action, boolean aggressive) {
-        boolean new_order = !Arrays.equals(selection, old_target_selection)
+    private boolean isNewOrder(List<Selectable<?>> selection, Action action, boolean aggressive) {
+        boolean new_order = !selection.equals(old_target_selection)
                 || action != old_target_action
                 || aggressive != old_target_aggressive;
 
@@ -267,7 +266,7 @@ public final class Picker implements Updatable<TimerAnimation> {
         return new_order;
     }
 
-    public Selectable<?>[] pickBoxed(CameraState camera, int x1, int y1, int x2, int y2,
+    public List<Selectable<?>> pickBoxed(CameraState camera, int x1, int y1, int x2, int y2,
             int clicks) {
         float scale = gui_root.getGlobalScale();
         float sx1 = x1 * scale;
@@ -288,7 +287,7 @@ public final class Picker implements Updatable<TimerAnimation> {
                 : createBoxedPick();
     }
 
-    private Selectable<?>[] createSinglePick(CameraState camera, int clicks) {
+    private List<Selectable<?>> createSinglePick(CameraState camera, int clicks) {
         Selectable<?> nearest = getNearestPick(element_pick_list, Selectable.class);
         if (nearest != null) {
             if (clicks > 1) {
@@ -299,24 +298,26 @@ public final class Picker implements Updatable<TimerAnimation> {
                     return pickAll(camera, Abilities.HARVEST);
                 }
             }
-            return Selectable.newArray(nearest);
+            return List.of(nearest);
         }
-        return Selectable.newArray(0);
+        return List.of();
     }
 
-    private Selectable<?>[] createBoxedPick() {
-        var array = element_pick_list.stream()
-                .filter(element -> element instanceof Selectable)
-                .toArray(Selectable::newArray);
+    private List<Selectable<?>> createBoxedPick() {
+        List<Selectable<?>> list = element_pick_list.stream()
+                .filter(Selectable.class::isInstance)
+                .<Selectable<?>>map(Selectable.class::cast)
+                .toList();
         element_pick_list.clear();
-        return array;
+        return list;
     }
 
-    private Selectable<?>[] pickAll(CameraState camera, int ability_filter) {
-        Selectable<?>[] complete_list = pickBoxed(camera, 0, 0, gui_root.getWidth() - 1, gui_root.getHeight() - 1, 2);
-        return Arrays.stream(complete_list)
+    private List<Selectable<?>> pickAll(CameraState camera, int ability_filter) {
+        List<Selectable<?>> complete_list = pickBoxed(camera, 0, 0, gui_root.getWidth() - 1, gui_root.getHeight() - 1,
+                2);
+        return complete_list.stream()
                 .filter(s -> s.getAbilities().hasAbilities(ability_filter))
-                .toArray(Selectable::newArray);
+                .toList();
     }
 
     public void pickRotate(GameCamera camera) {

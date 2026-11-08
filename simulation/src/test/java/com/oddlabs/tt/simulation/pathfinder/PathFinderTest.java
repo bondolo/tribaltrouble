@@ -1,18 +1,11 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
+import com.oddlabs.tt.simulation.landscape.FlatLandscape;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.Landscape;
-import com.oddlabs.tt.simulation.landscape.PlantLocation;
-import com.oddlabs.tt.simulation.landscape.SpawnLocation;
-import com.oddlabs.tt.simulation.landscape.SupplyPlacement;
-import com.oddlabs.tt.simulation.landscape.TreePlacement;
-import com.oddlabs.tt.simulation.model.Terrain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,71 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 final class PathFinderTest {
 
-    private record TestLandscape(float[] heightmap, int size) implements Landscape {
-        @Override
-        public IslandConfig config() {
-            return new IslandConfig(Terrain.NATIVE, size, 0.5f, 0.5f, 0.5f, 42);
-        }
-
-        @Override
-        public Terrain terrain() {
-            return Terrain.NATIVE;
-        }
-
-        @Override
-        public float seaLevelMeters() {
-            return 0f;
-        }
-
-        @Override
-        public List<TreePlacement> trees() {
-            return List.of();
-        }
-
-        @Override
-        public List<TreePlacement> palmTrees() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> rocks() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> iron() {
-            return List.of();
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public List<PlantLocation>[] plants() {
-            return new ArrayList[0];
-        }
-
-        @Override
-        public boolean[][] accessGrid() {
-            return new boolean[size][size];
-        }
-
-        @Override
-        public byte[][] buildGrid() {
-            return new byte[0][0];
-        }
-
-        @Override
-        public List<List<SpawnLocation>> startingLocations() {
-            return List.of();
-        }
-    }
-
     private UnitGrid unitGrid;
     private PathFinder pathFinder;
 
     @BeforeEach
     void setUp() {
         int size = 128;
-        Landscape landscape = new TestLandscape(new float[size * size], size * HeightMap.METERS_PER_UNIT_GRID);
+        Landscape landscape = FlatLandscape.withHeightmap(new float[size * size], size);
         HeightMap heightMap = new HeightMap(null, landscape);
         unitGrid = new UnitGrid(heightMap);
         pathFinder = unitGrid.pathFinder();

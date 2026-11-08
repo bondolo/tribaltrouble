@@ -1,8 +1,7 @@
 package com.oddlabs.tt.simulation.player;
 
-/**
- * Interface for executing player commands on the simulation timeline.
- */
+/// Execution contract for applying player commands to simulation state.
+@FunctionalInterface
 public interface PlayerCommandExecutor {
 
     /**

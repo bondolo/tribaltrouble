@@ -449,7 +449,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
         if (button == MouseButton.LEFT && !map_mode && !observer) {
             if (selection) {
                 selection = false;
-                Selectable<?>[] picked = getViewer().getPicker().pickBoxed(getCamera().getState(), selection_x1,
+                List<Selectable<?>> picked = getViewer().getPicker().pickBoxed(getCamera().getState(), selection_x1,
                         selection_y1, selection_x2, selection_y2, clicks);
                 List<Selectable<UnitTemplate>> friendly_units = new ArrayList<>();
                 Selectable<BuildingTemplate> friendly_building = null;
@@ -469,9 +469,8 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
                         }
                     }
                 }
-                if (getGUIRoot().isShiftDown() && getViewer().getSelection()
-                        .getCurrentSelection()
-                        .size() > 0)
+                if (getGUIRoot().isShiftDown() && !getViewer().getSelection()
+                        .getCurrentSelection().isEmpty())
                     updateSelection(friendly_units, friendly_building, enemy);
                 else
                     replaceSelection(friendly_units, friendly_building, enemy);

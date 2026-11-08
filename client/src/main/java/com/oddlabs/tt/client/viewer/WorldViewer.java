@@ -42,7 +42,6 @@ import com.oddlabs.tt.net.InGameChatHistory;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
-import com.oddlabs.tt.simulation.landscape.SpawnLocation;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.DistributableTable;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
@@ -53,9 +52,12 @@ import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.ai.AI;
 import com.oddlabs.tt.ai.AdvancedAI;
 import com.oddlabs.tt.ai.PassiveAI;
+import com.oddlabs.tt.simulation.player.DelegatingPlayerInterface;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerConfig;
+import com.oddlabs.tt.simulation.player.PlayerControllerType;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
-import com.oddlabs.tt.simulation.player.PlayerInitializer;
+import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 
@@ -130,10 +132,29 @@ public final class WorldViewer implements Animated, AutoCloseable {
         WorldInfo<Texture> world_info = ProgressListener.subTask(0.15f,
                 () -> LandscapeBaker.bakeWorld(landscape));
         camera_state.setFog(world_info.fog_info());
-        this.world = ProgressListener.subTask(0.10f,
-                () -> World.newWorld(races_resources, landscape_geometry, NotificationListener.EMPTY, world_params,
-                        world_info.landscape(), player_infos, AccessibilitySettings.from(peer
-                                .getSettings()).linear_player_colours));
+        final PeerHub[] peerhubRef = new PeerHub[1];
+        Color.Linear[] playerColours = AccessibilitySettings.from(peer.getSettings()).linear_player_colours;
+        ResourceBundle bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
+        List<PlayerConfig> playerConfigs = new java.util.ArrayList<>(player_infos.size());
+        for (int i = 0; i < player_infos.size(); i++) {
+            PlayerInterface iface = (i == player_slot && player_slots.get(i).isNetworkPeer())
+                    ? new DelegatingPlayerInterface(() -> peerhubRef[0].getPlayerInterface())
+                    : null;
+            PlayerSlot slot = player_slots.get(i);
+            UnitInfo unitInfo = unit_infos.get(i);
+            String chieftainName = null;
+            if (slot.getType() != PlayerSlot.AI && unitInfo.hasChieftain()) {
+                chieftainName = Utils.getBundleString(bundle, switch (player_infos.get(i).race()) {
+                    case VIKINGS -> "chieftain_name";
+                    case NATIVES -> "native_chieftain_name";
+                });
+            }
+            playerConfigs.add(new PlayerConfig(player_infos.get(i), playerColours[i % playerColours.length], iface,
+                    PlayerControllerType.fromSlot(slot), unitInfo, chieftainName));
+        }
+        this.world = new World(races_resources, landscape_geometry, NotificationListener.EMPTY, world_params,
+                world_info.landscape(), playerConfigs);
+        ProgressListener.progress(0.10f);
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);
         peer.setPathfindCountSupplier(world.getUnitGrid()::getAndResetPathfindCount);
@@ -170,6 +191,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 peer.getNetwork().getMatchmakingClient(), peer.getNetwork().getChatHub(),
                 world.getDistributableTable(), session_id,
                 new ViewerStallHandler(this));
+        peerhubRef[0] = this.peerhub;
         this.peerhub.setIgnoreFilter(ChatCommand::isIgnoring);
         this.in_game_chat_history = new InGameChatHistory();
         peer.getNetwork().getChatHub().addListener(in_game_chat_history);
@@ -180,8 +202,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.panel = new ActionButtonPanel(this, camera);
         this.delegate = new SelectionDelegate(this, camera);
         camera.reset(getLocalPlayer().getStartX(), getLocalPlayer().getStartY());
-        initPlayers(world_info.landscape().startingLocations(), player_slots, world.getPlayers(), unit_infos,
-                world_params.initialGameSpeed());
+        setupAIBots(player_slots, world.getPlayers());
         gui_root.getAnimationManager().registerAnimation(this);
     }
 
@@ -259,49 +280,20 @@ public final class WorldViewer implements Animated, AutoCloseable {
         return Optional.ofNullable(ai_bots.get(player));
     }
 
-    private void initPlayer(ResourceBundle bundle, List<SpawnLocation> startingLocations, PlayerSlot slot,
-            Player player, UnitInfo unit_info, int initial_gamespeed) {
-        String chieftainName = null;
-        if (slot.getType() != PlayerSlot.AI && unit_info.hasChieftain()) {
-            chieftainName = Utils.getBundleString(bundle, switch (player.getPlayerInfo().race()) {
-                case VIKINGS -> "chieftain_name";
-                case NATIVES -> "native_chieftain_name";
-            });
-        }
-        PlayerInitializer.initPlayer(player, slot, unit_info, startingLocations, initial_gamespeed, chieftainName);
-
-        if (slot.getType() == PlayerSlot.AI) {
-            if (slot.isNetworkPeer()) {
-                if (player == local_player) {
-                    AI ai = switch (slot.getAIDifficulty()) {
-                        case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, peerhub.getPlayerInterface(),
-                                Difficulty.NORMAL);
-                        case PlayerSlot.AI_HARD -> new AdvancedAI(player, peerhub.getPlayerInterface(),
-                                Difficulty.HARD);
-                        case PlayerSlot.AI_EASY -> new AdvancedAI(player, peerhub.getPlayerInterface(),
-                                Difficulty.EASY);
-                        case PlayerSlot.AI_BATTLE_TUTORIAL, PlayerSlot.AI_PASSIVE_CAMPAIGN ->
-                            new PassiveAI(player, peerhub.getPlayerInterface(), true);
-                        case PlayerSlot.AI_NEUTRAL_CAMPAIGN ->
-                            new PassiveAI(player, peerhub.getPlayerInterface(), false);
-                        case PlayerSlot.AI_TOWER_TUTORIAL, PlayerSlot.AI_CHIEFTAIN_TUTORIAL -> null;
-                        default -> throw new IllegalArgumentException("unexpected difficulty: " + slot
-                                .getAIDifficulty());
-                    };
-                    if (ai != null) {
-                        ai_bots.put(player, ai);
-                        world.addTickListener(ai::tick);
-                    }
-                }
-            } else {
+    private void setupAIBots(List<PlayerSlot> slots, List<Player> players) {
+        for (int i = 0; i < slots.size(); i++) {
+            PlayerSlot slot = slots.get(i);
+            Player player = players.get(i);
+            if (slot.getType() == PlayerSlot.AI && (!slot.isNetworkPeer() || player == local_player)) {
                 AI ai = switch (slot.getAIDifficulty()) {
-                    case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, player, Difficulty.NORMAL);
-                    case PlayerSlot.AI_HARD -> new AdvancedAI(player, player, Difficulty.HARD);
-                    case PlayerSlot.AI_EASY -> new AdvancedAI(player, player, Difficulty.EASY);
-                    case PlayerSlot.AI_BATTLE_TUTORIAL -> new PassiveAI(player, player, true);
+                    case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, Difficulty.NORMAL);
+                    case PlayerSlot.AI_HARD -> new AdvancedAI(player, Difficulty.HARD);
+                    case PlayerSlot.AI_EASY -> new AdvancedAI(player, Difficulty.EASY);
+                    case PlayerSlot.AI_BATTLE_TUTORIAL, PlayerSlot.AI_PASSIVE_CAMPAIGN ->
+                        new PassiveAI(player, true);
+                    case PlayerSlot.AI_NEUTRAL_CAMPAIGN ->
+                        new PassiveAI(player, false);
                     case PlayerSlot.AI_TOWER_TUTORIAL, PlayerSlot.AI_CHIEFTAIN_TUTORIAL -> null;
-                    case PlayerSlot.AI_PASSIVE_CAMPAIGN -> new PassiveAI(player, player, true);
-                    case PlayerSlot.AI_NEUTRAL_CAMPAIGN -> new PassiveAI(player, player, false);
                     default -> throw new IllegalArgumentException("unexpected difficulty: " + slot.getAIDifficulty());
                 };
                 if (ai != null) {
@@ -309,15 +301,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
                     world.addTickListener(ai::tick);
                 }
             }
-        }
-    }
-
-    private void initPlayers(List<List<SpawnLocation>> startingLocations, List<PlayerSlot> slots, List<Player> players,
-            List<UnitInfo> unitInfos, int initialGamespeed) {
-        ResourceBundle bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
-        for (int i = 0; i < slots.size(); i++) {
-            initPlayer(bundle, startingLocations.get(i), slots.get(i), players.get(i), unitInfos.get(i),
-                    initialGamespeed);
         }
     }
 

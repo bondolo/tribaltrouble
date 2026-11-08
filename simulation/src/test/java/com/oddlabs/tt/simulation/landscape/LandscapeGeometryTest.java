@@ -5,6 +5,7 @@ import com.oddlabs.tt.base.geom.BoundsProvider;
 import com.oddlabs.tt.simulation.model.Terrain;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -32,7 +33,7 @@ class LandscapeGeometryTest {
         }
 
         for (Terrain terrain : new Terrain[]{Terrain.NATIVE, Terrain.VIKING}) {
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < Landscape.NUM_PLANT_TYPES; i++) {
                 BoundsProvider plantBounds = geometry.getPlantBounds(terrain, i);
                 assertNotNull(plantBounds);
                 BoundingBox[] plantBoxes = plantBounds.bounds();
@@ -46,5 +47,17 @@ class LandscapeGeometryTest {
         BoundingBox[] chickenBoxes = chickenBounds.bounds();
         assertNotNull(chickenBoxes);
         assertTrue(chickenBoxes.length > 0);
+    }
+
+    @Test
+    void testLandscapeDefaultPlantsReturnsArrayOfEmptyLists() {
+        Landscape landscape = FlatLandscape.create(64);
+        var plants = landscape.plants();
+        assertNotNull(plants);
+        assertEquals(Landscape.NUM_PLANT_TYPES, plants.length);
+        for (int i = 0; i < Landscape.NUM_PLANT_TYPES; i++) {
+            assertNotNull(plants[i]);
+            assertTrue(plants[i].isEmpty());
+        }
     }
 }

@@ -72,12 +72,12 @@ public class LegacyLibraryValidationSimulationTest {
     @Execution(ExecutionMode.CONCURRENT)
     void validateLegacyRun(LegacyRunRecord record) {
         LegacyValidationMatchRunner runner = new LegacyValidationMatchRunner();
-        runAndAssert(runner, record);
+        runAndAssert(runner, record, false);
     }
 
-    private void runAndAssert(LegacyValidationMatchRunner runner, LegacyRunRecord record) {
+    static void runAndAssert(LegacyValidationMatchRunner runner, LegacyRunRecord record, boolean reifiedDispatch) {
         HeadlessMatchConfig config = toMatchConfig(record);
-        HeadlessMatchResult result = runner.run(config);
+        HeadlessMatchResult result = runner.run(config, reifiedDispatch);
 
         assertEquals(record.expectedWinningTeam(), result.winningTeam(),
                 "Run " + record.runId() + " winning team mismatch");
@@ -87,7 +87,7 @@ public class LegacyLibraryValidationSimulationTest {
                 "Run " + record.runId() + " final checksum mismatch");
     }
 
-    private HeadlessMatchConfig toMatchConfig(LegacyRunRecord record) {
+    static HeadlessMatchConfig toMatchConfig(LegacyRunRecord record) {
         IslandConfig islandConfig = new IslandConfig(
                 record.terrain(),
                 record.metersPerWorld(),
@@ -136,7 +136,7 @@ public class LegacyLibraryValidationSimulationTest {
         );
     }
 
-    private static List<LegacyRunRecord> loadLibrary() throws IOException {
+    static List<LegacyRunRecord> loadLibrary() throws IOException {
         List<LegacyRunRecord> list = new ArrayList<>();
         try (InputStream in = LegacyLibraryValidationSimulationTest.class.getResourceAsStream(
                 "/legacy_validation_library.csv")) {

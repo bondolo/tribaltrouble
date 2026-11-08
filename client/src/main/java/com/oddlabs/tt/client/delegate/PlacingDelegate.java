@@ -67,7 +67,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
             if (Building.isPlacingLegal(getViewer().getWorld().getUnitGrid(), getTemplate(), placing_grid_x,
                     placing_grid_y)) {
                 var peons = getViewer().getSelection().getCurrentSelection().filter(Abilities.BUILD);
-                if (peons.length > 0) {
+                if (!peons.isEmpty()) {
                     logger.info("placeObject: Placing building at " + placing_grid_x + "," + placing_grid_y);
                     getViewer().getPeerHub().getPlayerInterface().placeBuilding(peons, building_type, placing_grid_x,
                             placing_grid_y);

@@ -4,7 +4,6 @@ import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.simulation.SimulationConfig;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.simulation.player.PlayerInitializer;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
@@ -29,9 +28,7 @@ import java.util.List;
 import java.util.SplittableRandom;
 import java.util.random.RandomGenerator;
 
-/**
- * Base abstract class for artificial intelligence players controlling units and building construction.
- */
+/// Base artificial intelligence player controlling units and building construction.
 public abstract class AI {
     private static final float SLEEP_SECONDS = 2f;
     private static final float MIN_SLEEP_SECONDS = 5f;
@@ -46,7 +43,6 @@ public abstract class AI {
     }
 
     private final Player owner;
-    private final PlayerInterface playerInterface;
     private final RandomGenerator aiRandom;
     private final List<Selectable<?>> idlePeons = new ArrayList<>();
     private final List<Selectable<?>> idleChieftains = new ArrayList<>();
@@ -66,9 +62,8 @@ public abstract class AI {
     private boolean tower_under_construction = false;
     private float sleep_time;
 
-    public AI(Player owner, PlayerInterface playerInterface) {
-        this.owner = owner;
-        this.playerInterface = playerInterface;
+    protected AI(Player owner) {
+        this.owner = java.util.Objects.requireNonNull(owner, "owner must not be null");
         int playerIndex = owner.getWorld().getPlayers().indexOf(owner);
         long mapSeed = owner.getWorld().getWorldParameters().mapCode().hashCode();
         long seed = (mapSeed ^ 0x9E3779B97F4A7C15L) + 10007L * (playerIndex >= 0 ? playerIndex : 0);
@@ -85,7 +80,7 @@ public abstract class AI {
     }
 
     public final PlayerInterface getPlayerInterface() {
-        return playerInterface;
+        return owner.getPlayerInterface();
     }
 
     protected final void reclassify() {
@@ -147,9 +142,9 @@ public abstract class AI {
         if (!armories.isEmpty()) {
             armory_under_construction = false;
             Building armoryBuilding = armories.getFirst();
-            playerInterface.buildRockWeapons(armoryBuilding, BuildProductionContainer.INFINITE_LIMIT, true);
-            playerInterface.buildIronWeapons(armoryBuilding, BuildProductionContainer.INFINITE_LIMIT, true);
-            playerInterface.buildRubberWeapons(armoryBuilding, BuildProductionContainer.INFINITE_LIMIT, true);
+            owner.buildRockWeapons(armoryBuilding, BuildProductionContainer.INFINITE_LIMIT, true);
+            owner.buildIronWeapons(armoryBuilding, BuildProductionContainer.INFINITE_LIMIT, true);
+            owner.buildRubberWeapons(armoryBuilding, BuildProductionContainer.INFINITE_LIMIT, true);
         }
         if (!quarters.isEmpty()) {
             quarters_under_construction = false;
@@ -270,12 +265,13 @@ public abstract class AI {
 
         int length = Math.min(idleWarriors.size(), towers.size());
         for (int i = 0; i < length; i++) {
-            playerInterface.setTarget(idleWarriors.get(i), towers.get(i), Action.DEFAULT, false);
+            getPlayerInterface().setTarget(idleWarriors.get(i), towers.get(i), Action.DEFAULT, false);
         }
     }
 
-    public static int attackLandscape(Player owner, PlayerInterface playerInterface, Target target, int num_warriors) {
+    public static int attackLandscape(Player owner, Target target, int num_warriors) {
         int ordered = 0;
+        PlayerInterface playerInterface = owner.getPlayerInterface();
         for (Selectable<?> s : owner.getUnits().getSet()) {
             if (s instanceof Unit unit && unit.getAbilities().hasAbilities(Abilities.THROW)) {
                 if (!(unit.getPrimaryController() instanceof WalkController wc && wc.isAgressive())) {
@@ -301,6 +297,6 @@ public abstract class AI {
     }
 
     protected final Target getTarget(RandomGenerator random) {
-        return PlayerInitializer.getRadialTarget(owner, random);
+        return owner.getRadialTarget(random);
     }
 }

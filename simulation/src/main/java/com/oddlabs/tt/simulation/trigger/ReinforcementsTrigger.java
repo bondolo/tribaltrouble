@@ -3,7 +3,7 @@ package com.oddlabs.tt.simulation.trigger;
 import com.oddlabs.tt.simulation.model.DeployType;
 import com.oddlabs.tt.simulation.player.Player;
 
-
+/// Periodically deploys reinforcement units from armory as casualties occur.
 public final class ReinforcementsTrigger extends IntervalTrigger {
     private final Player player;
     private final DeployType type;

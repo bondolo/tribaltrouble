@@ -3,17 +3,17 @@ package com.oddlabs.tt.headless;
 import com.oddlabs.tt.net.HeadlessSimulationInstance;
 import com.oddlabs.tt.procedural.landscape.IslandGenerator;
 import com.oddlabs.tt.simulation.landscape.Landscape;
-import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
-import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Difficulty;
-import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.ai.AI;
 import com.oddlabs.tt.ai.AdvancedAI;
 import com.oddlabs.tt.ai.PassiveAI;
+import com.oddlabs.tt.simulation.player.CommandAdapterPlayerInterface;
+import com.oddlabs.tt.simulation.player.DelegatingPlayerInterface;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerConfig;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
-import com.oddlabs.tt.simulation.player.PlayerInitializer;
+import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 
 /**
  * Runs a single-world, deterministic validation match matching legacy game execution.
@@ -31,6 +32,10 @@ public final class LegacyValidationMatchRunner {
     private static final Logger logger = Logger.getLogger(LegacyValidationMatchRunner.class.getSimpleName());
 
     public HeadlessMatchResult run(HeadlessMatchConfig config) {
+        return run(config, false);
+    }
+
+    public HeadlessMatchResult run(HeadlessMatchConfig config, boolean reifiedDispatch) {
         IslandGenerator generator = new IslandGenerator(config.islandConfig());
         Landscape landscape = generator.generate(
                 config.players().size(),
@@ -38,39 +43,43 @@ public final class LegacyValidationMatchRunner {
                 0f
         );
 
-        List<PlayerInfo> playerInfos = config.players().stream()
-                .map(p -> new PlayerInfo(p.team(), p.race(), p.name()))
+        final Player[] playerRefs = new Player[config.players().size()];
+        List<PlayerConfig> playerConfigs = IntStream.range(0, config.players().size())
+                .mapToObj(i -> {
+                    var p = config.players().get(i);
+                    var info = new PlayerInfo(p.team(), p.race(), p.name());
+                    var color = HeadlessSimulationInstance.DEFAULT_PLAYER_COLORS[p.team()
+                            % HeadlessSimulationInstance.DEFAULT_PLAYER_COLORS.length];
+                    PlayerInterface iface = reifiedDispatch
+                            ? new DelegatingPlayerInterface(() -> new CommandAdapterPlayerInterface(
+                                    playerRefs[i]::execute))
+                            : null;
+                    return new PlayerConfig(info, color, iface);
+                })
                 .toList();
 
-        World world = World.newWorld(
-                new RaceData(),
-                new LandscapeGeometry(),
-                new NotificationListener() {
-                },
-                config.worldParameters(),
-                landscape,
-                playerInfos,
-                HeadlessSimulationInstance.DEFAULT_PLAYER_COLORS
-        );
+        World world = new World(config.worldParameters(), landscape, playerConfigs);
+        for (int i = 0; i < world.getPlayers().size(); i++) {
+            playerRefs[i] = world.getPlayers().get(i);
+        }
 
         for (int i = 0; i < config.players().size(); i++) {
             var pConfig = config.players().get(i);
             Player player = world.getPlayers().get(i);
 
             AI ai = switch (pConfig.aiDifficulty()) {
-                case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, player, Difficulty.NORMAL);
-                case PlayerSlot.AI_HARD -> new AdvancedAI(player, player, Difficulty.HARD);
-                case PlayerSlot.AI_EASY -> new AdvancedAI(player, player, Difficulty.EASY);
+                case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, Difficulty.NORMAL);
+                case PlayerSlot.AI_HARD -> new AdvancedAI(player, Difficulty.HARD);
+                case PlayerSlot.AI_EASY -> new AdvancedAI(player, Difficulty.EASY);
                 case PlayerSlot.AI_BATTLE_TUTORIAL, PlayerSlot.AI_PASSIVE_CAMPAIGN ->
-                    new PassiveAI(player, player, true);
+                    new PassiveAI(player, true);
                 case PlayerSlot.AI_NEUTRAL_CAMPAIGN ->
-                    new PassiveAI(player, player, false);
+                    new PassiveAI(player, false);
                 default -> throw new IllegalArgumentException("Unsupported difficulty: " + pConfig.aiDifficulty());
             };
             world.addTickListener(ai::tick);
 
-            PlayerInitializer.initializePlayerArmy(
-                    player,
+            player.initializeStartingArmy(
                     landscape.startingLocations().get(i),
                     pConfig.unitInfo(),
                     config.worldParameters().initialGameSpeed(),

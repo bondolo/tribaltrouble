@@ -1,7 +1,6 @@
 package com.oddlabs.tt.ai;
 
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.simulation.player.PlayerInterface;
 
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Difficulty;
@@ -22,6 +21,7 @@ import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -108,8 +108,8 @@ public final class AdvancedAI extends AI {
 
     private @Nullable LandscapeTarget defense_target = null;
 
-    public AdvancedAI(Player owner, PlayerInterface playerInterface, Difficulty difficulty) {
-        super(owner, playerInterface);
+    public AdvancedAI(Player owner, Difficulty difficulty) {
+        super(owner);
         this.params = PARAMS.get(difficulty);
         this.numWarriors = params.numWarriorsDefault();
     }
@@ -130,7 +130,8 @@ public final class AdvancedAI extends AI {
         nodeAttackWithWarriorsAndChieftain(numWarriors, numWarriors
                 >= params.numWarriorsForChieftain());
         nodeAssignIdlePeons();
-        getOwner().getChieftain().ifPresent(chieftain -> ChieftainAI.forRace(getOwner().getPlayerInfo().race()).decide(chieftain,
+        getOwner().getChieftain().ifPresent(chieftain -> ChieftainAI.forRace(getOwner().getPlayerInfo().race()).decide(
+                chieftain,
                 getPlayerInterface()));
     }
 
@@ -207,9 +208,7 @@ public final class AdvancedAI extends AI {
         }
 
         if (result > 0) {
-            Unit[] units = new Unit[unit_list.size()];
-            unit_list.toArray(units);
-            getPlayerInterface().setLandscapeTarget(units, defense_target.getGridX(), defense_target.getGridY(),
+            getPlayerInterface().setLandscapeTarget(unit_list, defense_target.getGridX(), defense_target.getGridY(),
                     Action.DEFEND, true);
         }
     }
@@ -278,8 +277,8 @@ public final class AdvancedAI extends AI {
     private void nodeBuildTower(int number) {
         if (!towerUnderConstruction() && ((getTowers().isEmpty() && number == 1) || getTowers().size() < number)
                 && !getQuarters().isEmpty() && !getArmory().isEmpty()) {
-            Selectable<?>[] builders = getPeons(10);
-            if (builders.length == 0)
+            List<Selectable<?>> builders = getPeons(10);
+            if (builders.isEmpty())
                 return;
 
             Building origin = number % 2 == 1 ? getQuarters().getFirst() : getArmory().getFirst();
@@ -297,7 +296,7 @@ public final class AdvancedAI extends AI {
 
     private void nodeAssignIdlePeons() {
         if (!getIdlePeons().isEmpty()) {
-            Selectable<?>[] idle = getIdlePeons().toArray(Selectable[]::new);
+            List<Selectable<?>> idle = getIdlePeons();
             if (quartersUnderConstruction() && !getConstructionSites().isEmpty()) {
                 getPlayerInterface().setTarget(idle, getConstructionSites().getFirst(), Action.DEFAULT, false);
             } else if (armoryUnderConstruction() && !getConstructionSites().isEmpty()) {
@@ -313,18 +312,15 @@ public final class AdvancedAI extends AI {
     private void nodeAttackWithWarriorsAndChieftain(int num_warriors, boolean use_chieftain) {
         if (getIdleWarriors().size() >= num_warriors && (!use_chieftain || getOwner().hasActiveChieftain())) {
             boolean idle_chieftain = !getIdleChieftains().isEmpty();
-            Selectable<?>[] warriors;
+            List<Selectable<?>> warriors = new ArrayList<>(num_warriors + (idle_chieftain && use_chieftain ? 1 : 0));
+            for (int i = 0; i < num_warriors; i++) {
+                warriors.add(getIdleWarriors().get(i));
+            }
             if (idle_chieftain && use_chieftain) {
-                warriors = Selectable.newArray(num_warriors + 1);
-                warriors[num_warriors] = getIdleChieftains().getFirst();
-            } else {
-                warriors = Selectable.newArray(num_warriors);
+                warriors.add(getIdleChieftains().getFirst());
             }
 
-            for (int i = 0; i < num_warriors; i++) {
-                warriors[i] = getIdleWarriors().get(i);
-            }
-            Target target = findTarget(warriors[0].getGridX(), warriors[0].getGridY());
+            Target target = findTarget(warriors.getFirst().getGridX(), warriors.getFirst().getGridY());
             if (target != null) {
                 getPlayerInterface().setLandscapeTarget(warriors, target.getGridX(), target.getGridY(), Action.ATTACK,
                         true);
@@ -452,17 +448,17 @@ public final class AdvancedAI extends AI {
         Building quarters = !getQuarters().isEmpty() ? getQuarters().getFirst() : null;
         if (!armoryUnderConstruction() && getArmory().isEmpty()
                 && quarters != null && quarters.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
-            Selectable<?>[] builders = getPeons(20);
-            if (builders.length < 20) {
+            List<Selectable<?>> builders = getPeons(20);
+            if (builders.size() < 20) {
                 if (!quarters.isDead() && quarters.getUnitContainer().orElseThrow().getNumSupplies() >= 20)
                     getPlayerInterface().deployUnits(quarters, DeployType.PEON, 20);
             }
-            if (builders.length == 0)
+            if (builders.isEmpty())
                 return;
 
             // TODO: Should use Quarters as origin, if it exists
             setArmoryUnderConstruction(buildBuilding(
-                    BuildingType.ARMORY, builders, builders[0].getGridX(), builders[0]
+                    BuildingType.ARMORY, builders, builders.getFirst().getGridX(), builders.getFirst()
                             .getGridY()));
             reclassify();
         }
@@ -470,49 +466,38 @@ public final class AdvancedAI extends AI {
 
     private void nodeBuildQuarters() {
         if (!quartersUnderConstruction() && getQuarters().isEmpty()) {
-            Selectable<?>[] builders = getPeons(params.minUnitsReproducing());
-            if (builders.length == 0)
+            List<Selectable<?>> builders = getPeons(params.minUnitsReproducing());
+            if (builders.isEmpty())
                 return;
 
             // TODO: Should use Armory as origin, if it exists
             setQuartersUnderConstruction(buildBuilding(
-                    BuildingType.QUARTERS, builders, builders[0].getGridX(),
-                    builders[0].getGridY()));
+                    BuildingType.QUARTERS, builders, builders.getFirst().getGridX(),
+                    builders.getFirst().getGridY()));
             reclassify();
         }
     }
 
-    private Selectable<?>[] getPeons(int min_num_peons) {
+    private List<Selectable<?>> getPeons(int min_num_peons) {
         int idleCount = getIdlePeons().size();
-        int ironCount = getGatherIronPeons().size();
-        int rockCount = getGatherRockPeons().size();
-        int treeCount = getGatherTreePeons().size();
-        int rubberCount = getGatherRubberPeons().size();
         int neededFromGatherers = Math.max(0, min_num_peons - idleCount);
-        int gatherersAvailable = ironCount + rockCount + treeCount + rubberCount;
-        int gatherersToTake = Math.min(neededFromGatherers, gatherersAvailable);
-        int totalCount = idleCount + gatherersToTake;
-        if (totalCount == 0) {
-            return Selectable.newArray(0);
+        List<Selectable<?>> peons = new ArrayList<>(getIdlePeons());
+        int taken = 0;
+        List<List<Selectable<?>>> gathererLists = List.of(
+                getGatherIronPeons(), getGatherRockPeons(), getGatherTreePeons(), getGatherRubberPeons());
+        for (List<Selectable<?>> list : gathererLists) {
+            for (Selectable<?> peon : list) {
+                if (taken >= neededFromGatherers) {
+                    break;
+                }
+                peons.add(peon);
+                taken++;
+            }
+            if (taken >= neededFromGatherers) {
+                break;
+            }
         }
-        Selectable<?>[] peons = Selectable.newArray(totalCount);
-        int idx = 0;
-        for (int i = 0; i < idleCount; i++) {
-            peons[idx++] = getIdlePeons().get(i);
-        }
-        for (int i = 0; i < ironCount && idx < totalCount; i++) {
-            peons[idx++] = getGatherIronPeons().get(i);
-        }
-        for (int i = 0; i < rockCount && idx < totalCount; i++) {
-            peons[idx++] = getGatherRockPeons().get(i);
-        }
-        for (int i = 0; i < treeCount && idx < totalCount; i++) {
-            peons[idx++] = getGatherTreePeons().get(i);
-        }
-        for (int i = 0; i < rubberCount && idx < totalCount; i++) {
-            peons[idx++] = getGatherRubberPeons().get(i);
-        }
-        return peons;
+        return peons.isEmpty() ? List.of() : Collections.unmodifiableList(peons);
     }
 
     /*	private final int getNumUnitsDeploying() {
@@ -551,7 +536,7 @@ public final class AdvancedAI extends AI {
         return squared_dist_target < squared_dist_building / 2 ? best_target : best_building;
     }
 
-    private boolean buildBuilding(BuildingType building_type, Selectable<?>[] selection, int grid_x,
+    private boolean buildBuilding(BuildingType building_type, List<? extends Selectable<?>> selection, int grid_x,
             int grid_y) {
         BuildingSiteScanFilter filter = new BuildingSiteScanFilter(getUnitGrid(), getOwner().getRaceInfo()
                 .getBuildingTemplate(building_type), 40);

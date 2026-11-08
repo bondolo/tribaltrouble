@@ -2,17 +2,14 @@ package com.oddlabs.tt.net;
 
 import com.oddlabs.router.SessionID;
 import com.oddlabs.tt.base.animation.AnimationManager;
-import com.oddlabs.tt.simulation.landscape.NotificationListener;
-import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
 import com.oddlabs.tt.simulation.landscape.Landscape;
-import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
-import com.oddlabs.tt.simulation.landscape.SpawnLocation;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.simulation.model.RaceData;
+import com.oddlabs.tt.simulation.player.DelegatingPlayerInterface;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerConfig;
+import com.oddlabs.tt.simulation.player.PlayerControllerType;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
-import com.oddlabs.tt.simulation.player.PlayerInitializer;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
@@ -92,28 +89,18 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
                 .map(slot -> (PlayerInfo) slot.getInfo())
                 .toList();
 
-        NotificationListener noopListener = new NotificationListener() {
-        };
+        final PeerHub[] peerHubRef = new PeerHub[1];
+        List<PlayerConfig> playerConfigs = new java.util.ArrayList<>(playerInfos.size());
+        for (int i = 0; i < playerInfos.size(); i++) {
+            PlayerInterface iface = (i == playerIndex && playerSlots.get(i).isNetworkPeer())
+                    ? new DelegatingPlayerInterface(() -> peerHubRef[0].getPlayerInterface())
+                    : null;
+            playerConfigs.add(new PlayerConfig(playerInfos.get(i), DEFAULT_PLAYER_COLORS[i
+                    % DEFAULT_PLAYER_COLORS.length], iface, PlayerControllerType.fromSlot(playerSlots.get(i)),
+                    unitInfos.get(i), null));
+        }
 
-        LandscapeBoundsProvider boundsProvider = new LandscapeGeometry();
-        RaceData raceData = new RaceData();
-        World world = World.newWorld(
-                raceData,
-                boundsProvider,
-                noopListener,
-                worldParams,
-                landscape,
-                playerInfos,
-                DEFAULT_PLAYER_COLORS
-        );
-
-        initPlayers(
-                landscape.startingLocations(),
-                playerSlots,
-                world.getPlayers(),
-                unitInfos,
-                worldParams.initialGameSpeed()
-        );
+        World world = new World(worldParams, landscape, playerConfigs);
 
         Player localPlayer = world.getPlayers().get(playerIndex);
         AnimationManager animManager = new AnimationManager();
@@ -147,6 +134,7 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
                 routerAddress,
                 routerPort
         );
+        peerHubRef[0] = peerHub;
 
         PlayerSlot localSlot = playerSlots.get(playerIndex);
         if (!localSlot.isNetworkPeer()) {
@@ -158,14 +146,13 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
         AI ai = null;
         if (localSlot.getType() == PlayerSlot.AI) {
             ai = switch (localSlot.getAIDifficulty()) {
-                case PlayerSlot.AI_NORMAL -> new AdvancedAI(localPlayer, peerHub.getPlayerInterface(),
-                        Difficulty.NORMAL);
-                case PlayerSlot.AI_HARD -> new AdvancedAI(localPlayer, peerHub.getPlayerInterface(), Difficulty.HARD);
-                case PlayerSlot.AI_EASY -> new AdvancedAI(localPlayer, peerHub.getPlayerInterface(), Difficulty.EASY);
+                case PlayerSlot.AI_NORMAL -> new AdvancedAI(localPlayer, Difficulty.NORMAL);
+                case PlayerSlot.AI_HARD -> new AdvancedAI(localPlayer, Difficulty.HARD);
+                case PlayerSlot.AI_EASY -> new AdvancedAI(localPlayer, Difficulty.EASY);
                 case PlayerSlot.AI_BATTLE_TUTORIAL, PlayerSlot.AI_PASSIVE_CAMPAIGN ->
-                    new PassiveAI(localPlayer, peerHub.getPlayerInterface(), true);
+                    new PassiveAI(localPlayer, true);
                 case PlayerSlot.AI_NEUTRAL_CAMPAIGN ->
-                    new PassiveAI(localPlayer, peerHub.getPlayerInterface(), false);
+                    new PassiveAI(localPlayer, false);
                 case PlayerSlot.AI_TOWER_TUTORIAL, PlayerSlot.AI_CHIEFTAIN_TUTORIAL -> null;
                 default -> throw new IllegalArgumentException("unexpected difficulty: " + localSlot.getAIDifficulty());
             };
@@ -183,13 +170,13 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
             if (!slotK.isNetworkPeer() && slotK.getType() == PlayerSlot.AI) {
                 Player otherPlayer = world.getPlayers().get(k);
                 AI lockstepAi = switch (slotK.getAIDifficulty()) {
-                    case PlayerSlot.AI_NORMAL -> new AdvancedAI(otherPlayer, otherPlayer, Difficulty.NORMAL);
-                    case PlayerSlot.AI_HARD -> new AdvancedAI(otherPlayer, otherPlayer, Difficulty.HARD);
-                    case PlayerSlot.AI_EASY -> new AdvancedAI(otherPlayer, otherPlayer, Difficulty.EASY);
+                    case PlayerSlot.AI_NORMAL -> new AdvancedAI(otherPlayer, Difficulty.NORMAL);
+                    case PlayerSlot.AI_HARD -> new AdvancedAI(otherPlayer, Difficulty.HARD);
+                    case PlayerSlot.AI_EASY -> new AdvancedAI(otherPlayer, Difficulty.EASY);
                     case PlayerSlot.AI_BATTLE_TUTORIAL, PlayerSlot.AI_PASSIVE_CAMPAIGN ->
-                        new PassiveAI(otherPlayer, otherPlayer, true);
+                        new PassiveAI(otherPlayer, true);
                     case PlayerSlot.AI_NEUTRAL_CAMPAIGN ->
-                        new PassiveAI(otherPlayer, otherPlayer, false);
+                        new PassiveAI(otherPlayer, false);
                     case PlayerSlot.AI_TOWER_TUTORIAL, PlayerSlot.AI_CHIEFTAIN_TUTORIAL -> null;
                     default -> throw new IllegalArgumentException("unexpected difficulty: " + slotK.getAIDifficulty());
                 };
@@ -201,27 +188,6 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
         }
 
         return new HeadlessSimulationInstance(playerIndex, world, ai, lockstepAis, animManager, peerHub);
-    }
-
-    /**
-     * Initializes initial unit armies and starting speed for players.
-     */
-    public static void initPlayers(
-            List<List<SpawnLocation>> startingLocations,
-            List<PlayerSlot> playerSlots,
-            List<Player> players,
-            List<UnitInfo> unitInfos,
-            int initialGamespeed) {
-        for (short i = 0; i < players.size(); i++) {
-            PlayerInitializer.initPlayer(
-                    players.get(i),
-                    playerSlots.get(i),
-                    unitInfos.get(i),
-                    startingLocations.get(i),
-                    initialGamespeed,
-                    null
-            );
-        }
     }
 
     public int getPlayerIndex() {

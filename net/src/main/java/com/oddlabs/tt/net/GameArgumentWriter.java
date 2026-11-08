@@ -7,6 +7,8 @@ import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.ByteBufferOutputStream;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 
 /** Serializer for custom ARMI game command parameters. */
 public final class GameArgumentWriter extends DefaultARMIArgumentWriter {
@@ -38,6 +40,9 @@ public final class GameArgumentWriter extends DefaultARMIArgumentWriter {
                     throw new IllegalArgumentException("Cannot serialize non-distributable array element: " + item);
                 }
             }
+        } else if (List.class.isAssignableFrom(type) || Collection.class.isAssignableFrom(type)) {
+            Object[] items = arg != null ? ((Collection<?>) arg).toArray() : new Object[0];
+            writeArgument(Distributable[].class, items, out);
         } else {
             super.writeArgument(type, arg, out);
         }

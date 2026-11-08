@@ -1,15 +1,7 @@
 package com.oddlabs.tt.simulation.player;
 
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.landscape.IslandConfig;
+import com.oddlabs.tt.simulation.landscape.FlatLandscape;
 import com.oddlabs.tt.simulation.landscape.Landscape;
-import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
-import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
-import com.oddlabs.tt.simulation.landscape.NotificationListener;
-import com.oddlabs.tt.simulation.landscape.PlantLocation;
-import com.oddlabs.tt.simulation.landscape.SpawnLocation;
-import com.oddlabs.tt.simulation.landscape.SupplyPlacement;
-import com.oddlabs.tt.simulation.landscape.TreePlacement;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Action;
@@ -19,8 +11,6 @@ import com.oddlabs.tt.simulation.model.DeployType;
 import com.oddlabs.tt.simulation.model.DistributableTable;
 import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.tt.simulation.model.RaceData;
-import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.util.Color;
@@ -28,100 +18,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for {@link PlayerCommandExecutor} verifying command validation, entity resolution, and execution.
  */
 class PlayerCommandExecutorTest {
-
-    private record TestLandscape(
-                                 int size,
-                                 float[] heightmap,
-                                 boolean[][] accessGrid,
-                                 byte[][] buildGrid,
-                                 List<List<SpawnLocation>> startingLocations) implements Landscape {
-
-        static TestLandscape create(int size) {
-            float[] heightmap = new float[size * size];
-            Arrays.fill(heightmap, 5.0f);
-
-            boolean[][] accessGrid = new boolean[size][size];
-            for (boolean[] row : accessGrid) {
-                Arrays.fill(row, true);
-            }
-
-            byte[][] buildGrid = new byte[size][size];
-            for (byte[] row : buildGrid) {
-                Arrays.fill(row, (byte) 10);
-            }
-
-            List<List<SpawnLocation>> startingLocations = new ArrayList<>();
-            for (int p = 0; p < 2; p++) {
-                List<SpawnLocation> playerLocations = new ArrayList<>();
-                for (int i = 0; i < 20; i++) {
-                    float baseX = (p == 0) ? 10.0f : 20.0f;
-                    float baseY = (p == 0) ? 10.0f : 20.0f;
-                    playerLocations.add(new SpawnLocation(baseX + (i % 5) * 1.5f, baseY + (i / 5f) * 1.5f));
-                }
-                startingLocations.add(playerLocations);
-            }
-
-            return new TestLandscape(size, heightmap, accessGrid, buildGrid, startingLocations);
-        }
-
-        @Override
-        public IslandConfig config() {
-            return new IslandConfig(Terrain.NATIVE, metersPerWorld(), 0.5f, 0.5f, 0.5f, 42);
-        }
-
-        @Override
-        public Terrain terrain() {
-            return Terrain.NATIVE;
-        }
-
-        @Override
-        public int metersPerWorld() {
-            return size * HeightMap.METERS_PER_UNIT_GRID;
-        }
-
-        @Override
-        public float seaLevelMeters() {
-            return 0.0f;
-        }
-
-        @Override
-        public List<TreePlacement> trees() {
-            return List.of();
-        }
-
-        @Override
-        public List<TreePlacement> palmTrees() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> rocks() {
-            return List.of();
-        }
-
-        @Override
-        public List<SupplyPlacement> iron() {
-            return List.of();
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public List<PlantLocation>[] plants() {
-            return new ArrayList[0];
-        }
-    }
 
     private World world;
     private DistributableTable table;
@@ -131,8 +37,9 @@ class PlayerCommandExecutorTest {
 
     @BeforeEach
     void setUp() {
-        int gridSize = 32;
-        Landscape landscape = TestLandscape.create(gridSize);
+        int gridSize = 64;
+        Landscape landscape = FlatLandscape.create(gridSize,
+                FlatLandscape.generateStartingLocations(2, 20, 25.0f, 40.0f));
         WorldParameters worldParams = new WorldParameters(0, "1", 5, 20);
 
         List<PlayerInfo> playerInfos = List.of(
@@ -145,19 +52,10 @@ class PlayerCommandExecutorTest {
                 new Color.Linear(0f, 0f, 1f, 1f)
         };
 
-        LandscapeBoundsProvider boundsProvider = new LandscapeGeometry();
-        RaceData raceData = new RaceData();
-        NotificationListener noopListener = new NotificationListener() {
-        };
-
-        world = World.newWorld(
-                raceData,
-                boundsProvider,
-                noopListener,
+        world = new World(
                 worldParams,
                 landscape,
-                playerInfos,
-                playerColors
+                PlayerConfig.from(playerInfos, playerColors)
         );
 
         table = world.getDistributableTable();
@@ -165,8 +63,8 @@ class PlayerCommandExecutorTest {
         player1 = world.getPlayers().get(1);
 
         UnitInfo unitInfo = new UnitInfo(true, true, 1, true, 3, 2, 1, 0);
-        PlayerInitializer.initializePlayerBase(player0, unitInfo);
-        PlayerInitializer.initializePlayerBase(player1, unitInfo);
+        player0.initializeStartingBase(unitInfo);
+        player1.initializeStartingBase(unitInfo);
 
         rejections = new ArrayList<>();
         player0.setCommandRejectedListener((action, entityId, reason) -> rejections.add(action + ":" + reason));
@@ -220,11 +118,13 @@ class PlayerCommandExecutorTest {
                 .orElseThrow();
         int peonId = table.findName(peon).orElseThrow();
 
-        // Invalid grid coordinate rejection throws IllegalArgumentException
-        assertThrows(IllegalArgumentException.class, () -> player0.execute(new PlayerCommand.PlaceBuilding(new int[]{
-                peonId}, BuildingType.TOWER, -1, 10)));
-        assertThrows(IllegalArgumentException.class, () -> player0.execute(new PlayerCommand.PlaceBuilding(new int[]{
-                peonId}, BuildingType.TOWER, 10, 1000)));
+        // Invalid grid coordinate rejection notifies OUT_OF_BOUNDS
+        player0.execute(new PlayerCommand.PlaceBuilding(new int[]{peonId}, BuildingType.TOWER, -1, 10));
+        assertTrue(rejections.contains("placeBuilding:OUT_OF_BOUNDS"));
+        rejections.clear();
+        player0.execute(new PlayerCommand.PlaceBuilding(new int[]{peonId}, BuildingType.TOWER, 10, 1000));
+        assertTrue(rejections.contains("placeBuilding:OUT_OF_BOUNDS"));
+        rejections.clear();
 
         // Valid placement orders peon to target the new building construction site
         player0.execute(new PlayerCommand.PlaceBuilding(new int[]{peonId}, BuildingType.TOWER, 15, 15));
@@ -279,8 +179,8 @@ class PlayerCommandExecutorTest {
     }
 
     @Test
-    void testPlayerActionsExplodedMethodsDirectly() {
-        PlayerActions actions = player0;
+    void testPlayerCommandExecutorDirectDispatch() {
+        PlayerCommandExecutor executor = player0;
 
         Building quarters = player0.getUnits().getSet().stream()
                 .filter(s -> s instanceof Building b && b.getTemplate().getBuildingType() == BuildingType.QUARTERS)
@@ -289,33 +189,103 @@ class PlayerCommandExecutorTest {
                 .orElseThrow();
         int quartersId = table.findName(quarters).orElseThrow();
 
-        // Direct exploded method call on PlayerActions
-        actions.deployUnits(quartersId, DeployType.PEON, 1);
+        // Execution via PlayerCommandExecutor interface reference
+        executor.execute(new PlayerCommand.DeployUnits(quartersId, DeployType.PEON, 1));
         assertTrue(rejections.isEmpty());
 
-        actions.deployUnits(99999, DeployType.PEON, 1);
+        executor.execute(new PlayerCommand.DeployUnits(99999, DeployType.PEON, 1));
         assertEquals(List.of("deployUnits:ENTITY_NOT_FOUND"), rejections);
         rejections.clear();
 
-        // Direct exploded gamespeed call
-        actions.setPreferredGamespeed(4);
+        // Gamespeed execution via executor
+        executor.execute(new PlayerCommand.SetPreferredGamespeed(4));
         assertEquals(4, player0.getPreferredGamespeed());
-        actions.changePreferredGamespeed(-1);
+        executor.execute(new PlayerCommand.ChangePreferredGamespeed(-1));
         assertEquals(3, player0.getPreferredGamespeed());
 
-        // Convenience single-unit overload
+        // Single-unit landscape command via executor
         Unit peon = player0.getUnits().getSet().stream()
                 .filter(s -> s instanceof Unit u && u.getTemplate().getUnitType() == UnitType.PEON)
                 .map(s -> (Unit) s)
                 .findFirst()
                 .orElseThrow();
         int peonId = table.findName(peon).orElseThrow();
-        actions.setLandscapeTarget(peonId, 14, 14, Action.MOVE, false);
+        executor.execute(new PlayerCommand.SetLandscapeTarget(new int[]{peonId}, 14, 14, Action.MOVE, false));
+        assertTrue(rejections.isEmpty());
+    }
+
+    @Test
+    void testPlayerDirectDomainMethodsDispatchViaCommandPipeline() {
+        Building quarters = player0.getUnits().getSet().stream()
+                .filter(s -> s instanceof Building b && b.getTemplate().getBuildingType() == BuildingType.QUARTERS)
+                .map(s -> (Building) s)
+                .findFirst()
+                .orElseThrow();
+
+        // Calling PlayerInterface domain methods directly on player0 routes through the command pipeline
+        player0.deployUnits(quarters, DeployType.PEON, 1);
         assertTrue(rejections.isEmpty());
 
-        // Default execute dispatch via PlayerActions interface reference
-        actions.execute(new PlayerCommand.DeployUnits(quartersId, DeployType.PEON, 1));
+        PlayerInterface pi = player0;
+        pi.deployUnits(quarters, DeployType.PEON, 1);
         assertTrue(rejections.isEmpty());
+    }
+
+    @Test
+    void testDirectExecutionRejectionParity() {
+        Building enemyQuarters = player1.getUnits().getSet().stream()
+                .filter(s -> s instanceof Building b && b.getTemplate().getBuildingType() == BuildingType.QUARTERS)
+                .map(s -> (Building) s)
+                .findFirst()
+                .orElseThrow();
+        Unit peon = player0.getUnits().getSet().stream()
+                .filter(s -> s instanceof Unit u && u.getTemplate().getUnitType() == UnitType.PEON)
+                .map(s -> (Unit) s)
+                .findFirst()
+                .orElseThrow();
+        Unit enemyPeon = player1.getUnits().getSet().stream()
+                .filter(s -> s instanceof Unit u && u.getTemplate().getUnitType() == UnitType.PEON)
+                .map(s -> (Unit) s)
+                .findFirst()
+                .orElseThrow();
+
+        // Direct domain method rejection on unowned building
+        player0.deployUnits(enemyQuarters, DeployType.PEON, 1);
+        assertEquals(List.of("deployUnits:NOT_OWNED"), rejections);
+        rejections.clear();
+
+        player0.createHarvesters(enemyQuarters, 1, 0, 0, 0);
+        assertEquals(List.of("createHarvesters:NOT_OWNED"), rejections);
+        rejections.clear();
+
+        player0.buildRockWeapons(enemyQuarters, 1, false);
+        assertEquals(List.of("buildRockWeapons:NOT_OWNED"), rejections);
+        rejections.clear();
+
+        // Out of bounds placement rejection
+        player0.placeBuilding(List.of(peon), BuildingType.TOWER, -1, 10);
+        assertEquals(List.of("placeBuilding:OUT_OF_BOUNDS"), rejections);
+        rejections.clear();
+
+        // Unowned builder placement rejection
+        player0.placeBuilding(List.of(enemyPeon), BuildingType.TOWER, 15, 15);
+        assertEquals(List.of("placeBuilding:NOT_OWNED"), rejections);
+        rejections.clear();
+
+        // Out of bounds landscape target rejection
+        player0.setLandscapeTarget(peon, -1, 10, Action.MOVE, false);
+        assertEquals(List.of("setLandscapeTarget:OUT_OF_BOUNDS"), rejections);
+        rejections.clear();
+
+        // Unowned unit landscape target rejection
+        player0.setLandscapeTarget(enemyPeon, 10, 10, Action.MOVE, false);
+        assertEquals(List.of("setLandscapeTarget:NOT_OWNED"), rejections);
+        rejections.clear();
+
+        // Null target rejection
+        player0.setTarget(peon, null, Action.MOVE, false);
+        assertEquals(List.of("setTarget:ENTITY_NOT_FOUND"), rejections);
+        rejections.clear();
     }
 
     @Test
@@ -352,5 +322,39 @@ class PlayerCommandExecutorTest {
         assertEquals(slt1.hashCode(), slt2.hashCode());
         assertNotEquals(slt1, slt3);
         assertTrue(slt1.toString().contains("[8, 9]"));
+    }
+
+    @Test
+    void testOutOfBoundsCoordinatesRejectCommand() {
+        Building quarters = player0.getUnits().getSet().stream()
+                .filter(s -> s instanceof Building b && b.getTemplate().getBuildingType() == BuildingType.QUARTERS)
+                .map(s -> (Building) s)
+                .findFirst()
+                .orElseThrow();
+        int quartersId = table.findName(quarters).orElseThrow();
+
+        player0.execute(new PlayerCommand.PlaceBuilding(new int[0], BuildingType.QUARTERS, -1, 10));
+        assertTrue(rejections.contains("placeBuilding:OUT_OF_BOUNDS"));
+
+        rejections.clear();
+        player0.execute(new PlayerCommand.SetRallyPointCoords(quartersId, 1000, 10));
+        assertTrue(rejections.contains("setRallyPoint:OUT_OF_BOUNDS"));
+
+        rejections.clear();
+        player0.execute(new PlayerCommand.SetLandscapeTarget(new int[0], 10, -5, Action.MOVE, false));
+        assertTrue(rejections.contains("setLandscapeTarget:OUT_OF_BOUNDS"));
+    }
+
+    @Test
+    void testWorldTurnCommandBufferIntegration() {
+        int tick = world.getTick();
+        world.getTurnCommandBuffer().schedule(tick, 0, new PlayerCommand.DeployUnits(99999, DeployType.PEON, 1));
+        assertEquals(1, world.getTurnCommandBuffer().getScheduledTickCount());
+        assertTrue(rejections.isEmpty());
+
+        world.tick();
+
+        assertEquals(0, world.getTurnCommandBuffer().getScheduledTickCount());
+        assertTrue(rejections.contains("deployUnits:ENTITY_NOT_FOUND"));
     }
 }
