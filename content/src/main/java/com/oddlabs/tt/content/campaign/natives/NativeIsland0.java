@@ -24,7 +24,6 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.simulation.model.SceneryModel;
 import com.oddlabs.tt.simulation.model.StatueScenery;
-import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import java.util.List;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -283,12 +282,10 @@ final class NativeIsland0 extends Island {
                 scenery_model.remove();
             }
             // Remove Vikings
-            List<Selectable<?>> viking_units = List.copyOf(enemy.getUnits().getSet());
-            for (Selectable<?> viking_unit : viking_units) {
-                if (viking_unit instanceof Unit unit && !unit.isDead()) {
-                    unit.removeNow();
-                }
-            }
+            List.copyOf(enemy.getUnits().getSet()).stream()
+                    .filter(s -> s instanceof Unit u && !u.isDead())
+                    .map(Unit.class::cast)
+                    .forEach(Unit::removeNow);
             // Insert new Vikings
             int new_viking_start_x = 437 * 2;
             int new_viking_start_y = 140 * 2;
@@ -296,19 +293,15 @@ final class NativeIsland0 extends Island {
                 case Difficulty.EASY -> 5;
                 case Difficulty.NORMAL -> 10;
                 case Difficulty.HARD -> 15;
-                default -> throw new IllegalArgumentException();
             };
+            var peonTemplate = enemy.getRaceInfo().getUnitTemplate(UnitType.PEON);
             for (int i = 0; i < num_peons; i++) {
-                new Unit(enemy, new_viking_start_x, new_viking_start_y, null, enemy.getRaceInfo().getUnitTemplate(
-                        UnitType.PEON));
+                new Unit(enemy, new_viking_start_x, new_viking_start_y, null, peonTemplate);
             }
             // Remove natives
-            List<Selectable<?>> native_selectables = List.copyOf(natives.getUnits().getSet());
-            for (Selectable<?> native_selectable : native_selectables) {
-                if (!native_selectable.isDead()) {
-                    native_selectable.hit(10000, 0, 1, enemy);
-                }
-            }
+            List.copyOf(natives.getUnits().getSet()).stream()
+                    .filter(s -> !s.isDead())
+                    .forEach(s -> s.hit(10000, 0, 1, enemy));
             CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header3"),
                     i18n("dialog3"),
                     getCampaign().getIcons().getFaces()[2],

@@ -204,55 +204,7 @@ final class VikingIsland8 extends Island {
         // Insert second blocking army
         Unit bait2 = new Unit(enemy, 347 * 2, 455 * 2, null, enemy.getRaceInfo().getUnitTemplate(
                 UnitType.WARRIOR_ROCK));
-        int num_hidden = switch (getCampaign().getState().getDifficulty()) {
-            case Difficulty.EASY -> 7;
-            case Difficulty.NORMAL -> 13;
-            case Difficulty.HARD -> 20;
-            default -> throw new IllegalArgumentException("Unrecognized difficulty");
-        };
-        final List<Selectable<?>> army2 = new ArrayList<>(num_hidden);
-        army2.add(new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK)));
-        army2.add(new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK)));
-        army2.add(new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON)));
-        army2.add(new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON)));
-        army2.add(new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                UnitType.WARRIOR_RUBBER)));
-        army2.add(new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                UnitType.WARRIOR_RUBBER)));
-        army2.add(new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                UnitType.WARRIOR_RUBBER)));
-
-        if (getCampaign().getState().getDifficulty() == Difficulty.HARD || getCampaign().getState()
-                .getDifficulty() == Difficulty.NORMAL) {
-            army2.add(new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_ROCK)));
-            army2.add(new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_ROCK)));
-            army2.add(new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_ROCK)));
-            army2.add(new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_IRON)));
-            army2.add(new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_IRON)));
-            army2.add(new Unit(enemy, 365 * 2, 427 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_IRON)));
-        }
-        if (getCampaign().getState().getDifficulty() == Difficulty.HARD) {
-            army2.add(new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_ROCK)));
-            army2.add(new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_ROCK)));
-            army2.add(new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_ROCK)));
-            army2.add(new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_IRON)));
-            army2.add(new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_RUBBER)));
-            army2.add(new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_RUBBER)));
-            army2.add(new Unit(enemy, 366 * 2, 419 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_RUBBER)));
-        }
+        final List<Selectable<?>> army2 = createSecondBlockingArmy(enemy, getCampaign().getState().getDifficulty());
         new DeathTrigger(bait2, () -> enemy
                 .setLandscapeTarget(army2, 352, 480, Action.ATTACK, true));
 
@@ -394,5 +346,40 @@ final class VikingIsland8 extends Island {
 
     private void changeObjective(int objective) {
         this.objective = objective;
+    }
+
+    private static List<Selectable<?>> createSecondBlockingArmy(Player enemy, Difficulty difficulty) {
+        var raceInfo = enemy.getRaceInfo();
+        var rockTemplate = raceInfo.getUnitTemplate(UnitType.WARRIOR_ROCK);
+        var ironTemplate = raceInfo.getUnitTemplate(UnitType.WARRIOR_IRON);
+        var rubberTemplate = raceInfo.getUnitTemplate(UnitType.WARRIOR_RUBBER);
+
+        List<Selectable<?>> units = new ArrayList<>();
+        units.add(new Unit(enemy, 364 * 2, 440 * 2, null, rockTemplate));
+        units.add(new Unit(enemy, 364 * 2, 440 * 2, null, rockTemplate));
+        units.add(new Unit(enemy, 364 * 2, 440 * 2, null, ironTemplate));
+        units.add(new Unit(enemy, 364 * 2, 440 * 2, null, ironTemplate));
+        units.add(new Unit(enemy, 364 * 2, 440 * 2, null, rubberTemplate));
+        units.add(new Unit(enemy, 364 * 2, 440 * 2, null, rubberTemplate));
+        units.add(new Unit(enemy, 364 * 2, 440 * 2, null, rubberTemplate));
+
+        if (difficulty == Difficulty.HARD || difficulty == Difficulty.NORMAL) {
+            units.add(new Unit(enemy, 365 * 2, 427 * 2, null, rockTemplate));
+            units.add(new Unit(enemy, 365 * 2, 427 * 2, null, rockTemplate));
+            units.add(new Unit(enemy, 365 * 2, 427 * 2, null, rockTemplate));
+            units.add(new Unit(enemy, 365 * 2, 427 * 2, null, ironTemplate));
+            units.add(new Unit(enemy, 365 * 2, 427 * 2, null, ironTemplate));
+            units.add(new Unit(enemy, 365 * 2, 427 * 2, null, ironTemplate));
+        }
+        if (difficulty == Difficulty.HARD) {
+            units.add(new Unit(enemy, 366 * 2, 419 * 2, null, rockTemplate));
+            units.add(new Unit(enemy, 366 * 2, 419 * 2, null, rockTemplate));
+            units.add(new Unit(enemy, 366 * 2, 419 * 2, null, rockTemplate));
+            units.add(new Unit(enemy, 366 * 2, 419 * 2, null, ironTemplate));
+            units.add(new Unit(enemy, 366 * 2, 419 * 2, null, rubberTemplate));
+            units.add(new Unit(enemy, 366 * 2, 419 * 2, null, rubberTemplate));
+            units.add(new Unit(enemy, 366 * 2, 419 * 2, null, rubberTemplate));
+        }
+        return List.copyOf(units);
     }
 }
