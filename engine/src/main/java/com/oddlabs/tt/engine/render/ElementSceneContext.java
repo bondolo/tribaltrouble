@@ -106,4 +106,9 @@ public final class ElementSceneContext<M extends Model> implements ModelState<M>
         SpriteKey key = visitor.getSpriteKey(this);
         return key != null ? getRenderer(key).getSpriteList() : null;
     }
+
+    @Override
+    public float getInterpolationAlpha() {
+        return sceneContext.getInterpolationAlpha();
+    }
 }

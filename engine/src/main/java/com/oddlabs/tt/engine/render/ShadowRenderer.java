@@ -52,9 +52,13 @@ public abstract class ShadowRenderer {
     }
 
     public final void renderShadow(RenderContext context, Shadowable model) {
+        renderShadow(context, model, 1.0f);
+    }
+
+    public final void renderShadow(RenderContext context, Shadowable model, float alpha) {
         if (currentTexture != null && sharedRenderer != null) {
-            renderShadow(context, model.getPositionX(), model.getPositionY(), model.getShadowDiameter(),
-                    color, model.getShadowVerticalCenter(), model.getShadowOpacity());
+            renderShadow(context, model.getInterpolatedPositionX(alpha), model.getInterpolatedPositionY(alpha),
+                    model.getShadowDiameter(), color, model.getShadowVerticalCenter(), model.getShadowOpacity());
         }
     }
 

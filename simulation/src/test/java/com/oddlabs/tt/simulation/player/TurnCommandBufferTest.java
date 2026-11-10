@@ -108,4 +108,33 @@ class TurnCommandBufferTest {
         assertEquals(0, buffer.getScheduledTickCount());
         assertTrue(buffer.drainCommandsForTick(1).isEmpty());
     }
+
+    @Test
+    void testDrainCommandsForTickDrainsEarlierUndrainedTicksInOrder() {
+        PlayerCommand cmd1 = new PlayerCommand.SetPreferredGamespeed(1);
+        PlayerCommand cmd2 = new PlayerCommand.SetPreferredGamespeed(2);
+        PlayerCommand cmd3 = new PlayerCommand.SetPreferredGamespeed(3);
+
+        buffer.schedule(2, 0, cmd1);
+        buffer.schedule(4, 1, cmd2);
+        buffer.schedule(6, 0, cmd3);
+
+        assertEquals(3, buffer.getScheduledTickCount());
+
+        List<TurnCommandBuffer.ScheduledCommand> drained = buffer.drainCommandsForTick(5);
+        assertEquals(2, drained.size());
+        assertEquals(2, drained.get(0).tick());
+        assertEquals(cmd1, drained.get(0).command());
+        assertEquals(4, drained.get(1).tick());
+        assertEquals(cmd2, drained.get(1).command());
+
+        assertEquals(1, buffer.getScheduledTickCount());
+        assertFalse(buffer.isEmpty());
+
+        List<TurnCommandBuffer.ScheduledCommand> remaining = buffer.drainCommandsForTick(6);
+        assertEquals(1, remaining.size());
+        assertEquals(6, remaining.getFirst().tick());
+        assertEquals(cmd3, remaining.getFirst().command());
+        assertTrue(buffer.isEmpty());
+    }
 }

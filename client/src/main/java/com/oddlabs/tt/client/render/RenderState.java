@@ -314,7 +314,10 @@ public final class RenderState implements SceneContext {
     private static final ModelVisitor<Unit> unit_visitor = new SelectableVisitor<>();
 
     private void visitUnit(final Unit unit) {
-        float z_offset = getVisuallyCorrectHeight(unit.getPositionX(), unit.getPositionY()) + unit.getOffsetZ();
+        float alpha = getInterpolationAlpha();
+        float x = unit.getInterpolatedPositionX(alpha);
+        float y = unit.getInterpolatedPositionY(alpha);
+        float z_offset = getVisuallyCorrectHeight(x, y) + unit.getOffsetZ();
         visitSelectable(unit_visitor, unit, z_offset, unit.getTemplate().getSelectionRadius(), unit.getTemplate()
                 .getSelectionHeight());
     }

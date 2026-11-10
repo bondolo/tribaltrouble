@@ -21,7 +21,6 @@ import com.oddlabs.tt.simulation.model.SupplyContainer;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitType;
-import com.oddlabs.tt.simulation.behaviour.NullController;
 import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
@@ -32,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.random.RandomGenerator;
@@ -518,7 +516,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
     }
 
     public RaceInfo getRaceInfo() {
-        return Objects.requireNonNull(getWorld().getRaceData()).getRaceInfo(player_info.race());
+        return world.getRaceData().getRaceInfo(player_info.race());
     }
 
     public SupplyContainer getUnitCountContainer() {
@@ -536,7 +534,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
     public Optional<Building> getArmory() {
         for (Selectable<?> s : units.getSet()) {
             if (s instanceof Building b
-                    && b.getPrimaryController() instanceof NullController
+                    && b.isOperating()
                     && b.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
                 return Optional.of(b);
             }
@@ -547,7 +545,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
     public Optional<Building> getQuarters() {
         for (Selectable<?> s : units.getSet()) {
             if (s instanceof Building b
-                    && b.getPrimaryController() instanceof NullController
+                    && b.isOperating()
                     && b.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
                 return Optional.of(b);
             }
@@ -632,54 +630,20 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
     }
 
     @Override
-    public void buildRockWeapons(@Nullable Building building, int num_weapons, boolean infinite) {
-        applyBuildRockWeapons(building, num_weapons, infinite);
+    public void buildWeapons(@Nullable Building building, WeaponTier tier, int num_weapons, boolean infinite) {
+        applyBuildWeapons(building, tier, num_weapons, infinite);
     }
 
-    private void applyBuildRockWeapons(@Nullable Building building, int num_weapons, boolean infinite) {
+    private void applyBuildWeapons(@Nullable Building building, WeaponTier tier, int num_weapons, boolean infinite) {
         if (building == null) {
-            notifyRejected("buildRockWeapons", Distributable.NO_ID, "ENTITY_NOT_FOUND");
+            notifyRejected("buildWeapons", Distributable.NO_ID, "ENTITY_NOT_FOUND");
             return;
         }
         if (!isValid(building)) {
-            notifyRejected("buildRockWeapons", building.getId(), "NOT_OWNED");
+            notifyRejected("buildWeapons", building.getId(), "NOT_OWNED");
             return;
         }
-        building.buildWeapons(WeaponTier.ROCK, num_weapons, infinite);
-    }
-
-    @Override
-    public void buildIronWeapons(@Nullable Building building, int num_weapons, boolean infinite) {
-        applyBuildIronWeapons(building, num_weapons, infinite);
-    }
-
-    private void applyBuildIronWeapons(@Nullable Building building, int num_weapons, boolean infinite) {
-        if (building == null) {
-            notifyRejected("buildIronWeapons", Distributable.NO_ID, "ENTITY_NOT_FOUND");
-            return;
-        }
-        if (!isValid(building)) {
-            notifyRejected("buildIronWeapons", building.getId(), "NOT_OWNED");
-            return;
-        }
-        building.buildWeapons(WeaponTier.IRON, num_weapons, infinite);
-    }
-
-    @Override
-    public void buildRubberWeapons(@Nullable Building building, int num_weapons, boolean infinite) {
-        applyBuildRubberWeapons(building, num_weapons, infinite);
-    }
-
-    private void applyBuildRubberWeapons(@Nullable Building building, int num_weapons, boolean infinite) {
-        if (building == null) {
-            notifyRejected("buildRubberWeapons", Distributable.NO_ID, "ENTITY_NOT_FOUND");
-            return;
-        }
-        if (!isValid(building)) {
-            notifyRejected("buildRubberWeapons", building.getId(), "NOT_OWNED");
-            return;
-        }
-        building.buildWeapons(WeaponTier.RUBBER, num_weapons, infinite);
+        building.buildWeapons(tier, num_weapons, infinite);
     }
 
     @Override
@@ -739,10 +703,14 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
         applyPlaceBuilding(selection, template_type, placing_grid_x, placing_grid_y);
     }
 
+    private boolean isGridInside(int gridX, int gridY) {
+        int gridSize = world.getHeightMap().getGridUnitsPerWorld();
+        return gridX >= 0 && gridX < gridSize && gridY >= 0 && gridY < gridSize;
+    }
+
     private void applyPlaceBuilding(List<? extends Selectable<?>> selection, BuildingType template_type,
             int placing_grid_x, int placing_grid_y) {
-        int gridSize = world.getHeightMap().getGridUnitsPerWorld();
-        if (placing_grid_x < 0 || placing_grid_x >= gridSize || placing_grid_y < 0 || placing_grid_y >= gridSize) {
+        if (!isGridInside(placing_grid_x, placing_grid_y)) {
             notifyRejected("placeBuilding", Distributable.NO_ID, "OUT_OF_BOUNDS");
             return;
         }
@@ -783,7 +751,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
             notifyRejected("setRallyPoint", building.getId(), "NOT_OWNED");
             return;
         }
-        if (target == null) {
+        if (target == null || (target instanceof Selectable<?> s && s.isDead())) {
             notifyRejected("setRallyPoint", Distributable.NO_ID, "ENTITY_NOT_FOUND");
             return;
         }
@@ -796,8 +764,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
     }
 
     private void applySetRallyPoint(@Nullable Building building, int grid_x, int grid_y) {
-        int gridSize = world.getHeightMap().getGridUnitsPerWorld();
-        if (grid_x < 0 || grid_x >= gridSize || grid_y < 0 || grid_y >= gridSize) {
+        if (!isGridInside(grid_x, grid_y)) {
             int buildingId = building != null ? building.getId() : Distributable.NO_ID;
             notifyRejected("setRallyPoint", buildingId, "OUT_OF_BOUNDS");
             return;
@@ -815,7 +782,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
 
     private void applySetTarget(List<? extends Selectable<?>> selection, @Nullable Target target, Action action,
             boolean aggressive) {
-        if (target == null) {
+        if (target == null || (target instanceof Selectable<?> s && s.isDead())) {
             notifyRejected("setTarget", Distributable.NO_ID, "ENTITY_NOT_FOUND");
             return;
         }
@@ -842,7 +809,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
 
     @Override
     public void setTarget(@Nullable Selectable<?> unit, @Nullable Target target, Action action, boolean aggressive) {
-        if (target == null) {
+        if (target == null || (target instanceof Selectable<?> s && s.isDead())) {
             notifyRejected("setTarget", Distributable.NO_ID, "ENTITY_NOT_FOUND");
             return;
         }
@@ -874,8 +841,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
 
     private void applySetLandscapeTarget(List<? extends Selectable<?>> selection, int grid_x, int grid_y,
             Action action, boolean aggressive) {
-        int grid_size = world.getUnitGrid().getGridSize();
-        if (grid_x < 0 || grid_x >= grid_size || grid_y < 0 || grid_y >= grid_size) {
+        if (!isGridInside(grid_x, grid_y)) {
             notifyRejected("setLandscapeTarget", Distributable.NO_ID, "OUT_OF_BOUNDS");
             return;
         }
@@ -917,8 +883,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
 
     private void applySetLandscapeTarget(@Nullable Selectable<?> unit, int grid_x, int grid_y, Action action,
             boolean aggressive) {
-        int grid_size = world.getUnitGrid().getGridSize();
-        if (grid_x < 0 || grid_x >= grid_size || grid_y < 0 || grid_y >= grid_size) {
+        if (!isGridInside(grid_x, grid_y)) {
             notifyRejected("setLandscapeTarget", Distributable.NO_ID, "OUT_OF_BOUNDS");
             return;
         }
@@ -1066,12 +1031,8 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
                 deployUnits(cmd.buildingId(), cmd.deployType(), cmd.numUnits());
             case PlayerCommand.CreateHarvesters cmd ->
                 createHarvesters(cmd.buildingId(), cmd.numTree(), cmd.numRock(), cmd.numIron(), cmd.numRubber());
-            case PlayerCommand.BuildRockWeapons cmd ->
-                buildRockWeapons(cmd.buildingId(), cmd.numWeapons(), cmd.infinite());
-            case PlayerCommand.BuildIronWeapons cmd ->
-                buildIronWeapons(cmd.buildingId(), cmd.numWeapons(), cmd.infinite());
-            case PlayerCommand.BuildRubberWeapons cmd ->
-                buildRubberWeapons(cmd.buildingId(), cmd.numWeapons(), cmd.infinite());
+            case PlayerCommand.BuildWeapons cmd ->
+                buildWeapons(cmd.buildingId(), cmd.tier(), cmd.numWeapons(), cmd.infinite());
             case PlayerCommand.DoMagic cmd ->
                 doMagic(cmd.chieftainId(), cmd.magic());
             case PlayerCommand.ExitTower cmd ->
@@ -1097,7 +1058,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
 
     private void deployUnits(int buildingId, DeployType deployType, int numUnits) {
         var distributable = world.getDistributableTable().getDistributable(buildingId);
-        if (!(distributable instanceof Building building)) {
+        if (!(distributable instanceof Building building) || building.isDead()) {
             notifyRejected("deployUnits", buildingId, "ENTITY_NOT_FOUND");
             return;
         }
@@ -1110,7 +1071,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
 
     private void createHarvesters(int buildingId, int numTree, int numRock, int numIron, int numRubber) {
         var distributable = world.getDistributableTable().getDistributable(buildingId);
-        if (!(distributable instanceof Building building)) {
+        if (!(distributable instanceof Building building) || building.isDead()) {
             notifyRejected("createHarvesters", buildingId, "ENTITY_NOT_FOUND");
             return;
         }
@@ -1121,48 +1082,22 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
         applyCreateHarvesters(building, numTree, numRock, numIron, numRubber);
     }
 
-    private void buildRockWeapons(int buildingId, int numWeapons, boolean infinite) {
+    private void buildWeapons(int buildingId, WeaponTier tier, int numWeapons, boolean infinite) {
         var distributable = world.getDistributableTable().getDistributable(buildingId);
-        if (!(distributable instanceof Building building)) {
-            notifyRejected("buildRockWeapons", buildingId, "ENTITY_NOT_FOUND");
+        if (!(distributable instanceof Building building) || building.isDead()) {
+            notifyRejected("buildWeapons", buildingId, "ENTITY_NOT_FOUND");
             return;
         }
         if (!isValid(building)) {
-            notifyRejected("buildRockWeapons", buildingId, "NOT_OWNED");
+            notifyRejected("buildWeapons", buildingId, "NOT_OWNED");
             return;
         }
-        applyBuildRockWeapons(building, numWeapons, infinite);
-    }
-
-    private void buildIronWeapons(int buildingId, int numWeapons, boolean infinite) {
-        var distributable = world.getDistributableTable().getDistributable(buildingId);
-        if (!(distributable instanceof Building building)) {
-            notifyRejected("buildIronWeapons", buildingId, "ENTITY_NOT_FOUND");
-            return;
-        }
-        if (!isValid(building)) {
-            notifyRejected("buildIronWeapons", buildingId, "NOT_OWNED");
-            return;
-        }
-        applyBuildIronWeapons(building, numWeapons, infinite);
-    }
-
-    private void buildRubberWeapons(int buildingId, int numWeapons, boolean infinite) {
-        var distributable = world.getDistributableTable().getDistributable(buildingId);
-        if (!(distributable instanceof Building building)) {
-            notifyRejected("buildRubberWeapons", buildingId, "ENTITY_NOT_FOUND");
-            return;
-        }
-        if (!isValid(building)) {
-            notifyRejected("buildRubberWeapons", buildingId, "NOT_OWNED");
-            return;
-        }
-        applyBuildRubberWeapons(building, numWeapons, infinite);
+        applyBuildWeapons(building, tier, numWeapons, infinite);
     }
 
     private void doMagic(int chieftainId, MagicType magic) {
         var distributable = world.getDistributableTable().getDistributable(chieftainId);
-        if (!(distributable instanceof Unit chief)) {
+        if (!(distributable instanceof Unit chief) || chief.isDead()) {
             notifyRejected("doMagic", chieftainId, "ENTITY_NOT_FOUND");
             return;
         }
@@ -1175,7 +1110,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
 
     private void exitTower(int buildingId) {
         var distributable = world.getDistributableTable().getDistributable(buildingId);
-        if (!(distributable instanceof Building building)) {
+        if (!(distributable instanceof Building building) || building.isDead()) {
             notifyRejected("exitTower", buildingId, "ENTITY_NOT_FOUND");
             return;
         }
@@ -1188,7 +1123,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
 
     private void trainChieftain(int buildingId, boolean start) {
         var distributable = world.getDistributableTable().getDistributable(buildingId);
-        if (!(distributable instanceof Building building)) {
+        if (!(distributable instanceof Building building) || building.isDead()) {
             notifyRejected("trainChieftain", buildingId, "ENTITY_NOT_FOUND");
             return;
         }
@@ -1200,8 +1135,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
     }
 
     private void placeBuilding(int[] selectionIds, BuildingType templateType, int gridX, int gridY) {
-        int gridSize = world.getHeightMap().getGridUnitsPerWorld();
-        if (gridX < 0 || gridX >= gridSize || gridY < 0 || gridY >= gridSize) {
+        if (!isGridInside(gridX, gridY)) {
             notifyRejected("placeBuilding", Distributable.NO_ID, "OUT_OF_BOUNDS");
             return;
         }
@@ -1215,7 +1149,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
 
     private void setRallyPoint(int buildingId, int targetEntityId) {
         var buildingDistributable = world.getDistributableTable().getDistributable(buildingId);
-        if (!(buildingDistributable instanceof Building building)) {
+        if (!(buildingDistributable instanceof Building building) || building.isDead()) {
             notifyRejected("setRallyPoint", buildingId, "ENTITY_NOT_FOUND");
             return;
         }
@@ -1224,7 +1158,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
             return;
         }
         var targetDistributable = world.getDistributableTable().getDistributable(targetEntityId);
-        if (!(targetDistributable instanceof Target target)) {
+        if (!(targetDistributable instanceof Target target) || (target instanceof Selectable<?> s && s.isDead())) {
             notifyRejected("setRallyPoint", targetEntityId, "ENTITY_NOT_FOUND");
             return;
         }
@@ -1232,13 +1166,12 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
     }
 
     private void setRallyPoint(int buildingId, int gridX, int gridY) {
-        int gridSize = world.getHeightMap().getGridUnitsPerWorld();
-        if (gridX < 0 || gridX >= gridSize || gridY < 0 || gridY >= gridSize) {
+        if (!isGridInside(gridX, gridY)) {
             notifyRejected("setRallyPoint", buildingId, "OUT_OF_BOUNDS");
             return;
         }
         var buildingDistributable = world.getDistributableTable().getDistributable(buildingId);
-        if (!(buildingDistributable instanceof Building building)) {
+        if (!(buildingDistributable instanceof Building building) || building.isDead()) {
             notifyRejected("setRallyPoint", buildingId, "ENTITY_NOT_FOUND");
             return;
         }
@@ -1251,7 +1184,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
 
     private void setTarget(int[] selectionIds, int targetEntityId, Action action, boolean aggressive) {
         var targetDistributable = world.getDistributableTable().getDistributable(targetEntityId);
-        if (!(targetDistributable instanceof Target target)) {
+        if (!(targetDistributable instanceof Target target) || (target instanceof Selectable<?> s && s.isDead())) {
             notifyRejected("setTarget", targetEntityId, "ENTITY_NOT_FOUND");
             return;
         }
@@ -1264,8 +1197,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
     }
 
     private void setLandscapeTarget(int[] selectionIds, int gridX, int gridY, Action action, boolean aggressive) {
-        int gridSize = world.getHeightMap().getGridUnitsPerWorld();
-        if (gridX < 0 || gridX >= gridSize || gridY < 0 || gridY >= gridSize) {
+        if (!isGridInside(gridX, gridY)) {
             notifyRejected("setLandscapeTarget", Distributable.NO_ID, "OUT_OF_BOUNDS");
             return;
         }
@@ -1283,7 +1215,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
         List<Selectable<?>> result = new ArrayList<>(entityIds.length);
         for (int id : entityIds) {
             var d = table.getDistributable(id);
-            if (d instanceof Selectable<?> s && isValid(s)) {
+            if (d instanceof Selectable<?> s && !s.isDead()) {
                 result.add(s);
             }
         }

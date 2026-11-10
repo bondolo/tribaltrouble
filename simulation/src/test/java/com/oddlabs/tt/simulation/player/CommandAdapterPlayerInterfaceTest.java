@@ -13,6 +13,7 @@ import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.util.Color;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,26 +88,29 @@ class CommandAdapterPlayerInterfaceTest {
 
     @Test
     void testBuildWeapons() {
-        adapter.buildRockWeapons(quarters, 3, true);
-        adapter.buildIronWeapons(quarters, 2, false);
-        adapter.buildRubberWeapons(quarters, 1, true);
+        adapter.buildWeapons(quarters, WeaponTier.ROCK, 3, true);
+        adapter.buildWeapons(quarters, WeaponTier.IRON, 2, false);
+        adapter.buildWeapons(quarters, WeaponTier.RUBBER, 1, true);
 
         assertEquals(3, emittedCommands.size());
-        PlayerCommand.BuildRockWeapons rock = assertInstanceOf(PlayerCommand.BuildRockWeapons.class, emittedCommands
+        PlayerCommand.BuildWeapons rock = assertInstanceOf(PlayerCommand.BuildWeapons.class, emittedCommands
                 .get(0));
         assertEquals(quarters.getId(), rock.buildingId());
+        assertEquals(WeaponTier.ROCK, rock.tier());
         assertEquals(3, rock.numWeapons());
         assertEquals(true, rock.infinite());
 
-        PlayerCommand.BuildIronWeapons iron = assertInstanceOf(PlayerCommand.BuildIronWeapons.class, emittedCommands
+        PlayerCommand.BuildWeapons iron = assertInstanceOf(PlayerCommand.BuildWeapons.class, emittedCommands
                 .get(1));
         assertEquals(quarters.getId(), iron.buildingId());
+        assertEquals(WeaponTier.IRON, iron.tier());
         assertEquals(2, iron.numWeapons());
         assertEquals(false, iron.infinite());
 
-        PlayerCommand.BuildRubberWeapons rubber = assertInstanceOf(PlayerCommand.BuildRubberWeapons.class,
+        PlayerCommand.BuildWeapons rubber = assertInstanceOf(PlayerCommand.BuildWeapons.class,
                 emittedCommands.get(2));
         assertEquals(quarters.getId(), rubber.buildingId());
+        assertEquals(WeaponTier.RUBBER, rubber.tier());
         assertEquals(1, rubber.numWeapons());
         assertEquals(true, rubber.infinite());
     }

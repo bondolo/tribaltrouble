@@ -31,6 +31,14 @@ public interface Shadowable {
 
     float getPositionY();
 
+    default float getInterpolatedPositionX(float alpha) {
+        return getPositionX();
+    }
+
+    default float getInterpolatedPositionY(float alpha) {
+        return getPositionY();
+    }
+
     default boolean isDead() {
         return false;
     }

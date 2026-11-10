@@ -6,7 +6,6 @@ import com.oddlabs.tt.effects.render.EmitterAttachedAccessory;
 import com.oddlabs.tt.engine.render.Accessory;
 import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.engine.render.SpriteList;
-import com.oddlabs.tt.simulation.behaviour.StunController;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Unit;
@@ -74,7 +73,8 @@ public final class UnitVisualModel extends AbstractVisualModel {
      * @param world the active game world
      */
     public void updateStunStars(World world) {
-        if (unit.getCurrentController() instanceof StunController stunController) {
+        float timeLeft = unit.getStunTimeLeft();
+        if (timeLeft > 0f) {
             boolean hasStunStar = false;
             for (Accessory acc : getAccessories()) {
                 if (acc instanceof EmitterAttachedAccessory) {
@@ -83,7 +83,6 @@ public final class UnitVisualModel extends AbstractVisualModel {
                 }
             }
             if (!hasStunStar) {
-                float timeLeft = stunController.getTime();
                 float velocity = (float) Math.PI / 2;
                 BalancedParametricEmitter emitter = new BalancedParametricEmitter(
                         world,

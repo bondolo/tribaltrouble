@@ -9,10 +9,12 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.DeployType;
 import com.oddlabs.tt.simulation.model.DistributableTable;
+import com.oddlabs.tt.simulation.model.EntityActivity;
 import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitType;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.util.Color;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -128,9 +130,9 @@ class PlayerCommandExecutorTest {
 
         // Valid placement orders peon to target the new building construction site
         player0.execute(new PlayerCommand.PlaceBuilding(new int[]{peonId}, BuildingType.TOWER, 15, 15));
-        assertTrue(peon
-                .getCurrentController() instanceof com.oddlabs.tt.simulation.behaviour.PlaceBuildingController placeCtrl
-                && placeCtrl.getBuilding().getTemplate().getBuildingType() == BuildingType.TOWER);
+        assertTrue(peon.getActivity() == EntityActivity.PLACING_BUILDING
+                && peon.getPlacingBuilding() != null
+                && peon.getPlacingBuilding().getBuildingType() == BuildingType.TOWER);
     }
 
     @Test
@@ -258,8 +260,8 @@ class PlayerCommandExecutorTest {
         assertEquals(List.of("createHarvesters:NOT_OWNED"), rejections);
         rejections.clear();
 
-        player0.buildRockWeapons(enemyQuarters, 1, false);
-        assertEquals(List.of("buildRockWeapons:NOT_OWNED"), rejections);
+        player0.buildWeapons(enemyQuarters, WeaponTier.ROCK, 1, false);
+        assertEquals(List.of("buildWeapons:NOT_OWNED"), rejections);
         rejections.clear();
 
         // Out of bounds placement rejection
@@ -285,6 +287,22 @@ class PlayerCommandExecutorTest {
         // Null target rejection
         player0.setTarget(peon, null, Action.MOVE, false);
         assertEquals(List.of("setTarget:ENTITY_NOT_FOUND"), rejections);
+        rejections.clear();
+
+        int enemyPeonId = table.findName(enemyPeon).orElseThrow();
+        int enemyChiefId = table.findName(player1.getChieftain().orElseThrow()).orElseThrow();
+
+        // Execution via PlayerCommand on unowned unit must report NOT_OWNED
+        player0.execute(new PlayerCommand.PlaceBuilding(new int[]{enemyPeonId}, BuildingType.TOWER, 15, 15));
+        assertEquals(List.of("placeBuilding:NOT_OWNED"), rejections);
+        rejections.clear();
+
+        player0.execute(new PlayerCommand.SetTarget(new int[]{enemyPeonId}, enemyChiefId, Action.ATTACK, true));
+        assertEquals(List.of("setTarget:NOT_OWNED"), rejections);
+        rejections.clear();
+
+        player0.execute(new PlayerCommand.SetLandscapeTarget(new int[]{enemyPeonId}, 10, 10, Action.MOVE, false));
+        assertEquals(List.of("setLandscapeTarget:NOT_OWNED"), rejections);
         rejections.clear();
     }
 
@@ -333,16 +351,54 @@ class PlayerCommandExecutorTest {
                 .orElseThrow();
         int quartersId = table.findName(quarters).orElseThrow();
 
-        player0.execute(new PlayerCommand.PlaceBuilding(new int[0], BuildingType.QUARTERS, -1, 10));
-        assertTrue(rejections.contains("placeBuilding:OUT_OF_BOUNDS"));
+        int n = world.getHeightMap().getGridUnitsPerWorld();
+        assertEquals(n, world.getUnitGrid().getGridSize(), "HeightMap and UnitGrid sizes must be identical");
 
-        rejections.clear();
-        player0.execute(new PlayerCommand.SetRallyPointCoords(quartersId, 1000, 10));
-        assertTrue(rejections.contains("setRallyPoint:OUT_OF_BOUNDS"));
+        // Coordinates strictly on the boundaries: (0, 0), (N-1, 0), (0, N-1), (N-1, N-1)
+        int[][] validCorners = {{0, 0}, {n - 1, 0}, {0, n - 1}, {n - 1, n - 1}};
+        for (int[] corner : validCorners) {
+            int x = corner[0];
+            int y = corner[1];
 
-        rejections.clear();
-        player0.execute(new PlayerCommand.SetLandscapeTarget(new int[0], 10, -5, Action.MOVE, false));
-        assertTrue(rejections.contains("setLandscapeTarget:OUT_OF_BOUNDS"));
+            rejections.clear();
+            player0.execute(new PlayerCommand.SetRallyPointCoords(quartersId, x, y));
+            assertTrue(rejections.stream().noneMatch(r -> r.contains("OUT_OF_BOUNDS")),
+                    "Valid corner (" + x + ", " + y + ") must not be rejected with OUT_OF_BOUNDS for setRallyPoint");
+
+            rejections.clear();
+            player0.execute(new PlayerCommand.PlaceBuilding(new int[0], BuildingType.QUARTERS, x, y));
+            assertTrue(rejections.stream().noneMatch(r -> r.contains("OUT_OF_BOUNDS")),
+                    "Valid corner (" + x + ", " + y + ") must not be rejected with OUT_OF_BOUNDS for placeBuilding");
+
+            rejections.clear();
+            player0.execute(new PlayerCommand.SetLandscapeTarget(new int[0], x, y, Action.MOVE, false));
+            assertTrue(rejections.stream().noneMatch(r -> r.contains("OUT_OF_BOUNDS")),
+                    "Valid corner (" + x + ", " + y
+                            + ") must not be rejected with OUT_OF_BOUNDS for setLandscapeTarget");
+        }
+
+        // Coordinates strictly outside the boundaries: negative and >= N
+        int[][] invalidCoords = {{-1, 0}, {0, -1}, {-1, -1}, {n, 0}, {0, n}, {n, n}, {1000, 10}};
+        for (int[] invalid : invalidCoords) {
+            int x = invalid[0];
+            int y = invalid[1];
+
+            rejections.clear();
+            player0.execute(new PlayerCommand.PlaceBuilding(new int[0], BuildingType.QUARTERS, x, y));
+            assertTrue(rejections.contains("placeBuilding:OUT_OF_BOUNDS"),
+                    "Invalid coordinate (" + x + ", " + y + ") must be rejected with OUT_OF_BOUNDS for placeBuilding");
+
+            rejections.clear();
+            player0.execute(new PlayerCommand.SetRallyPointCoords(quartersId, x, y));
+            assertTrue(rejections.contains("setRallyPoint:OUT_OF_BOUNDS"),
+                    "Invalid coordinate (" + x + ", " + y + ") must be rejected with OUT_OF_BOUNDS for setRallyPoint");
+
+            rejections.clear();
+            player0.execute(new PlayerCommand.SetLandscapeTarget(new int[0], x, y, Action.MOVE, false));
+            assertTrue(rejections.contains("setLandscapeTarget:OUT_OF_BOUNDS"),
+                    "Invalid coordinate (" + x + ", " + y
+                            + ") must be rejected with OUT_OF_BOUNDS for setLandscapeTarget");
+        }
     }
 
     @Test

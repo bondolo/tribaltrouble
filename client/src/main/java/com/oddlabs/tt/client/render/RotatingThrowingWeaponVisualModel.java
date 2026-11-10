@@ -17,7 +17,7 @@ final class RotatingThrowingWeaponVisualModel extends ThrowingWeaponVisualModel<
     private final float angleVelocity;
 
     RotatingThrowingWeaponVisualModel(RotatingThrowingWeapon weapon, AudioImplementation audio) {
-        super(weapon, audio, AXE_LOFT_FACTOR, AudioRegistry.SFX_WEAPON_AXE);
+        super(weapon, audio, AXE_LOFT_FACTOR, AudioRegistry.SFX_WEAPON_AXE, true);
         float rotsPerSec = switch (weapon.getWeaponTier()) {
             case ROCK -> 3f;
             case IRON -> 6f;

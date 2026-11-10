@@ -67,12 +67,8 @@ public final class BuildSpinner extends IconSpinner {
     }
 
     private void order(int num) {
-        if (current_building != null && !current_building.isDead() && tier != null) {
-            switch (tier) {
-                case ROCK -> player_interface.buildRockWeapons(current_building, num, infinite);
-                case IRON -> player_interface.buildIronWeapons(current_building, num, infinite);
-                case RUBBER -> player_interface.buildRubberWeapons(current_building, num, infinite);
-            }
+        if (current_building != null && !current_building.isDead()) {
+            player_interface.buildWeapons(current_building, tier, num, infinite);
         }
     }
 
@@ -84,7 +80,7 @@ public final class BuildSpinner extends IconSpinner {
 
     @Override
     protected float getProgress() {
-        return (current_building == null || current_building.isDead() || tier == null)
+        return current_building == null || current_building.isDead()
                 ? 0
                 : current_building.getWeaponBuildContainer(tier)
                         .map(BuildProductionContainer::getBuildProgress).orElse(0f);
@@ -96,7 +92,7 @@ public final class BuildSpinner extends IconSpinner {
     }
 
     private int getOrderDiff() {
-        return (current_building == null || current_building.isDead() || tier == null)
+        return current_building == null || current_building.isDead()
                 ? 0
                 : num_orders - current_building.getWeaponBuildContainer(tier)
                         .map(BuildProductionContainer::getNumOrders).orElse(0);

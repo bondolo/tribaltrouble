@@ -25,11 +25,14 @@ abstract sealed class ThrowingWeaponVisualModel<T extends ThrowingWeapon> extend
 
     protected final T weapon;
     private final @Nullable AudioPlayer audioPlayer;
+    private final boolean stopSoundOnImpact;
     protected final float effectiveGravity;
 
-    ThrowingWeaponVisualModel(T weapon, AudioImplementation audio, float loftFactor, AudioFile sound) {
+    ThrowingWeaponVisualModel(T weapon, AudioImplementation audio, float loftFactor, AudioFile sound,
+            boolean stopSoundOnImpact) {
         super(weapon);
         this.weapon = weapon;
+        this.stopSoundOnImpact = stopSoundOnImpact;
         this.effectiveGravity = GRAVITY_MAGNITUDE * loftFactor * loftFactor;
 
         var params = new AudioParameters(sound, AudioRegistry.AUDIO_RANK_WEAPON_ATTACK,
@@ -75,7 +78,7 @@ abstract sealed class ThrowingWeaponVisualModel<T extends ThrowingWeapon> extend
     @Override
     public final void close() {
         super.close();
-        if (audioPlayer != null) {
+        if (stopSoundOnImpact && audioPlayer != null) {
             audioPlayer.stop();
         }
     }

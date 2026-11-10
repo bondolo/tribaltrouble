@@ -159,8 +159,8 @@ final class WorldNotificationHandler implements NotificationListener {
 
     @Override
     public void onUnitAttack(Unit attacker, Unit target) {
-        UnitType unitType = attacker.getTemplate().getUnitType();
-        Race race = attacker.getOwner().getRaceInfo().getRaceType();
+        UnitType unitType = target.getTemplate().getUnitType();
+        Race race = target.getOwner().getRaceInfo().getRaceType();
         AudioFile sound;
         if (unitType == UnitType.CHIEFTAIN) {
             AudioFile[] hits = (race == Race.VIKINGS)

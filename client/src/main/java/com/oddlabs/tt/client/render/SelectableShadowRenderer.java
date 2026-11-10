@@ -30,6 +30,7 @@ public final class SelectableShadowRenderer extends ShadowListRenderer {
             GeneratorHalos.HaloType.class);
 
     private final Deque<ModelState<?>> selection_list = new ArrayDeque<>();
+    private final Deque<ModelState<?>> shadowed_model_list = new ArrayDeque<>();
     private final Deque<Shadowable> shadowed_list = new ArrayDeque<>();
 
     public SelectableShadowRenderer(Supplier<Texture[]> halos_desc) {
@@ -52,9 +53,8 @@ public final class SelectableShadowRenderer extends ShadowListRenderer {
 
     public void addToShadowList(ModelState<?> modelState) {
         if (DebugFlags.process_shadows) {
-            var model = modelState.getModel();
-            if (null != model) {
-                shadowed_list.add(model);
+            if (modelState.getModel() != null) {
+                shadowed_model_list.add(modelState);
             }
         }
     }
@@ -78,6 +78,11 @@ public final class SelectableShadowRenderer extends ShadowListRenderer {
             setShadowColor(Color.Linear.WHITE);
             setPattern(VisualPattern.NONE);
             bindShadowTexture(halos.get(GeneratorHalos.HaloType.SHADOWED));
+            while (!shadowed_model_list.isEmpty()) {
+                var modelState = shadowed_model_list.pop();
+                var model = Objects.requireNonNull(modelState.getModel());
+                renderShadow(context, model, modelState.getInterpolationAlpha());
+            }
             while (!shadowed_list.isEmpty()) {
                 var model = shadowed_list.pop();
                 renderShadow(context, model);
@@ -90,7 +95,7 @@ public final class SelectableShadowRenderer extends ShadowListRenderer {
                 setShadowColor(modelState.getSelectionColor());
                 setPattern(modelState.getPattern());
 
-                renderShadow(context, model);
+                renderShadow(context, model, modelState.getInterpolationAlpha());
             }
         }
     }

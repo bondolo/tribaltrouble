@@ -18,7 +18,6 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerConfig;
 import com.oddlabs.tt.simulation.player.TurnCommandBuffer;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -56,8 +55,8 @@ public final class World implements SimulationClock {
     private final AbstractTreeGroup tree_root;
     private final AbstractElementNode<?> element_root;
     private final WorldParameters worldParameters;
-    private final @Nullable RaceData races_resources;
-    private final LandscapeBoundsProvider landscape_resources;
+    private final RaceData races_resources = new RaceData();
+    private final LandscapeBoundsProvider landscape_resources = new LandscapeGeometry();
     private final Terrain terrain;
     private final DistributableTable distributable_table = new DistributableTable();
     private final TurnCommandBuffer turnCommandBuffer = new TurnCommandBuffer();
@@ -75,7 +74,7 @@ public final class World implements SimulationClock {
         return landscape_resources;
     }
 
-    public @Nullable RaceData getRaceData() {
+    public RaceData getRaceData() {
         return races_resources;
     }
 
@@ -169,23 +168,19 @@ public final class World implements SimulationClock {
         return getAnimationManagerRealTime().getTick();
     }
 
-    /// Constructs a simulation world with default race data, geometry bounds, and no-op notification listener.
+    /// Constructs a simulation world with default geometry bounds and no-op notification listener.
     public World(WorldParameters worldParams, Landscape landscape, List<PlayerConfig> playerConfigs) {
-        this(null, null, NotificationListener.EMPTY, worldParams, landscape, playerConfigs);
+        this(worldParams, landscape, playerConfigs, NotificationListener.EMPTY);
     }
 
-    /// Constructs a simulation world with the given resources, parameters, terrain, and player configurations.
-    public World(@Nullable RaceData races_resources,
-            @Nullable LandscapeBoundsProvider landscape_resources,
-            @Nullable NotificationListener notification_listener,
-            WorldParameters world_params, Landscape landscape,
-            List<PlayerConfig> playerConfigs) {
+    /// Constructs a simulation world with the given parameters, terrain, player configurations, and
+    /// notification listener.
+    public World(WorldParameters world_params, Landscape landscape,
+            List<PlayerConfig> playerConfigs, NotificationListener notification_listener) {
         IO.println("****************** Generating landscape ********************");
         this.terrain = landscape.terrain();
-        this.landscape_resources = landscape_resources != null ? landscape_resources : new LandscapeGeometry();
-        this.races_resources = races_resources != null ? races_resources : new RaceData();
         this.max_unit_count = world_params.maxUnitCount();
-        this.notification_listener = notification_listener != null ? notification_listener : NotificationListener.EMPTY;
+        this.notification_listener = notification_listener;
         this.gamespeed = world_params.initialGameSpeed();
         this.worldParameters = world_params;
         long time_start = System.currentTimeMillis();

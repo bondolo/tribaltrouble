@@ -13,7 +13,7 @@ final class DirectedThrowingWeaponVisualModel extends ThrowingWeaponVisualModel<
     private static final float SPEAR_ROLL = (float) Math.PI;
 
     DirectedThrowingWeaponVisualModel(DirectedThrowingWeapon weapon, AudioImplementation audio) {
-        super(weapon, audio, SPEAR_LOFT_FACTOR, AudioRegistry.SFX_WEAPON_SPEAR);
+        super(weapon, audio, SPEAR_LOFT_FACTOR, AudioRegistry.SFX_WEAPON_SPEAR, false);
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.oddlabs.tt.simulation.player;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 
 /// Buffers and schedules player commands indexed by simulation tick.
@@ -17,7 +17,7 @@ public final class TurnCommandBuffer {
     public record ScheduledCommand(int tick, int playerSlot, PlayerCommand command) {
     }
 
-    private final Map<Integer, List<ScheduledCommand>> commandsByTick = new TreeMap<>();
+    private final NavigableMap<Integer, List<ScheduledCommand>> commandsByTick = new TreeMap<>();
 
     /// Enqueues a command for execution at a specified target simulation tick.
     ///
@@ -29,16 +29,26 @@ public final class TurnCommandBuffer {
                 .add(new ScheduledCommand(targetTick, playerSlot, command));
     }
 
-    /// Removes and returns all commands scheduled for the specified tick.
+    /// Removes and returns all commands scheduled for the specified tick or earlier.
     ///
     /// @param tick the simulation tick
-    /// @return unmodifiable list of commands scheduled for the tick, or an empty list if none
+    /// @return unmodifiable list of commands scheduled for the tick and any earlier undrained ticks, or empty list
+    ///         if none
     public List<ScheduledCommand> drainCommandsForTick(int tick) {
         if (commandsByTick.isEmpty()) {
             return List.of();
         }
-        List<ScheduledCommand> commands = commandsByTick.remove(tick);
-        return commands != null ? Collections.unmodifiableList(commands) : List.of();
+        var headMap = commandsByTick.headMap(tick, true);
+        if (headMap.isEmpty()) {
+            return List.of();
+        }
+        List<ScheduledCommand> drained = new ArrayList<>();
+        var iterator = headMap.values().iterator();
+        while (iterator.hasNext()) {
+            drained.addAll(iterator.next());
+            iterator.remove();
+        }
+        return Collections.unmodifiableList(drained);
     }
 
     /// Returns the count of distinct future ticks with scheduled commands.

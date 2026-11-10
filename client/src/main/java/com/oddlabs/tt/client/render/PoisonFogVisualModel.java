@@ -18,7 +18,6 @@ import org.lwjgl.opengl.GL11;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -56,7 +55,7 @@ final class PoisonFogVisualModel extends AbstractVisualModel implements EmitterA
     public void animate(float dt) {
         time += dt;
         World world = poisonFog.getWorld();
-        Random random = world.getRandom();
+        ThreadLocalRandom random = ThreadLocalRandom.current();
 
         if (!poisonFog.isDead()) {
             if (bursts * SECONDS_BETWEEN_BURSTS < time) {

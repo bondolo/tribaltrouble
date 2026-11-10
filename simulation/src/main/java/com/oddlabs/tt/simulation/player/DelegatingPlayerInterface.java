@@ -8,6 +8,7 @@ import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 
 import java.util.List;
 import java.util.Objects;
@@ -37,18 +38,8 @@ public final class DelegatingPlayerInterface implements PlayerInterface {
     }
 
     @Override
-    public void buildRockWeapons(Building building, int num_weapons, boolean infinite) {
-        delegate().buildRockWeapons(building, num_weapons, infinite);
-    }
-
-    @Override
-    public void buildIronWeapons(Building building, int num_weapons, boolean infinite) {
-        delegate().buildIronWeapons(building, num_weapons, infinite);
-    }
-
-    @Override
-    public void buildRubberWeapons(Building building, int num_weapons, boolean infinite) {
-        delegate().buildRubberWeapons(building, num_weapons, infinite);
+    public void buildWeapons(Building building, WeaponTier tier, int num_weapons, boolean infinite) {
+        delegate().buildWeapons(building, tier, num_weapons, infinite);
     }
 
     @Override

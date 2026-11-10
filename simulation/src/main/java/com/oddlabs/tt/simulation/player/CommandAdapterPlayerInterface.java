@@ -10,6 +10,7 @@ import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -38,18 +39,8 @@ public final class CommandAdapterPlayerInterface implements PlayerInterface {
     }
 
     @Override
-    public void buildRockWeapons(Building building, int numWeapons, boolean infinite) {
-        sink.accept(new PlayerCommand.BuildRockWeapons(building.getId(), numWeapons, infinite));
-    }
-
-    @Override
-    public void buildIronWeapons(Building building, int numWeapons, boolean infinite) {
-        sink.accept(new PlayerCommand.BuildIronWeapons(building.getId(), numWeapons, infinite));
-    }
-
-    @Override
-    public void buildRubberWeapons(Building building, int numWeapons, boolean infinite) {
-        sink.accept(new PlayerCommand.BuildRubberWeapons(building.getId(), numWeapons, infinite));
+    public void buildWeapons(Building building, WeaponTier tier, int numWeapons, boolean infinite) {
+        sink.accept(new PlayerCommand.BuildWeapons(building.getId(), tier, numWeapons, infinite));
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.DeployType;
 import com.oddlabs.tt.simulation.model.MagicType;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
@@ -14,9 +15,7 @@ import java.util.Arrays;
 public sealed interface PlayerCommand permits
         PlayerCommand.DeployUnits,
         PlayerCommand.CreateHarvesters,
-        PlayerCommand.BuildRockWeapons,
-        PlayerCommand.BuildIronWeapons,
-        PlayerCommand.BuildRubberWeapons,
+        PlayerCommand.BuildWeapons,
         PlayerCommand.DoMagic,
         PlayerCommand.ExitTower,
         PlayerCommand.TrainChieftain,
@@ -35,13 +34,7 @@ public sealed interface PlayerCommand permits
             implements PlayerCommand {
     }
 
-    record BuildRockWeapons(int buildingId, int numWeapons, boolean infinite) implements PlayerCommand {
-    }
-
-    record BuildIronWeapons(int buildingId, int numWeapons, boolean infinite) implements PlayerCommand {
-    }
-
-    record BuildRubberWeapons(int buildingId, int numWeapons, boolean infinite) implements PlayerCommand {
+    record BuildWeapons(int buildingId, WeaponTier tier, int numWeapons, boolean infinite) implements PlayerCommand {
     }
 
     record DoMagic(int chieftainId, MagicType magic) implements PlayerCommand {
@@ -61,11 +54,11 @@ public sealed interface PlayerCommand permits
             if (this == obj) {
                 return true;
             }
-            return obj instanceof PlaceBuilding other
-                    && gridX == other.gridX
-                    && gridY == other.gridY
-                    && templateType == other.templateType
-                    && Arrays.equals(selectionIds, other.selectionIds);
+            return obj instanceof PlaceBuilding(int[] ids, BuildingType type, int x, int y)
+                    && gridX == x
+                    && gridY == y
+                    && templateType == type
+                    && Arrays.equals(selectionIds, ids);
         }
 
         @Override

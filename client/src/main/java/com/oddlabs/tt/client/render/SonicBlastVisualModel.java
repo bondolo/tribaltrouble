@@ -12,6 +12,8 @@ import com.oddlabs.tt.simulation.model.weapon.SonicBlast;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * {@link VisualModel} implementation for sonic blasts managing expanding shockwaves and sound effects.
  */
@@ -26,9 +28,9 @@ public final class SonicBlastVisualModel extends AbstractVisualModel implements 
         super(blast);
         this.blast = blast;
         this.audio = audio;
-        World world = blast.getWorld();
         this.lur = audio.newAudio(blast.getPositionX(), blast.getPositionY(), blast.getPositionZ(),
-                AudioRegistry.SONIC_BLAST_LUR[world.getRandom().nextInt(AudioRegistry.SONIC_BLAST_LUR.length)]);
+                AudioRegistry.SONIC_BLAST_LUR[ThreadLocalRandom.current().nextInt(
+                        AudioRegistry.SONIC_BLAST_LUR.length)]);
         this.rumble = audio.newAudio(blast.getPositionX(), blast.getPositionY(), blast.getPositionZ(),
                 AudioRegistry.SONIC_BLAST_RUMBLE);
         triggerBlast();

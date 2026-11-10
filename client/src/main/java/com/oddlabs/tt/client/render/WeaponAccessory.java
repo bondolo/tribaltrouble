@@ -6,7 +6,6 @@ import com.oddlabs.tt.engine.render.ModelState;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.SpriteList;
 import com.oddlabs.tt.engine.render.StaticAccessory;
-import com.oddlabs.tt.simulation.behaviour.AttackBehaviour;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Selectable;
@@ -16,7 +15,6 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -58,18 +56,18 @@ final class WeaponAccessory implements StaticAccessory {
     private static final float SPEAR_SPAWN_OFFSET_Z = 1.90f;
     private static final float SPEAR_EFFECTIVE_GRAVITY = 3.0f * 9.82f * 1.05f * 1.05f;
 
-    private final @NonNull Unit unit;
-    private final @NonNull UnitVisualModel visualModel;
+    private final Unit unit;
+    private final UnitVisualModel visualModel;
     private final boolean isViking;
     private final Matrix4f socketTransform = new Matrix4f();
     private final Matrix4f adjustedTransform = new Matrix4f();
-    private final @NonNull Matrix4fc localTransform;
+    private final Matrix4fc localTransform;
     private final @Nullable Matrix4fc handLocalTransform;
 
     private int socketBoneIndex = -1;
     private int handBoneIndex = -1;
 
-    WeaponAccessory(@NonNull Unit unit, @NonNull UnitVisualModel visualModel) {
+    WeaponAccessory(Unit unit, UnitVisualModel visualModel) {
         this.unit = unit;
         this.visualModel = visualModel;
         Race race = unit.getOwner().getPlayerInfo().race();
@@ -98,12 +96,12 @@ final class WeaponAccessory implements StaticAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(Model parent, CameraState camera) {
         if (unit.isDead()) {
             return false;
         }
-        if (unit.getCurrentBehaviour() instanceof AttackBehaviour attackBehaviour) {
-            return !attackBehaviour.isReleased();
+        if (unit.getAttackTarget() != null) {
+            return !unit.isAttackWeaponReleased();
         }
         if (unit.getAnimation() == Unit.Animation.THROWING.ordinal()) {
             return unit.getAnimationTicks() < unit.getWeaponFactory().getReleaseRatio();
@@ -124,8 +122,8 @@ final class WeaponAccessory implements StaticAccessory {
     }
 
     private float computeSpearTargetPitch() {
-        if (unit.getCurrentBehaviour() instanceof AttackBehaviour attackBehaviour) {
-            Selectable<?> target = attackBehaviour.getTarget();
+        Selectable<?> target = unit.getAttackTarget();
+        if (target != null) {
             float startX = unit.getPositionX() + SPEAR_SPAWN_OFFSET_X * unit.getDirectionX()
                     - SPEAR_SPAWN_OFFSET_Y * unit.getDirectionY();
             float startY = unit.getPositionY() + SPEAR_SPAWN_OFFSET_X * unit.getDirectionY()
@@ -145,7 +143,7 @@ final class WeaponAccessory implements StaticAccessory {
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull ModelState<?> parentState) {
+    public void getRelativeTransform(Matrix4f dest, ModelState<?> parentState) {
         SpriteList spriteList = parentState.getSpriteList();
         if (spriteList == null) {
             return;

@@ -9,6 +9,7 @@ import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.BuildingType;
 
 import com.oddlabs.tt.simulation.model.MagicType;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 
 import java.util.List;
 
@@ -18,11 +19,7 @@ public interface PlayerInterface {
 
     void createHarvesters(Building building, int num_tree, int num_rock, int num_iron, int num_rubber);
 
-    void buildRockWeapons(Building building, int num_weapons, boolean infinite);
-
-    void buildIronWeapons(Building building, int num_weapons, boolean infinite);
-
-    void buildRubberWeapons(Building building, int num_weapons, boolean infinite);
+    void buildWeapons(Building building, WeaponTier tier, int num_weapons, boolean infinite);
 
     void doMagic(Unit chieftain, MagicType magic);
 

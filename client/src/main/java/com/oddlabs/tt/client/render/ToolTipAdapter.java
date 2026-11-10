@@ -8,13 +8,12 @@ import com.oddlabs.tt.client.gui.GUIIcons;
 import com.oddlabs.tt.gui.ToolTipBox;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.EntityActivity;
 import com.oddlabs.tt.simulation.model.ModelToolTip;
 import com.oddlabs.tt.simulation.model.SceneryModel;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Supply;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.behaviour.Controller;
-import com.oddlabs.tt.simulation.behaviour.GatherController;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.gui.ToolTip;
 
@@ -82,12 +81,14 @@ public final class ToolTipAdapter implements ToolTip {
         visitSelectable(tool_tip, unit);
         String name = unit.getName();
         tool_tip.append(Objects.requireNonNullElseGet(name, () -> unit.getTemplate().getName()));
-        Controller c = unit.getPrimaryController();
         if (unit.getAbilities().hasAbilities(Abilities.MAGIC)) {
             var health = (float) unit.getHitPoints() / unit.getTemplate().getMaxHitPoints();
             tool_tip.append(List.of(icons.getWatch(health)));
-        } else if (unit.getOwner() == local_player && c instanceof GatherController<?> gc) {
-            tool_tip.append(icons.getToolTipIcon(gc.getSupplyType()));
+        } else if (unit.getOwner() == local_player && unit.getActivity() == EntityActivity.GATHERING) {
+            var supplyType = unit.getGatheringSupplyType();
+            if (supplyType != null) {
+                tool_tip.append(icons.getToolTipIcon(supplyType));
+            }
         }
     }
 }

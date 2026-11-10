@@ -64,4 +64,8 @@ public interface ModelState<M extends Model> {
     default @Nullable SpriteList getSpriteList() {
         return null;
     }
+
+    default float getInterpolationAlpha() {
+        return 1.0f;
+    }
 }
