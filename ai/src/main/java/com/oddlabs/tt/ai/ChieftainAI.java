@@ -13,10 +13,15 @@ import com.oddlabs.tt.simulation.player.PlayerInterface;
  * Base decision-making capabilities and utility computations for player chieftains.
  */
 public abstract sealed class ChieftainAI permits NativeChieftainAI, VikingChieftainAI {
+    private static final class ChieftainAIHolder {
+        private static final ChieftainAI VIKING_AI = new VikingChieftainAI();
+        private static final ChieftainAI NATIVE_AI = new NativeChieftainAI();
+    }
+
     public static ChieftainAI forRace(Race race) {
         return switch (race) {
-            case VIKINGS -> new VikingChieftainAI();
-            case NATIVES -> new NativeChieftainAI();
+            case VIKINGS -> ChieftainAIHolder.VIKING_AI;
+            case NATIVES -> ChieftainAIHolder.NATIVE_AI;
         };
     }
 

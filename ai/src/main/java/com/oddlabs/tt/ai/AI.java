@@ -3,22 +3,17 @@ package com.oddlabs.tt.ai;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.simulation.SimulationConfig;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.BuildProductionContainer;
 import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Selectable;
-import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.behaviour.Controller;
-import com.oddlabs.tt.simulation.behaviour.DefendController;
-import com.oddlabs.tt.simulation.behaviour.GatherController;
-import com.oddlabs.tt.simulation.behaviour.IdleController;
-import com.oddlabs.tt.simulation.behaviour.NullController;
-import com.oddlabs.tt.simulation.behaviour.PlaceBuildingController;
-import com.oddlabs.tt.simulation.behaviour.WalkController;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
@@ -40,6 +35,23 @@ public abstract class AI {
 
     public static void setRunAI(boolean run) {
         run_ai = run;
+    }
+
+    public static @Nullable AI create(Player player, AIDifficulty difficulty) {
+        return switch (difficulty) {
+            case NORMAL -> new AdvancedAI(player, Difficulty.NORMAL);
+            case HARD -> new AdvancedAI(player, Difficulty.HARD);
+            case EASY -> new AdvancedAI(player, Difficulty.EASY);
+            case BATTLE_TUTORIAL, PASSIVE_CAMPAIGN ->
+                new PassiveAI(player, true);
+            case NEUTRAL_CAMPAIGN ->
+                new PassiveAI(player, false);
+            case TOWER_TUTORIAL, CHIEFTAIN_TUTORIAL, NONE -> null;
+        };
+    }
+
+    public static @Nullable AI create(Player player, int slotDifficulty) {
+        return create(player, AIDifficulty.fromValue(slotDifficulty));
     }
 
     private final Player owner;
@@ -99,52 +111,53 @@ public abstract class AI {
         defendingUnits.clear();
 
         for (Selectable<?> s : owner.getUnits().getSet()) {
-            Controller controller = s.getPrimaryController();
-            switch (controller) {
-                case IdleController _ -> {
-                    if (s.getAbilities().hasAbilities(Abilities.BUILD)) {
-                        idlePeons.add(s);
-                    } else if (s.getAbilities().hasAbilities(Abilities.MAGIC)) {
-                        idleChieftains.add(s);
-                    } else if (s.getAbilities().hasAbilities(Abilities.ATTACK)) {
-                        idleWarriors.add(s);
-                    }
-                }
-                case GatherController<?> gc -> {
-                    SupplyType supply_type = gc.getSupplyType();
-                    var gatherPeons = switch (supply_type) {
-                        case WOOD -> gatherTreePeons;
-                        case IRON -> gatherIronPeons;
-                        case ROCK -> gatherRockPeons;
-                        case RUBBER -> gatherRubberPeons;
-                    };
-                    gatherPeons.add(s);
-                }
-                case NullController _ -> {
-                    Building b = (Building) s;
+            if (s instanceof Building b) {
+                if (b.getBuildStage() != Building.BuildStage.BUILT) {
+                    constructionSites.add(b);
+                } else if (b.isOperating()) {
                     if (b.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
                         armories.add(b);
                     } else if (b.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
                         quarters.add(b);
                     } else if (b.getAbilities().hasAbilities(Abilities.ATTACK)) {
                         towers.add(b);
-                    } else {
-                        constructionSites.add(b);
                     }
                 }
-                case PlaceBuildingController _ -> placeBuildingPeons.add(s);
-                case DefendController _ -> defendingUnits.add(s);
-                default -> {
+                continue;
+            }
+            if (s.isIdle()) {
+                if (s.getAbilities().hasAbilities(Abilities.BUILD)) {
+                    idlePeons.add(s);
+                } else if (s.getAbilities().hasAbilities(Abilities.MAGIC)) {
+                    idleChieftains.add(s);
+                } else if (s.getAbilities().hasAbilities(Abilities.ATTACK)) {
+                    idleWarriors.add(s);
                 }
+            } else if (s.getGatheringSupplyType() != null) {
+                var gatherPeons = switch (s.getGatheringSupplyType()) {
+                    case WOOD -> gatherTreePeons;
+                    case IRON -> gatherIronPeons;
+                    case ROCK -> gatherRockPeons;
+                    case RUBBER -> gatherRubberPeons;
+                };
+                gatherPeons.add(s);
+            } else if (s.isPlacingBuilding()) {
+                placeBuildingPeons.add(s);
+            } else if (s.isDefending()) {
+                defendingUnits.add(s);
             }
         }
 
         if (!armories.isEmpty()) {
             armory_under_construction = false;
             Building armoryBuilding = armories.getFirst();
-            owner.buildRockWeapons(armoryBuilding, BuildProductionContainer.INFINITE_LIMIT, true);
-            owner.buildIronWeapons(armoryBuilding, BuildProductionContainer.INFINITE_LIMIT, true);
-            owner.buildRubberWeapons(armoryBuilding, BuildProductionContainer.INFINITE_LIMIT, true);
+            PlayerInterface playerInterface = getPlayerInterface();
+            playerInterface.buildWeapons(armoryBuilding, WeaponTier.ROCK, BuildProductionContainer.INFINITE_LIMIT,
+                    true);
+            playerInterface.buildWeapons(armoryBuilding, WeaponTier.IRON, BuildProductionContainer.INFINITE_LIMIT,
+                    true);
+            playerInterface.buildWeapons(armoryBuilding, WeaponTier.RUBBER, BuildProductionContainer.INFINITE_LIMIT,
+                    true);
         }
         if (!quarters.isEmpty()) {
             quarters_under_construction = false;
@@ -274,7 +287,7 @@ public abstract class AI {
         PlayerInterface playerInterface = owner.getPlayerInterface();
         for (Selectable<?> s : owner.getUnits().getSet()) {
             if (s instanceof Unit unit && unit.getAbilities().hasAbilities(Abilities.THROW)) {
-                if (!(unit.getPrimaryController() instanceof WalkController wc && wc.isAgressive())) {
+                if (!unit.isAggressiveWalking()) {
                     playerInterface.setLandscapeTarget(unit, target.getGridX(), target.getGridY(),
                             Action.ATTACK, true);
                     ordered++;
