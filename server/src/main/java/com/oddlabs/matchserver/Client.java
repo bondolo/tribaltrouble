@@ -168,7 +168,7 @@ public final class Client implements MatchmakingServerInterface, ConnectionInter
         client_interface.updateProfile(active_profile);
     }
 
-    public Profile getProfile() {
+    public @Nullable Profile getProfile() {
         return active_profile;
     }
 
@@ -505,7 +505,7 @@ public final class Client implements MatchmakingServerInterface, ConnectionInter
     }
 
     @Override
-    public void registerGame(Game game) {
+    public void registerGame(@Nullable Game game) {
         if (game != null && game.isValid() && getProfile() != null) {
             current_game = game;
             game_hosts.add(this);

@@ -3,6 +3,7 @@ package com.oddlabs.tt.headless;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 
 import com.oddlabs.net.TickTimeManager;
@@ -68,9 +69,12 @@ public record HeadlessMatchConfig(
     public record PlayerConfig(
                                int team,
                                Race race,
-                               int aiDifficulty,
+                               AIDifficulty aiDifficulty,
                                String name,
                                UnitInfo unitInfo) {
+        public PlayerConfig(int team, Race race, int aiDifficulty, String name, UnitInfo unitInfo) {
+            this(team, race, AIDifficulty.fromValue(aiDifficulty), name, unitInfo);
+        }
     }
 
     public HeadlessMatchConfig {

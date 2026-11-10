@@ -4,17 +4,13 @@ import com.oddlabs.tt.net.HeadlessSimulationInstance;
 import com.oddlabs.tt.procedural.landscape.IslandGenerator;
 import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.ai.AI;
-import com.oddlabs.tt.ai.AdvancedAI;
-import com.oddlabs.tt.ai.PassiveAI;
 import com.oddlabs.tt.simulation.player.CommandAdapterPlayerInterface;
 import com.oddlabs.tt.simulation.player.DelegatingPlayerInterface;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerConfig;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -22,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
 
 /**
  * Runs a single-world, deterministic validation match matching legacy game execution.
@@ -43,41 +38,35 @@ public final class LegacyValidationMatchRunner {
                 0f
         );
 
-        final Player[] playerRefs = new Player[config.players().size()];
-        List<PlayerConfig> playerConfigs = IntStream.range(0, config.players().size())
-                .mapToObj(i -> {
-                    var p = config.players().get(i);
-                    var info = new PlayerInfo(p.team(), p.race(), p.name());
-                    var color = HeadlessSimulationInstance.DEFAULT_PLAYER_COLORS[p.team()
-                            % HeadlessSimulationInstance.DEFAULT_PLAYER_COLORS.length];
-                    PlayerInterface iface = reifiedDispatch
-                            ? new DelegatingPlayerInterface(() -> new CommandAdapterPlayerInterface(
-                                    playerRefs[i]::execute))
-                            : null;
-                    return new PlayerConfig(info, color, iface);
-                })
-                .toList();
+        int numMatchPlayers = config.players().size();
+        final Player[] playerRefs = new Player[numMatchPlayers];
+        List<PlayerConfig> playerConfigs = new ArrayList<>(numMatchPlayers);
+        for (int i = 0; i < numMatchPlayers; i++) {
+            var p = config.players().get(i);
+            var info = new PlayerInfo(p.team(), p.race(), p.name());
+            var color = HeadlessSimulationInstance.DEFAULT_PLAYER_COLORS[p.team()
+                    % HeadlessSimulationInstance.DEFAULT_PLAYER_COLORS.length];
+            int playerIndex = i;
+            PlayerInterface iface = reifiedDispatch
+                    ? new DelegatingPlayerInterface(() -> new CommandAdapterPlayerInterface(
+                            playerRefs[playerIndex]::execute))
+                    : null;
+            playerConfigs.add(new PlayerConfig(info, color, iface));
+        }
 
         World world = new World(config.worldParameters(), landscape, playerConfigs);
         for (int i = 0; i < world.getPlayers().size(); i++) {
             playerRefs[i] = world.getPlayers().get(i);
         }
 
-        for (int i = 0; i < config.players().size(); i++) {
+        for (int i = 0; i < numMatchPlayers; i++) {
             var pConfig = config.players().get(i);
             Player player = world.getPlayers().get(i);
 
-            AI ai = switch (pConfig.aiDifficulty()) {
-                case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, Difficulty.NORMAL);
-                case PlayerSlot.AI_HARD -> new AdvancedAI(player, Difficulty.HARD);
-                case PlayerSlot.AI_EASY -> new AdvancedAI(player, Difficulty.EASY);
-                case PlayerSlot.AI_BATTLE_TUTORIAL, PlayerSlot.AI_PASSIVE_CAMPAIGN ->
-                    new PassiveAI(player, true);
-                case PlayerSlot.AI_NEUTRAL_CAMPAIGN ->
-                    new PassiveAI(player, false);
-                default -> throw new IllegalArgumentException("Unsupported difficulty: " + pConfig.aiDifficulty());
-            };
-            world.addTickListener(ai::tick);
+            AI ai = AI.create(player, pConfig.aiDifficulty());
+            if (ai != null) {
+                world.addTickListener(ai::tick);
+            }
 
             player.initializeStartingArmy(
                     landscape.startingLocations().get(i),
@@ -111,20 +100,10 @@ public final class LegacyValidationMatchRunner {
                 int idx = 0;
                 for (Player p : world.getPlayers()) {
                     for (com.oddlabs.tt.simulation.model.Selectable<?> s : p.getUnits().getSet()) {
-                        String tgtStr = "";
-                        if (s.getCurrentController() instanceof com.oddlabs.tt.simulation.behaviour.WalkController wc) {
-                            com.oddlabs.tt.simulation.model.Target tgt = wc.getTarget();
-                            tgtStr = " tgt=(" + tgt.getPositionX() + "," + tgt.getPositionY() + ") grid=(" + tgt
-                                    .getGridX() + "," + tgt.getGridY() + ")";
-                        }
-                        System.out.printf("MODERN UNIT t=%d i=%d p=%s pos=(%.6f,%.6f) grid=(%d,%d) beh=%s ctrl=%s%s%n",
+                        System.out.printf("MODERN UNIT t=%d i=%d p=%s pos=(%.6f,%.6f) grid=(%d,%d) act=%s%n",
                                 currentTick, idx++, p.getPlayerInfo().name(), s.getPositionX(), s.getPositionY(),
                                 s.getGridX(), s.getGridY(),
-                                s.getCurrentBehaviour() != null ? s.getCurrentBehaviour().getClass().getSimpleName()
-                                        : "null",
-                                s.getCurrentController() != null ? s.getCurrentController().getClass().getSimpleName()
-                                        : "null",
-                                tgtStr);
+                                s.getActivity());
                     }
                 }
             }
@@ -153,7 +132,7 @@ public final class LegacyValidationMatchRunner {
             if (!multipleTeamsAlive && hasFirstTeam) {
                 int winningTeam = firstAliveTeam;
                 logger.info(() -> "Legacy validation victory achieved by team " + winningTeam + " at tick " + tick);
-                List<Integer> survivingPlayers = new ArrayList<>();
+                List<Integer> survivingPlayers = new ArrayList<>(numPlayers);
                 for (int i = 0; i < numPlayers; i++) {
                     if (players.get(i).isAlive()) {
                         survivingPlayers.add(i);
@@ -181,7 +160,7 @@ public final class LegacyValidationMatchRunner {
         }
 
         logger.info(() -> "Match reached maximum tick limit " + maxTicks);
-        List<Integer> survivingPlayers = new ArrayList<>();
+        List<Integer> survivingPlayers = new ArrayList<>(numPlayers);
         for (int i = 0; i < numPlayers; i++) {
             if (players.get(i).isAlive()) {
                 survivingPlayers.add(i);

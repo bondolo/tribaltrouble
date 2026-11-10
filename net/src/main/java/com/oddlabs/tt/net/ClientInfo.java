@@ -5,17 +5,17 @@ import com.oddlabs.net.ARMIInterfaceMethods;
 import com.oddlabs.net.AbstractConnection;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.IllegalARMIEventException;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 /** Server-side context representing a connected client session. */
 public final class ClientInfo implements GameServerInterface, ConnectionInterface {
     private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(GameServerInterface.class);
     private final Server server;
-    private final Serializable player_slot;
+    private final PlayerSlot player_slot;
 
-    public ClientInfo(Server server, Serializable player_slot) {
+    public ClientInfo(Server server, PlayerSlot player_slot) {
         this.player_slot = player_slot;
         this.server = server;
     }
@@ -42,7 +42,7 @@ public final class ClientInfo implements GameServerInterface, ConnectionInterfac
     public void connected(AbstractConnection conn) {
     }
 
-    public Serializable getPlayerSlot() {
+    public PlayerSlot getPlayerSlot() {
         return player_slot;
     }
 

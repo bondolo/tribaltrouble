@@ -18,6 +18,7 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitType;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerConfig;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
@@ -174,15 +175,7 @@ final class GameArgumentSerializationTest {
         }
 
         @Override
-        public void buildRockWeapons(Building building, int num_weapons, boolean infinite) {
-        }
-
-        @Override
-        public void buildIronWeapons(Building building, int num_weapons, boolean infinite) {
-        }
-
-        @Override
-        public void buildRubberWeapons(Building building, int num_weapons, boolean infinite) {
+        public void buildWeapons(Building building, WeaponTier tier, int num_weapons, boolean infinite) {
         }
 
         @Override

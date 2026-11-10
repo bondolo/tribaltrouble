@@ -24,7 +24,6 @@ import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
-import com.oddlabs.tt.simulation.player.PlayerSlotHandler;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 
 /** Network client endpoint managing connection negotiation and game startup. */
@@ -39,7 +38,6 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
     private final GameServerInterface gameserver_interface;
     private final UnitInfo[] unit_infos;
     private final @Nullable LoadCallbackFactory starter_factory;
-    private final PlayerSlotHandler slot_handler;
     private final @Nullable ChatHub chat_hub;
     private final NetworkSelector network;
     private final @Nullable Runnable cleanup_action;
@@ -53,8 +51,7 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
 
     public Client(@Nullable Runnable cleanup_action, NetworkSelector network,
             MatchmakingClient matchmaking_client, @Nullable ChatHub chat_hub, int host_id,
-            @Nullable LoadCallbackFactory starter_factory, PlayerSlotHandler slot_handler) {
-        this.slot_handler = slot_handler;
+            @Nullable LoadCallbackFactory starter_factory) {
         this.cleanup_action = cleanup_action;
         this.network = network;
         this.chat_hub = chat_hub;
@@ -91,7 +88,8 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
     @Override
     public void chat(int player_slot, @Nullable String chat) {
         if (chat != null && player_slot >= 0 && player_slot < player_slots.length && chat_hub != null) {
-            String name = slot_handler.getPlayerName(player_slots[player_slot]);
+            PlayerSlot slot = player_slots[player_slot];
+            String name = slot.getInfo() != null ? slot.getInfo().name() : "Player " + slot.getSlot();
             chat_hub.chat(new ChatMessage(name, chat, ChatMessage.Type.GAME_MENU));
         }
     }

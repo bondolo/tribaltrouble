@@ -1,5 +1,7 @@
 package com.oddlabs.tt.simulation.model;
 
+import org.jspecify.annotations.Nullable;
+
 
 /**
  * Playable races in the game.
@@ -36,6 +38,20 @@ public enum Race {
             case 0 -> NATIVES;
             case 1 -> VIKINGS;
             default -> throw new IllegalArgumentException("Unknown race value: " + value);
+        };
+    }
+
+    /**
+     * Resolves the {@link Race} associated with the given legacy integer value, or {@code null} if unrecognized.
+     *
+     * @param value legacy integer value
+     * @return the corresponding {@link Race}, or {@code null} if unrecognized
+     */
+    public static @Nullable Race fromValueOrNull(int value) {
+        return switch (value) {
+            case 0 -> NATIVES;
+            case 1 -> VIKINGS;
+            default -> null;
         };
     }
 }

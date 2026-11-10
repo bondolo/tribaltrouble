@@ -341,8 +341,8 @@ class HeadlessMultiplayerHarnessTest {
 
         List<UnitInfo> unitInfos = List.of(
                 new UnitInfo(false, false, 0, false, 5, 0, 0, 0),
-                new UnitInfo(false, false, 0, false, 5, 0, 0, 0),
-                new UnitInfo(false, false, 0, false, 5, 0, 0, 0)
+                new UnitInfo(true, true, 0, false, 5, 0, 0, 0),
+                new UnitInfo(true, true, 0, false, 5, 0, 0, 0)
         );
 
         try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.create(
@@ -382,8 +382,8 @@ class HeadlessMultiplayerHarnessTest {
             // Dispatch a command through the scripted human peer's interface over the network
             humanPeer.getPlayerInterface().setPreferredGamespeed(Game.GAMESPEED_NORMAL);
 
-            // Continue lockstep ticking past tick 80
-            harness.runUntilTick(80, Duration.ofSeconds(10));
+            // Continue lockstep ticking past tick 180
+            harness.runUntilTick(180, Duration.ofSeconds(15));
             harness.verifyChecksums();
             assertEquals(humanPeer.getChecksum(), aiPeer.getChecksum(),
                     "Checksums must match across scripted human peer, network AI peer, and local lockstep AI");

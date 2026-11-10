@@ -7,6 +7,7 @@ import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.SlotType;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 
 import java.io.IOException;
@@ -41,7 +42,7 @@ public final class HeadlessMatchRunner {
         for (int i = 0; i < numPlayers; i++) {
             HeadlessMatchConfig.PlayerConfig playerConfig = config.players().get(i);
             PlayerSlot slot = new PlayerSlot(i);
-            slot.setType(PlayerSlot.AI);
+            slot.setType(SlotType.AI);
             slot.setAIDifficulty(playerConfig.aiDifficulty());
             slot.setReady(true);
             slot.setInfo(new PlayerInfo(playerConfig.team(), playerConfig.race(), playerConfig.name()));
