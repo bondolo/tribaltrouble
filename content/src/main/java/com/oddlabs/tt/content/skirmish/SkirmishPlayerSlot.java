@@ -1,6 +1,7 @@
 package com.oddlabs.tt.content.skirmish;
 
 import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 
 /**
  * Represents a player slot configuration in a skirmish scenario match.
@@ -10,6 +11,6 @@ public record SkirmishPlayerSlot(
                                  boolean isHuman,
                                  Race race,
                                  int team,
-                                 int aiDifficulty
+                                 AIDifficulty aiDifficulty
 ) {
 }

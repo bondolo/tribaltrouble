@@ -16,7 +16,9 @@ import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.SlotType;
 
 import java.util.List;
 import java.util.ResourceBundle;
@@ -73,8 +75,8 @@ public final class ConnectingForm extends Form implements ConfigurationListener 
         int team = player_slot;
         if (game.isRated())
             team = player_slot % 2;
-        client.getServerInterface().setPlayerSlot(player_slot, PlayerSlot.HUMAN, race.getValue(), team, false,
-                PlayerSlot.AI_NONE);
+        client.getServerInterface().setPlayerSlot(player_slot, SlotType.HUMAN, race, team, false,
+                AIDifficulty.NONE);
         remove();
         owner.createGameMenu(game_network, game, generator, player_slot);
     }

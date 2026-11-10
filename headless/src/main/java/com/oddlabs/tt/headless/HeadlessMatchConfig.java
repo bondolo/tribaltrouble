@@ -72,9 +72,6 @@ public record HeadlessMatchConfig(
                                AIDifficulty aiDifficulty,
                                String name,
                                UnitInfo unitInfo) {
-        public PlayerConfig(int team, Race race, int aiDifficulty, String name, UnitInfo unitInfo) {
-            this(team, race, AIDifficulty.fromValue(aiDifficulty), name, unitInfo);
-        }
     }
 
     public HeadlessMatchConfig {

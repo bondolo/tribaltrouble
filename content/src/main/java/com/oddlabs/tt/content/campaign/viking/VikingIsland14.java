@@ -16,8 +16,9 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.SlotType;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.client.trigger.VictoryTrigger;
@@ -49,38 +50,38 @@ final class VikingIsland14 extends Island {
         GameNetwork game_network = startNewGame(gui_root, 1024, Terrain.NATIVE, .75f, .65f, .85f,
                 25, 14, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
-                PlayerSlot.HUMAN,
-                Race.VIKINGS.getValue(),
+                SlotType.HUMAN,
+                Race.VIKINGS,
                 0,
                 true,
-                PlayerSlot.AI_NONE);
+                AIDifficulty.NONE);
         game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
-        int ai_difficulty;
+        AIDifficulty ai_difficulty;
         int ai_peons = switch (getCampaign().getState().getDifficulty()) {
             case Difficulty.EASY -> {
-                ai_difficulty = PlayerSlot.AI_NORMAL;
+                ai_difficulty = AIDifficulty.NORMAL;
                 yield 1;
             }
             case Difficulty.NORMAL -> {
-                ai_difficulty = PlayerSlot.AI_HARD;
+                ai_difficulty = AIDifficulty.HARD;
                 yield 5;
             }
             case Difficulty.HARD -> {
-                ai_difficulty = PlayerSlot.AI_HARD;
+                ai_difficulty = AIDifficulty.HARD;
                 yield 12;
             }
             default -> throw new IllegalArgumentException();
         };
         game_network.getClient().getServerInterface().setPlayerSlot(2,
-                PlayerSlot.AI,
-                Race.NATIVES.getValue(),
+                SlotType.AI,
+                Race.NATIVES,
                 1,
                 true,
-                PlayerSlot.AI_HARD);
+                AIDifficulty.HARD);
         game_network.getClient().setUnitInfo(2, new UnitInfo(true, true, 0, false, ai_peons, 0, 0, 0));
         game_network.getClient().getServerInterface().setPlayerSlot(3,
-                PlayerSlot.AI,
-                Race.NATIVES.getValue(),
+                SlotType.AI,
+                Race.NATIVES,
                 1,
                 true,
                 ai_difficulty);

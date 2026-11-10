@@ -234,10 +234,8 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
                 if ((player.getType() != SlotType.OPEN && player.getType() != SlotType.HUMAN) || race_changed
                         || team_changed || ready_changed) {
                     if (player_slot == local_player_slot) {
-                        int new_type = PlayerSlot.HUMAN;
-                        game_network.getClient().getServerInterface().setPlayerSlot(player_slot, new_type, race
-                                .getValue(),
-                                team, ready, PlayerSlot.AI_NONE);
+                        game_network.getClient().getServerInterface().setPlayerSlot(player_slot, SlotType.HUMAN, race,
+                                team, ready, AIDifficulty.NONE);
                     } else {
                         game_network.getClient().getServerInterface().resetSlotState(player_slot, true);
                     }
@@ -260,9 +258,8 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
                         team = player_slot;
                         race = Race.values()[ThreadLocalRandom.current().nextInt(Race.values().length)];
                     }
-                    game_network.getClient().getServerInterface().setPlayerSlot(player_slot, PlayerSlot.AI, race
-                            .getValue(),
-                            team, true, option.getAIDifficulty().getValue());
+                    game_network.getClient().getServerInterface().setPlayerSlot(player_slot, SlotType.AI, race,
+                            team, true, option.getAIDifficulty());
                 }
             }
         }

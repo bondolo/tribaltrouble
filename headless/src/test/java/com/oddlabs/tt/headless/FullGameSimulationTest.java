@@ -5,9 +5,9 @@ import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Terrain;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.net.JitterConfig;
 import com.oddlabs.net.JitterTimeManager;
@@ -50,8 +50,8 @@ class FullGameSimulationTest {
         UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
 
         List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, PlayerSlot.AI_HARD, "VikingArmy", battleUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, PlayerSlot.AI_HARD, "NativeArmy", battleUnits)
+                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.HARD, "VikingArmy", battleUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.HARD, "NativeArmy", battleUnits)
         );
 
         HeadlessMatchConfig config = new HeadlessMatchConfig(
@@ -96,8 +96,8 @@ class FullGameSimulationTest {
         UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
 
         List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, PlayerSlot.AI_HARD, "VikingArmy", battleUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, PlayerSlot.AI_HARD, "NativeArmy", battleUnits)
+                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.HARD, "VikingArmy", battleUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.HARD, "NativeArmy", battleUnits)
         );
 
         TickTimeManager baseClock = new TickTimeManager();
@@ -147,10 +147,10 @@ class FullGameSimulationTest {
         UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
 
         List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, PlayerSlot.AI_HARD, "Team0-Viking", battleUnits),
-                new HeadlessMatchConfig.PlayerConfig(0, Race.NATIVES, PlayerSlot.AI_HARD, "Team0-Native", battleUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.VIKINGS, PlayerSlot.AI_HARD, "Team1-Viking", battleUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, PlayerSlot.AI_HARD, "Team1-Native", battleUnits)
+                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.HARD, "Team0-Viking", battleUnits),
+                new HeadlessMatchConfig.PlayerConfig(0, Race.NATIVES, AIDifficulty.HARD, "Team0-Native", battleUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.VIKINGS, AIDifficulty.HARD, "Team1-Viking", battleUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.HARD, "Team1-Native", battleUnits)
         );
 
         HeadlessMatchConfig config = new HeadlessMatchConfig(
@@ -196,8 +196,8 @@ class FullGameSimulationTest {
         UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
 
         List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.NATIVES, PlayerSlot.AI_HARD, "Native-Army", battleUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.VIKINGS, PlayerSlot.AI_HARD, "Viking-Army", battleUnits)
+                new HeadlessMatchConfig.PlayerConfig(0, Race.NATIVES, AIDifficulty.HARD, "Native-Army", battleUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.VIKINGS, AIDifficulty.HARD, "Viking-Army", battleUnits)
         );
 
         HeadlessMatchConfig config = new HeadlessMatchConfig(
@@ -274,12 +274,12 @@ class FullGameSimulationTest {
         UnitInfo eliminatedUnits = new UnitInfo(false, false, 0, false, 0, 0, 0, 0);
 
         List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, PlayerSlot.AI_EASY, "Team0", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, PlayerSlot.AI_EASY, "Team1", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, PlayerSlot.AI_EASY, "Team2-Winner", activeUnits),
-                new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, PlayerSlot.AI_EASY, "Team3", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.EASY, "Team0", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.EASY, "Team1", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, AIDifficulty.EASY, "Team2-Winner", activeUnits),
+                new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, AIDifficulty.EASY, "Team3", eliminatedUnits),
                 new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES,
-                        PlayerSlot.AI_NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
+                        AIDifficulty.NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
         );
 
         HeadlessMatchConfig config = new HeadlessMatchConfig(
@@ -323,12 +323,12 @@ class FullGameSimulationTest {
         UnitInfo eliminatedUnits = new UnitInfo(false, false, 0, false, 0, 0, 0, 0);
 
         List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, PlayerSlot.AI_EASY, "Team0", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, PlayerSlot.AI_EASY, "Team1", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, PlayerSlot.AI_EASY, "Team2", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, PlayerSlot.AI_EASY, "Team3", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.EASY, "Team0", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.EASY, "Team1", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, AIDifficulty.EASY, "Team2", eliminatedUnits),
+                new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, AIDifficulty.EASY, "Team3", eliminatedUnits),
                 new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES,
-                        PlayerSlot.AI_NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
+                        AIDifficulty.NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
         );
 
         HeadlessMatchConfig config = new HeadlessMatchConfig(
@@ -370,14 +370,14 @@ class FullGameSimulationTest {
         UnitInfo eliminatedUnits = new UnitInfo(false, false, 0, false, 0, 0, 0, 0);
 
         List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, PlayerSlot.AI_EASY, "Team0-Alive", activeUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, PlayerSlot.AI_EASY, "Team1-Elim",
+                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.EASY, "Team0-Alive", activeUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.EASY, "Team1-Elim",
                         eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, PlayerSlot.AI_EASY, "Team2-Alive", activeUnits),
-                new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, PlayerSlot.AI_EASY, "Team3-Elim",
+                new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, AIDifficulty.EASY, "Team2-Alive", activeUnits),
+                new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, AIDifficulty.EASY, "Team3-Elim",
                         eliminatedUnits),
                 new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES,
-                        PlayerSlot.AI_NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
+                        AIDifficulty.NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
         );
 
         HeadlessMatchConfig config = new HeadlessMatchConfig(

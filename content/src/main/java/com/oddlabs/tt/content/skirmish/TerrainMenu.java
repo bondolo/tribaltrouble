@@ -44,8 +44,9 @@ import com.oddlabs.tt.simulation.model.Gamespeed;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.Terrain;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.SlotType;
 import org.jspecify.annotations.Nullable;
 
 import java.math.BigInteger;
@@ -70,38 +71,6 @@ public final class TerrainMenu extends Group {
     private static final int BUTTON_WIDTH = 100;
     private static final int SLIDER_MAX_VALUE = 10;
 
-    private enum SlotDifficultyOption {
-        CLOSED(0, PlayerSlot.AI_NONE),
-        EASY_AI(1, PlayerSlot.AI_EASY),
-        NORMAL_AI(2, PlayerSlot.AI_NORMAL),
-        HARD_AI(3, PlayerSlot.AI_HARD);
-
-        private final int index;
-        private final int aiDifficulty;
-
-        SlotDifficultyOption(int index, int aiDifficulty) {
-            this.index = index;
-            this.aiDifficulty = aiDifficulty;
-        }
-
-        int getIndex() {
-            return index;
-        }
-
-        int getAIDifficulty() {
-            return aiDifficulty;
-        }
-
-        static SlotDifficultyOption fromIndex(int index) {
-            for (SlotDifficultyOption option : values()) {
-                if (option.index == index) {
-                    return option;
-                }
-            }
-            throw new IllegalArgumentException("Unknown SlotDifficultyOption index: " + index);
-        }
-    }
-
     private static final ResourceBundle bundle = ResourceBundle.getBundle(TerrainMenu.class.getName());
 
     private static String i18n(String key, Object... args) {
@@ -120,7 +89,7 @@ public final class TerrainMenu extends Group {
     private final Slider slider_supplies;
     private final Label label_mapcode;
     private final HorizButton button_ok;
-    private final PulldownMenu<SlotDifficultyOption>[] difficulty_pulldown_menus;
+    private final PulldownMenu<AIDifficulty>[] difficulty_pulldown_menus;
     private final PulldownButton<Race>[] race_pulldown_buttons;
     private final PulldownMenu<Race>[] race_pulldown_menus;
     private final PulldownMenu<Integer>[] team_pulldown_menus;
@@ -312,7 +281,7 @@ public final class TerrainMenu extends Group {
         difficulty_pulldown_menus = new PulldownMenu[MatchmakingServerInterface.MAX_PLAYERS];
         race_pulldown_menus = new PulldownMenu[MatchmakingServerInterface.MAX_PLAYERS];
         team_pulldown_menus = new PulldownMenu[MatchmakingServerInterface.MAX_PLAYERS];
-        PulldownButton<SlotDifficultyOption>[] difficulty_pulldown_buttons
+        PulldownButton<AIDifficulty>[] difficulty_pulldown_buttons
                 = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
         race_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
         team_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
@@ -323,16 +292,16 @@ public final class TerrainMenu extends Group {
 
             if (i == 0) {
                 difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("human"),
-                        SlotDifficultyOption.CLOSED));
+                        AIDifficulty.NONE));
             } else {
                 difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("closed"),
-                        SlotDifficultyOption.CLOSED));
+                        AIDifficulty.NONE));
                 difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("easy_ai"),
-                        SlotDifficultyOption.EASY_AI));
+                        AIDifficulty.EASY));
                 difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("normal_ai"),
-                        SlotDifficultyOption.NORMAL_AI));
+                        AIDifficulty.NORMAL));
                 difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("hard_ai"),
-                        SlotDifficultyOption.HARD_AI));
+                        AIDifficulty.HARD));
             }
 
             difficulty_pulldown_buttons[i] = new PulldownButton<>(gui_root, difficulty_pulldown_menus[i], 0, 115);
@@ -373,9 +342,9 @@ public final class TerrainMenu extends Group {
                 team_pulldown_buttons[i].place(race_pulldown_buttons[i], RIGHT_MID);
                 final int idx = i;
                 difficulty_pulldown_menus[i].addItemChosenListener((menu, _) -> {
-                    SlotDifficultyOption option = menu.getChosenItem().map(PulldownItem::getAttachment).orElse(
-                            SlotDifficultyOption.CLOSED);
-                    if (option == SlotDifficultyOption.CLOSED) {
+                    AIDifficulty difficulty = menu.getChosenItem().map(PulldownItem::getAttachment).orElse(
+                            AIDifficulty.NONE);
+                    if (difficulty == AIDifficulty.NONE) {
                         labels_players[idx].setDisabled(true);
                         race_pulldown_buttons[idx].setDisabled(true);
                         team_pulldown_buttons[idx].setDisabled(true);
@@ -471,13 +440,13 @@ public final class TerrainMenu extends Group {
                 team_pulldown_menus[i].chooseItem(1);
             }
             if (i == 1) {
-                difficulty_pulldown_menus[i].chooseItem(SlotDifficultyOption.EASY_AI.getIndex());
+                difficulty_pulldown_menus[i].chooseItem(AIDifficulty.EASY.getValue());
                 Race player0_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(
                         Race.NATIVES);
                 Race other_race = (player0_race == Race.VIKINGS) ? Race.NATIVES : Race.VIKINGS;
                 race_pulldown_menus[i].chooseItem(other_race.ordinal());
             } else {
-                difficulty_pulldown_menus[i].chooseItem(SlotDifficultyOption.CLOSED.getIndex());
+                difficulty_pulldown_menus[i].chooseItem(AIDifficulty.NONE.getValue());
             }
         }
         pulldown_size.chooseItem(1);
@@ -495,12 +464,12 @@ public final class TerrainMenu extends Group {
 
         List<MapParameters.SlotSetting> otherSlots = new java.util.ArrayList<>();
         for (int i = 1; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
-            SlotDifficultyOption option = difficulty_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment)
-                    .orElse(SlotDifficultyOption.CLOSED);
+            AIDifficulty difficulty = difficulty_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment)
+                    .orElse(AIDifficulty.NONE);
             int race = race_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).map(Race::ordinal)
                     .orElse(0);
             int team = team_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-            otherSlots.add(new MapParameters.SlotSetting(option.getIndex(), race, team));
+            otherSlots.add(new MapParameters.SlotSetting(difficulty.getValue(), race, team));
         }
 
         MapParameters params = new MapParameters(
@@ -536,9 +505,9 @@ public final class TerrainMenu extends Group {
 
             team_pulldown_menus[i].chooseItem(setting.team());
             race_pulldown_menus[i].chooseItem(setting.race());
-            SlotDifficultyOption option = SlotDifficultyOption.fromIndex(setting.difficulty());
-            difficulty_pulldown_menus[i].chooseItem(option.getIndex());
-            if (option == SlotDifficultyOption.CLOSED) {
+            AIDifficulty difficulty = AIDifficulty.fromValue(setting.difficulty());
+            difficulty_pulldown_menus[i].chooseItem(difficulty.getValue());
+            if (difficulty == AIDifficulty.NONE) {
                 labels_players[i].setDisabled(true);
                 race_pulldown_buttons[i].setDisabled(true);
                 team_pulldown_buttons[i].setDisabled(true);
@@ -599,9 +568,9 @@ public final class TerrainMenu extends Group {
         }
     }
 
-    private boolean isChosen(PulldownMenu<SlotDifficultyOption> menu) {
-        return menu.getChosenItem().map(PulldownItem::getAttachment).orElse(SlotDifficultyOption.CLOSED)
-                != SlotDifficultyOption.CLOSED;
+    private boolean isChosen(PulldownMenu<AIDifficulty> menu) {
+        return menu.getChosenItem().map(PulldownItem::getAttachment).orElse(AIDifficulty.NONE)
+                != AIDifficulty.NONE;
     }
 
     private SkirmishSetup buildSkirmishSetup(Terrain terrain, int hills, int vegetation_amount,
@@ -609,15 +578,15 @@ public final class TerrainMenu extends Group {
         Race p0_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(Race.NATIVES);
         int p0_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
         var slots = new java.util.ArrayList<SkirmishPlayerSlot>();
-        slots.add(new SkirmishPlayerSlot(0, true, p0_race, p0_team, PlayerSlot.AI_NONE));
+        slots.add(new SkirmishPlayerSlot(0, true, p0_race, p0_team, AIDifficulty.NONE));
         for (int i = 1; i < race_pulldown_menus.length; i++) {
             if (isChosen(difficulty_pulldown_menus[i])) {
-                SlotDifficultyOption option = difficulty_pulldown_menus[i].getChosenItem().map(
-                        PulldownItem::getAttachment).orElse(SlotDifficultyOption.CLOSED);
+                AIDifficulty difficulty = difficulty_pulldown_menus[i].getChosenItem().map(
+                        PulldownItem::getAttachment).orElse(AIDifficulty.NONE);
                 Race current_race = race_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(
                         Race.NATIVES);
                 int current_team = team_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-                slots.add(new SkirmishPlayerSlot(i, false, current_race, current_team, option.getAIDifficulty()));
+                slots.add(new SkirmishPlayerSlot(i, false, current_race, current_team, difficulty));
             }
         }
         int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
@@ -713,9 +682,9 @@ public final class TerrainMenu extends Group {
             skirmish_setup.startSkirmishServer(game_network);
             IO.println("Start server");
         } else {
-            game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN,
-                    multiplayer_setup.player0Race().getValue(), multiplayer_setup.player0Team(),
-                    false, PlayerSlot.AI_NONE);
+            game_network.getClient().getServerInterface().setPlayerSlot(0, SlotType.HUMAN,
+                    multiplayer_setup.player0Race(), multiplayer_setup.player0Team(),
+                    false, AIDifficulty.NONE);
         }
         IO.println("Map code: " + label_mapcode.getContents());
         IO.println("Map code: " + label_mapcode.getContents());

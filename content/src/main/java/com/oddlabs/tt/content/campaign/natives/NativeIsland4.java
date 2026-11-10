@@ -18,8 +18,9 @@ import org.jspecify.annotations.Nullable;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.SlotType;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.PlayerEleminatedTrigger;
@@ -57,11 +58,11 @@ final class NativeIsland4 extends Island {
         var game_network = startNewGame(gui_root, 512, Terrain.VIKING, .8f, .8f, .8f, 19
                 * 19, 4, NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
-                PlayerSlot.HUMAN,
-                Race.NATIVES.getValue(),
+                SlotType.HUMAN,
+                Race.NATIVES,
                 0,
                 true,
-                PlayerSlot.AI_NONE);
+                AIDifficulty.NONE);
         game_network.getClient().setUnitInfo(0,
                 new UnitInfo(false, false, 0, false,
                         0,//getCampaign().getState().getNumPeons(),
@@ -69,18 +70,18 @@ final class NativeIsland4 extends Island {
                         0,//getCampaign().getState().getNumIronWarriors(),
                         0));//getCampaign().getState().getNumRubberWarriors()));
         game_network.getClient().getServerInterface().setPlayerSlot(1,
-                PlayerSlot.AI,
-                Race.NATIVES.getValue(),
+                SlotType.AI,
+                Race.NATIVES,
                 0,
                 true,
-                PlayerSlot.AI_NEUTRAL_CAMPAIGN);
+                AIDifficulty.NEUTRAL_CAMPAIGN);
         game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         game_network.getClient().getServerInterface().setPlayerSlot(2,
-                PlayerSlot.AI,
-                Race.VIKINGS.getValue(),
+                SlotType.AI,
+                Race.VIKINGS,
                 1,
                 true,
-                PlayerSlot.AI_PASSIVE_CAMPAIGN);
+                AIDifficulty.PASSIVE_CAMPAIGN);
         game_network.getClient().setUnitInfo(2, new UnitInfo(true, true, 0, false, 0, 10, 30, 0));
         game_network.getClient().getServerInterface().startServer();
     }

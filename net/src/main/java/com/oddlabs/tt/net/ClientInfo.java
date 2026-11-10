@@ -5,7 +5,10 @@ import com.oddlabs.net.ARMIInterfaceMethods;
 import com.oddlabs.net.AbstractConnection;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.IllegalARMIEventException;
+import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.SlotType;
 
 import java.io.IOException;
 
@@ -52,7 +55,7 @@ public final class ClientInfo implements GameServerInterface, ConnectionInterfac
     }
 
     @Override
-    public void setPlayerSlot(int slot, int type, int race, int team, boolean ready, int ai_difficulty) {
+    public void setPlayerSlot(int slot, SlotType type, Race race, int team, boolean ready, AIDifficulty ai_difficulty) {
         server.setPlayerSlot(player_slot, slot, type, race, team, ready, ai_difficulty);
     }
 

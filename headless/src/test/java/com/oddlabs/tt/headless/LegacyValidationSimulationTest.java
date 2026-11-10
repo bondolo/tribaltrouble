@@ -4,8 +4,8 @@ import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Terrain;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -86,8 +86,8 @@ class LegacyValidationSimulationTest {
         UnitInfo battleUnits = new UnitInfo(false, false, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
 
         List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.NATIVES, PlayerSlot.AI_NORMAL, "Player", battleUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.VIKINGS, PlayerSlot.AI_NORMAL, "Bot-Natives", battleUnits)
+                new HeadlessMatchConfig.PlayerConfig(0, Race.NATIVES, AIDifficulty.NORMAL, "Player", battleUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.VIKINGS, AIDifficulty.NORMAL, "Bot-Natives", battleUnits)
         );
 
         HeadlessMatchConfig config = new HeadlessMatchConfig(

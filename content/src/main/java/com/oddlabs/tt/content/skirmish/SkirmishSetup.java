@@ -3,7 +3,8 @@ package com.oddlabs.tt.content.skirmish;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
+import com.oddlabs.tt.simulation.player.SlotType;
 
 import java.util.List;
 
@@ -42,10 +43,10 @@ public record SkirmishSetup(
         var serverInterface = gameNetwork.getClient().getServerInterface();
         for (SkirmishPlayerSlot slot : playerSlots) {
             if (slot.isHuman()) {
-                serverInterface.setPlayerSlot(slot.slotIndex(), PlayerSlot.HUMAN, slot.race().getValue(),
-                        slot.team(), true, PlayerSlot.AI_NONE);
+                serverInterface.setPlayerSlot(slot.slotIndex(), SlotType.HUMAN, slot.race(),
+                        slot.team(), true, AIDifficulty.NONE);
             } else {
-                serverInterface.setPlayerSlot(slot.slotIndex(), PlayerSlot.AI, slot.race().getValue(),
+                serverInterface.setPlayerSlot(slot.slotIndex(), SlotType.AI, slot.race(),
                         slot.team(), true, slot.aiDifficulty());
             }
         }

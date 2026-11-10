@@ -8,8 +8,10 @@ import com.oddlabs.tt.simulation.landscape.FlatLandscape;
 import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.SlotType;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.ai.AdvancedAI;
 import com.oddlabs.tt.ai.PassiveAI;
@@ -46,17 +48,17 @@ class HeadlessMultiplayerHarnessTest {
         );
     }
 
-    private static List<PlayerSlot> createTestSlots(int difficulty0, String name0, int difficulty1, String name1) {
+    private static List<PlayerSlot> createTestSlots(AIDifficulty difficulty0, String name0, AIDifficulty difficulty1, String name1) {
         List<PlayerSlot> slots = new ArrayList<>(2);
         PlayerSlot slot0 = new PlayerSlot(0);
-        slot0.setType(PlayerSlot.AI);
+        slot0.setType(SlotType.AI);
         slot0.setAIDifficulty(difficulty0);
         slot0.setInfo(new PlayerInfo(0, Race.VIKINGS, name0));
         slot0.setNetworkPeer(true);
         slots.add(slot0);
 
         PlayerSlot slot1 = new PlayerSlot(1);
-        slot1.setType(PlayerSlot.AI);
+        slot1.setType(SlotType.AI);
         slot1.setAIDifficulty(difficulty1);
         slot1.setInfo(new PlayerInfo(1, Race.NATIVES, name1));
         slot1.setNetworkPeer(true);
@@ -69,8 +71,8 @@ class HeadlessMultiplayerHarnessTest {
         int gridSize = 64; // 2 patches of 16
         Landscape landscapeData = createTestLandscape(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
-        List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_NORMAL, "VikingPlayer",
-                PlayerSlot.AI_NORMAL, "NativePlayer");
+        List<PlayerSlot> playerSlots = createTestSlots(AIDifficulty.NORMAL, "VikingPlayer",
+                AIDifficulty.NORMAL, "NativePlayer");
         List<UnitInfo> unitInfos = createDefaultUnitInfos();
 
         try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.create(
@@ -138,8 +140,8 @@ class HeadlessMultiplayerHarnessTest {
         int gridSize = 64;
         Landscape landscapeData = createTestLandscape(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
-        List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_EASY, "VikingBot1",
-                PlayerSlot.AI_NORMAL, "NativeBot2");
+        List<PlayerSlot> playerSlots = createTestSlots(AIDifficulty.EASY, "VikingBot1",
+                AIDifficulty.NORMAL, "NativeBot2");
         List<UnitInfo> unitInfos = createDefaultUnitInfos();
 
         try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.create(
@@ -173,8 +175,8 @@ class HeadlessMultiplayerHarnessTest {
         int gridSize = 64;
         Landscape landscapeData = createTestLandscape(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
-        List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_NORMAL, "VikingJitter0",
-                PlayerSlot.AI_NORMAL, "NativeJitter1");
+        List<PlayerSlot> playerSlots = createTestSlots(AIDifficulty.NORMAL, "VikingJitter0",
+                AIDifficulty.NORMAL, "NativeJitter1");
         List<UnitInfo> unitInfos = createDefaultUnitInfos();
 
         TickTimeManager baseClock = new TickTimeManager();
@@ -213,8 +215,8 @@ class HeadlessMultiplayerHarnessTest {
         int gridSize = 64;
         Landscape landscapeData = createTestLandscape(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
-        List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_EASY, "VikingLagBot",
-                PlayerSlot.AI_NORMAL, "NativeLagBot");
+        List<PlayerSlot> playerSlots = createTestSlots(AIDifficulty.EASY, "VikingLagBot",
+                AIDifficulty.NORMAL, "NativeLagBot");
         List<UnitInfo> unitInfos = createDefaultUnitInfos();
 
         TickTimeManager baseClock = new TickTimeManager();
@@ -247,8 +249,8 @@ class HeadlessMultiplayerHarnessTest {
         int gridSize = 64;
         Landscape landscapeData = createTestLandscape(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
-        List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_NORMAL, "VikingConcurrent0",
-                PlayerSlot.AI_NORMAL, "NativeConcurrent1");
+        List<PlayerSlot> playerSlots = createTestSlots(AIDifficulty.NORMAL, "VikingConcurrent0",
+                AIDifficulty.NORMAL, "NativeConcurrent1");
         List<UnitInfo> unitInfos = createDefaultUnitInfos();
 
         try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.createVirtual(
@@ -280,8 +282,8 @@ class HeadlessMultiplayerHarnessTest {
         int gridSize = 64;
         Landscape landscapeData = createTestLandscape(gridSize);
         WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
-        List<PlayerSlot> playerSlots = createTestSlots(PlayerSlot.AI_PASSIVE_CAMPAIGN, "VikingPassive",
-                PlayerSlot.AI_PASSIVE_CAMPAIGN, "NativePassive");
+        List<PlayerSlot> playerSlots = createTestSlots(AIDifficulty.PASSIVE_CAMPAIGN, "VikingPassive",
+                AIDifficulty.PASSIVE_CAMPAIGN, "NativePassive");
         List<UnitInfo> unitInfos = createDefaultUnitInfos();
 
         try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.create(
@@ -319,22 +321,22 @@ class HeadlessMultiplayerHarnessTest {
 
         // Player 0: Scripted Human peer (isNetworkPeer = true)
         PlayerSlot slot0 = new PlayerSlot(0);
-        slot0.setType(PlayerSlot.HUMAN);
+        slot0.setType(SlotType.HUMAN);
         slot0.setInfo(new PlayerInfo(0, Race.VIKINGS, "ScriptedPeer"));
         playerSlots.add(slot0);
 
         // Player 1: Networked AI peer (isNetworkPeer = true)
         PlayerSlot slot1 = new PlayerSlot(1);
-        slot1.setType(PlayerSlot.AI);
-        slot1.setAIDifficulty(PlayerSlot.AI_EASY);
+        slot1.setType(SlotType.AI);
+        slot1.setAIDifficulty(AIDifficulty.EASY);
         slot1.setNetworkPeer(true);
         slot1.setInfo(new PlayerInfo(1, Race.NATIVES, "NetworkAiPeer"));
         playerSlots.add(slot1);
 
         // Player 2: Local Lockstep AI (isNetworkPeer = false)
         PlayerSlot slot2 = new PlayerSlot(2);
-        slot2.setType(PlayerSlot.AI);
-        slot2.setAIDifficulty(PlayerSlot.AI_PASSIVE_CAMPAIGN);
+        slot2.setType(SlotType.AI);
+        slot2.setAIDifficulty(AIDifficulty.PASSIVE_CAMPAIGN);
         slot2.setNetworkPeer(false);
         slot2.setInfo(new PlayerInfo(2, Race.VIKINGS, "LocalLockstepAi"));
         playerSlots.add(slot2);

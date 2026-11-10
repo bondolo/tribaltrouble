@@ -7,8 +7,8 @@ import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Terrain;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 
 import java.time.Duration;
@@ -50,7 +50,7 @@ public final class Main {
 
         List<HeadlessMatchConfig.PlayerConfig> players = new ArrayList<>();
         Race race0 = params.player0Race() == 0 ? Race.VIKINGS : Race.NATIVES;
-        players.add(new HeadlessMatchConfig.PlayerConfig(params.player0Team(), race0, PlayerSlot.AI_NORMAL, "Player-0",
+        players.add(new HeadlessMatchConfig.PlayerConfig(params.player0Team(), race0, AIDifficulty.NORMAL, "Player-0",
                 defaultUnits));
 
         for (int i = 0; i < params.otherSlots().size(); i++) {
@@ -58,11 +58,11 @@ public final class Main {
             if (setting.difficulty() == 0) {
                 continue;
             }
-            int slotDifficulty = switch (setting.difficulty()) {
-                case 1 -> PlayerSlot.AI_EASY;
-                case 2 -> PlayerSlot.AI_NORMAL;
-                case 3 -> PlayerSlot.AI_HARD;
-                default -> PlayerSlot.AI_NORMAL;
+            AIDifficulty slotDifficulty = switch (setting.difficulty()) {
+                case 1 -> AIDifficulty.EASY;
+                case 2 -> AIDifficulty.NORMAL;
+                case 3 -> AIDifficulty.HARD;
+                default -> AIDifficulty.NORMAL;
             };
             Race race = setting.race() == 0 ? Race.VIKINGS : Race.NATIVES;
             int playerIndex = i + 1;
@@ -78,7 +78,7 @@ public final class Main {
         int seed = new Random().nextInt();
         int maxTicks = HeadlessMatchConfig.DEFAULT_MAX_TICKS;
         Terrain terrain = Terrain.NATIVE;
-        int difficulty = PlayerSlot.AI_NORMAL;
+        AIDifficulty difficulty = AIDifficulty.NORMAL;
         String mapKey = null;
         Duration stallTimeout = HeadlessMatchConfig.DEFAULT_STALL_TIMEOUT;
 
@@ -113,9 +113,9 @@ public final class Main {
                 case "--difficulty", "-d" -> {
                     if (i + 1 < args.length) {
                         difficulty = switch (args[++i].toLowerCase()) {
-                            case "easy" -> PlayerSlot.AI_EASY;
-                            case "hard" -> PlayerSlot.AI_HARD;
-                            default -> PlayerSlot.AI_NORMAL;
+                            case "easy" -> AIDifficulty.EASY;
+                            case "hard" -> AIDifficulty.HARD;
+                            default -> AIDifficulty.NORMAL;
                         };
                     }
                 }

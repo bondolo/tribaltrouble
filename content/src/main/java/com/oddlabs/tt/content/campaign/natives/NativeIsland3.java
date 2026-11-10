@@ -23,8 +23,9 @@ import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.GodScenery;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.SlotType;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.MagicUsedTrigger;
@@ -60,25 +61,25 @@ final class NativeIsland3 extends Island {
         GameNetwork game_network = startNewGame(gui_root, 512, Terrain.VIKING, 1f, 1f, 0f,
                 808208041, 3, NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
-                PlayerSlot.HUMAN,
-                Race.NATIVES.getValue(),
+                SlotType.HUMAN,
+                Race.NATIVES,
                 0,
                 true,
-                PlayerSlot.AI_NONE);
+                AIDifficulty.NONE);
         game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         game_network.getClient().getServerInterface().setPlayerSlot(2,
-                PlayerSlot.AI,
-                Race.VIKINGS.getValue(),
+                SlotType.AI,
+                Race.VIKINGS,
                 1,
                 true,
-                PlayerSlot.AI_NEUTRAL_CAMPAIGN);
+                AIDifficulty.NEUTRAL_CAMPAIGN);
         game_network.getClient().setUnitInfo(2, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         game_network.getClient().getServerInterface().setPlayerSlot(4,
-                PlayerSlot.AI,
-                Race.VIKINGS.getValue(),
+                SlotType.AI,
+                Race.VIKINGS,
                 1,
                 true,
-                PlayerSlot.AI_PASSIVE_CAMPAIGN);
+                AIDifficulty.PASSIVE_CAMPAIGN);
         game_network.getClient().setUnitInfo(4, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         game_network.getClient().getServerInterface().startServer();
     }

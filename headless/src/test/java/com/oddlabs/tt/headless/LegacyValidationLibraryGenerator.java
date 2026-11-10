@@ -4,8 +4,8 @@ import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Terrain;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -149,10 +149,10 @@ final class LegacyValidationLibraryGenerator {
             String[] parts = playerTokens[i].split(":");
             int team = Integer.parseInt(parts[0]);
             Race race = "VIKING".equalsIgnoreCase(parts[1]) ? Race.VIKINGS : Race.NATIVES;
-            int aiDifficulty = switch (parts[2].toUpperCase()) {
-                case "EASY" -> PlayerSlot.AI_EASY;
-                case "HARD" -> PlayerSlot.AI_HARD;
-                default -> PlayerSlot.AI_NORMAL;
+            AIDifficulty aiDifficulty = switch (parts[2].toUpperCase()) {
+                case "EASY" -> AIDifficulty.EASY;
+                case "HARD" -> AIDifficulty.HARD;
+                default -> AIDifficulty.NORMAL;
             };
 
             players.add(new HeadlessMatchConfig.PlayerConfig(

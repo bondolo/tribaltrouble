@@ -11,21 +11,6 @@ public final class PlayerSlot implements Serializable {
     @Serial
     private static final long serialVersionUID = 1;
 
-    public static final int AI_NONE = AIDifficulty.NONE.getValue();
-    public static final int AI_EASY = AIDifficulty.EASY.getValue();
-    public static final int AI_NORMAL = AIDifficulty.NORMAL.getValue();
-    public static final int AI_HARD = AIDifficulty.HARD.getValue();
-    public static final int AI_TOWER_TUTORIAL = AIDifficulty.TOWER_TUTORIAL.getValue();
-    public static final int AI_CHIEFTAIN_TUTORIAL = AIDifficulty.CHIEFTAIN_TUTORIAL.getValue();
-    public static final int AI_BATTLE_TUTORIAL = AIDifficulty.BATTLE_TUTORIAL.getValue();
-    public static final int AI_PASSIVE_CAMPAIGN = AIDifficulty.PASSIVE_CAMPAIGN.getValue();
-    public static final int AI_NEUTRAL_CAMPAIGN = AIDifficulty.NEUTRAL_CAMPAIGN.getValue();
-
-    public static final int OPEN = SlotType.OPEN.getValue();
-    public static final int CLOSED = SlotType.CLOSED.getValue();
-    public static final int HUMAN = SlotType.HUMAN.getValue();
-    public static final int AI = SlotType.AI.getValue();
-
     private final int slot;
 
     private SlotType type = SlotType.OPEN;
@@ -40,10 +25,6 @@ public final class PlayerSlot implements Serializable {
         this.slot = slot;
     }
 
-    public static boolean isValidType(int type) {
-        return type == HUMAN || type == AI/* || type == OPEN || type == CLOSED*/;
-    }
-
     public static boolean isValidType(SlotType type) {
         return type == SlotType.HUMAN || type == SlotType.AI;
     }
@@ -56,16 +37,8 @@ public final class PlayerSlot implements Serializable {
         this.type = type;
     }
 
-    public void setType(int type) {
-        this.type = SlotType.fromValue(type);
-    }
-
     public void setAIDifficulty(AIDifficulty ai_difficulty) {
         this.ai_difficulty = ai_difficulty;
-    }
-
-    public void setAIDifficulty(int ai_difficulty) {
-        this.ai_difficulty = AIDifficulty.fromValue(ai_difficulty);
     }
 
     public void setAddress(@Nullable TunnelAddress address) {

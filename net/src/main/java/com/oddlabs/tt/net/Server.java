@@ -143,11 +143,11 @@ public final class Server implements ConnectionListenerInterface<Object> {
     }
 
     private void resetSlotState(PlayerSlot client_slot, boolean open) {
-        client_slot.setType(open ? PlayerSlot.OPEN : PlayerSlot.CLOSED);
+        client_slot.setType(open ? SlotType.OPEN : SlotType.CLOSED);
         client_slot.setInfo(null);
         client_slot.setAddress(null);
         client_slot.setReady(true);
-        client_slot.setAIDifficulty(PlayerSlot.AI_NONE);
+        client_slot.setAIDifficulty(AIDifficulty.NONE);
         ClientConnection player_client = locateClientForSlot(client_slot);
         if (player_client != null)
             disconnectClient(player_client);
@@ -168,16 +168,9 @@ public final class Server implements ConnectionListenerInterface<Object> {
         broadcastInits();
     }
 
-    public void setPlayerSlot(PlayerSlot client_slot, int slot, int type, int race, int team, boolean ready,
-            int ai_difficulty) {
-        SlotType slotType = SlotType.fromValueOrNull(type);
-        if (slot < 0 || slot >= players.length || slotType == null || !PlayerSlot.isValidType(slotType))
-            return;
-        AIDifficulty aiDifficulty = AIDifficulty.fromValueOrNull(ai_difficulty);
-        if (aiDifficulty == null)
-            return;
-        Race resolved_race = Race.fromValueOrNull(race);
-        if (resolved_race == null)
+    public void setPlayerSlot(PlayerSlot client_slot, int slot, SlotType slotType, Race race, int team, boolean ready,
+            AIDifficulty aiDifficulty) {
+        if (slot < 0 || slot >= players.length || !PlayerSlot.isValidType(slotType))
             return;
         int client_slot_idx = client_slot.getSlot();
         if (!canControlSlot(client_slot, slot) || (client_slot_idx == slot && slotType != SlotType.HUMAN))
@@ -193,7 +186,7 @@ public final class Server implements ConnectionListenerInterface<Object> {
             PlayerInfo info = player_slot.getInfo();
             name = info != null ? info.name() : "Player";
         }
-        PlayerInfo player_info = new PlayerInfo(team, resolved_race, name);
+        PlayerInfo player_info = new PlayerInfo(team, race, name);
         boolean reset_ready = player_slot.getInfo() == null || slotType != player_slot.getType()
                 || aiDifficulty != player_slot.getAIDifficulty()
                 || (!player_info.equals(player_slot.getInfo()));

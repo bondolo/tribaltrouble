@@ -20,8 +20,9 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.SlotType;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.MagicUsedTrigger;
@@ -56,18 +57,18 @@ final class VikingIsland10 extends Island {
         GameNetwork game_network = startNewGame(gui_root, 512, Terrain.NATIVE, 1f, 1f, 0f,
                 -1442873271, 10, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
-                PlayerSlot.HUMAN,
-                Race.VIKINGS.getValue(),
+                SlotType.HUMAN,
+                Race.VIKINGS,
                 0,
                 true,
-                PlayerSlot.AI_NONE);
+                AIDifficulty.NONE);
         game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         game_network.getClient().getServerInterface().setPlayerSlot(2,
-                PlayerSlot.AI,
-                Race.NATIVES.getValue(),
+                SlotType.AI,
+                Race.NATIVES,
                 1,
                 true,
-                PlayerSlot.AI_NEUTRAL_CAMPAIGN);
+                AIDifficulty.NEUTRAL_CAMPAIGN);
         game_network.getClient().setUnitInfo(2, new UnitInfo(false, false, 0, false, 0, 0, 0, 1));
         game_network.getClient().getServerInterface().startServer();
     }
