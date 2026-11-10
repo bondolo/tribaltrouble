@@ -69,7 +69,8 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
                 var peons = getViewer().getSelection().getCurrentSelection().filter(Abilities.BUILD);
                 if (!peons.isEmpty()) {
                     logger.info("placeObject: Placing building at " + placing_grid_x + "," + placing_grid_y);
-                    getViewer().getPeerHub().getPlayerInterface().placeBuilding(peons, building_type, placing_grid_x,
+                    getViewer().getLocalPlayer().getPlayerInterface().placeBuilding(peons, building_type,
+                            placing_grid_x,
                             placing_grid_y);
                 } else {
                     logger.info("placeObject: No peons selected");

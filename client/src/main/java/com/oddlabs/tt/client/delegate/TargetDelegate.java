@@ -49,7 +49,7 @@ public class TargetDelegate extends ControllableCameraDelegate<GameCamera> {
     public void mousePressed(MouseButton button, int x, int y) {
         if (button == MouseButton.LEFT) {
             getViewer().getPicker().pickTarget(getViewer().getSelection().getCurrentSelection(),
-                    getCamera().getState(), getViewer().getPeerHub().getPlayerInterface(),
+                    getCamera().getState(), getViewer().getLocalPlayer().getPlayerInterface(),
                     x, y, action);
             pop();
         } else {

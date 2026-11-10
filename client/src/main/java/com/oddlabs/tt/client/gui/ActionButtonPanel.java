@@ -208,17 +208,17 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         tower_button.place(armory_button, Placement.BOTTOM_MID);
         peon_group.compileCanvas(GROUP_LEFT_OFFSET, GROUP_BOTTOM_OFFSET, GROUP_RIGHT_OFFSET, 0);
 
-        PlayerInterface player_interface = viewer.getPeerHub().getPlayerInterface();
+        PlayerInterface player_interface = viewer.getLocalPlayer().getPlayerInterface();
         MagicType magic1Type = viewer.getLocalPlayer().getRaceInfo().getMagicType(0);
         magic1_button = new RechargeButton(
-                guiRoot, player_interface, race_icons.magic1Icon(), GameAction.MAGIC_1,
+                guiRoot, race_icons.magic1Icon(), GameAction.MAGIC_1,
                 () -> getMagicTooltip(magic1Type), magic1Type, icons
         );
         chieftain_group.addChild(magic1_button);
         bindAction(magic1_button, UnitActionController.class, u -> u.executeMagic(0));
         MagicType magic2Type = viewer.getLocalPlayer().getRaceInfo().getMagicType(1);
         magic2_button = new RechargeButton(
-                guiRoot, player_interface, race_icons.magic2Icon(), GameAction.MAGIC_2,
+                guiRoot, race_icons.magic2Icon(), GameAction.MAGIC_2,
                 () -> getMagicTooltip(magic2Type), magic2Type, icons
         );
         chieftain_group.addChild(magic2_button);
@@ -292,7 +292,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
                 DeployType.PEON
         );
         quarters_group.addChild(quarters_peon_button);
-        quarters_chieftain_button = new ChieftainButton(viewer, player_interface, race_icons.chieftainIcon(), icons);
+        quarters_chieftain_button = new ChieftainButton(viewer, race_icons.chieftainIcon(), icons);
         quarters_group.addChild(quarters_chieftain_button);
         bindAction(quarters_chieftain_button, QuartersActionController.class,
                 QuartersActionController::executeTrainChieftain);

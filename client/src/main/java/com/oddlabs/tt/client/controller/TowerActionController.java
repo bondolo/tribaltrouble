@@ -28,7 +28,7 @@ public final class TowerActionController implements ActionController {
 
     public void executeExitTower() {
         if (!building.isDead() && building.canExitTower()) {
-            context.getViewer().getPeerHub().getPlayerInterface().exitTower(building);
+            context.getViewer().getLocalPlayer().getPlayerInterface().exitTower(building);
             context.markNeedsUpdate();
         }
     }

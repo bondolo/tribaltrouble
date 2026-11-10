@@ -55,7 +55,7 @@ public final class UnitActionController implements ActionController {
         if (chieftain != null && !chieftain.isDead() && context.getViewer().getLocalPlayer().canDoMagic(magicIndex)) {
             MagicType magicType = context.getViewer().getLocalPlayer().getRaceInfo().getMagicType(magicIndex);
             if (chieftain.canDoMagic(magicType)) {
-                context.getViewer().getPeerHub().getPlayerInterface().doMagic(chieftain, magicType);
+                context.getViewer().getLocalPlayer().getPlayerInterface().doMagic(chieftain, magicType);
             }
         }
     }

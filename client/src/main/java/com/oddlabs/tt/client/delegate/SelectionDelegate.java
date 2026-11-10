@@ -17,9 +17,9 @@ import com.oddlabs.tt.simulation.model.Army;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingTemplate;
 import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.EntityActivity;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitTemplate;
-import com.oddlabs.tt.simulation.behaviour.IdleController;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.Notification;
@@ -76,7 +76,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
     private boolean pick_done = false;
     private boolean map_mode = false;
     private boolean observer = false;
-    private int last_idle_peon_name = -1;
+    private int last_idle_peon_id = -1;
 
     public SelectionDelegate(WorldViewer viewer, GameCamera camera) {
         super(viewer, camera);
@@ -302,7 +302,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
     }
 
     private void changeGamespeed(int delta) {
-        getViewer().getPeerHub().getPlayerInterface().changePreferredGamespeed(delta);
+        getViewer().getLocalPlayer().getPlayerInterface().changePreferredGamespeed(delta);
     }
 
     private void nextIdlePeon(boolean replace) {
@@ -313,40 +313,42 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
         }
 
         var units = getViewer().getLocalPlayer().getUnits().getSet();
+        boolean hasIdlePeon = false;
+        int lowestId = Integer.MAX_VALUE;
+        Selectable<?> lowestPeon = null;
 
-        boolean has_idle_peon = false;
-        int lowest_name = Integer.MAX_VALUE;
-        Selectable<?> lowest_peon = null;
+        boolean hasGreaterId = false;
+        int lowestGreaterId = Integer.MAX_VALUE;
+        Selectable<?> lowestGreaterPeon = null;
 
-        boolean has_greater_name = false;
-        int lowest_greater_name = Integer.MAX_VALUE;
-        Selectable<?> lowest_greater_peon = null;
         for (var s : units) {
-            if (s.getOwner() != getViewer().getLocalPlayer())
+            if (s.getOwner() != getViewer().getLocalPlayer()) {
                 continue;
-            Abilities abilities = s.getAbilities();
-            if ((abilities.hasAbilities(Abilities.BUILD)) && (s.getPrimaryController() instanceof IdleController)) {
-                int name = getViewer().getDistributableTable().getName(s);
-                if (name < lowest_name) {
-                    has_idle_peon = true;
-                    lowest_name = name;
-                    lowest_peon = s;
+            }
+            if (s.getAbilities().hasAbilities(Abilities.BUILD) && s.getActivity() == EntityActivity.IDLE) {
+                int id = s.getId();
+                if (id < lowestId) {
+                    hasIdlePeon = true;
+                    lowestId = id;
+                    lowestPeon = s;
                 }
-                if (name > last_idle_peon_name && name < lowest_greater_name) {
-                    has_greater_name = true;
-                    lowest_greater_name = name;
-                    lowest_greater_peon = s;
+                if (id > last_idle_peon_id && id < lowestGreaterId) {
+                    hasGreaterId = true;
+                    lowestGreaterId = id;
+                    lowestGreaterPeon = s;
                 }
             }
         }
 
         Selectable<?> target = null;
-        if (has_greater_name) {
-            last_idle_peon_name = lowest_greater_name;
-            target = lowest_greater_peon;
-        } else if (has_idle_peon) {
-            last_idle_peon_name = lowest_name;
-            target = lowest_peon;
+        if (hasGreaterId) {
+            last_idle_peon_id = lowestGreaterId;
+            target = lowestGreaterPeon;
+        } else if (hasIdlePeon) {
+            last_idle_peon_id = lowestId;
+            target = lowestPeon;
+        } else {
+            last_idle_peon_id = -1;
         }
 
         if (target != null && getCamera() instanceof GameCamera) {
@@ -370,7 +372,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
         var idles = set.stream()
                 .filter(s -> s.getOwner() == getViewer().getLocalPlayer())
                 .filter(s -> s.getAbilities().hasAbilities(Abilities.BUILD)
-                        && s.getPrimaryController() instanceof IdleController)
+                        && s.getActivity() == EntityActivity.IDLE)
                 .toList();
 
         if (!idles.isEmpty()) {
@@ -534,9 +536,9 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
                     }
                     case RIGHT -> {
                         Army selection = getViewer().getSelection().getCurrentSelection();
-                        if (selection.size() > 0 && selection.containsAbility(Abilities.TARGET)) {
+                        if (!selection.isEmpty() && selection.containsAbility(Abilities.TARGET)) {
                             getViewer().getPicker().pickTarget(selection, getCamera().getState(),
-                                    getViewer().getPeerHub().getPlayerInterface(), x, y,
+                                    getViewer().getLocalPlayer().getPlayerInterface(), x, y,
                                     Action.DEFAULT);
                         }
                     }

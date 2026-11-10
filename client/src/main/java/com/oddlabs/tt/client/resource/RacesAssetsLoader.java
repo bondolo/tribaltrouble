@@ -85,7 +85,7 @@ public final class RacesAssetsLoader {
         );
     }
 
-    public static RaceData load(RenderQueues queues) {
+    public static void load(RenderQueues queues) {
         int num_progress = 23;
         SpriteFile native_rock_sprite = new SpriteFile("/geometry/natives/rock_resource.binsprite",
                 RenderConfig.NO_MIPMAP_CUTOFF, true, true, true, false);
@@ -379,7 +379,5 @@ public final class RacesAssetsLoader {
 
         ProgressListener.progress(1f / num_progress);
         ProgressListener.progress(1f / num_progress);
-
-        return new RaceData();
     }
 }

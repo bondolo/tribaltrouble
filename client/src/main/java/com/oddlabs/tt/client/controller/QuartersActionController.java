@@ -22,7 +22,7 @@ public final class QuartersActionController implements ActionController {
     public void executeTrainChieftain() {
         if (!building.isDead() && (building.canBuildChieftain() || building.canStopChieftain())) {
             boolean startTraining = !building.getChieftainContainer().map(c -> c.isTraining()).orElse(false);
-            context.getViewer().getPeerHub().getPlayerInterface().trainChieftain(building, startTraining);
+            context.getViewer().getLocalPlayer().getPlayerInterface().trainChieftain(building, startTraining);
         }
     }
 
