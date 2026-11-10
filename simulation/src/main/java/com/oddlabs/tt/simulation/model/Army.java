@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,7 +61,7 @@ public class Army implements Iterable<Selectable<?>> {
     }
 
     @Override
-    public final @NonNull Iterator<Selectable<?>> iterator() {
+    public final Iterator<Selectable<?>> iterator() {
         return Collections.unmodifiableSet(selection).iterator();
     }
 
