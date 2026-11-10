@@ -20,6 +20,7 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitType;
+import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.util.Color;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,18 +55,8 @@ class AIDecouplingTest {
         }
 
         @Override
-        public void buildRockWeapons(Building building, int num_weapons, boolean infinite) {
-            calls.add("buildRockWeapons:" + infinite);
-        }
-
-        @Override
-        public void buildIronWeapons(Building building, int num_weapons, boolean infinite) {
-            calls.add("buildIronWeapons:" + infinite);
-        }
-
-        @Override
-        public void buildRubberWeapons(Building building, int num_weapons, boolean infinite) {
-            calls.add("buildRubberWeapons:" + infinite);
+        public void buildWeapons(Building building, WeaponTier tier, int num_weapons, boolean infinite) {
+            calls.add("buildWeapons:" + tier + ":" + infinite);
         }
 
         @Override
@@ -260,6 +251,8 @@ class AIDecouplingTest {
     void testChieftainAiForRace() {
         assertInstanceOf(VikingChieftainAI.class, ChieftainAI.forRace(Race.VIKINGS));
         assertInstanceOf(NativeChieftainAI.class, ChieftainAI.forRace(Race.NATIVES));
+        assertSame(ChieftainAI.forRace(Race.VIKINGS), ChieftainAI.forRace(Race.VIKINGS));
+        assertSame(ChieftainAI.forRace(Race.NATIVES), ChieftainAI.forRace(Race.NATIVES));
     }
 
     @Test
@@ -290,5 +283,24 @@ class AIDecouplingTest {
 
         customPlayer.getPlayerInterface().deployUnits(null, DeployType.PEON, 1);
         assertTrue(custom.calls.contains("deployUnits:PEON:1"));
+    }
+
+    @Test
+    void testReclassifyWithArmoryDispatchesWeaponsThroughPlayerInterface() {
+        AdvancedAI ai = new AdvancedAI(player, Difficulty.NORMAL);
+
+        Building armory = new Building(player, player.getRaceInfo().getBuildingTemplate(BuildingType.ARMORY), 10, 10);
+        armory.place();
+        armory.repair(1000);
+
+        recordingInterface.calls.clear();
+        ai.manTowers(0);
+
+        assertTrue(recordingInterface.calls.contains("buildWeapons:ROCK:true"),
+                "reclassify should dispatch rock weapon orders through playerInterface");
+        assertTrue(recordingInterface.calls.contains("buildWeapons:IRON:true"),
+                "reclassify should dispatch iron weapon orders through playerInterface");
+        assertTrue(recordingInterface.calls.contains("buildWeapons:RUBBER:true"),
+                "reclassify should dispatch rubber weapon orders through playerInterface");
     }
 }

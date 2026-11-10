@@ -3,6 +3,10 @@ package com.oddlabs.tt.simulation.model;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.simulation.behaviour.Behaviour;
 import com.oddlabs.tt.simulation.behaviour.Controller;
+import com.oddlabs.tt.simulation.behaviour.DefendController;
+import com.oddlabs.tt.simulation.behaviour.GatherController;
+import com.oddlabs.tt.simulation.behaviour.IdleController;
+import com.oddlabs.tt.simulation.behaviour.PlaceBuildingController;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.ScanFilter;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
@@ -59,7 +63,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         return template.getHitOffsetZ(0);
     }
 
-    public final Controller getCurrentController() {
+    final Controller getCurrentController() {
         return controller_stack.getLast();
     }
 
@@ -87,8 +91,31 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         return current_behaviour.isBlocking();
     }
 
-    public final @Nullable Behaviour getCurrentBehaviour() {
+    final @Nullable Behaviour getCurrentBehaviour() {
         return current_behaviour;
+    }
+
+    public abstract EntityActivity getActivity();
+
+    public boolean isIdle() {
+        return !isDead() && getPrimaryController() instanceof IdleController;
+    }
+
+    public boolean isDefending() {
+        return !isDead() && getPrimaryController() instanceof DefendController;
+    }
+
+    public boolean isPlacingBuilding() {
+        return !isDead() && getPrimaryController() instanceof PlaceBuildingController;
+    }
+
+    public @Nullable SupplyType getGatheringSupplyType() {
+        return !isDead() && getPrimaryController() instanceof GatherController<?> gc ? gc.getSupplyType() : null;
+    }
+
+    public @Nullable BuildingTemplate getPlacingBuilding() {
+        return !isDead() && getPrimaryController() instanceof PlaceBuildingController pbc ? pbc.getBuilding()
+                .getTemplate() : null;
     }
 
     public final UnitGrid getUnitGrid() {
@@ -198,7 +225,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         current_behaviour = behaviour;
     }
 
-    public final Controller getPrimaryController() {
+    final Controller getPrimaryController() {
         assert !isDead();
         return controller_stack.size() > 1
                 ? controller_stack.get(1)  // Jump over the default controller

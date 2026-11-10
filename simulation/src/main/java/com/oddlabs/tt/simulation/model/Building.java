@@ -7,7 +7,6 @@ import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.behaviour.AttackController;
 import com.oddlabs.tt.simulation.behaviour.GatherController;
 import com.oddlabs.tt.simulation.behaviour.NullController;
-import com.oddlabs.tt.simulation.behaviour.StunController;
 import com.oddlabs.tt.simulation.behaviour.TransferUnitController;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
@@ -203,7 +202,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 && unit_container != null
                 && unit_container.getNumSupplies() > 0
                 && getOwner().canExitTowers()
-                && !(((MountUnitContainer) unit_container).getUnit().getCurrentController() instanceof StunController);
+                && !((MountUnitContainer) unit_container).getUnit().isStunned();
     }
 
     public void exitTower() {
@@ -259,6 +258,10 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
 
     public boolean canStopChieftain() {
         return !isDead() && chieftain_container != null && chieftain_container.isTraining();
+    }
+
+    public boolean isTrainingChieftain() {
+        return !isDead() && is_training_chieftain;
     }
 
     public void trainChieftain(boolean start) {
@@ -412,6 +415,27 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     /** {@return true if construction is complete, false otherwise} */
     public boolean isBuilt() {
         return build_points == getTemplate().getMaxHitPoints();
+    }
+
+    /// Returns true if this building is completed and operating normally with an idle controller.
+    public boolean isOperating() {
+        return !isDead() && isBuilt() && getPrimaryController() instanceof NullController;
+    }
+
+    @Override
+    public EntityActivity getActivity() {
+        if (isDead()) {
+            return EntityActivity.DEAD;
+        }
+        if (getBuildStage() != BuildStage.BUILT) {
+            return EntityActivity.UNDER_CONSTRUCTION;
+        }
+        if (isProducing()) {
+            return EntityActivity.ACTIVE;
+        }
+        return isOperating()
+                ? EntityActivity.IDLE
+                : EntityActivity.OTHER;
     }
 
     public int getBuildPoints() {

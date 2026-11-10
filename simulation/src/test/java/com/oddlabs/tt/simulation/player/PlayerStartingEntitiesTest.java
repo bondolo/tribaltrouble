@@ -208,22 +208,22 @@ class PlayerStartingEntitiesTest {
         assertEquals(PlayerControllerType.HUMAN, PlayerControllerType.fromSlot(null));
 
         PlayerSlot humanSlot = new PlayerSlot(0);
-        humanSlot.setType(PlayerSlot.HUMAN);
+        humanSlot.setType(SlotType.HUMAN);
         assertEquals(PlayerControllerType.HUMAN, PlayerControllerType.fromSlot(humanSlot));
 
         PlayerSlot standardAiSlot = new PlayerSlot(1);
-        standardAiSlot.setType(PlayerSlot.AI);
-        standardAiSlot.setAIDifficulty(PlayerSlot.AI_NORMAL);
+        standardAiSlot.setType(SlotType.AI);
+        standardAiSlot.setAIDifficulty(AIDifficulty.NORMAL);
         assertEquals(PlayerControllerType.AI_STANDARD, PlayerControllerType.fromSlot(standardAiSlot));
 
         PlayerSlot towerAiSlot = new PlayerSlot(2);
-        towerAiSlot.setType(PlayerSlot.AI);
-        towerAiSlot.setAIDifficulty(PlayerSlot.AI_TOWER_TUTORIAL);
+        towerAiSlot.setType(SlotType.AI);
+        towerAiSlot.setAIDifficulty(AIDifficulty.TOWER_TUTORIAL);
         assertEquals(PlayerControllerType.AI_TOWER_TUTORIAL, PlayerControllerType.fromSlot(towerAiSlot));
 
         PlayerSlot chieftainAiSlot = new PlayerSlot(3);
-        chieftainAiSlot.setType(PlayerSlot.AI);
-        chieftainAiSlot.setAIDifficulty(PlayerSlot.AI_CHIEFTAIN_TUTORIAL);
+        chieftainAiSlot.setType(SlotType.AI);
+        chieftainAiSlot.setAIDifficulty(AIDifficulty.CHIEFTAIN_TUTORIAL);
         assertEquals(PlayerControllerType.AI_CHIEFTAIN_TUTORIAL, PlayerControllerType.fromSlot(chieftainAiSlot));
     }
 }

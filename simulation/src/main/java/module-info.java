@@ -5,7 +5,6 @@ module com.oddlabs.tt.simulation {
     requires static org.jspecify;
 
     exports com.oddlabs.tt.simulation;
-    exports com.oddlabs.tt.simulation.behaviour;
     exports com.oddlabs.tt.simulation.landscape;
     exports com.oddlabs.tt.simulation.model;
     exports com.oddlabs.tt.simulation.model.weapon;

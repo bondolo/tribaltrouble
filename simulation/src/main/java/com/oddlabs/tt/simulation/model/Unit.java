@@ -4,6 +4,9 @@ import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
+import com.oddlabs.tt.simulation.behaviour.AttackBehaviour;
+import com.oddlabs.tt.simulation.behaviour.AttackController;
+import com.oddlabs.tt.simulation.behaviour.Controller;
 import com.oddlabs.tt.simulation.behaviour.DefendController;
 import com.oddlabs.tt.simulation.behaviour.DieBehaviour;
 import com.oddlabs.tt.simulation.behaviour.DieController;
@@ -447,7 +450,64 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
     @Override
     public float getDefenseChance() {
-        return getCurrentController() instanceof StunController ? 0 : super.getDefenseChance();
+        return isStunned() ? 0 : super.getDefenseChance();
+    }
+
+    public float getStunTimeLeft() {
+        return !isDead() && getCurrentController() instanceof StunController sc ? sc.getTime() : 0f;
+    }
+
+    public boolean isStunned() {
+        return !isDead() && getCurrentController() instanceof StunController;
+    }
+
+    public boolean isCastingMagic() {
+        return !isDead() && getPrimaryController() instanceof MagicController;
+    }
+
+    public boolean isAttacking() {
+        return !isDead() && (getCurrentController() instanceof AttackController
+                || getCurrentController() instanceof HuntController
+                || getCurrentBehaviour() instanceof AttackBehaviour);
+    }
+
+    public boolean isAggressiveWalking() {
+        return !isDead() && getPrimaryController() instanceof WalkController wc && wc.isAgressive();
+    }
+
+    public boolean isAttackWeaponReleased() {
+        return getCurrentBehaviour() instanceof AttackBehaviour ab && ab.isReleased();
+    }
+
+    public @Nullable Selectable<?> getAttackTarget() {
+        return getCurrentBehaviour() instanceof AttackBehaviour ab ? ab.getTarget() : null;
+    }
+
+    public void resetGiveUpCounters() {
+        if (!isDead()) {
+            getCurrentController().resetGiveUpCounters();
+        }
+    }
+
+    @Override
+    public EntityActivity getActivity() {
+        if (isDead()) {
+            return EntityActivity.DEAD;
+        }
+        if (isStunned()) {
+            return EntityActivity.STUNNED;
+        }
+        if (isAttacking() || isCastingMagic()) {
+            return EntityActivity.ACTIVE;
+        }
+        Controller primary = getPrimaryController();
+        return switch (primary) {
+            case IdleController _,DefendController _ -> EntityActivity.IDLE;
+            case WalkController wc -> wc.isAgressive() ? EntityActivity.ATTACKING_MOVING : EntityActivity.MOVING;
+            case GatherController<?> _ -> EntityActivity.GATHERING;
+            case PlaceBuildingController _ -> EntityActivity.PLACING_BUILDING;
+            default -> EntityActivity.OTHER;
+        };
     }
 
     private void walkToTarget(Target target, boolean scan_attack) {

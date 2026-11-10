@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.trigger;
 
 import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.behaviour.MagicController;
 
 /**
  * Trigger that executes a callback when a specific magic spell is cast by a chieftain.
@@ -34,10 +33,10 @@ public final class MagicUsedTrigger extends IntervalTrigger {
         float dy = chieftain.getPositionY() - y;
         if (!chieftain.isDead()) {
             if (r * r > dx * dx + dy * dy) {
-                if (!blowing && chieftain.getPrimaryController() instanceof MagicController &&
+                if (!blowing && chieftain.isCastingMagic() &&
                         chieftain.getLastMagicType() == magicType)
                     blowing = true;
-                if (blowing && !(chieftain.getPrimaryController() instanceof MagicController))
+                if (blowing && !chieftain.isCastingMagic())
                     triggered();
             }
         }
