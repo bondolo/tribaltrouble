@@ -11,29 +11,29 @@ public final class PlayerSlot implements Serializable {
     @Serial
     private static final long serialVersionUID = 1;
 
-    public static final int AI_NONE = 0;
-    public static final int AI_EASY = 1;
-    public static final int AI_NORMAL = 2;
-    public static final int AI_HARD = 3;
-    public static final int AI_TOWER_TUTORIAL = 4;
-    public static final int AI_CHIEFTAIN_TUTORIAL = 5;
-    public static final int AI_BATTLE_TUTORIAL = 6;
-    public static final int AI_PASSIVE_CAMPAIGN = 7;
-    public static final int AI_NEUTRAL_CAMPAIGN = 8;
+    public static final int AI_NONE = AIDifficulty.NONE.getValue();
+    public static final int AI_EASY = AIDifficulty.EASY.getValue();
+    public static final int AI_NORMAL = AIDifficulty.NORMAL.getValue();
+    public static final int AI_HARD = AIDifficulty.HARD.getValue();
+    public static final int AI_TOWER_TUTORIAL = AIDifficulty.TOWER_TUTORIAL.getValue();
+    public static final int AI_CHIEFTAIN_TUTORIAL = AIDifficulty.CHIEFTAIN_TUTORIAL.getValue();
+    public static final int AI_BATTLE_TUTORIAL = AIDifficulty.BATTLE_TUTORIAL.getValue();
+    public static final int AI_PASSIVE_CAMPAIGN = AIDifficulty.PASSIVE_CAMPAIGN.getValue();
+    public static final int AI_NEUTRAL_CAMPAIGN = AIDifficulty.NEUTRAL_CAMPAIGN.getValue();
 
-    public static final int OPEN = 1;
-    public static final int CLOSED = 2;
-    public static final int HUMAN = 3;
-    public static final int AI = 4;
+    public static final int OPEN = SlotType.OPEN.getValue();
+    public static final int CLOSED = SlotType.CLOSED.getValue();
+    public static final int HUMAN = SlotType.HUMAN.getValue();
+    public static final int AI = SlotType.AI.getValue();
 
     private final int slot;
 
-    private int type = OPEN;
+    private SlotType type = SlotType.OPEN;
     private int rating;
     private boolean ready;
     private @Nullable PlayerInfo player_info;
     private @Nullable TunnelAddress address;
-    private int ai_difficulty = AI_NONE;
+    private AIDifficulty ai_difficulty = AIDifficulty.NONE;
     private transient @Nullable Boolean network_peer = null;
 
     public PlayerSlot(int slot) {
@@ -44,16 +44,28 @@ public final class PlayerSlot implements Serializable {
         return type == HUMAN || type == AI/* || type == OPEN || type == CLOSED*/;
     }
 
+    public static boolean isValidType(SlotType type) {
+        return type == SlotType.HUMAN || type == SlotType.AI;
+    }
+
     public void setRating(int rating) {
         this.rating = rating;
     }
 
-    public void setType(int type) {
+    public void setType(SlotType type) {
         this.type = type;
     }
 
-    public void setAIDifficulty(int ai_difficulty) {
+    public void setType(int type) {
+        this.type = SlotType.fromValue(type);
+    }
+
+    public void setAIDifficulty(AIDifficulty ai_difficulty) {
         this.ai_difficulty = ai_difficulty;
+    }
+
+    public void setAIDifficulty(int ai_difficulty) {
+        this.ai_difficulty = AIDifficulty.fromValue(ai_difficulty);
     }
 
     public void setAddress(@Nullable TunnelAddress address) {
@@ -72,7 +84,7 @@ public final class PlayerSlot implements Serializable {
         this.player_info = player_info;
     }
 
-    public @Nullable Serializable getInfo() {
+    public @Nullable PlayerInfo getInfo() {
         return player_info;
     }
 
@@ -84,11 +96,11 @@ public final class PlayerSlot implements Serializable {
         return address;
     }
 
-    public int getAIDifficulty() {
+    public AIDifficulty getAIDifficulty() {
         return ai_difficulty;
     }
 
-    public int getType() {
+    public SlotType getType() {
         return type;
     }
 
@@ -100,7 +112,7 @@ public final class PlayerSlot implements Serializable {
         if (network_peer != null) {
             return network_peer;
         }
-        return type == HUMAN;
+        return type == SlotType.HUMAN;
     }
 
     public void setNetworkPeer(boolean network_peer) {

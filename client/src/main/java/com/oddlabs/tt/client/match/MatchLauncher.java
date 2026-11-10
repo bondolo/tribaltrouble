@@ -22,10 +22,7 @@ import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.tt.simulation.player.DefaultPlayerSlotHandler;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.util.Utils;
 import org.jspecify.annotations.Nullable;
@@ -100,8 +97,7 @@ public final class MatchLauncher {
                         new DefaultWorldInitAction(), peer, screenManager);
         Client client = new Client(null, networkSelector, matchmakingClient, chatHub,
                 hostId,
-                starterFactory,
-                new DefaultPlayerSlotHandler());
+                starterFactory);
         GameNetwork gameNetwork = new GameNetwork(null, client);
         ConnectingForm connectingForm = new ConnectingForm(gameNetwork, guiRoot, owner, screenManager, peer
                 .getAudioManager());
@@ -144,9 +140,7 @@ public final class MatchLauncher {
         var networkSelector = peer.getNetwork().getSelector();
         final long deterministicSeed = peer.getEventQueue().getHighPrecisionManager().getTick();
         final Server server = new Server(networkSelector, matchmakingClient, game,
-                address, generator, multiplayer, aiNames,
-                (team, raceVal, name) -> new PlayerInfo(team, Race.fromValue(raceVal), name),
-                new DefaultPlayerSlotHandler(), deterministicSeed);
+                address, generator, multiplayer, aiNames, deterministicSeed);
         @SuppressWarnings("unchecked") LoadCallbackFactory starterFactory = (session_id,
                 gen,
                 player_slots, unit_infos,
@@ -155,7 +149,7 @@ public final class MatchLauncher {
                         worldParams, player_slots, unit_infos, player_slot, inGameInfo, initAction, peer,
                         screenManager);
         Client client = new Client(server::close, networkSelector, matchmakingClient,
-                chatHub, -1, starterFactory, new DefaultPlayerSlotHandler());
+                chatHub, -1, starterFactory);
         GameNetwork gameNetwork = new GameNetwork(server, client);
         if (multiplayer) {
             ConnectingForm connectingForm = new ConnectingForm(gameNetwork, guiRoot, owner, screenManager, peer

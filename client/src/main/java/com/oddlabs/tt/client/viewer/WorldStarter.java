@@ -14,6 +14,7 @@ import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.SlotType;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import org.jspecify.annotations.Nullable;
 
@@ -83,7 +84,7 @@ public final class WorldStarter implements LoadCallback<GUIRoot, Screen> {
             List<PlayerSlot> playerSlots) {
         List<Player> players = viewer.getWorld().getPlayers();
         return IntStream.range(0, players.size())
-                .filter(i -> playerSlots.get(i).getType() == PlayerSlot.HUMAN)
+                .filter(i -> playerSlots.get(i).getType() == SlotType.HUMAN)
                 .mapToObj(i -> {
                     Player player = players.get(i);
                     int hostId = playerSlots.get(i).getAddress() != null

@@ -39,8 +39,10 @@ import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.simulation.model.RaceData;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.SlotType;
 import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.Nullable;
 
@@ -69,27 +71,27 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     }
 
     private enum SlotOption {
-        OPEN(PlayerSlot.AI_NONE),
-        CLOSED(PlayerSlot.AI_NONE),
-        COMPUTER_EASY(PlayerSlot.AI_EASY),
-        COMPUTER_NORMAL(PlayerSlot.AI_NORMAL),
-        COMPUTER_HARD(PlayerSlot.AI_HARD);
+        OPEN(AIDifficulty.NONE),
+        CLOSED(AIDifficulty.NONE),
+        COMPUTER_EASY(AIDifficulty.EASY),
+        COMPUTER_NORMAL(AIDifficulty.NORMAL),
+        COMPUTER_HARD(AIDifficulty.HARD);
 
-        private final int aiDifficulty;
+        private final AIDifficulty aiDifficulty;
 
-        SlotOption(int aiDifficulty) {
+        SlotOption(AIDifficulty aiDifficulty) {
             this.aiDifficulty = aiDifficulty;
         }
 
-        int getAIDifficulty() {
+        AIDifficulty getAIDifficulty() {
             return aiDifficulty;
         }
 
-        static SlotOption fromAIDifficulty(int difficulty) {
+        static SlotOption fromAIDifficulty(AIDifficulty difficulty) {
             return switch (difficulty) {
-                case PlayerSlot.AI_EASY -> COMPUTER_EASY;
-                case PlayerSlot.AI_NORMAL -> COMPUTER_NORMAL;
-                case PlayerSlot.AI_HARD -> COMPUTER_HARD;
+                case EASY -> COMPUTER_EASY;
+                case NORMAL -> COMPUTER_NORMAL;
+                case HARD -> COMPUTER_HARD;
                 default -> OPEN;
             };
         }
@@ -221,7 +223,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
         Race race = race_buttons[player_slot].getMenu().getChosenItem().map(PulldownItem::getAttachment).orElse(
                 Race.NATIVES);
         int team = team_buttons[player_slot].getMenu().getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-        PlayerInfo info = (PlayerInfo) player.getInfo();
+        PlayerInfo info = player.getInfo();
         boolean race_changed = info == null || race != info.race();
         boolean team_changed = info == null || team != info.team();
         boolean ready_changed = ready != player.isReady();
@@ -229,7 +231,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
         PulldownButton<?> slot_button = slot_buttons[player_slot];
         switch (option) {
             case OPEN -> {
-                if ((player.getType() != PlayerSlot.OPEN && player.getType() != PlayerSlot.HUMAN) || race_changed
+                if ((player.getType() != SlotType.OPEN && player.getType() != SlotType.HUMAN) || race_changed
                         || team_changed || ready_changed) {
                     if (player_slot == local_player_slot) {
                         int new_type = PlayerSlot.HUMAN;
@@ -242,7 +244,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
                 }
             }
             case CLOSED -> {
-                if (player.getType() != PlayerSlot.CLOSED || race_changed || team_changed) {
+                if (player.getType() != SlotType.CLOSED || race_changed || team_changed) {
                     slot_button.getMenu().getItem(SlotOption.OPEN.ordinal()).ifPresent(pi -> pi.setLabelString(i18n(
                             "open")));
                     game_network.getClient().getServerInterface().resetSlotState(player_slot, false);
@@ -250,7 +252,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
             }
             case COMPUTER_EASY, COMPUTER_NORMAL, COMPUTER_HARD -> {
                 assert !rated;
-                boolean new_ai = player.getType() != PlayerSlot.AI;
+                boolean new_ai = player.getType() != SlotType.AI;
                 if (new_ai || race_changed || team_changed || difficulty_changed) {
                     slot_button.getMenu().getItem(SlotOption.OPEN.ordinal()).ifPresent(pi -> pi.setLabelString(i18n(
                             "open")));
@@ -260,7 +262,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
                     }
                     game_network.getClient().getServerInterface().setPlayerSlot(player_slot, PlayerSlot.AI, race
                             .getValue(),
-                            team, true, option.getAIDifficulty());
+                            team, true, option.getAIDifficulty().getValue());
                 }
             }
         }
@@ -283,7 +285,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
 
     private int countHumans(List<PlayerSlot> players) {
         return (int) players.stream()
-                .filter(player -> player.getType() == PlayerSlot.HUMAN)
+                .filter(player -> player.getType() == SlotType.HUMAN)
                 .count();
     }
 
@@ -303,10 +305,10 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
             PulldownButton<?> team_button = team_buttons[i];
             Diode ready_mark = ready_marks[i];
             ready_mark.setLit(player.isReady());
-            PlayerInfo info = (PlayerInfo) player.getInfo();
+            PlayerInfo info = player.getInfo();
             race_button.getMenu().chooseItem(info != null ? info.race().getValue() : 0);
             team_button.getMenu().chooseItem(info != null ? info.team() : 0);
-            if (player.getType() != PlayerSlot.CLOSED) {
+            if (player.getType() != SlotType.CLOSED) {
                 slot_button.getMenu().getItem(SlotOption.OPEN.ordinal()).ifPresent(pi -> pi.setLabelString(i18n(
                         "open")));
                 slot_button.getMenu().chooseItem(SlotOption.OPEN.ordinal());
@@ -316,16 +318,16 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
             race_button.setDisabled(true);
             team_button.setDisabled(true);
             if (player.getInfo() != null) {
-                PlayerInfo player_info = (PlayerInfo) player.getInfo();
+                PlayerInfo player_info = player.getInfo();
                 switch (player.getType()) {
-                    case PlayerSlot.AI -> {
+                    case AI -> {
                         assert !rated;
                         slot_button.getMenu().chooseItem(SlotOption.fromAIDifficulty(player.getAIDifficulty())
                                 .ordinal());
                         race_button.setDisabled(!canControlSlot(i));
                         team_button.setDisabled(!canControlSlot(i));
                     }
-                    case PlayerSlot.HUMAN -> {
+                    case HUMAN -> {
                         String player_name = player_info.name();
                         new_human_names.add(player_name);
                         slot_button.getMenu().getItem(SlotOption.OPEN.ordinal()).ifPresent(pi -> pi.setLabelString(

@@ -11,12 +11,12 @@ public enum PlayerControllerType {
 
     /// Maps a legacy or lobby player slot to its corresponding simulation controller type.
     public static PlayerControllerType fromSlot(@Nullable PlayerSlot slot) {
-        if (slot == null || slot.getType() != PlayerSlot.AI) {
+        if (slot == null || slot.getType() != SlotType.AI) {
             return HUMAN;
         }
         return switch (slot.getAIDifficulty()) {
-            case PlayerSlot.AI_TOWER_TUTORIAL -> AI_TOWER_TUTORIAL;
-            case PlayerSlot.AI_CHIEFTAIN_TUTORIAL -> AI_CHIEFTAIN_TUTORIAL;
+            case TOWER_TUTORIAL -> AI_TOWER_TUTORIAL;
+            case CHIEFTAIN_TUTORIAL -> AI_CHIEFTAIN_TUTORIAL;
             default -> AI_STANDARD;
         };
     }

@@ -40,25 +40,19 @@ import com.oddlabs.tt.net.ChatMethod;
 import com.oddlabs.tt.net.ChatSender;
 import com.oddlabs.tt.net.InGameChatHistory;
 import com.oddlabs.tt.net.PeerHub;
-import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.model.DistributableTable;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.ai.AI;
-import com.oddlabs.tt.ai.AdvancedAI;
-import com.oddlabs.tt.ai.PassiveAI;
 import com.oddlabs.tt.simulation.player.DelegatingPlayerInterface;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerConfig;
 import com.oddlabs.tt.simulation.player.PlayerControllerType;
-import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.SlotType;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 
 import java.util.LinkedHashMap;
@@ -119,13 +113,15 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.notification_manager = new NotificationManager(gui_root, audioManager, icons.getNotifyArrow(),
                 icons.getNotifyArrowHeadX(), icons.getNotifyArrowHeadY());
         RenderQueues render_queues = new RenderQueues();
-        LandscapeGeometry landscape_geometry = new LandscapeGeometry();
         ProgressListener.subTask(0.15f,
                 () -> new LandscapeAssetsLoader(render_queues));
-        RaceData races_resources = ProgressListener.subTask(0.35f,
-                () -> RacesAssetsLoader.load(render_queues));
+        ProgressListener.subTask(0.35f,
+                () -> {
+                    RacesAssetsLoader.load(render_queues);
+                    return null;
+                });
         registerHarvestEmojis(render_queues, icons);
-        var player_infos = player_slots.stream().map(slot -> (PlayerInfo) slot.getInfo()).toList();
+        var player_infos = player_slots.stream().map(PlayerSlot::getInfo).toList();
         Landscape landscape = ProgressListener.subTask(0.25f,
                 () -> generator.generate(
                         player_infos.size(), world_params.initialUnitCount(), ingame_info.getRandomStartPosition()));
@@ -143,7 +139,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
             PlayerSlot slot = player_slots.get(i);
             UnitInfo unitInfo = unit_infos.get(i);
             String chieftainName = null;
-            if (slot.getType() != PlayerSlot.AI && unitInfo.hasChieftain()) {
+            if (slot.getType() != SlotType.AI && unitInfo.hasChieftain()) {
                 chieftainName = Utils.getBundleString(bundle, switch (player_infos.get(i).race()) {
                     case VIKINGS -> "chieftain_name";
                     case NATIVES -> "native_chieftain_name";
@@ -152,8 +148,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
             playerConfigs.add(new PlayerConfig(player_infos.get(i), playerColours[i % playerColours.length], iface,
                     PlayerControllerType.fromSlot(slot), unitInfo, chieftainName));
         }
-        this.world = new World(races_resources, landscape_geometry, NotificationListener.EMPTY, world_params,
-                world_info.landscape(), playerConfigs);
+        this.world = new World(world_params, world_info.landscape(), playerConfigs);
         ProgressListener.progress(0.10f);
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);
@@ -284,18 +279,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
         for (int i = 0; i < slots.size(); i++) {
             PlayerSlot slot = slots.get(i);
             Player player = players.get(i);
-            if (slot.getType() == PlayerSlot.AI && (!slot.isNetworkPeer() || player == local_player)) {
-                AI ai = switch (slot.getAIDifficulty()) {
-                    case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, Difficulty.NORMAL);
-                    case PlayerSlot.AI_HARD -> new AdvancedAI(player, Difficulty.HARD);
-                    case PlayerSlot.AI_EASY -> new AdvancedAI(player, Difficulty.EASY);
-                    case PlayerSlot.AI_BATTLE_TUTORIAL, PlayerSlot.AI_PASSIVE_CAMPAIGN ->
-                        new PassiveAI(player, true);
-                    case PlayerSlot.AI_NEUTRAL_CAMPAIGN ->
-                        new PassiveAI(player, false);
-                    case PlayerSlot.AI_TOWER_TUTORIAL, PlayerSlot.AI_CHIEFTAIN_TUTORIAL -> null;
-                    default -> throw new IllegalArgumentException("unexpected difficulty: " + slot.getAIDifficulty());
-                };
+            if (slot.getType() == SlotType.AI && (!slot.isNetworkPeer() || player == local_player)) {
+                AI ai = AI.create(player, slot.getAIDifficulty());
                 if (ai != null) {
                     ai_bots.put(player, ai);
                     world.addTickListener(ai::tick);
@@ -326,10 +311,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     public NotificationManager getNotificationManager() {
         return notification_manager;
-    }
-
-    public DistributableTable getDistributableTable() {
-        return world.getDistributableTable();
     }
 
     public GUIRoot getGUIRoot() {

@@ -12,11 +12,9 @@ import com.oddlabs.tt.simulation.player.PlayerControllerType;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.SlotType;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.ai.AI;
-import com.oddlabs.tt.ai.AdvancedAI;
-import com.oddlabs.tt.ai.PassiveAI;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
@@ -86,7 +84,7 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
             @Nullable String routerAddress,
             int routerPort) {
         List<PlayerInfo> playerInfos = playerSlots.stream()
-                .map(slot -> (PlayerInfo) slot.getInfo())
+                .map(PlayerSlot::getInfo)
                 .toList();
 
         final PeerHub[] peerHubRef = new PeerHub[1];
@@ -144,18 +142,8 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
         }
 
         AI ai = null;
-        if (localSlot.getType() == PlayerSlot.AI) {
-            ai = switch (localSlot.getAIDifficulty()) {
-                case PlayerSlot.AI_NORMAL -> new AdvancedAI(localPlayer, Difficulty.NORMAL);
-                case PlayerSlot.AI_HARD -> new AdvancedAI(localPlayer, Difficulty.HARD);
-                case PlayerSlot.AI_EASY -> new AdvancedAI(localPlayer, Difficulty.EASY);
-                case PlayerSlot.AI_BATTLE_TUTORIAL, PlayerSlot.AI_PASSIVE_CAMPAIGN ->
-                    new PassiveAI(localPlayer, true);
-                case PlayerSlot.AI_NEUTRAL_CAMPAIGN ->
-                    new PassiveAI(localPlayer, false);
-                case PlayerSlot.AI_TOWER_TUTORIAL, PlayerSlot.AI_CHIEFTAIN_TUTORIAL -> null;
-                default -> throw new IllegalArgumentException("unexpected difficulty: " + localSlot.getAIDifficulty());
-            };
+        if (localSlot.getType() == SlotType.AI) {
+            ai = AI.create(localPlayer, localSlot.getAIDifficulty());
             if (ai != null) {
                 world.addTickListener(ai::tick);
             }
@@ -167,19 +155,9 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
                 continue;
             }
             PlayerSlot slotK = playerSlots.get(k);
-            if (!slotK.isNetworkPeer() && slotK.getType() == PlayerSlot.AI) {
+            if (!slotK.isNetworkPeer() && slotK.getType() == SlotType.AI) {
                 Player otherPlayer = world.getPlayers().get(k);
-                AI lockstepAi = switch (slotK.getAIDifficulty()) {
-                    case PlayerSlot.AI_NORMAL -> new AdvancedAI(otherPlayer, Difficulty.NORMAL);
-                    case PlayerSlot.AI_HARD -> new AdvancedAI(otherPlayer, Difficulty.HARD);
-                    case PlayerSlot.AI_EASY -> new AdvancedAI(otherPlayer, Difficulty.EASY);
-                    case PlayerSlot.AI_BATTLE_TUTORIAL, PlayerSlot.AI_PASSIVE_CAMPAIGN ->
-                        new PassiveAI(otherPlayer, true);
-                    case PlayerSlot.AI_NEUTRAL_CAMPAIGN ->
-                        new PassiveAI(otherPlayer, false);
-                    case PlayerSlot.AI_TOWER_TUTORIAL, PlayerSlot.AI_CHIEFTAIN_TUTORIAL -> null;
-                    default -> throw new IllegalArgumentException("unexpected difficulty: " + slotK.getAIDifficulty());
-                };
+                AI lockstepAi = AI.create(otherPlayer, slotK.getAIDifficulty());
                 if (lockstepAi != null) {
                     lockstepAis.put(otherPlayer, lockstepAi);
                     world.addTickListener(lockstepAi::tick);
