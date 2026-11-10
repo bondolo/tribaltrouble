@@ -2,6 +2,7 @@ package com.oddlabs.matchmaking;
 
 import com.oddlabs.net.ARMIEvent;
 import com.oddlabs.net.HostSequenceID;
+import org.jspecify.annotations.Nullable;
 
 public interface MatchmakingServerInterface {
     int TYPE_NONE = 0;
@@ -29,7 +30,7 @@ public interface MatchmakingServerInterface {
 
     void logPriority(String nick, int priority);
 
-    void registerGame(Game game);
+    void registerGame(@Nullable Game game);
 
     void unregisterGame();
 
