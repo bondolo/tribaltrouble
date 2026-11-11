@@ -27,4 +27,6 @@ dependencies {
     implementation(project(":effects"))
     api(project(":gui"))
     compileOnlyApi(libs.jspecify)
+    testImplementation(testFixtures(project(":simulation")))
+    testRuntimeOnly(project(":assets"))
 }

@@ -21,7 +21,8 @@ import java.util.List;
  * @param maxTicks maximum simulation ticks before match termination
  * @param checksumIntervalTicks frequency of deterministic state checksum validations
  * @param timeManager clock manager driving session networking and pace
- * @param stallTimeout maximum elapsed real time allowed without simulation tick progress before failing
+ * @param stallTimeout maximum elapsed real time allowed without simulation tick progress before failing, or
+ *            {@link Duration#ZERO} to disable
  */
 public record HeadlessMatchConfig(
                                   IslandConfig islandConfig,

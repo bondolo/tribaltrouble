@@ -7,7 +7,6 @@ import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.tt.simulation.model.RubberSupply;
 import com.oddlabs.tt.simulation.model.SupplyModel;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -15,7 +14,6 @@ import org.jspecify.annotations.Nullable;
  *
  * @param <S> the specific SupplyModel type
  */
-@NullMarked
 public abstract class AbstractSupplyVisualModel<S extends SupplyModel> extends AbstractVisualModel
         implements SupplyVisualModel {
     private static final int ROTATION_HASH_X = 73;
@@ -111,5 +109,14 @@ public abstract class AbstractSupplyVisualModel<S extends SupplyModel> extends A
             case RUBBER -> 2.0f;
             case WOOD -> 3.0f;
         };
+    }
+
+    @Override
+    public void visit(RenderState rs) {
+        if (supplyModel instanceof RubberSupply rubber) {
+            rs.visitRubberSupply(rubber);
+        } else {
+            rs.visitSupplyModel(supplyModel);
+        }
     }
 }

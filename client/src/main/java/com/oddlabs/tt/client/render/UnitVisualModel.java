@@ -20,7 +20,7 @@ import org.lwjgl.opengl.GL11;
  * {@link VisualModel} implementation for units managing carried resources, stun particle effects, and dynamic status
  * accessories.
  */
-public final class UnitVisualModel extends AbstractVisualModel {
+public final class UnitVisualModel extends SelectableVisualModel<Unit> {
     private final Unit unit;
     private Matrix4f @Nullable [] evaluatedBones;
     private int evaluatedAnimation = -1;
@@ -35,6 +35,16 @@ public final class UnitVisualModel extends AbstractVisualModel {
         if (unit.getAbilities().hasAbilities(Abilities.THROW)) {
             addAccessory(new WeaponAccessory(unit, this));
         }
+    }
+
+    @Override
+    public float getSelectionRadius() {
+        return unit.getTemplate().getSelectionRadius();
+    }
+
+    @Override
+    public float getSelectionHeight() {
+        return unit.getTemplate().getSelectionHeight();
     }
 
     /**

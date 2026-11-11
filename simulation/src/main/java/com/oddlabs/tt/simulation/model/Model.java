@@ -15,6 +15,7 @@ public abstract class Model extends Element<Model> implements Shadowable, Distri
     /** if true then the Model is positioned relative to the terrain at (x, y) */
     private boolean groundBased = true;
     private int distributable_id = Distributable.NO_ID;
+    private transient @Nullable ClientModel clientModel;
 
     protected Model(World world) {
         super(world.getElementRoot());
@@ -39,6 +40,22 @@ public abstract class Model extends Element<Model> implements Shadowable, Distri
     @Override
     public void setId(int id) {
         this.distributable_id = id;
+    }
+
+    /**
+     * {@return the client-side presentation state bound to this model, or null if none or headless}
+     */
+    public final @Nullable ClientModel getClientModel() {
+        return clientModel;
+    }
+
+    /**
+     * Sets the client-side presentation state bound to this model.
+     *
+     * @param clientModel the client model, or null to detach
+     */
+    public final void setClientModel(@Nullable ClientModel clientModel) {
+        this.clientModel = clientModel;
     }
 
     @Override

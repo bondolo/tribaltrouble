@@ -85,7 +85,7 @@ public final class HeadlessMatchRunner {
             long lastTickAdvanceNanos = System.nanoTime();
             int lastObservedTick = initialTick;
             Duration stallTimeout = config.stallTimeout();
-            long stallTimeoutNanos = stallTimeout != null ? stallTimeout.toNanos() : 0L;
+            long stallTimeoutNanos = Math.max(0L, stallTimeout.toNanos());
 
             while (true) {
                 harness.stepConcurrent();
@@ -98,7 +98,8 @@ public final class HeadlessMatchRunner {
                     lastTickAdvanceNanos = System.nanoTime();
                 } else if (stallTimeoutNanos > 0L && System.nanoTime() - lastTickAdvanceNanos > stallTimeoutNanos) {
                     List<String> instanceState = harness.getInstances().stream()
-                            .map(i -> i.getLocalPlayer().getPlayerInfo().name() + "@" + i.getTick() + "(alive=" + i.isAlive() + ")")
+                            .map(i -> i.getLocalPlayer().getPlayerInfo().name() + "@" + i.getTick() + "(alive=" + i
+                                    .isAlive() + ")")
                             .toList();
                     throw new TimeoutException("Simulation stalled: tick " + minTick + " has not advanced for "
                             + stallTimeout + ": " + instanceState);

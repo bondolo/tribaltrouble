@@ -7,6 +7,7 @@ import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.engine.render.AnimatedAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.ElementSceneContext;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon;
 import org.joml.Matrix4f;
@@ -64,6 +65,18 @@ abstract sealed class ThrowingWeaponVisualModel<T extends ThrowingWeapon> extend
     }
 
     public abstract void getTransform(Matrix4f dest);
+
+    public abstract void getTransform(Matrix4f dest, float alpha);
+
+    @Override
+    public void visit(RenderState rs) {
+        if (!rs.isPicking()) {
+            ElementSceneContext<T> state = (ElementSceneContext<T>) rs.getCachedState(rs.getWeaponModelVisitor(),
+                    weapon);
+            state.addToRenderList();
+            rs.visitAccessories(weapon, state);
+        }
+    }
 
     @Override
     protected final boolean isSelfExpired() {

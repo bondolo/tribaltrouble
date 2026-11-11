@@ -31,6 +31,7 @@ final class RotatingThrowingWeaponVisualModel extends ThrowingWeaponVisualModel<
         getTransform(dest, 1.0f);
     }
 
+    @Override
     public void getTransform(Matrix4f dest, float alpha) {
         float x = weapon.getInterpolatedPositionX(alpha);
         float y = weapon.getInterpolatedPositionY(alpha);

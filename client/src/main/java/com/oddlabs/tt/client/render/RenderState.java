@@ -1,7 +1,10 @@
 package com.oddlabs.tt.client.render;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
-import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Queue;
 import java.util.SequencedCollection;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.base.animation.Animated;
@@ -30,41 +33,23 @@ import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.StaticAccessory;
 import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.net.PeerHub;
-import com.oddlabs.tt.simulation.model.Building;
-import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Element;
-import com.oddlabs.tt.simulation.model.IronSupply;
-import com.oddlabs.tt.simulation.model.CaptiveScenery;
-import com.oddlabs.tt.simulation.model.GodScenery;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Plants;
 import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.tt.simulation.model.RallyPointScenery;
-import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.tt.simulation.model.RubberSupply;
 import com.oddlabs.tt.simulation.model.SceneryModel;
-import com.oddlabs.tt.simulation.model.StatueScenery;
-import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.tt.simulation.model.SupplyModel;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.model.weapon.DirectedThrowingWeapon;
-import com.oddlabs.tt.simulation.model.weapon.LightningCloud;
-import com.oddlabs.tt.simulation.model.weapon.PoisonFog;
-import com.oddlabs.tt.simulation.model.weapon.RotatingThrowingWeapon;
-import com.oddlabs.tt.simulation.model.weapon.SonicBlast;
-import com.oddlabs.tt.simulation.model.weapon.Stun;
+import com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.util.Color;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
-
-import java.util.ArrayDeque;
-import java.util.Queue;
-import java.util.stream.Stream;
 
 /**
  * Manages the rendering state and visit logic for world entities and their accessories.
@@ -84,7 +69,7 @@ public final class RenderState implements SceneContext {
     private final Player local_player;
     private final Matrix4f emitterTransform = new Matrix4f();
     private final AudioImplementation audio;
-    private final IdentityHashMap<Model, VisualModel> visualModels = new IdentityHashMap<>();
+    private final List<VisualModel> activeVisualModels = new ArrayList<>();
     private final Deque<VisualModel> detachedVisualModels = new ArrayDeque<>();
 
     private boolean picking;
@@ -126,65 +111,21 @@ public final class RenderState implements SceneContext {
             }
             return;
         }
-        switch (element) {
-            case Unit unit -> visitUnit(unit);
-            case Building building -> visitBuilding(building);
-            case RubberSupply model -> visitRubberSupply(model);
-            case SupplyModel model -> visitSupplyModel(model);
-            case Plants plants -> visitPlants(plants);
-            case SceneryModel model -> visitSceneryModel(model);
-            case DirectedThrowingWeapon weapon -> {
-                if (!picking) {
-                    var state = getCachedState(directed_weapon_model_visitor, weapon);
-                    state.addToRenderList();
-                    visitAccessories(weapon, state);
-                }
-            }
-            case RotatingThrowingWeapon weapon -> {
-                if (!picking) {
-                    var state = getCachedState(rotating_weapon_model_visitor, weapon);
-                    state.addToRenderList();
-                    visitAccessories(weapon, state);
-                }
-            }
-            case SonicBlast blast -> visitSonicBlast(blast);
-            case LightningCloud cloud -> visitLightningCloud(cloud);
-            case PoisonFog fog -> visitPoisonFog(fog);
-            case Stun stun -> visitStun(stun);
-            default -> throw new UnsupportedOperationException("element has no rendering defined " + element);
+        if (element instanceof SceneryModel scenery) {
+            visitScenery(scenery);
+        } else if (element instanceof Model model) {
+            getOrCreateVisualModel(model).visit(this);
+        } else {
+            throw new UnsupportedOperationException("element has no rendering defined " + element);
         }
     }
 
-    private void visitLightningCloud(final LightningCloud cloud) {
-        if (picking) return;
-        float z_offset = getVisuallyCorrectHeight(cloud.getPositionX(), cloud.getPositionY());
-        ElementSceneContext<LightningCloud> state = (ElementSceneContext<LightningCloud>) getCachedState(
-                WhiteModelVisitor.getInstance(), cloud, z_offset);
-        visitAccessories(cloud, state);
-    }
-
-    private void visitPoisonFog(final PoisonFog fog) {
-        if (picking) return;
-        float z_offset = getVisuallyCorrectHeight(fog.getPositionX(), fog.getPositionY());
-        ElementSceneContext<PoisonFog> state = (ElementSceneContext<PoisonFog>) getCachedState(
-                WhiteModelVisitor.getInstance(), fog, z_offset);
-        visitAccessories(fog, state);
-    }
-
-    private void visitStun(final Stun stun) {
-        if (picking) return;
-        float z_offset = getVisuallyCorrectHeight(stun.getPositionX(), stun.getPositionY());
-        ElementSceneContext<Stun> state = (ElementSceneContext<Stun>) getCachedState(
-                WhiteModelVisitor.getInstance(), stun, z_offset);
-        visitAccessories(stun, state);
-    }
-
-    private void visitSonicBlast(final SonicBlast blast) {
-        if (picking) return;
-        float z_offset = getVisuallyCorrectHeight(blast.getPositionX(), blast.getPositionY());
-        ElementSceneContext<SonicBlast> state = (ElementSceneContext<SonicBlast>) getCachedState(
-                WhiteModelVisitor.getInstance(), blast, z_offset);
-        visitAccessories(blast, state);
+    private void visitScenery(final SceneryModel scenery) {
+        if (scenery instanceof Plants plants) {
+            visitPlants(plants);
+        } else {
+            visitSceneryModel(scenery);
+        }
     }
 
     Player getLocalPlayer() {
@@ -232,7 +173,7 @@ public final class RenderState implements SceneContext {
             float gameSpeedFactor = local_player.getWorld().getSecondsPerTick()
                     / AnimationManager.ANIMATION_SECONDS_PER_TICK;
             float gameDt = dt * gameSpeedFactor;
-            visualModels.values().forEach(vm -> vm.update(gameDt));
+            activeVisualModels.forEach(vm -> vm.update(gameDt));
             detachedVisualModels.forEach(vm -> vm.update(gameDt));
             detachedVisualModels.removeIf(vm -> {
                 if (vm.isExpired()) {
@@ -253,22 +194,24 @@ public final class RenderState implements SceneContext {
 
     private void prepareEffects() {
         if (picking) return;
-        Stream.concat(visualModels.values().stream(), detachedVisualModels.stream())
-                .forEach(vm -> {
-                    switch (vm) {
-                        case LightningCloudVisualModel lca:
-                            lightning_queue.addAll(lca.getActiveLightnings());
-                            break;
-                        case SonicBlastVisualModel sbv:
-                            SonicBlastEffect effect = sbv.getEffect();
-                            if (effect != null && !effect.isDead()) {
-                                sonic_blast_queue.add(effect);
-                            }
-                            break;
-                        default:
-                            break;
+        collectEffects(activeVisualModels);
+        collectEffects(detachedVisualModels);
+    }
+
+    private void collectEffects(Iterable<VisualModel> models) {
+        for (VisualModel vm : models) {
+            switch (vm) {
+                case LightningCloudVisualModel lca -> lightning_queue.addAll(lca.getActiveLightnings());
+                case SonicBlastVisualModel sbv -> {
+                    SonicBlastEffect effect = sbv.getEffect();
+                    if (effect != null && !effect.isDead()) {
+                        sonic_blast_queue.add(effect);
                     }
-                });
+                }
+                default -> {
+                }
+            }
+        }
     }
 
     private void prepareDetachedVisualEffects() {
@@ -311,29 +254,24 @@ public final class RenderState implements SceneContext {
         return visible_override;
     }
 
-    private static final ModelVisitor<Unit> unit_visitor = new SelectableVisitor<>();
-
-    private void visitUnit(final Unit unit) {
-        float alpha = getInterpolationAlpha();
-        float x = unit.getInterpolatedPositionX(alpha);
-        float y = unit.getInterpolatedPositionY(alpha);
-        float z_offset = getVisuallyCorrectHeight(x, y) + unit.getOffsetZ();
-        visitSelectable(unit_visitor, unit, z_offset, unit.getTemplate().getSelectionRadius(), unit.getTemplate()
-                .getSelectionHeight());
+    boolean isPicking() {
+        return picking;
     }
+
+    private static final ModelVisitor<Selectable<?>> selectable_visitor = new SelectableVisitor<>();
 
     private <M extends Model> ElementSceneContext<M> doGetCachedState() {
         return (ElementSceneContext<M>) render_state_cache.get();
     }
 
-    private <M extends Model> ElementSceneContext<M> getCachedState(ModelVisitor<M> visitor,
+    <M extends Model> ElementSceneContext<M> getCachedState(ModelVisitor<M> visitor,
             M model) {
         ElementSceneContext<M> state = doGetCachedState();
         state.setup(visitor, model);
         return state;
     }
 
-    private <M extends Model> ElementSceneContext<M> getCachedState(ModelVisitor<M> visitor, M model,
+    <M extends Model> ElementSceneContext<M> getCachedState(ModelVisitor<M> visitor, M model,
             float dist_squared) {
         ElementSceneContext<M> state = doGetCachedState();
         state.setup(visitor, model, dist_squared);
@@ -358,8 +296,7 @@ public final class RenderState implements SceneContext {
         return selection != null && selection.getCurrentSelection().contains(selectable);
     }
 
-    private <S extends Selectable<?>> void visitSelectable(ModelVisitor<S> visitor, S selectable,
-            float z_offset, float selection_radius, float selection_height) {
+    void visitSelectable(Selectable<?> selectable, float z_offset, float selection_radius, float selection_height) {
         boolean in_view = !picking || (selectable.isEnabled() && (visible_override || pickingInFrustum(selectable,
                 camera.getFrustum(), z_offset, selection_radius, selection_height)));
         if (in_view) {
@@ -371,20 +308,13 @@ public final class RenderState implements SceneContext {
             boolean isMapPoint = camera != null && camera.inNoDetailMode() && (!local_player.isEnemy(owner) || (!owner
                     .teamHasBuilding() && PeerHub
                             .getFreeQuitTimeLeft(local_player.getWorld()) < 0f));
-            ElementSceneContext<S> state = (ElementSceneContext<S>) getCachedState(visitor, selectable, z_offset);
+            ElementSceneContext<Selectable<?>> state = getCachedState(selectable_visitor, selectable, z_offset);
             if (isMapPoint) {
                 state.markDetailPoint();
             } else {
                 state.addToRenderList();
                 if (selectable.isEnabled()) {
-                    ShadowListKey shadowKey = null;
-                    Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
-                    if (selectable instanceof Unit) {
-                        shadowKey = AssetRegistry.getInstance().getDefaultUnitShadow();
-                    } else if (selectable instanceof Building building) {
-                        BuildingType bvt = building.getTemplate().getBuildingType();
-                        shadowKey = AssetRegistry.getInstance().getBuildingVisuals(race, bvt).shadow();
-                    }
+                    ShadowListKey shadowKey = AssetRegistry.getInstance().getSelectableShadow(selectable);
                     if (shadowKey != null) {
                         SelectableShadowRenderer shadow_renderer = (SelectableShadowRenderer) render_queues
                                 .getShadowRenderer(shadowKey);
@@ -400,11 +330,17 @@ public final class RenderState implements SceneContext {
         }
     }
 
-    private VisualModel getOrCreateVisualModel(Model model) {
-        return visualModels.computeIfAbsent(model, m -> ClientStateInitializer.createVisualModel(m, audio));
+    VisualModel getOrCreateVisualModel(Model model) {
+        VisualModel vm = (VisualModel) model.getClientModel();
+        if (vm == null) {
+            vm = VisualModelRegistry.getDefault().createVisualModel(model, audio);
+            model.setClientModel(vm);
+            activeVisualModels.add(vm);
+        }
+        return vm;
     }
 
-    private <M extends Model> void visitAccessories(M model, ElementSceneContext<M> parentState) {
+    <M extends Model> void visitAccessories(M model, ElementSceneContext<M> parentState) {
         VisualModel visualModel = getOrCreateVisualModel(model);
 
         if (visualModel instanceof UnitVisualModel unitVisualModel) {
@@ -413,7 +349,7 @@ public final class RenderState implements SceneContext {
 
         SequencedCollection<Accessory> accessories = visualModel.getAccessories();
         for (Accessory accessory : accessories) {
-            if (accessory != null && accessory.isVisible(model, camera)) {
+            if (accessory.isVisible(model, camera)) {
                 visitAccessory(accessory, parentState);
             }
         }
@@ -472,34 +408,6 @@ public final class RenderState implements SceneContext {
         return local_player.getWorld().getHeightMap().computeInterpolatedHeight(0, x_f, y_f);
     }
 
-    private static float getBuildingSelectionRadius(Building building) {
-        Building.BuildStage render_level = building.getBuildStage();
-        var template = building.getTemplate();
-        return switch (render_level) {
-            case START -> template.getStartSelectionRadius();
-            case HALFBUILT -> template.getHalfbuiltSelectionRadius();
-            case UNPLACED, BUILT -> template.getBuiltSelectionRadius();
-        };
-    }
-
-    private static float getBuildingSelectionHeight(Building building) {
-        Building.BuildStage render_level = building.getBuildStage();
-        var template = building.getTemplate();
-        return switch (render_level) {
-            case START -> template.getStartSelectionHeight();
-            case HALFBUILT -> template.getHalfbuiltSelectionHeight();
-            case UNPLACED, BUILT -> template.getBuiltSelectionHeight();
-        };
-    }
-
-    private static final ModelVisitor<Building> building_visitor = new SelectableVisitor<>();
-
-    private void visitBuilding(final Building building) {
-        float z_offset = getVisuallyCorrectHeight(building.getPositionX(), building.getPositionY());
-        visitSelectable(building_visitor, building, z_offset, getBuildingSelectionRadius(building),
-                getBuildingSelectionHeight(building));
-    }
-
     private final ModelVisitor<SupplyModel> supply_model_visitor = new WhiteModelVisitor<>() {
         @Override
         public @Nullable SpriteKey getSpriteKey(ElementSceneContext<SupplyModel> render_state) {
@@ -507,11 +415,7 @@ public final class RenderState implements SceneContext {
             if (getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
                 return svm.getSpriteKey();
             }
-            return switch (model) {
-                case RockSupply rock -> AssetRegistry.getInstance().getRockFragmentSprite(rock.getFragmentIndex());
-                case IronSupply iron -> AssetRegistry.getInstance().getIronFragmentSprite(iron.getFragmentIndex());
-                default -> null;
-            };
+            return AssetRegistry.getInstance().getSupplySprite(model);
         }
 
         @Override
@@ -532,7 +436,7 @@ public final class RenderState implements SceneContext {
         }
     };
 
-    private void visitSupplyModel(final SupplyModel model) {
+    void visitSupplyModel(final SupplyModel model) {
         float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY());
         if (picking) {
             if (pickingInFrustum(model, camera.getFrustum(), z_offset, Math.max(1.0f, model.getSize()), 2.0f)) {
@@ -604,7 +508,7 @@ public final class RenderState implements SceneContext {
         }
     };
 
-    private void visitRubberSupply(final RubberSupply model) {
+    void visitRubberSupply(final RubberSupply model) {
         float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY()) + model.getOffsetZ();
         if (picking) {
             if (pickingInFrustum(model, camera.getFrustum(), z_offset, Math.max(1.0f, model.getSize()), 2.0f)) {
@@ -624,16 +528,7 @@ public final class RenderState implements SceneContext {
     private static final ModelVisitor<SceneryModel> scenery_model_visitor = new WhiteModelVisitor<>() {
         @Override
         public SpriteKey getSpriteKey(ElementSceneContext<SceneryModel> render_state) {
-            return switch (render_state.getModel()) {
-                case StatueScenery statue -> AssetRegistry.getInstance().getTreasures()[statue.getTreasureIndex()];
-                case CaptiveScenery captive -> AssetRegistry.getInstance().getUnitSprite(
-                        captive.getRace(), captive.getUnitType());
-                case GodScenery god -> AssetRegistry.getInstance().getUnitSprite(
-                        god.getRace(), UnitType.CHIEFTAIN);
-                case RallyPointScenery rally -> AssetRegistry.getInstance().getRallyPoint(rally.getRace());
-                case Plants plants -> AssetRegistry.getInstance().getPlantSprite(plants.getTerrain(), plants
-                        .getIndex());
-            };
+            return AssetRegistry.getInstance().getScenerySprite(render_state.getModel());
         }
     };
 
@@ -694,59 +589,33 @@ public final class RenderState implements SceneContext {
         }
     }
 
-    private static final ModelVisitor<DirectedThrowingWeapon> directed_weapon_model_visitor
+    private static final ModelVisitor<ThrowingWeapon> weapon_model_visitor
             = new WhiteModelVisitor<>() {
                 @Override
-                public @Nullable SpriteKey getSpriteKey(ElementSceneContext<
-                        DirectedThrowingWeapon> render_state) {
-                    DirectedThrowingWeapon model = render_state.getModel();
+                public @Nullable SpriteKey getSpriteKey(ElementSceneContext<ThrowingWeapon> render_state) {
+                    ThrowingWeapon model = render_state.getModel();
                     Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
-                    return AssetRegistry.getInstance().getWeaponSprite(race, model
-                            .getWeaponTier());
+                    return AssetRegistry.getInstance().getWeaponSprite(race, model.getWeaponTier());
                 }
 
                 @Override
-                public void getTransform(ElementSceneContext<DirectedThrowingWeapon> render_state,
-                        Matrix4f dest) {
+                public void getTransform(ElementSceneContext<ThrowingWeapon> render_state, Matrix4f dest) {
                     if (render_state.sceneContext instanceof RenderState rs
                             && rs.getOrCreateVisualModel(render_state
-                                    .getModel()) instanceof DirectedThrowingWeaponVisualModel vm) {
+                                    .getModel()) instanceof ThrowingWeaponVisualModel<?> vm) {
                         vm.getTransform(dest, render_state.sceneContext.getInterpolationAlpha());
                     }
                 }
 
                 @Override
-                public Color getTeamColor(ElementSceneContext<DirectedThrowingWeapon> render_state) {
+                public Color getTeamColor(ElementSceneContext<ThrowingWeapon> render_state) {
                     return render_state.getModel().getSrc().getOwner().getColor();
                 }
             };
 
-    private static final ModelVisitor<RotatingThrowingWeapon> rotating_weapon_model_visitor
-            = new WhiteModelVisitor<>() {
-                @Override
-                public @Nullable SpriteKey getSpriteKey(ElementSceneContext<
-                        RotatingThrowingWeapon> render_state) {
-                    RotatingThrowingWeapon model = render_state.getModel();
-                    Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
-                    return AssetRegistry.getInstance().getWeaponSprite(race, model
-                            .getWeaponTier());
-                }
-
-                @Override
-                public void getTransform(ElementSceneContext<RotatingThrowingWeapon> render_state,
-                        Matrix4f dest) {
-                    if (render_state.sceneContext instanceof RenderState rs
-                            && rs.getOrCreateVisualModel(render_state
-                                    .getModel()) instanceof RotatingThrowingWeaponVisualModel vm) {
-                        vm.getTransform(dest, render_state.sceneContext.getInterpolationAlpha());
-                    }
-                }
-
-                @Override
-                public Color getTeamColor(ElementSceneContext<RotatingThrowingWeapon> render_state) {
-                    return render_state.getModel().getSrc().getOwner().getColor();
-                }
-            };
+    ModelVisitor<ThrowingWeapon> getWeaponModelVisitor() {
+        return weapon_model_visitor;
+    }
 
     public Queue<Emitter<?>> getEmitterQueue() {
         return emitter_queue;
@@ -788,8 +657,10 @@ public final class RenderState implements SceneContext {
     }
 
     private void detachOrCloseVisualModel(Model model) {
-        VisualModel vm = visualModels.remove(model);
+        VisualModel vm = (VisualModel) model.getClientModel();
         if (vm != null) {
+            model.setClientModel(null);
+            activeVisualModels.remove(vm);
             if (!vm.isExpired()) {
                 detachedVisualModels.add(vm);
             } else {
@@ -799,8 +670,11 @@ public final class RenderState implements SceneContext {
     }
 
     public void close() {
-        visualModels.values().forEach(VisualModel::close);
-        visualModels.clear();
+        for (VisualModel vm : activeVisualModels) {
+            vm.getModel().setClientModel(null);
+            vm.close();
+        }
+        activeVisualModels.clear();
         detachedVisualModels.forEach(VisualModel::close);
         detachedVisualModels.clear();
     }

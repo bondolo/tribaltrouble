@@ -4,10 +4,22 @@ import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.engine.procedural.GeneratorCrack;
 import com.oddlabs.tt.engine.procedural.GeneratorHalos;
 import com.oddlabs.tt.engine.render.*;
+import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
+import com.oddlabs.tt.simulation.model.CaptiveScenery;
+import com.oddlabs.tt.simulation.model.GodScenery;
+import com.oddlabs.tt.simulation.model.IronSupply;
+import com.oddlabs.tt.simulation.model.Plants;
 import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.model.RallyPointScenery;
+import com.oddlabs.tt.simulation.model.RockSupply;
+import com.oddlabs.tt.simulation.model.SceneryModel;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.StatueScenery;
+import com.oddlabs.tt.simulation.model.SupplyModel;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Terrain;
+import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.model.WeaponTier;
 import org.jspecify.annotations.Nullable;
@@ -328,5 +340,52 @@ public final class AssetRegistry {
             throw new IllegalStateException("Chicken sprite not registered");
         }
         return chickenSprite;
+    }
+
+    /**
+     * Resolves the graphics sprite key for any scenery model.
+     *
+     * @param scenery the scenery model
+     * @return the resolved sprite key
+     */
+    public SpriteKey getScenerySprite(SceneryModel scenery) {
+        return switch (scenery) {
+            case StatueScenery statue -> getTreasures()[statue.getTreasureIndex()];
+            case CaptiveScenery captive -> getUnitSprite(captive.getRace(), captive.getUnitType());
+            case GodScenery god -> getUnitSprite(god.getRace(), UnitType.CHIEFTAIN);
+            case RallyPointScenery rally -> getRallyPoint(rally.getRace());
+            case Plants plants -> getPlantSprite(plants.getTerrain(), plants.getIndex());
+        };
+    }
+
+    /**
+     * Resolves the shadow list key for a selectable entity (unit or building).
+     *
+     * @param selectable the selectable entity
+     * @return the shadow list key, or null if unshadowed
+     */
+    public @Nullable ShadowListKey getSelectableShadow(Selectable<?> selectable) {
+        Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
+        if (selectable instanceof Unit) {
+            return getDefaultUnitShadow();
+        } else if (selectable instanceof Building building) {
+            BuildingType bvt = building.getTemplate().getBuildingType();
+            return getBuildingVisuals(race, bvt).shadow();
+        }
+        return null;
+    }
+
+    /**
+     * Resolves the fallback sprite key for a supply model.
+     *
+     * @param supply the supply model
+     * @return the fallback sprite key, or null if handled by visual model
+     */
+    public @Nullable SpriteKey getSupplySprite(SupplyModel supply) {
+        return switch (supply) {
+            case RockSupply rock -> getRockFragmentSprite(rock.getFragmentIndex());
+            case IronSupply iron -> getIronFragmentSprite(iron.getFragmentIndex());
+            default -> null;
+        };
     }
 }

@@ -102,7 +102,7 @@ public final class Main {
                 case "--stall-timeout" -> {
                     if (i + 1 < args.length) {
                         long seconds = Long.parseLong(args[++i]);
-                        stallTimeout = seconds > 0 ? Duration.ofSeconds(seconds) : null;
+                        stallTimeout = seconds > 0 ? Duration.ofSeconds(seconds) : Duration.ZERO;
                     }
                 }
                 case "--terrain" -> {
