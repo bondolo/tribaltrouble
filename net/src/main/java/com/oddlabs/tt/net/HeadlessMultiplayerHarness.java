@@ -238,8 +238,14 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
             jitterTimeManager.advance();
         }
         pumpNetwork();
+        int minTick = Integer.MAX_VALUE;
         for (HeadlessSimulationInstance instance : instances) {
-            instance.animate(dt);
+            minTick = Math.min(minTick, instance.getTick());
+        }
+        for (HeadlessSimulationInstance instance : instances) {
+            if (instance.getTick() <= minTick) {
+                instance.animate(dt);
+            }
         }
         pumpNetwork();
     }
@@ -268,8 +274,13 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
         if (startBarrier == null || doneBarrier == null) {
             return;
         }
+        int minTick = Integer.MAX_VALUE;
+        for (HeadlessSimulationInstance instance : instances) {
+            minTick = Math.min(minTick, instance.getTick());
+        }
         for (InstanceWorker worker : workers) {
             worker.currentDt = dt;
+            worker.shouldAnimate = (worker.instance.getTick() <= minTick);
         }
         try {
             startBarrier.await();
@@ -433,6 +444,7 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
         private final CyclicBarrier startBarrier;
         private final CyclicBarrier doneBarrier;
         private volatile float currentDt;
+        private volatile boolean shouldAnimate = true;
         private volatile boolean running = true;
         private volatile @Nullable Throwable failure;
 
@@ -456,7 +468,9 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
                             break;
                         }
                         try {
-                            instance.animate(currentDt);
+                            if (shouldAnimate) {
+                                instance.animate(currentDt);
+                            }
                         } catch (Throwable t) {
                             failure = t;
                         }

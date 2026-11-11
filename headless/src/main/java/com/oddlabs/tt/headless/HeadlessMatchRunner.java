@@ -89,23 +89,26 @@ public final class HeadlessMatchRunner {
 
             while (true) {
                 harness.stepConcurrent();
+                int minTick = harness.getInstances().stream()
+                        .mapToInt(HeadlessSimulationInstance::getTick)
+                        .min().orElse(initialTick);
+
+                if (minTick != lastObservedTick) {
+                    lastObservedTick = minTick;
+                    lastTickAdvanceNanos = System.nanoTime();
+                } else if (stallTimeoutNanos > 0L && System.nanoTime() - lastTickAdvanceNanos > stallTimeoutNanos) {
+                    List<String> instanceState = harness.getInstances().stream()
+                            .map(i -> i.getLocalPlayer().getPlayerInfo().name() + "@" + i.getTick() + "(alive=" + i.isAlive() + ")")
+                            .toList();
+                    throw new TimeoutException("Simulation stalled: tick " + minTick + " has not advanced for "
+                            + stallTimeout + ": " + instanceState);
+                }
+
                 if (!harness.areTicksAligned()) {
-                    if (stallTimeoutNanos > 0L && System.nanoTime() - lastTickAdvanceNanos > stallTimeoutNanos) {
-                        throw new TimeoutException("Simulation stalled: instance ticks failed to align within "
-                                + stallTimeout);
-                    }
                     continue;
                 }
                 int currentTick = harness.getInstances().getFirst().getTick();
                 int elapsedTicks = currentTick - initialTick;
-
-                if (currentTick != lastObservedTick) {
-                    lastObservedTick = currentTick;
-                    lastTickAdvanceNanos = System.nanoTime();
-                } else if (stallTimeoutNanos > 0L && System.nanoTime() - lastTickAdvanceNanos > stallTimeoutNanos) {
-                    throw new TimeoutException("Simulation stalled: tick " + currentTick + " has not advanced for "
-                            + stallTimeout);
-                }
 
                 if (checksumInterval > 0 && currentTick % checksumInterval == 0) {
                     harness.verifyChecksums();

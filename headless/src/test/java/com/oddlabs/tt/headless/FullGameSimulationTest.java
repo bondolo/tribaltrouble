@@ -58,7 +58,7 @@ class FullGameSimulationTest {
                 islandConfig,
                 worldParameters,
                 players,
-                150_000,
+                300_000,
                 50
         );
 
@@ -157,7 +157,7 @@ class FullGameSimulationTest {
                 islandConfig,
                 worldParameters,
                 players,
-                150_000,
+                300_000,
                 50
         );
 
