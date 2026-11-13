@@ -179,7 +179,7 @@ final class GameArgumentSerializationTest {
         }
 
         @Override
-        public void doMagic(Unit chieftain, MagicType magic) {
+        public void doMagic(Unit chieftain, MagicType magic, boolean clearStack) {
         }
 
         @Override

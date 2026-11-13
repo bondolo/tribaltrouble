@@ -43,8 +43,8 @@ public final class DelegatingPlayerInterface implements PlayerInterface {
     }
 
     @Override
-    public void doMagic(Unit chieftain, MagicType magic) {
-        delegate().doMagic(chieftain, magic);
+    public void doMagic(Unit chieftain, MagicType magic, boolean clearStack) {
+        delegate().doMagic(chieftain, magic, clearStack);
     }
 
     @Override

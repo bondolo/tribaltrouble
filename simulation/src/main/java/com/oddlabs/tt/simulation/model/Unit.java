@@ -165,13 +165,15 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         setGridPosition(reserved_target.getGridX(), reserved_target.getGridY());
         setPosition(reserved_target.getPositionX(), reserved_target.getPositionY());
 
-        // Orient initially towards world center
-        float center = getOwner().getWorld().getHeightMap().getMetersPerWorld() / 2f;
-        float dx = center - reserved_target.getPositionX();
-        float dy = center - reserved_target.getPositionY();
-        float len = (float) Math.hypot(dx, dy);
-        if (len > 0) {
-            setDirection(dx / len, dy / len);
+        // The original game left units facing +X; orienting towards the world center is a modern addition.
+        if (!AppConfig.LEGACY_DETERMINISTIC) {
+            float center = getOwner().getWorld().getHeightMap().getMetersPerWorld() / 2f;
+            float dx = center - reserved_target.getPositionX();
+            float dy = center - reserved_target.getPositionY();
+            float len = (float) Math.hypot(dx, dy);
+            if (len > 0) {
+                setDirection(dx / len, dy / len);
+            }
         }
 
         occupy();
@@ -407,7 +409,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 rand.nextFloat();
                 rand.nextFloat();
                 rand.nextFloat();
-                rand.nextInt(4);
+                rand.nextInt(1);
             }
         }
         pushController(new StunController(this, time));

@@ -28,7 +28,7 @@ public final class NativeChieftainAI extends ChieftainAI {
         if (num_enemy_units_close >= NUM_UNITS_FOR_LIGHTNING
                 || (num_enemy_units < NUM_UNITS_FOR_LIGHTNING && num_enemy_units_close > 1)
                 || (chieftain.getHitPoints() <= 2 && num_enemy_units_close > 1)) {
-            playerInterface.doMagic(chieftain, MagicType.LIGHTNING_CLOUD);
+            playerInterface.doMagic(chieftain, MagicType.LIGHTNING_CLOUD, false);
         }
     }
 
@@ -46,7 +46,7 @@ public final class NativeChieftainAI extends ChieftainAI {
                 && (num_enemy_units_close >= NUM_UNITS_FOR_POISON
                         || (num_enemy_units < NUM_UNITS_FOR_POISON && num_enemy_units_close > 1)
                         || (chieftain.getHitPoints() <= 2 && num_enemy_units_close > 1))) {
-            playerInterface.doMagic(chieftain, MagicType.POISON_FOG);
+            playerInterface.doMagic(chieftain, MagicType.POISON_FOG, false);
         }
     }
 }

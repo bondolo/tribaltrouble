@@ -1,6 +1,7 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.base.geom.BoundingBox;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
@@ -53,8 +54,9 @@ public final class SonicBlast extends Model implements Magic {
                 .getPositionY()));
         blast_targets = filter.getResult();
 
-        owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
-        owner.getWorld().getNotificationListener().onSonicBlast(this);
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            owner.getWorld().getRandom().nextInt(3);
+        }
     }
 
     @Override
@@ -72,13 +74,16 @@ public final class SonicBlast extends Model implements Magic {
         setBounds(x - hit_radius, x + hit_radius, y - hit_radius, y + hit_radius, z - 5f, z + 20f);
     }
 
+    private boolean blastStarted = false;
+
     @Override
     public void animate(float dt) {
-        time = Math.min(time + dt, seconds);
-        if (time >= seconds) {
-            remove();
-            return;
+        if (!blastStarted) {
+            blastStarted = true;
+            owner.getWorld().getNotificationListener().onSonicBlast(this);
         }
+        time = Math.min(time + dt, seconds);
+        boolean finished = time >= seconds;
 
         float current_radius = hit_radius * time / seconds;
         float squared_radius = current_radius * current_radius;
@@ -103,6 +108,9 @@ public final class SonicBlast extends Model implements Magic {
                 targets.remove();
             }
         }
+        if (finished) {
+            remove();
+        }
     }
 
     private float calculateValueFromCurrentRadius(float current_radius, float max, float min) {
@@ -115,7 +123,7 @@ public final class SonicBlast extends Model implements Magic {
 
     @Override
     public void interrupt() {
-        remove();
+        // DO NOT FIX: The original game only silenced the sound here; the spell keeps running after the caster is interrupted.
     }
 
     @Override

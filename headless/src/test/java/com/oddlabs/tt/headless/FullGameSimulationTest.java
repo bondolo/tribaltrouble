@@ -398,4 +398,48 @@ class FullGameSimulationTest {
         assertTrue(result.survivingPlayerIndices().contains(4));
         assertEquals(3, result.survivingPlayerIndices().size());
     }
+
+    @Test
+    void testHugeHillyHighResourceIslandWithAdvancedAIs() throws Exception {
+        int seed = 1;
+        IslandConfig islandConfig = new IslandConfig(
+                Terrain.NATIVE,
+                512 * HeightMap.METERS_PER_UNIT_GRID,
+                0.85f,
+                0.75f,
+                0.95f,
+                seed
+        );
+
+        WorldParameters worldParameters = new WorldParameters(
+                2,
+                "headless_huge_hilly_" + seed,
+                Player.INITIAL_UNIT_COUNT,
+                100
+        );
+
+        UnitInfo startingUnits = new UnitInfo(false, false, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
+
+        List<HeadlessMatchConfig.PlayerConfig> players = List.of(
+                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.HARD, "VikingAI", startingUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.HARD, "NativeAI", startingUnits)
+        );
+
+        HeadlessMatchConfig config = new HeadlessMatchConfig(
+                islandConfig,
+                worldParameters,
+                players,
+                300_000,
+                50
+        );
+
+        HeadlessMatchRunner runner = new HeadlessMatchRunner();
+        HeadlessMatchResult result = runner.run(config);
+
+        System.out.println("Match concluded at tick " + result.finalTick() + " with victory=" + result.victory()
+                + ", winningTeam=" + result.winningTeam() + ", totalMagicCasts=" + result.totalMagicCasts());
+
+        assertTrue(result.victory(), "Match should conclude with a victor");
+        assertTrue(result.totalMagicCasts() > 0, "Advanced AIs should cast magic before match concludes");
+    }
 }

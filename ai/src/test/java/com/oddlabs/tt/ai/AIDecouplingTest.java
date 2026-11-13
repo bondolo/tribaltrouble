@@ -60,7 +60,7 @@ class AIDecouplingTest {
         }
 
         @Override
-        public void doMagic(Unit chieftain, MagicType magic) {
+        public void doMagic(Unit chieftain, MagicType magic, boolean clearStack) {
             calls.add("doMagic:" + magic);
         }
 

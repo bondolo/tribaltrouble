@@ -102,6 +102,9 @@ public final class RenderState implements SceneContext {
 
     public void visit(Element<?> element) {
         if (!element.isRegistered() || element.isFinished()) {
+            if (picking) {
+                return;
+            }
             element.remove();
             if (element instanceof Animated animated) {
                 local_player.getWorld().getAnimationManagerGameTime().removeAnimation(animated);
@@ -222,11 +225,10 @@ public final class RenderState implements SceneContext {
                     WhiteModelVisitor.getInstance(), model);
             for (Accessory accessory : vm.getAccessories()) {
                 if (!accessory.isExpired()) {
-                    if (accessory instanceof EmitterAccessory ea) {
-                        ea.addEmitters(emitter_queue);
-                    }
                     if (accessory.isVisible(model, camera)) {
                         visitAccessory(accessory, parentState);
+                    } else if (accessory instanceof EmitterAccessory ea) {
+                        ea.addEmitters(emitter_queue);
                     }
                 }
             }
@@ -335,6 +337,8 @@ public final class RenderState implements SceneContext {
         if (vm == null) {
             vm = VisualModelRegistry.getDefault().createVisualModel(model, audio);
             model.setClientModel(vm);
+        }
+        if (!picking && !activeVisualModels.contains(vm)) {
             activeVisualModels.add(vm);
         }
         return vm;

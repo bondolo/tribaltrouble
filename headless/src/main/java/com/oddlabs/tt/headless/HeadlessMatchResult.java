@@ -10,13 +10,24 @@ import java.util.List;
  * @param finalTick tick number reached when match concluded
  * @param finalChecksum simulation state checksum across all instances at conclusion
  * @param survivingPlayerIndices list of player indices who survived to the end
+ * @param totalMagicCasts total number of spells cast across all players during the match
  */
 public record HeadlessMatchResult(
                                   int winningTeam,
                                   boolean victory,
                                   int finalTick,
                                   int finalChecksum,
-                                  List<Integer> survivingPlayerIndices) {
+                                  List<Integer> survivingPlayerIndices,
+                                  int totalMagicCasts) {
+
+    public HeadlessMatchResult(
+            int winningTeam,
+            boolean victory,
+            int finalTick,
+            int finalChecksum,
+            List<Integer> survivingPlayerIndices) {
+        this(winningTeam, victory, finalTick, finalChecksum, survivingPlayerIndices, 0);
+    }
 
     public HeadlessMatchResult {
         survivingPlayerIndices = List.copyOf(survivingPlayerIndices);

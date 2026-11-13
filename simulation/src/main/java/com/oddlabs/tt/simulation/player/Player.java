@@ -648,10 +648,15 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
 
     @Override
     public void doMagic(@Nullable Unit chieftain, MagicType magic) {
-        applyDoMagic(chieftain, magic);
+        applyDoMagic(chieftain, magic, true);
     }
 
-    private void applyDoMagic(@Nullable Unit chieftain, MagicType magic) {
+    @Override
+    public void doMagic(@Nullable Unit chieftain, MagicType magic, boolean clearStack) {
+        applyDoMagic(chieftain, magic, clearStack);
+    }
+
+    private void applyDoMagic(@Nullable Unit chieftain, MagicType magic, boolean clearStack) {
         if (chieftain == null) {
             notifyRejected("doMagic", Distributable.NO_ID, "ENTITY_NOT_FOUND");
             return;
@@ -660,7 +665,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
             notifyRejected("doMagic", chieftain.getId(), "NOT_OWNED");
             return;
         }
-        chieftain.doMagic(magic, true);
+        chieftain.doMagic(magic, clearStack);
     }
 
     @Override
@@ -1034,7 +1039,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
             case PlayerCommand.BuildWeapons cmd ->
                 buildWeapons(cmd.buildingId(), cmd.tier(), cmd.numWeapons(), cmd.infinite());
             case PlayerCommand.DoMagic cmd ->
-                doMagic(cmd.chieftainId(), cmd.magic());
+                doMagic(cmd.chieftainId(), cmd.magic(), cmd.clearStack());
             case PlayerCommand.ExitTower cmd ->
                 exitTower(cmd.buildingId());
             case PlayerCommand.TrainChieftain cmd ->
@@ -1095,7 +1100,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
         applyBuildWeapons(building, tier, numWeapons, infinite);
     }
 
-    private void doMagic(int chieftainId, MagicType magic) {
+    private void doMagic(int chieftainId, MagicType magic, boolean clearStack) {
         var distributable = world.getDistributableTable().getDistributable(chieftainId);
         if (!(distributable instanceof Unit chief) || chief.isDead()) {
             notifyRejected("doMagic", chieftainId, "ENTITY_NOT_FOUND");
@@ -1105,7 +1110,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
             notifyRejected("doMagic", chieftainId, "NOT_OWNED");
             return;
         }
-        applyDoMagic(chief, magic);
+        applyDoMagic(chief, magic, clearStack);
     }
 
     private void exitTower(int buildingId) {

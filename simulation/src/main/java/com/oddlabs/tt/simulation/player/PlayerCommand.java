@@ -37,7 +37,10 @@ public sealed interface PlayerCommand permits
     record BuildWeapons(int buildingId, WeaponTier tier, int numWeapons, boolean infinite) implements PlayerCommand {
     }
 
-    record DoMagic(int chieftainId, MagicType magic) implements PlayerCommand {
+    record DoMagic(int chieftainId, MagicType magic, boolean clearStack) implements PlayerCommand {
+        public DoMagic(int chieftainId, MagicType magic) {
+            this(chieftainId, magic, true);
+        }
     }
 
     record ExitTower(int buildingId) implements PlayerCommand {

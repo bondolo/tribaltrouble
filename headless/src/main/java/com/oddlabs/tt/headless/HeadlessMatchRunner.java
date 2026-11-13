@@ -122,7 +122,7 @@ public final class HeadlessMatchRunner {
                     lastProgressTimeNanos = nowNanos;
                     lastProgressTick = currentTick;
 
-                    if (logger.isLoggable(Level.FINE)) {
+                    if (logger.isLoggable(Level.INFO)) {
                         StringBuilder progress = new StringBuilder();
                         progress.append(String.format("Tick %d (+%d/%d, %.1f ticks/s):", currentTick, elapsedTicks,
                                 maxTicks, ticksPerSec));
@@ -130,14 +130,19 @@ public final class HeadlessMatchRunner {
                             Player player = instance.getLocalPlayer();
                             int units = player.getUnitCountContainer().getNumSupplies();
                             int buildings = player.getBuildingCountContainer().getNumSupplies();
-                            progress.append(String.format(" [%s(T%d): %d units, %d bldgs, alive=%b]",
+                            boolean hasChief = player.hasActiveChieftain();
+                            int magics = player.getMagics();
+                            progress.append(String.format(
+                                    " [%s(T%d): %d units, %d bldgs, chief=%b, magics=%d, alive=%b]",
                                     player.getPlayerInfo().name(),
                                     player.getPlayerInfo().team(),
                                     units,
                                     buildings,
+                                    hasChief,
+                                    magics,
                                     instance.isAlive()));
                         }
-                        logger.fine(progress.toString());
+                        logger.info(progress.toString());
                     }
                 }
 
@@ -164,7 +169,11 @@ public final class HeadlessMatchRunner {
                 if (!multipleTeamsAlive && hasFirstTeam) {
                     harness.verifyChecksums();
                     int winningTeam = firstAliveTeam;
-                    logger.info(() -> "Victory achieved by team " + winningTeam + " at tick " + currentTick);
+                    int totalMagicCasts = harness.getInstances().getFirst().getWorld().getPlayers().stream()
+                            .mapToInt(Player::getMagics)
+                            .sum();
+                    logger.info(() -> "Victory achieved by team " + winningTeam + " at tick " + currentTick
+                            + " (magic casts: " + totalMagicCasts + ")");
                     List<Integer> survivingPlayers = new ArrayList<>();
                     for (HeadlessSimulationInstance instance : harness.getInstances()) {
                         if (instance.isAlive()) {
@@ -176,13 +185,18 @@ public final class HeadlessMatchRunner {
                             true,
                             currentTick,
                             harness.getInstances().getFirst().getChecksum(),
-                            survivingPlayers
+                            survivingPlayers,
+                            totalMagicCasts
                     );
                 }
 
                 if (!anyNonNeutralAlive) {
                     harness.verifyChecksums();
-                    logger.info(() -> "All teams eliminated at tick " + currentTick);
+                    int totalMagicCasts = harness.getInstances().getFirst().getWorld().getPlayers().stream()
+                            .mapToInt(Player::getMagics)
+                            .sum();
+                    logger.info(() -> "All teams eliminated at tick " + currentTick + " (magic casts: "
+                            + totalMagicCasts + ")");
                     List<Integer> survivingPlayers = new ArrayList<>();
                     for (HeadlessSimulationInstance instance : harness.getInstances()) {
                         if (instance.isAlive()) {
@@ -194,14 +208,18 @@ public final class HeadlessMatchRunner {
                             false,
                             currentTick,
                             harness.getInstances().getFirst().getChecksum(),
-                            survivingPlayers
+                            survivingPlayers,
+                            totalMagicCasts
                     );
                 }
 
                 if (elapsedTicks >= maxTicks) {
                     harness.verifyChecksums();
+                    int totalMagicCasts = harness.getInstances().getFirst().getWorld().getPlayers().stream()
+                            .mapToInt(Player::getMagics)
+                            .sum();
                     logger.info(() -> "Match reached maximum tick limit " + maxTicks + " (elapsed ticks: "
-                            + elapsedTicks + ")");
+                            + elapsedTicks + ", magic casts: " + totalMagicCasts + ")");
                     List<Integer> survivingPlayers = new ArrayList<>();
                     for (HeadlessSimulationInstance instance : harness.getInstances()) {
                         if (instance.isAlive()) {
@@ -213,7 +231,8 @@ public final class HeadlessMatchRunner {
                             false,
                             currentTick,
                             harness.getInstances().getFirst().getChecksum(),
-                            survivingPlayers
+                            survivingPlayers,
+                            totalMagicCasts
                     );
                 }
             }

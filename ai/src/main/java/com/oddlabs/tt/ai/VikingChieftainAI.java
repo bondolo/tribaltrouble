@@ -29,7 +29,7 @@ public final class VikingChieftainAI extends ChieftainAI {
         if (num_enemy_units_close >= NUM_UNITS_FOR_STUN
                 || (num_enemy_units < NUM_UNITS_FOR_STUN && num_enemy_units_close > 1)
                 || (chieftain.getHitPoints() <= 2 && num_enemy_units_close > 1)) {
-            playerInterface.doMagic(chieftain, MagicType.STUN);
+            playerInterface.doMagic(chieftain, MagicType.STUN, false);
         }
     }
 
@@ -47,7 +47,7 @@ public final class VikingChieftainAI extends ChieftainAI {
                 && (num_enemy_units_close >= NUM_UNITS_FOR_BLAST
                         || (num_enemy_units < NUM_UNITS_FOR_BLAST && num_enemy_units_close > 1)
                         || (chieftain.getHitPoints() <= 2 && num_enemy_units_close > 1))) {
-            playerInterface.doMagic(chieftain, MagicType.SONIC_BLAST);
+            playerInterface.doMagic(chieftain, MagicType.SONIC_BLAST, false);
         }
     }
 }

@@ -136,7 +136,11 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
         }
 
         // Update emitter position
-        emitter.getPosition().set(cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ());
+        if (!cloud.isDead()) {
+            emitter.getPosition().set(cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ());
+        } else {
+            emitter.done();
+        }
 
         // Handle cloud fade out in the last 2 seconds
         float secondsToLive = cloud.getSecondsToLive();
@@ -167,12 +171,12 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
 
     @Override
     protected boolean isSelfExpired() {
-        return cloud.isDead() && activeLightnings.isEmpty();
+        return cloud.isDead() && activeLightnings.isEmpty() && emitter.isFinished();
     }
 
     @Override
     public boolean isVisible(Model parent, CameraState camera) {
-        return !cloud.isDead() || !activeLightnings.isEmpty();
+        return !cloud.isDead() || !activeLightnings.isEmpty() || !emitter.isFinished();
     }
 
     @Override

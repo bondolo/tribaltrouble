@@ -21,7 +21,11 @@ public interface PlayerInterface {
 
     void buildWeapons(Building building, WeaponTier tier, int num_weapons, boolean infinite);
 
-    void doMagic(Unit chieftain, MagicType magic);
+    default void doMagic(Unit chieftain, MagicType magic) {
+        doMagic(chieftain, magic, true);
+    }
+
+    void doMagic(Unit chieftain, MagicType magic, boolean clearStack);
 
     void exitTower(Building building);
 

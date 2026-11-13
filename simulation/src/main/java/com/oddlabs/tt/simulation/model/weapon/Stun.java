@@ -1,7 +1,9 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
+import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.global.AppConfig;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Model;
@@ -11,6 +13,7 @@ import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
+import java.util.Random;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -27,7 +30,10 @@ public final class Stun extends Model implements Magic {
     private final float stun_time_farthest;
     private final Player owner;
 
+    private final float start_x;
+    private final float start_y;
     private final Iterable<? extends Selectable<?>> target_list;
+    private final @Nullable LegacyStunEmitter legacyStunEmitter;
 
     public Stun(float offset_x, float offset_y, float offset_z, float hit_radius, float stun_time_closest,
             float stun_time_farthest, Unit src) {
@@ -41,12 +47,11 @@ public final class Stun extends Model implements Magic {
         this.stun_time_farthest = stun_time_farthest;
         this.owner = src.getOwner();
 
-        float start_x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
-        float start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
+        start_x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
+        start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
         float z = src.getPositionZ() + offset_z;
         setPosition(start_x, start_y, z);
         register();
-        owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
 
         var filter = new FindOccupantFilter<>(src.getPositionX(), src.getPositionY(), hit_radius, src, Selectable
                 .genericClass());
@@ -57,12 +62,20 @@ public final class Stun extends Model implements Magic {
 
         if (AppConfig.LEGACY_DETERMINISTIC) {
             owner.getWorld().getRandom().nextInt(3);
+            this.legacyStunEmitter = new LegacyStunEmitter(owner.getWorld());
+            owner.getWorld().getAnimationManagerGameTime().registerAnimation(legacyStunEmitter);
+        } else {
+            this.legacyStunEmitter = null;
         }
     }
 
     @Override
     public void remove() {
         super.remove();
+        if (legacyStunEmitter != null) {
+            legacyStunEmitter.done();
+            owner.getWorld().getAnimationManagerGameTime().removeAnimation(legacyStunEmitter);
+        }
         owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
         owner.getWorld().getNotificationListener().onModelRemoved(this);
     }
@@ -80,9 +93,6 @@ public final class Stun extends Model implements Magic {
         return null;
     }
 
-    private float logic_timer = 0f;
-    private boolean logic_done = false;
-
     @Override
     public void animate(float dt) {
         if (!src.isDead()) {
@@ -92,38 +102,31 @@ public final class Stun extends Model implements Magic {
             setPosition(x, y, z);
         }
 
-        if (!logic_done) {
-            for (Selectable<?> selectable : target_list) {
-                Unit unit = null;
-                if (selectable instanceof Unit unit1) {
-                    unit = unit1;
-                } else if (selectable instanceof Building building) {
-                    if (!building.isDead() && building.getAbilities().hasAbilities(Abilities.ATTACK)) {
-                        if (building.getRawUnitContainer() instanceof MountUnitContainer muc && muc.getNumSupplies() > 0) {
-                            unit = muc.getUnit();
-                        }
+        for (Selectable<?> selectable : target_list) {
+            Unit unit = null;
+            if (selectable instanceof Unit unit1) {
+                unit = unit1;
+            } else if (selectable instanceof Building building) {
+                if (!building.isDead() && building.getAbilities().hasAbilities(Abilities.ATTACK)) {
+                    if (building.getRawUnitContainer() instanceof MountUnitContainer muc && muc.getNumSupplies() > 0) {
+                        unit = muc.getUnit();
                     }
                 }
-
-                if (unit == null || unit.isDead())
-                    continue;
-
-                float dx = unit.getPositionX() - getPositionX();
-                float dy = unit.getPositionY() - getPositionY();
-                float squared_dist = dx * dx + dy * dy;
-                if (owner.isEnemy(unit.getOwner()) && squared_dist < hit_radius * hit_radius) {
-                    float dist = (float) Math.sqrt(squared_dist);
-                    float time = calculateValueFromCurrentRadius(dist, stun_time_closest, stun_time_farthest);
-                    unit.stun(time);
-                }
             }
-            logic_done = true;
-        }
 
-        logic_timer += dt;
-        if (logic_timer > 5.5f) {
-            remove();
+            if (unit == null || unit.isDead())
+                continue;
+
+            float dx = unit.getPositionX() - start_x;
+            float dy = unit.getPositionY() - start_y;
+            float squared_dist = dx * dx + dy * dy;
+            if (owner.isEnemy(unit.getOwner()) && squared_dist < hit_radius * hit_radius) {
+                float dist = (float) Math.sqrt(squared_dist);
+                float time = calculateValueFromCurrentRadius(dist, stun_time_closest, stun_time_farthest);
+                unit.stun(time);
+            }
         }
+        remove();
     }
 
     private float calculateValueFromCurrentRadius(float current_radius, float max, float min) {
@@ -137,5 +140,57 @@ public final class Stun extends Model implements Magic {
     @Override
     public void interrupt() {
         remove();
+    }
+
+    private static final class LegacyStunEmitter implements Animated {
+        private final World world;
+        private float particleCounter = 0f;
+        private boolean started = true;
+        private float xAngle = 0f;
+        private float yAngle = 0f;
+
+        LegacyStunEmitter(World world) {
+            this.world = world;
+        }
+
+        void done() {
+            started = false;
+        }
+
+        @Override
+        public void animate(float dt) {
+            if (started) {
+                particleCounter += 35f * dt;
+            }
+            while (particleCounter >= 1f && started) {
+                initParticle();
+                particleCounter -= 1f;
+            }
+        }
+
+        private void initParticle() {
+            randomizeVelocity();
+            world.getRandom().nextInt(8);
+        }
+
+        private void randomizeVelocity() {
+            Random random = world.getRandom();
+            float angleMaxJump = (float) Math.PI;
+            float angleBound = 0.5f;
+            float dxAngle = random.nextFloat() * angleMaxJump - .5f * angleMaxJump;
+            float dyAngle = random.nextFloat() * angleMaxJump - .5f * angleMaxJump;
+
+            if ((xAngle + dxAngle < -angleBound) || (xAngle + dxAngle > angleBound)) {
+                xAngle -= dxAngle;
+            } else {
+                xAngle += dxAngle;
+            }
+
+            if ((yAngle + dyAngle < -angleBound) || (yAngle + dyAngle > angleBound)) {
+                yAngle -= dyAngle;
+            } else {
+                yAngle += dyAngle;
+            }
+        }
     }
 }

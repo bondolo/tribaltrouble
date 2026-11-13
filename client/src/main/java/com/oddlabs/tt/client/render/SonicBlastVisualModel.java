@@ -33,7 +33,6 @@ public final class SonicBlastVisualModel extends AbstractVisualModel implements 
                         AudioRegistry.SONIC_BLAST_LUR.length)]);
         this.rumble = audio.newAudio(blast.getPositionX(), blast.getPositionY(), blast.getPositionZ(),
                 AudioRegistry.SONIC_BLAST_RUMBLE);
-        triggerBlast();
     }
 
     @Override

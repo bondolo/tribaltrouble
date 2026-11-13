@@ -92,8 +92,16 @@ public final class LegacyValidationMatchRunner {
 
         for (int currentTick = 1; currentTick <= maxTicks; currentTick++) {
             world.tick();
-            if (dumpInterval > 0 && currentTick % dumpInterval == 0) {
-                System.out.printf("MODERN TICK %d: checksum=%d%n", currentTick, world.getChecksum());
+            if ((dumpInterval > 0 && currentTick % dumpInterval == 0) || (dumpTicks != null && matchesFilter(
+                    currentTick, dumpTicks))) {
+                long hash = 0;
+                for (Player p : world.getPlayers()) {
+                    for (com.oddlabs.tt.simulation.model.Selectable<?> s : p.getUnits().getSet()) {
+                        hash = 31 * hash + Float.floatToIntBits(s.getPositionX());
+                        hash = 31 * hash + Float.floatToIntBits(s.getPositionY());
+                    }
+                }
+                System.out.printf("MODERN POSHASH t=%d hash=%d cs=%d%n", currentTick, hash, world.getChecksum());
             }
             if (dumpTicks != null && matchesFilter(currentTick, dumpTicks)) {
                 System.out.printf("MODERN TICK %d: checksum=%d%n", currentTick, world.getChecksum());

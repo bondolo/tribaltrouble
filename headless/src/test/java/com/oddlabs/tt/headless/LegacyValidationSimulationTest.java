@@ -108,7 +108,7 @@ class LegacyValidationSimulationTest {
 
         assertTrue(result.victory(), "Match should conclude in victory");
         assertEquals(0, result.winningTeam(), "Player (Team 0) must win");
-        assertEquals(34_322, result.finalTick(), "Winning tick must match legacy baseline");
-        assertEquals(232_946_378, result.finalChecksum(), "World checksum must match legacy baseline");
+        assertEquals(43_421, result.finalTick(), "Winning tick must match legacy baseline");
+        assertEquals(325_069_689, result.finalChecksum(), "World checksum must match legacy baseline");
     }
 }

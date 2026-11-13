@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
+import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.World;
@@ -26,6 +27,7 @@ public final class LightningCloud extends Model implements Magic {
     private final float height;
     private final float seconds_to_init;
     private final float offset_z;
+    private final @Nullable LegacyCloudEmitter legacyCloudEmitter;
 
     private float seconds_to_live;
     private @Nullable Selectable<?> target = null;
@@ -41,7 +43,6 @@ public final class LightningCloud extends Model implements Magic {
         float start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
         setPosition(start_x, start_y, world.getHeightMap().getNearestHeight(start_x, start_y) + height);
         register();
-        world.getAnimationManagerGameTime().registerAnimation(this);
 
         this.seconds_to_live = seconds_to_live;
         this.seconds_to_init = seconds_to_init;
@@ -52,6 +53,13 @@ public final class LightningCloud extends Model implements Magic {
         this.damage = damage;
         this.height = height;
         owner = src.getOwner();
+
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            this.legacyCloudEmitter = new LegacyCloudEmitter(world);
+            world.getAnimationManagerGameTime().registerAnimation(legacyCloudEmitter);
+        } else {
+            this.legacyCloudEmitter = null;
+        }
     }
 
     public float getSecondsToLive() {
@@ -73,6 +81,10 @@ public final class LightningCloud extends Model implements Magic {
     @Override
     public void remove() {
         super.remove();
+        if (legacyCloudEmitter != null) {
+            legacyCloudEmitter.done();
+            owner.getWorld().getAnimationManagerGameTime().removeAnimation(legacyCloudEmitter);
+        }
         owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
         owner.getWorld().getNotificationListener().onModelRemoved(this);
     }
@@ -93,10 +105,7 @@ public final class LightningCloud extends Model implements Magic {
     @Override
     public void animate(float dt) {
         seconds_to_live -= dt;
-        if (seconds_to_live <= 0f) {
-            remove();
-            return;
-        }
+        boolean finished = seconds_to_live <= 0f;
 
         hit_timer += dt;
 
@@ -141,6 +150,9 @@ public final class LightningCloud extends Model implements Magic {
                     strike(prev_target);
                     strike_counter++;
                 }
+        if (finished) {
+            remove();
+        }
     }
 
     private void strike(Target target) {
@@ -156,6 +168,50 @@ public final class LightningCloud extends Model implements Magic {
 
     @Override
     public void interrupt() {
-        remove();
+        // DO NOT FIX: The original game only silenced the sound here; the spell keeps running after the caster is interrupted.
+    }
+
+    private static final class LegacyCloudEmitter implements Animated {
+        private final World world;
+        private int numParticles = 25;
+        private float particleCounter = 0f;
+        private boolean started = true;
+
+        LegacyCloudEmitter(World world) {
+            this.world = world;
+        }
+
+        void done() {
+            started = false;
+        }
+
+        @Override
+        public void animate(float dt) {
+            if (started) {
+                particleCounter += 100f * dt;
+            }
+            while (particleCounter >= 1f && numParticles > 0 && started) {
+                initParticle();
+                particleCounter -= 1f;
+                numParticles--;
+                if (numParticles == 0) {
+                    world.getAnimationManagerGameTime().removeAnimation(this);
+                    break;
+                }
+            }
+        }
+
+        private void initParticle() {
+            var rand = world.getRandom();
+            rand.nextFloat();
+            rand.nextFloat();
+            rand.nextFloat();
+            rand.nextFloat();
+            rand.nextFloat();
+            rand.nextFloat();
+            rand.nextFloat();
+            rand.nextFloat();
+            rand.nextInt(1);
+        }
     }
 }

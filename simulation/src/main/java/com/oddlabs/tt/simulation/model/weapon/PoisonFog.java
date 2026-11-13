@@ -15,9 +15,9 @@ import org.jspecify.annotations.Nullable;
  * Periodically applies damage to units within its radius.
  */
 public final class PoisonFog extends Model implements Magic {
-    private static final float SECONDS_BETWEEN_BURSTS = .1f;
-    private static final int PARTICLES_PER_BURST = 10;
-    private static final int MIN_BURSTS_PER_SOUND = 5;
+    private static final float SECONDS_BETWEEN_BURSTS = .15f;
+    private static final int PARTICLES_PER_BURST = 4;
+    private static final int MIN_BURSTS_PER_SOUND = 2;
 
     private final float hit_radius;
     private final float hit_chance;
@@ -33,7 +33,7 @@ public final class PoisonFog extends Model implements Magic {
     private float time = 0f;
     private int num_hits = 0;
     private int bursts = 0;
-    private int next_sound = MIN_BURSTS_PER_SOUND;
+    private int next_sound = 1;
 
     public PoisonFog(float offset_x, float offset_y, float offset_z, float hit_radius, float hit_chance, float interval,
             float time, int damage, Unit src) {
@@ -51,7 +51,6 @@ public final class PoisonFog extends Model implements Magic {
         start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
         setPosition(start_x, start_y, owner.getWorld().getHeightMap().getNearestHeight(start_x, start_y));
         register();
-        owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
     }
 
     public float getHitRadius() {
@@ -85,10 +84,7 @@ public final class PoisonFog extends Model implements Magic {
     @Override
     public void animate(float dt) {
         time += dt;
-        if (time >= total_time) {
-            remove();
-            return;
-        }
+        boolean finished = time >= total_time;
 
         if (AppConfig.LEGACY_DETERMINISTIC) {
             if (bursts * SECONDS_BETWEEN_BURSTS < time) {
@@ -110,6 +106,9 @@ public final class PoisonFog extends Model implements Magic {
         if ((num_hits + 1) * interval < time) {
             hitUnits(hit_radius);
             num_hits++;
+        }
+        if (finished) {
+            remove();
         }
     }
 
@@ -134,6 +133,6 @@ public final class PoisonFog extends Model implements Magic {
 
     @Override
     public void interrupt() {
-        remove();
+        // DO NOT FIX: The original game only silenced the sound here; the spell keeps running after the caster is interrupted.
     }
 }

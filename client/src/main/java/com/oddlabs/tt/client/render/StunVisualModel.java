@@ -50,7 +50,9 @@ public final class StunVisualModel extends AbstractVisualModel implements Emitte
 
     @Override
     public void animate(float dt) {
-        emitter.getPosition().set(stun.getPositionX(), stun.getPositionY(), stun.getPositionZ());
+        if (!stun.isDead()) {
+            emitter.getPosition().set(stun.getPositionX(), stun.getPositionY(), stun.getPositionZ());
+        }
 
         age += dt;
         if (age > 1.5f) {
@@ -67,12 +69,12 @@ public final class StunVisualModel extends AbstractVisualModel implements Emitte
 
     @Override
     protected boolean isSelfExpired() {
-        return stun.isDead();
+        return stun.isDead() && emitter.isFinished();
     }
 
     @Override
     public boolean isVisible(Model parent, CameraState camera) {
-        return !stun.isDead();
+        return !stun.isDead() || !emitter.isFinished();
     }
 
     @Override

@@ -44,8 +44,8 @@ public final class CommandAdapterPlayerInterface implements PlayerInterface {
     }
 
     @Override
-    public void doMagic(Unit chieftain, MagicType magic) {
-        sink.accept(new PlayerCommand.DoMagic(chieftain.getId(), magic));
+    public void doMagic(Unit chieftain, MagicType magic, boolean clearStack) {
+        sink.accept(new PlayerCommand.DoMagic(chieftain.getId(), magic, clearStack));
     }
 
     @Override

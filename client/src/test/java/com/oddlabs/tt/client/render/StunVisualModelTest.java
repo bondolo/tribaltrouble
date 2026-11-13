@@ -3,8 +3,6 @@ package com.oddlabs.tt.client.render;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.effects.particle.Emitter;
-import com.oddlabs.tt.effects.render.EmitterAccessory;
-import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.tt.simulation.landscape.FlatLandscape;
 import com.oddlabs.tt.simulation.landscape.Landscape;
@@ -115,29 +113,51 @@ final class StunVisualModelTest {
         StunVisualModel visualModel = new StunVisualModel(stun, createDummyAudio());
         stun.setClientModel(visualModel);
 
-        for (int i = 0; i < 100; i++) {
-            stun.animate(0.02f);
-        }
-        assertFalse(stun.isDead(), "Stun should not be dead after 2s");
-        for (int i = 0; i < 200; i++) {
-            stun.animate(0.02f);
-        }
-        assertTrue(stun.isDead(), "Stun should be dead after 6s (>5.5s)");
+        assertFalse(stun.isDead(), "Stun should be alive before release animation executes");
+        stun.animate(0.02f);
+        assertTrue(stun.isDead(), "Stun should be removed and dead immediately after release animation executes");
     }
 
     @Test
     void testStunTransformInWhiteModelVisitor() {
         Stun stun = new Stun(2.57f, 0f, 3.8f, 36f, 30f, 10f, chieftain);
         org.joml.Matrix4f transform = new org.joml.Matrix4f();
-        com.oddlabs.tt.engine.render.SceneContext sc = (com.oddlabs.tt.engine.render.SceneContext) Proxy.newProxyInstance(
-                com.oddlabs.tt.engine.render.SceneContext.class.getClassLoader(),
-                new Class<?>[]{com.oddlabs.tt.engine.render.SceneContext.class},
-                (proxy, method, args) -> method.getName().equals("getInterpolationAlpha") ? 0.5f : null
-        );
-        com.oddlabs.tt.engine.render.ElementSceneContext<com.oddlabs.tt.simulation.model.Model> esc = new com.oddlabs.tt.engine.render.ElementSceneContext<>(sc);
+        com.oddlabs.tt.engine.render.SceneContext sc = (com.oddlabs.tt.engine.render.SceneContext) Proxy
+                .newProxyInstance(
+                        com.oddlabs.tt.engine.render.SceneContext.class.getClassLoader(),
+                        new Class<?>[]{com.oddlabs.tt.engine.render.SceneContext.class},
+                        (proxy, method, args) -> method.getName().equals("getInterpolationAlpha") ? 0.5f : null
+                );
+        com.oddlabs.tt.engine.render.ElementSceneContext<com.oddlabs.tt.simulation.model.Model> esc
+                = new com.oddlabs.tt.engine.render.ElementSceneContext<>(sc);
         esc.setup(com.oddlabs.tt.engine.render.WhiteModelVisitor.getInstance(), stun);
         com.oddlabs.tt.engine.render.WhiteModelVisitor.getInstance().getTransform(esc, transform);
-        System.out.println("Stun transform translation: x=" + transform.m30() + " y=" + transform.m31() + " z=" + transform.m32());
+        System.out.println("Stun transform translation: x=" + transform.m30() + " y=" + transform.m31() + " z="
+                + transform.m32());
         assertTrue(transform.m32() > 0f, "Z should be above ground");
+    }
+
+    @Test
+    void testStunVisualModelDetachedLifecycle() {
+        Stun stun = new Stun(2.57f, 0f, 3.8f, 36f, 30f, 10f, chieftain);
+        StunVisualModel visualModel = new StunVisualModel(stun, createDummyAudio());
+        stun.setClientModel(visualModel);
+
+        for (int i = 0; i < 10; i++) {
+            visualModel.update(0.05f);
+        }
+        assertTrue(visualModel.getEmitter().hasActiveParticles(), "Emitter must have active particles");
+
+        stun.remove();
+        assertTrue(stun.isDead(), "Stun must be dead after remove");
+
+        assertFalse(visualModel.isExpired(), "Visual model must not be expired while particles are active");
+        assertTrue(visualModel.isVisible(stun, null), "Visual model must be visible while particles are active");
+
+        for (int i = 0; i < 100; i++) {
+            visualModel.update(0.1f);
+        }
+        assertTrue(visualModel.getEmitter().isFinished(), "Emitter should be finished after particles expire");
+        assertTrue(visualModel.isExpired(), "Visual model should be expired when emitter is finished");
     }
 }
