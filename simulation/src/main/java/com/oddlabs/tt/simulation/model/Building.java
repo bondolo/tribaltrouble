@@ -212,26 +212,54 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         }
     }
 
+    public boolean canDeployUnits(DeployType type) {
+        return !isDead() && isBuilt() && deploy_containers.containsKey(type);
+    }
+
     public void deployUnits(DeployType type, int num_units) {
         assert !isDead();
+        if (!canDeployUnits(type) || num_units == 0 || num_units == Integer.MIN_VALUE) {
+            return;
+        }
         getOwner().getWorld().updateGlobalChecksum(type.ordinal());
         getOwner().getWorld().updateGlobalChecksum(num_units);
         getDeployContainer(type).orderSupply(num_units);
     }
 
+    public boolean canCreateHarvesters(long totalRequested) {
+        return !isDead()
+                && isBuilt()
+                && totalRequested >= 0
+                && unit_container instanceof WorkerUnitContainer
+                && totalRequested <= unit_container.getNumSupplies();
+    }
+
     public void createHarvesters(int num_tree, int num_rock, int num_iron, int num_rubber) {
         assert !isDead();
-        if (num_tree > 0) createHarvesters(SupplyType.WOOD, num_tree);
-        if (num_rock > 0) createHarvesters(SupplyType.ROCK, num_rock);
-        if (num_iron > 0) createHarvesters(SupplyType.IRON, num_iron);
-        if (num_rubber > 0) createHarvesters(SupplyType.RUBBER, num_rubber);
+        if (num_tree < 0 || num_rock < 0 || num_iron < 0 || num_rubber < 0) {
+            return;
+        }
+        long total = (long) num_tree + num_rock + num_iron + num_rubber;
+        if (!canCreateHarvesters(total)) {
+            return;
+        }
+        if (num_tree > 0) createHarvesters(SupplyType.WOOD, num_tree, false);
+        if (num_rock > 0) createHarvesters(SupplyType.ROCK, num_rock, false);
+        if (num_iron > 0) createHarvesters(SupplyType.IRON, num_iron, false);
+        if (num_rubber > 0) createHarvesters(SupplyType.RUBBER, num_rubber, false);
     }
 
     void createHarvesters(SupplyType supplyType, int amount) {
+        createHarvesters(supplyType, amount, true);
+    }
+
+    private void createHarvesters(SupplyType supplyType, int amount, boolean prepared) {
         RaceInfo raceInfo = getOwner().getRaceInfo();
         for (int i = 0; i < amount; i++) {
             if (unit_container != null) {
-                unit_container.prepareDeploy(-1);
+                if (prepared) {
+                    unit_container.prepareDeploy(-1);
+                }
                 unit_container.exit();
             }
             Unit unit = createUnit(null, raceInfo.getUnitTemplate(UnitType.PEON));
@@ -239,8 +267,15 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         }
     }
 
+    public boolean canBuildWeapons(WeaponTier tier) {
+        return !isDead() && isBuilt() && weapon_build_containers.containsKey(tier);
+    }
+
     public void buildWeapons(WeaponTier tier, int num_weapons, boolean infinite) {
         assert !isDead();
+        if (!canBuildWeapons(tier) || (!infinite && num_weapons == 0) || num_weapons == Integer.MIN_VALUE) {
+            return;
+        }
         if (infinite)
             getOwner().getWorld().updateGlobalChecksum(num_weapons);
         else
@@ -613,8 +648,12 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 b.getAbilities().hasAbilities(Abilities.RALLY_TO);
     }
 
+    public boolean canSetRallyPoint() {
+        return !isDead() && getOwner().canSetRallyPoints() && !deploy_containers.isEmpty();
+    }
+
     public void setRallyPoint(Target target) {
-        if (!getOwner().canSetRallyPoints())
+        if (!canSetRallyPoint())
             return;
         rally_point = isValidRallyPoint(target)
                 ? target

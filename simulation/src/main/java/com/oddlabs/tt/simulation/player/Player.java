@@ -27,9 +27,9 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -41,6 +41,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
     public static final int MAX_BUILDING_COUNT = 20;
     public static final int DEFAULT_MAX_UNIT_COUNT = 250;
     private static final float RADIAL_SEARCH_RADIUS = 30f;
+    private static final int MAX_SELECTION_SIZE = 1024;
 
     private final PlayerConfig config;
     private final @Nullable PlayerInterface playerInterface;
@@ -607,6 +608,14 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
             notifyRejected("deployUnits", building.getId(), "NOT_OWNED");
             return;
         }
+        if (num_units == 0 || num_units == Integer.MIN_VALUE) {
+            notifyRejected("deployUnits", building.getId(), "INVALID_AMOUNT");
+            return;
+        }
+        if (!building.canDeployUnits(type)) {
+            notifyRejected("deployUnits", building.getId(), "UNSUPPORTED_ACTION");
+            return;
+        }
         building.deployUnits(type, num_units);
     }
 
@@ -626,6 +635,15 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
             notifyRejected("createHarvesters", building.getId(), "NOT_OWNED");
             return;
         }
+        if (num_tree < 0 || num_rock < 0 || num_iron < 0 || num_rubber < 0) {
+            notifyRejected("createHarvesters", building.getId(), "INVALID_AMOUNT");
+            return;
+        }
+        long total = (long) num_tree + num_rock + num_iron + num_rubber;
+        if (!building.canCreateHarvesters(total)) {
+            notifyRejected("createHarvesters", building.getId(), "INSUFFICIENT_SUPPLY");
+            return;
+        }
         building.createHarvesters(num_tree, num_rock, num_iron, num_rubber);
     }
 
@@ -641,6 +659,14 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
         }
         if (!isValid(building)) {
             notifyRejected("buildWeapons", building.getId(), "NOT_OWNED");
+            return;
+        }
+        if ((!infinite && num_weapons == 0) || num_weapons == Integer.MIN_VALUE) {
+            notifyRejected("buildWeapons", building.getId(), "INVALID_AMOUNT");
+            return;
+        }
+        if (!building.canBuildWeapons(tier)) {
+            notifyRejected("buildWeapons", building.getId(), "UNSUPPORTED_ACTION");
             return;
         }
         building.buildWeapons(tier, num_weapons, infinite);
@@ -665,6 +691,10 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
             notifyRejected("doMagic", chieftain.getId(), "NOT_OWNED");
             return;
         }
+        if (!chieftain.getAbilities().hasAbilities(Abilities.MAGIC) || !getRaceInfo().getMagics().contains(magic)) {
+            notifyRejected("doMagic", chieftain.getId(), "UNSUPPORTED_ACTION");
+            return;
+        }
         chieftain.doMagic(magic, clearStack);
     }
 
@@ -682,6 +712,10 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
             notifyRejected("exitTower", building.getId(), "NOT_OWNED");
             return;
         }
+        if (!building.canExitTower()) {
+            notifyRejected("exitTower", building.getId(), "UNSUPPORTED_ACTION");
+            return;
+        }
         building.exitTower();
     }
 
@@ -697,6 +731,10 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
         }
         if (!isValid(building)) {
             notifyRejected("trainChieftain", building.getId(), "NOT_OWNED");
+            return;
+        }
+        if ((start && !building.canBuildChieftain()) || (!start && !building.canStopChieftain())) {
+            notifyRejected("trainChieftain", building.getId(), "UNSUPPORTED_ACTION");
             return;
         }
         building.trainChieftain(start);
@@ -720,10 +758,14 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
             return;
         }
         boolean anyOwned = false;
+        boolean anyBuilder = false;
         for (var s : selection) {
             if (isValid(s)) {
                 anyOwned = true;
-                break;
+                if (s.getAbilities().hasAbilities(Abilities.BUILD)) {
+                    anyBuilder = true;
+                    break;
+                }
             }
         }
         if (!anyOwned) {
@@ -733,8 +775,17 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
             notifyRejected("placeBuilding", entityId, reason);
             return;
         }
-        Building building = new Building(this, getRaceInfo().getBuildingTemplate(template_type),
-                placing_grid_x, placing_grid_y);
+        if (!anyBuilder) {
+            notifyRejected("placeBuilding", Distributable.NO_ID, "UNSUPPORTED_ACTION");
+            return;
+        }
+        var template = getRaceInfo().getBuildingTemplate(template_type);
+        if (!canBuild(template_type)
+                || !Building.isPlacingLegal(world.getUnitGrid(), template, placing_grid_x, placing_grid_y)) {
+            notifyRejected("placeBuilding", Distributable.NO_ID, "ILLEGAL_PLACEMENT");
+            return;
+        }
+        Building building = new Building(this, template, placing_grid_x, placing_grid_y);
         for (var selectable : selection) {
             if (isValid(selectable)) {
                 selectable.initTarget(building, Action.DEFAULT, false);
@@ -754,6 +805,10 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
         }
         if (!isValid(building)) {
             notifyRejected("setRallyPoint", building.getId(), "NOT_OWNED");
+            return;
+        }
+        if (!building.canSetRallyPoint()) {
+            notifyRejected("setRallyPoint", building.getId(), "UNSUPPORTED_ACTION");
             return;
         }
         if (target == null || (target instanceof Selectable<?> s && s.isDead())) {
@@ -1217,13 +1272,14 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
 
     private List<Selectable<?>> resolveSelectables(int[] entityIds) {
         var table = world.getDistributableTable();
-        List<Selectable<?>> result = new ArrayList<>(entityIds.length);
-        for (int id : entityIds) {
-            var d = table.getDistributable(id);
+        int limit = Math.min(entityIds.length, MAX_SELECTION_SIZE);
+        var unique = new LinkedHashSet<Selectable<?>>(limit);
+        for (int i = 0; i < limit; i++) {
+            var d = table.getDistributable(entityIds[i]);
             if (d instanceof Selectable<?> s && !s.isDead()) {
-                result.add(s);
+                unique.add(s);
             }
         }
-        return result;
+        return List.copyOf(unique);
     }
 }

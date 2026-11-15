@@ -109,6 +109,36 @@ class PlayerCommandExecutorTest {
         int enemyQuartersId = table.findName(enemyQuarters).orElseThrow();
         player0.execute(new PlayerCommand.DeployUnits(enemyQuartersId, DeployType.PEON, 1));
         assertEquals(List.of("deployUnits:NOT_OWNED"), rejections);
+        rejections.clear();
+
+        // Unsupported deploy type for quarters (warriors require armory)
+        player0.execute(new PlayerCommand.DeployUnits(quartersId, DeployType.ROCK_WARRIOR, 1));
+        assertEquals(List.of("deployUnits:UNSUPPORTED_ACTION"), rejections);
+        rejections.clear();
+
+        // Unsupported building (tower)
+        Building tower = player0.getUnits().getSet().stream()
+                .filter(s -> s instanceof Building b && b.getTemplate().getBuildingType() == BuildingType.TOWER)
+                .map(s -> (Building) s)
+                .findFirst()
+                .orElseThrow();
+        int towerId = table.findName(tower).orElseThrow();
+        player0.execute(new PlayerCommand.DeployUnits(towerId, DeployType.PEON, 1));
+        assertEquals(List.of("deployUnits:UNSUPPORTED_ACTION"), rejections);
+        rejections.clear();
+
+        // Zero and Integer.MIN_VALUE amounts must be rejected
+        player0.execute(new PlayerCommand.DeployUnits(quartersId, DeployType.PEON, 0));
+        assertEquals(List.of("deployUnits:INVALID_AMOUNT"), rejections);
+        rejections.clear();
+
+        player0.execute(new PlayerCommand.DeployUnits(quartersId, DeployType.PEON, Integer.MIN_VALUE));
+        assertEquals(List.of("deployUnits:INVALID_AMOUNT"), rejections);
+        rejections.clear();
+
+        // Large positive amount must clamp cleanly without overflow
+        player0.execute(new PlayerCommand.DeployUnits(quartersId, DeployType.PEON, Integer.MAX_VALUE));
+        assertTrue(rejections.isEmpty());
     }
 
     @Test
@@ -128,11 +158,45 @@ class PlayerCommandExecutorTest {
         assertTrue(rejections.contains("placeBuilding:OUT_OF_BOUNDS"));
         rejections.clear();
 
+        // Illegal placement (overlapping existing quarters) notifies ILLEGAL_PLACEMENT
+        Building quarters = player0.getUnits().getSet().stream()
+                .filter(s -> s instanceof Building b && b.getTemplate().getBuildingType() == BuildingType.QUARTERS)
+                .map(s -> (Building) s)
+                .findFirst()
+                .orElseThrow();
+        player0.execute(new PlayerCommand.PlaceBuilding(new int[]{peonId}, BuildingType.TOWER,
+                quarters.getGridX(), quarters.getGridY()));
+        assertEquals(List.of("placeBuilding:ILLEGAL_PLACEMENT"), rejections);
+        rejections.clear();
+
+        // Non-builder unit (chieftain) cannot place buildings
+        Unit chieftain = player0.getChieftain().orElseThrow();
+        int chieftainId = table.findName(chieftain).orElseThrow();
+        player0.execute(new PlayerCommand.PlaceBuilding(new int[]{chieftainId}, BuildingType.TOWER,
+                quarters.getGridX(), quarters.getGridY()));
+        assertEquals(List.of("placeBuilding:UNSUPPORTED_ACTION"), rejections);
+        rejections.clear();
+
         // Valid placement orders peon to target the new building construction site
-        player0.execute(new PlayerCommand.PlaceBuilding(new int[]{peonId}, BuildingType.TOWER, 15, 15));
+        var towerTemplate = player0.getRaceInfo().getBuildingTemplate(BuildingType.TOWER);
+        int validX = -1;
+        int validY = -1;
+        for (int dx = 4; dx <= 12 && validX == -1; dx++) {
+            for (int dy = -6; dy <= 6 && validX == -1; dy++) {
+                int cx = quarters.getGridX() + dx;
+                int cy = quarters.getGridY() + dy;
+                if (Building.isPlacingLegal(world.getUnitGrid(), towerTemplate, cx, cy)) {
+                    validX = cx;
+                    validY = cy;
+                }
+            }
+        }
+        assertNotEquals(-1, validX, "Expected a legal building placement near quarters");
+        player0.execute(new PlayerCommand.PlaceBuilding(new int[]{peonId}, BuildingType.TOWER, validX, validY));
         assertTrue(peon.getActivity() == EntityActivity.PLACING_BUILDING
                 && peon.getPlacingBuilding() != null
                 && peon.getPlacingBuilding().getBuildingType() == BuildingType.TOWER);
+        assertTrue(rejections.isEmpty());
     }
 
     @Test
@@ -165,8 +229,13 @@ class PlayerCommandExecutorTest {
         Unit chieftain = player0.getChieftain().orElseThrow();
         int chiefId = table.findName(chieftain).orElseThrow();
 
-        player0.execute(new PlayerCommand.DoMagic(chiefId, MagicType.LIGHTNING_CLOUD));
+        player0.execute(new PlayerCommand.DoMagic(chiefId, MagicType.STUN));
         assertTrue(rejections.isEmpty());
+
+        // Reject magic not belonging to player's race
+        player0.execute(new PlayerCommand.DoMagic(chiefId, MagicType.LIGHTNING_CLOUD));
+        assertEquals(List.of("doMagic:UNSUPPORTED_ACTION"), rejections);
+        rejections.clear();
 
         // Reject non-existent chieftain
         player0.execute(new PlayerCommand.DoMagic(77777, MagicType.LIGHTNING_CLOUD));
@@ -264,6 +333,54 @@ class PlayerCommandExecutorTest {
         assertEquals(List.of("buildWeapons:NOT_OWNED"), rejections);
         rejections.clear();
 
+        Building quarters = player0.getUnits().getSet().stream()
+                .filter(s -> s instanceof Building b && b.getTemplate().getBuildingType() == BuildingType.QUARTERS)
+                .map(s -> (Building) s)
+                .findFirst()
+                .orElseThrow();
+        int quartersId = table.findName(quarters).orElseThrow();
+        player0.execute(new PlayerCommand.BuildWeapons(quartersId, WeaponTier.ROCK, 0, false));
+        assertEquals(List.of("buildWeapons:INVALID_AMOUNT"), rejections);
+        rejections.clear();
+
+        player0.execute(new PlayerCommand.BuildWeapons(quartersId, WeaponTier.ROCK, Integer.MIN_VALUE, false));
+        assertEquals(List.of("buildWeapons:INVALID_AMOUNT"), rejections);
+        rejections.clear();
+
+        player0.execute(new PlayerCommand.BuildWeapons(quartersId, WeaponTier.ROCK, 1, false));
+        assertEquals(List.of("buildWeapons:UNSUPPORTED_ACTION"), rejections);
+        rejections.clear();
+
+        // Unsupported magic, chieftain training, and tower exit rejections
+        int peonId = table.findName(peon).orElseThrow();
+        player0.execute(new PlayerCommand.DoMagic(peonId, MagicType.STUN));
+        assertEquals(List.of("doMagic:UNSUPPORTED_ACTION"), rejections);
+        rejections.clear();
+
+        player0.execute(new PlayerCommand.ExitTower(quartersId));
+        assertEquals(List.of("exitTower:UNSUPPORTED_ACTION"), rejections);
+        rejections.clear();
+
+        player0.execute(new PlayerCommand.TrainChieftain(quartersId, false));
+        assertEquals(List.of("trainChieftain:UNSUPPORTED_ACTION"), rejections);
+        rejections.clear();
+
+        // Tower cannot have a rally point
+        Building tower = player0.getUnits().getSet().stream()
+                .filter(s -> s instanceof Building b && b.getTemplate().getBuildingType() == BuildingType.TOWER)
+                .map(s -> (Building) s)
+                .findFirst()
+                .orElseThrow();
+        int towerId = table.findName(tower).orElseThrow();
+        player0.execute(new PlayerCommand.SetRallyPointCoords(towerId, quarters.getGridX(), quarters.getGridY()));
+        assertEquals(List.of("setRallyPoint:UNSUPPORTED_ACTION"), rejections);
+        rejections.clear();
+
+        // Duplicate selection IDs are deduplicated cleanly
+        player0.execute(new PlayerCommand.SetLandscapeTarget(
+                new int[]{peonId, peonId, peonId}, quarters.getGridX(), quarters.getGridY(), Action.MOVE, false));
+        assertTrue(rejections.isEmpty());
+
         // Out of bounds placement rejection
         player0.placeBuilding(List.of(peon), BuildingType.TOWER, -1, 10);
         assertEquals(List.of("placeBuilding:OUT_OF_BOUNDS"), rejections);
@@ -304,6 +421,48 @@ class PlayerCommandExecutorTest {
         player0.execute(new PlayerCommand.SetLandscapeTarget(new int[]{enemyPeonId}, 10, 10, Action.MOVE, false));
         assertEquals(List.of("setLandscapeTarget:NOT_OWNED"), rejections);
         rejections.clear();
+    }
+
+    @Test
+    void testCreateHarvestersValidation() {
+        Building armory = player0.getUnits().getSet().stream()
+                .filter(s -> s instanceof Building b && b.getTemplate().getBuildingType() == BuildingType.ARMORY)
+                .map(s -> (Building) s)
+                .findFirst()
+                .orElseThrow();
+        Building tower = player0.getUnits().getSet().stream()
+                .filter(s -> s instanceof Building b && b.getTemplate().getBuildingType() == BuildingType.TOWER)
+                .map(s -> (Building) s)
+                .findFirst()
+                .orElseThrow();
+        int armoryId = table.findName(armory).orElseThrow();
+        int towerId = table.findName(tower).orElseThrow();
+
+        // Negative counts must be rejected
+        player0.execute(new PlayerCommand.CreateHarvesters(armoryId, -1, 0, 0, 0));
+        assertEquals(List.of("createHarvesters:INVALID_AMOUNT"), rejections);
+        rejections.clear();
+
+        // Exceeding available peon supply in armory must be rejected
+        int available = armory.getUnitContainer().orElseThrow().getNumSupplies();
+        player0.execute(new PlayerCommand.CreateHarvesters(armoryId, available + 1, 0, 0, 0));
+        assertEquals(List.of("createHarvesters:INSUFFICIENT_SUPPLY"), rejections);
+        rejections.clear();
+
+        // Integer overflow sum must also be rejected
+        player0.execute(new PlayerCommand.CreateHarvesters(armoryId, Integer.MAX_VALUE, 1, 0, 0));
+        assertEquals(List.of("createHarvesters:INSUFFICIENT_SUPPLY"), rejections);
+        rejections.clear();
+
+        // Non-worker building (tower) must be rejected
+        player0.execute(new PlayerCommand.CreateHarvesters(towerId, 1, 0, 0, 0));
+        assertEquals(List.of("createHarvesters:INSUFFICIENT_SUPPLY"), rejections);
+        rejections.clear();
+
+        // Valid conversion when peon supply is present
+        armory.getUnitContainer().orElseThrow().increaseSupply(2);
+        player0.execute(new PlayerCommand.CreateHarvesters(armoryId, 1, 1, 0, 0));
+        assertTrue(rejections.isEmpty());
     }
 
     @Test

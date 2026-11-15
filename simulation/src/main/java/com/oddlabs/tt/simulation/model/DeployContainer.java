@@ -32,7 +32,14 @@ public final class DeployContainer {
     }
 
     private int capAmount(int amount) {
-        return Math.max(amount, -queued_count);
+        if (amount >= 0) {
+            return amount;
+        }
+        int remaining = queued_count + amount;
+        if (remaining < 0 || remaining > queued_count) {
+            return -queued_count;
+        }
+        return amount;
     }
 
     public int getNumSupplies() {

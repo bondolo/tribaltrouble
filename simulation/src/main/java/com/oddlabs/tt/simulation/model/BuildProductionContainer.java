@@ -40,7 +40,14 @@ public final class BuildProductionContainer extends SupplyContainer {
 
     private void orderSupply(int amount, int orders) {
         increaseSupply(amount);
-        num_orders += orders;
+        int updated = num_orders + orders;
+        if (orders > 0 && updated < num_orders) {
+            num_orders = Integer.MAX_VALUE;
+        } else if (orders < 0 && updated > num_orders) {
+            num_orders = 0;
+        } else {
+            num_orders = Math.max(0, updated);
+        }
     }
 
     public int getNumOrders() {
