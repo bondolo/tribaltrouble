@@ -3,6 +3,7 @@ package com.oddlabs.tt.procedural.landscape;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Tools;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.procedural.noise.Midpoint;
 import com.oddlabs.tt.procedural.noise.Voronoi;
@@ -601,13 +602,13 @@ public final class ProceduralLandscape implements Landscape {
                 for (int x = 1; x < probability.width - 1; x++) {
                     float val = probability.getPixel(x, y);
                     if (val <= upper_bound && val > lower_bound) {
+                        int checkY = AppConfig.LEGACY_DETERMINISTIC ? y - 1 : y + 1;
                         // place resource if grid and its 4 neighbours are unoccupied
                         if (supplies.getPixel(x, y) > 0
                                 && supplies.getPixel(x - 1, y) > 0
                                 && supplies.getPixel(x + 1, y) > 0
                                 && supplies.getPixel(x, y - 1) > 0
-                                && supplies.getPixel(x, y - 1) > 0 // DO NOT FIX: This is a bug in the original game.
-                        // fixing it alters resource placement and gameplay.
+                                && supplies.getPixel(x, checkY) > 0 // DO NOT FIX (AppConfig.LEGACY_DETERMINISTIC): Original game checked y - 1 twice; preserved only for legacy simulation fidelity.
                         ) {
                             place.putPixel(x, y, 1f);
                             // make node neighbourhood inaccessible

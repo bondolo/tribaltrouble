@@ -168,7 +168,7 @@ public final class LightningCloud extends Model implements Magic {
 
     @Override
     public void interrupt() {
-        // DO NOT FIX: The original game only silenced the sound here; the spell keeps running after the caster is interrupted.
+        // DO NOT FIX (AppConfig.LEGACY_DETERMINISTIC): Preserved for legacy simulation fidelity; the original game only silenced the sound here while the spell keeps running after the caster is interrupted.
     }
 
     private static final class LegacyCloudEmitter implements Animated {
