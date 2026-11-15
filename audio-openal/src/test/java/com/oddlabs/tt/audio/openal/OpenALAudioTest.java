@@ -1,6 +1,8 @@
 package com.oddlabs.tt.audio.openal;
 
 import com.oddlabs.tt.audio.OGGStream;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.lwjgl.BufferUtils;
 
@@ -25,10 +27,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class OpenALAudioTest {
 
+    @Tag("integration")
     @Test
     void testOpenALSourceTransitionBetweenStaticAndStreaming() {
         long device = ALC10.alcOpenDevice((String) null);
-        if (device == 0) return;
+        Assumptions.assumeTrue(device != 0, "OpenAL has no device available on this host");
         long context = ALC10.alcCreateContext(device, (int[]) null);
         ALC10.alcMakeContextCurrent(context);
         ALCCapabilities alcCapabilities = ALC.createCapabilities(device);
@@ -76,6 +79,69 @@ final class OpenALAudioTest {
             assertEquals(AL11.AL_STATIC, AL10.alGetSourcei(source, AL11.AL_SOURCE_TYPE));
 
             AL10.alDeleteSources(source);
+            AL10.alDeleteBuffers(staticBuffer);
+            AL10.alDeleteBuffers(queueBuffers);
+        } finally {
+            ALC10.alcMakeContextCurrent(0);
+            ALC10.alcDestroyContext(context);
+            ALC10.alcCloseDevice(device);
+        }
+    }
+
+    /**
+     * Exercises the static-to-streaming source recycling path under the lwjglx strict agent. A small pool of
+     * sources is cycled through play/stop/detach so a recycled id that was freed and reallocated is reused; the
+     * strict-mode lifecycle tracker flags any use-after-free or double-delete via an {@code [error]} trace line that
+     * {@code scanAudioLogs} then catches. Skipped on hosts with no OpenAL device.
+     */
+    @Tag("integration")
+    @Test
+    void testSourceRecycling() {
+        long device = ALC10.alcOpenDevice((String) null);
+        Assumptions.assumeTrue(device != 0, "OpenAL has no device available on this host");
+        long context = ALC10.alcCreateContext(device, (int[]) null);
+        ALC10.alcMakeContextCurrent(context);
+        ALCCapabilities alcCapabilities = ALC.createCapabilities(device);
+        AL.createCapabilities(alcCapabilities);
+
+        try {
+            int poolSize = 8;
+            int[] sourceIds = new int[poolSize];
+            for (int i = 0; i < poolSize; i++) {
+                sourceIds[i] = AL10.alGenSources();
+            }
+
+            int staticBuffer = AL10.alGenBuffers();
+            ShortBuffer pcm = BufferUtils.createShortBuffer(44100);
+            AL10.alBufferData(staticBuffer, AL10.AL_FORMAT_MONO16, pcm, 44100);
+
+            // Cycle the pool through play/stop/attach/detach so each id is reused for both static and streaming roles.
+            for (int i = 0; i < poolSize; i++) {
+                int source = sourceIds[i];
+                AL10.alSourcei(source, AL10.AL_BUFFER, staticBuffer);
+                AL10.alSourcePlay(source);
+                AL10.alSourceStop(source);
+                // Detach to UNDETERMINED between roles, mirroring the static-to-streaming handoff.
+                AL10.alSourcei(source, AL10.AL_BUFFER, AL10.AL_NONE);
+            }
+
+            // A source that is no longer in use returns AL_INITIAL after stop/detach. Recycle it into a streaming queue.
+            IntBuffer queueBuffers = BufferUtils.createIntBuffer(2);
+            AL10.alGenBuffers(queueBuffers);
+            AL10.alBufferData(queueBuffers.get(0), AL10.AL_FORMAT_MONO16, pcm, 44100);
+            AL10.alBufferData(queueBuffers.get(1), AL10.AL_FORMAT_MONO16, pcm, 44100);
+            for (int i = 0; i < poolSize; i++) {
+                int source = sourceIds[i];
+                AL10.alSourceStop(source);
+                AL10.alSourcei(source, AL10.AL_BUFFER, AL10.AL_NONE);
+                AL10.alSourceQueueBuffers(source, queueBuffers);
+                int queued = AL10.alGetSourcei(source, AL10.AL_BUFFERS_QUEUED);
+                assertEquals(2, queued);
+                AL10.alSourceStop(source);
+                OpenALAudioSource.detachBuffers(source);
+            }
+
+            AL10.alDeleteSources(java.nio.IntBuffer.wrap(sourceIds));
             AL10.alDeleteBuffers(staticBuffer);
             AL10.alDeleteBuffers(queueBuffers);
         } finally {
