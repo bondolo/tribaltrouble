@@ -76,6 +76,10 @@ public record HeadlessMatchConfig(
     }
 
     public HeadlessMatchConfig {
+        if (checksumIntervalTicks < 0) {
+            throw new IllegalArgumentException(
+                    "checksumIntervalTicks must be >= 0: " + checksumIntervalTicks);
+        }
         players = List.copyOf(players);
     }
 }

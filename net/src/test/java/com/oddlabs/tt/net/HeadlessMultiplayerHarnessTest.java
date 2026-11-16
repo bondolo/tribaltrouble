@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -48,7 +49,8 @@ class HeadlessMultiplayerHarnessTest {
         );
     }
 
-    private static List<PlayerSlot> createTestSlots(AIDifficulty difficulty0, String name0, AIDifficulty difficulty1, String name1) {
+    private static List<PlayerSlot> createTestSlots(AIDifficulty difficulty0, String name0, AIDifficulty difficulty1,
+            String name1) {
         List<PlayerSlot> slots = new ArrayList<>(2);
         PlayerSlot slot0 = new PlayerSlot(0);
         slot0.setType(SlotType.AI);
@@ -389,6 +391,27 @@ class HeadlessMultiplayerHarnessTest {
             harness.verifyChecksums();
             assertEquals(humanPeer.getChecksum(), aiPeer.getChecksum(),
                     "Checksums must match across scripted human peer, network AI peer, and local lockstep AI");
+        }
+    }
+
+    @Test
+    void testConfigurableTicksPerChecksum() throws Exception {
+        Landscape landscape = createTestLandscape(128);
+        WorldParameters worldParams = new WorldParameters(0, "1", 5, 250);
+        List<PlayerSlot> slots = createTestSlots(AIDifficulty.EASY, "BotA", AIDifficulty.EASY, "BotB");
+        List<UnitInfo> unitInfos = createDefaultUnitInfos();
+
+        assertThrows(IllegalArgumentException.class, () -> HeadlessMultiplayerHarness.create(
+                landscape, worldParams, slots, unitInfos, new TickTimeManager(), 0));
+
+        try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.create(
+                landscape, worldParams, slots, unitInfos, new TickTimeManager(), 1)) {
+            assertEquals(1, harness.getInstance(0).getPeerHub().getTicksPerChecksum());
+            assertEquals(1, harness.getInstance(1).getPeerHub().getTicksPerChecksum());
+
+            harness.awaitSynchronized(Duration.ofSeconds(5));
+            harness.runUntilTick(20, Duration.ofSeconds(10));
+            harness.verifyChecksums();
         }
     }
 }

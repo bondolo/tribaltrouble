@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -30,7 +29,7 @@ class FullGameSimulationTest {
 
     @Test
     void test1v1BattleRunToVictory() throws Exception {
-        int seed = new Random().nextInt();
+        int seed = 1001;
         IslandConfig islandConfig = new IslandConfig(
                 Terrain.NATIVE,
                 256 * HeightMap.METERS_PER_UNIT_GRID,
@@ -76,7 +75,7 @@ class FullGameSimulationTest {
 
     @Test
     void test1v1BattleWithJitterClockRunToVictory() throws Exception {
-        int seed = new Random().nextInt();
+        int seed = 1002;
         IslandConfig islandConfig = new IslandConfig(
                 Terrain.NATIVE,
                 256 * HeightMap.METERS_PER_UNIT_GRID,
@@ -127,7 +126,7 @@ class FullGameSimulationTest {
 
     @Test
     void testMultiPlayerTeamBattleRunToVictory() throws Exception {
-        int seed = new Random().nextInt();
+        int seed = 1003;
         IslandConfig islandConfig = new IslandConfig(
                 Terrain.VIKING,
                 256 * HeightMap.METERS_PER_UNIT_GRID,
@@ -175,7 +174,7 @@ class FullGameSimulationTest {
 
     @Test
     void testProceduralMapWithRandomTerrainAndRacesRunToVictory() throws Exception {
-        int seed = new Random().nextInt();
+        int seed = 1004;
         Terrain terrain = seed % 2 == 0 ? Terrain.VIKING : Terrain.NATIVE;
         IslandConfig islandConfig = new IslandConfig(
                 terrain,

@@ -97,7 +97,7 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
             WorldParameters worldParams,
             List<PlayerSlot> playerSlots,
             List<UnitInfo> unitInfos) throws IOException {
-        return create(landscape, worldParams, playerSlots, unitInfos, new TickTimeManager());
+        return create(landscape, worldParams, playerSlots, unitInfos, new TickTimeManager(), 1);
     }
 
     /**
@@ -122,6 +122,19 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
             List<PlayerSlot> playerSlots,
             List<UnitInfo> unitInfos,
             TimeManager timeManager) throws IOException {
+        return create(landscape, worldParams, playerSlots, unitInfos, timeManager, PeerHub.DEFAULT_TICKS_PER_CHECKSUM);
+    }
+
+    /**
+     * Creates a new multiplayer harness with custom time manager and checksum interval.
+     */
+    public static HeadlessMultiplayerHarness create(
+            Landscape landscape,
+            WorldParameters worldParams,
+            List<PlayerSlot> playerSlots,
+            List<UnitInfo> unitInfos,
+            TimeManager timeManager,
+            int ticksPerChecksum) throws IOException {
         NetworkSelector network = new NetworkSelector(new NotDeterministic(), timeManager);
         Router router = new Router(
                 network,
@@ -149,7 +162,8 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
                     network,
                     sessionId,
                     Utils.getLoopbackAddress().getHostAddress(),
-                    routerPort
+                    routerPort,
+                    ticksPerChecksum
             );
             instanceList.add(instance);
         }

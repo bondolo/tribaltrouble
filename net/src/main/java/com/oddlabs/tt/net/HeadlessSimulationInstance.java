@@ -83,6 +83,24 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
             SessionID sessionId,
             @Nullable String routerAddress,
             int routerPort) {
+        return create(playerIndex, worldParams, landscape, playerSlots, unitInfos, network, sessionId,
+                routerAddress, routerPort, PeerHub.DEFAULT_TICKS_PER_CHECKSUM);
+    }
+
+    /**
+     * Creates and initializes a headless simulation instance with an explicit checksum interval.
+     */
+    public static HeadlessSimulationInstance create(
+            int playerIndex,
+            WorldParameters worldParams,
+            Landscape landscape,
+            List<PlayerSlot> playerSlots,
+            List<UnitInfo> unitInfos,
+            com.oddlabs.net.NetworkSelector network,
+            SessionID sessionId,
+            @Nullable String routerAddress,
+            int routerPort,
+            int ticksPerChecksum) {
         List<PlayerInfo> playerInfos = playerSlots.stream()
                 .map(PlayerSlot::getInfo)
                 .toList();
@@ -130,7 +148,8 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
                 sessionId,
                 stallHandler,
                 routerAddress,
-                routerPort
+                routerPort,
+                ticksPerChecksum
         );
         peerHubRef[0] = peerHub;
 

@@ -49,8 +49,8 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
     private static final int CLIENT_MAX_DELAY_MILLIS = 60;
     private static final int MAX_CATCHUP_TICKS_PER_STEP = 8;
     private static final float FREE_QUIT_TIME = 120f;
+    public static final int DEFAULT_TICKS_PER_CHECKSUM = (int) (10 / AnimationManager.ANIMATION_SECONDS_PER_TICK);
     private static final int TICKS_PER_STATUS_UPDATE = (int) (20 / AnimationManager.ANIMATION_SECONDS_PER_TICK);
-    private static final int TICKS_PER_CHECKSUM = (int) (10 / AnimationManager.ANIMATION_SECONDS_PER_TICK);
 
     public static final ScopedValue<PeerHub> CURRENT = ScopedValue.newInstance();
     private boolean waiting_for_ack;
@@ -64,7 +64,6 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
     private final Map<Player, Peer> player_to_peer = new LinkedHashMap<>();
     private final Map<Peer, Player> peer_to_player = new LinkedHashMap<>();
     private final Set<Player> nonhuman_players = new HashSet<>();
-    private final NetworkSelector network;
     private final RouterClient router_client;
     private final @Nullable Router router;
     private final @Nullable BeaconListener beacon_listener;
@@ -75,6 +74,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
     private final boolean is_multiplayer;
     private final boolean is_rated;
     private final StallHandler stall_handler;
+    private final int ticks_per_checksum;
     private @Nullable Predicate<String> ignore_filter;
 
     private int pause_ticks;
@@ -89,7 +89,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
             StallHandler stall_handler) {
         this(manager, is_multiplayer, is_rated, local_player, player_slots, network,
                 beacon_listener, matchmaking_client, chat_hub, distributable_table, session_id,
-                stall_handler, null, -1);
+                stall_handler, null, -1, DEFAULT_TICKS_PER_CHECKSUM);
     }
 
     public PeerHub(AnimationManager manager, boolean is_multiplayer, boolean is_rated,
@@ -97,10 +97,24 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
             @Nullable BeaconListener beacon_listener, @Nullable MatchmakingClient matchmaking_client,
             @Nullable ChatHub chat_hub, DistributableTable distributable_table, SessionID session_id,
             StallHandler stall_handler, @Nullable String router_address, int router_port) {
+        this(manager, is_multiplayer, is_rated, local_player, player_slots, network,
+                beacon_listener, matchmaking_client, chat_hub, distributable_table, session_id,
+                stall_handler, router_address, router_port, DEFAULT_TICKS_PER_CHECKSUM);
+    }
+
+    public PeerHub(AnimationManager manager, boolean is_multiplayer, boolean is_rated,
+            Player local_player, List<PlayerSlot> player_slots, NetworkSelector network,
+            @Nullable BeaconListener beacon_listener, @Nullable MatchmakingClient matchmaking_client,
+            @Nullable ChatHub chat_hub, DistributableTable distributable_table, SessionID session_id,
+            StallHandler stall_handler, @Nullable String router_address, int router_port,
+            int ticks_per_checksum) {
+        if (ticks_per_checksum < 1) {
+            throw new IllegalArgumentException("ticks_per_checksum must be >= 1: " + ticks_per_checksum);
+        }
+        this.ticks_per_checksum = ticks_per_checksum;
         this.stall_handler = stall_handler;
         this.is_rated = is_rated;
         this.local_player = local_player;
-        this.network = network;
         if (matchmaking_client != null) {
             matchmaking_client.setGameWonAckListener(this::receivedAck);
         }
@@ -318,8 +332,13 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
             }
         }
         local_player.getWorld().tick();
-        if (getTick() % TICKS_PER_CHECKSUM == 0)
+        if (getTick() % ticks_per_checksum == 0)
             sendChecksum();
+    }
+
+    /** {@return the number of simulation ticks between router checksum submissions} */
+    public int getTicksPerChecksum() {
+        return ticks_per_checksum;
     }
 
     private void sendChecksum() {
