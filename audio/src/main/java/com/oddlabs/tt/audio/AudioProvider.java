@@ -23,7 +23,6 @@ public interface AudioProvider {
 
     /**
      * Loads the preferred {@link AudioManager} instance via {@link ServiceLoader}.
-     * If no audio provider service is found, returns a no-op {@link NullAudioManager}.
      *
      * @param settings audio configuration settings
      * @param animationManager animation manager for scheduling fade and audio tasks
@@ -49,9 +48,8 @@ public interface AudioProvider {
             AudioProvider p = (AudioProvider) clazz.getDeclaredConstructor().newInstance();
             logger.info("Loaded AudioProvider via fallback: " + p.getClass().getName());
             return p.create(settings, animationManager);
-        } catch (Throwable t) {
-            logger.info("No AudioProvider found; using NullAudioManager fallback (" + t.getMessage() + ")");
-            return new NullAudioManager(settings, animationManager);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("No AudioProvider found", e);
         }
     }
 }

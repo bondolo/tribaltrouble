@@ -141,7 +141,7 @@ final class OpenALAudioTest {
                 OpenALAudioSource.detachBuffers(source);
             }
 
-            AL10.alDeleteSources(java.nio.IntBuffer.wrap(sourceIds));
+            AL10.alDeleteSources(sourceIds);
             AL10.alDeleteBuffers(staticBuffer);
             AL10.alDeleteBuffers(queueBuffers);
         } finally {

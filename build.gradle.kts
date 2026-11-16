@@ -21,12 +21,6 @@ allprojects {
 // afterwards.
 val lwjglxDebug = (findProperty("lwjglxDebug") as? String)?.toBoolean() == true
 
-// Headless-driver toggle, off by default: -PalsoSoftNullDriver also sets ALSOFT_DRIVERS=null so OpenAL-Soft selects its
-// null output driver for a CI host with no audio hardware. On this build (macOS, OpenAL-Soft 1.25.2) the null driver is
-// NOT a no-op: alcOpenDevice still succeeds yet alDeleteSources then aborts the JVM natively (SIGABRT in libopenal.dylib),
-// so it is opt-in and should only be used on a platform where also-soft's null driver is clean (e.g. a Linux CI image).
-val alsoSoftNullDriver = (findProperty("alsoSoftNullDriver") as? String)?.toBoolean() == true
-
 // Agent jar path is resolved from the local Maven repository so the build is not tied to one machine's home path; override
 // for CI via -PlwjglxDebugJar=/path/to/jar or the version via -PlwjglxDebugVersion. 1.1.0 (bondolo/debug `validation`
 // branch, on lwjgl.org/addons) is the first release that adds OpenAL lifecycle tracking (use-after-free, double-free, and
@@ -115,13 +109,15 @@ subprojects {
         }
     }
 
-    tasks.withType<Test>().configureEach { useJUnitPlatform() }
+    tasks.withType<Test>().configureEach {
+        useJUnitPlatform()
+        environment("ALSOFT_DRIVERS", "null")
+    }
 
     // When -PlwjglxDebug is on, attach the lwjglx agent to every JavaExec + Test fork in this module and route the
     // also-soft log to an absolute per-module path. The agent writes its [error] trace to trace.log and OpenAL-Soft
     // writes renderer issues to openal.log, so no stdout redirection is needed; scanLogs / scanAudioLogs read those
-    // files after the run. ALSOFT_DRIVERS=null is gated separately behind -PalsoSoftNullDriver because it aborts this
-    // platform's OpenAL-Soft natively on teardown (see the flag above).
+    // files after the run.
    if (lwjglxDebug) {
        val agentJar = File(lwjglxDebugJarPath)
        val agentArg = "-javaagent:${agentJar.absolutePath}=validate;strict;trace;nothrow;" +
@@ -135,16 +131,14 @@ subprojects {
     // JavaExec (e.g. :tt:run, :headless:run) forks the full application.
         tasks.withType<JavaExec>().configureEach {
             if (agentJar.exists()) jvmArgs(agentArg)
-            if (alsoSoftNullDriver) environment("ALSOFT_DRIVERS", "null")
              environment("ALSOFT_LOGLEVEL", "3")
              environment("ALSOFT_LOGFILE", lwjglxDebugLogDir().resolve("openal.log").absolutePath)
          }
 
           // Test forks (e.g. :audio-openal:test integration fixtures): attach the agent so fixtures that exercise OpenAL
-          // lifecycle paths are validated; on a headless CI, pair with -PalsoSoftNullDriver to pick a device-less driver.
+          // lifecycle paths are validated.
         tasks.withType<Test>().configureEach {
             if (agentJar.exists()) jvmArgs(agentArg)
-            if (alsoSoftNullDriver) environment("ALSOFT_DRIVERS", "null")
              environment("ALSOFT_LOGLEVEL", "3")
              environment("ALSOFT_LOGFILE", lwjglxDebugLogDir().resolve("openal.log").absolutePath)
          }
