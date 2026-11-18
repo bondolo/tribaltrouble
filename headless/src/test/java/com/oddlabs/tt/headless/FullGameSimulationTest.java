@@ -43,7 +43,7 @@ class FullGameSimulationTest {
                 1,
                 "headless_1v1_" + seed,
                 Player.INITIAL_UNIT_COUNT,
-                100
+                Player.DEFAULT_MAX_UNIT_COUNT
         );
 
         UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
@@ -89,7 +89,7 @@ class FullGameSimulationTest {
                 1,
                 "headless_jitter_1v1_" + seed,
                 Player.INITIAL_UNIT_COUNT,
-                100
+                Player.DEFAULT_MAX_UNIT_COUNT
         );
 
         UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
@@ -140,7 +140,7 @@ class FullGameSimulationTest {
                 1,
                 "headless_2v2_" + seed,
                 Player.INITIAL_UNIT_COUNT,
-                100
+                Player.DEFAULT_MAX_UNIT_COUNT
         );
 
         UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
@@ -189,7 +189,7 @@ class FullGameSimulationTest {
                 1,
                 "headless_procedural_" + seed,
                 Player.INITIAL_UNIT_COUNT,
-                100
+                Player.DEFAULT_MAX_UNIT_COUNT
         );
 
         UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
@@ -266,7 +266,7 @@ class FullGameSimulationTest {
                 1,
                 "headless_4teams_neutral_" + seed,
                 1,
-                100
+                Player.DEFAULT_MAX_UNIT_COUNT
         );
 
         UnitInfo activeUnits = new UnitInfo(false, false, 0, false, 1, 0, 0, 0);
@@ -315,7 +315,7 @@ class FullGameSimulationTest {
                 1,
                 "headless_4teams_elim_" + seed,
                 1,
-                100
+                Player.DEFAULT_MAX_UNIT_COUNT
         );
 
         UnitInfo activeUnits = new UnitInfo(false, false, 0, false, 1, 0, 0, 0);
@@ -362,7 +362,7 @@ class FullGameSimulationTest {
                 1,
                 "headless_4teams_multiple_" + seed,
                 1,
-                100
+                Player.DEFAULT_MAX_UNIT_COUNT
         );
 
         UnitInfo activeUnits = new UnitInfo(false, false, 0, false, 1, 0, 0, 0);
@@ -414,7 +414,7 @@ class FullGameSimulationTest {
                 2,
                 "headless_huge_hilly_" + seed,
                 Player.INITIAL_UNIT_COUNT,
-                100
+                Player.DEFAULT_MAX_UNIT_COUNT
         );
 
         UnitInfo startingUnits = new UnitInfo(false, false, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);

@@ -80,7 +80,7 @@ class LegacyValidationSimulationTest {
                 2,
                 "42",
                 Player.INITIAL_UNIT_COUNT,
-                100
+                Player.DEFAULT_MAX_UNIT_COUNT
         );
 
         UnitInfo battleUnits = new UnitInfo(false, false, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);

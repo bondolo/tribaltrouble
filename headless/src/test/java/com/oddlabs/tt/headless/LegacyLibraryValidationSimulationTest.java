@@ -101,7 +101,7 @@ public class LegacyLibraryValidationSimulationTest {
                 2,
                 "MAP",
                 Player.INITIAL_UNIT_COUNT,
-                100
+                Player.DEFAULT_MAX_UNIT_COUNT
         );
 
         String[] playerTokens = record.playersStr().split(";");
