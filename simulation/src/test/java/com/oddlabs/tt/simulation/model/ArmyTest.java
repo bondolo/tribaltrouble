@@ -31,7 +31,7 @@ class ArmyTest {
     void setUp() {
         int gridSize = 32;
         Landscape landscape = FlatLandscape.create(gridSize);
-        WorldParameters worldParams = new WorldParameters(0, "1", 5, 20);
+        WorldParameters worldParams = new WorldParameters("1", 5, 20);
 
         List<PlayerInfo> playerInfos = List.of(
                 new PlayerInfo(0, Race.VIKINGS, "VikingPlayer"),

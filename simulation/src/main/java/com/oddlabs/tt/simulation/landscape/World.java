@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.landscape;
 
+import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.SimulationClock;
 import com.oddlabs.tt.simulation.model.AbstractElementNode;
@@ -168,20 +169,37 @@ public final class World implements SimulationClock {
         return getAnimationManagerRealTime().getTick();
     }
 
-    /// Constructs a simulation world with default geometry bounds and no-op notification listener.
+    /// Constructs a simulation world with default geometry bounds, normal game speed, and no-op notification listener.
     public World(WorldParameters worldParams, Landscape landscape, List<PlayerConfig> playerConfigs) {
-        this(worldParams, landscape, playerConfigs, NotificationListener.EMPTY);
+        this(worldParams, landscape, playerConfigs, NotificationListener.EMPTY,
+                Game.GAMESPEED_NORMAL);
     }
 
-    /// Constructs a simulation world with the given parameters, terrain, player configurations, and
-    /// notification listener.
+    /// Constructs a simulation world with the given initial game speed and no-op notification listener.
+    public World(WorldParameters worldParams, Landscape landscape, List<PlayerConfig> playerConfigs,
+            int initialGameSpeed) {
+        this(worldParams, landscape, playerConfigs, NotificationListener.EMPTY, initialGameSpeed);
+    }
+
+    /// Constructs a simulation world with default normal game speed.
     public World(WorldParameters world_params, Landscape landscape,
             List<PlayerConfig> playerConfigs, NotificationListener notification_listener) {
+        this(world_params, landscape, playerConfigs, notification_listener,
+                Game.GAMESPEED_NORMAL);
+    }
+
+    /// Constructs a simulation world with the given parameters, terrain, player configurations, notification listener,
+    /// and initial game speed.
+    public World(WorldParameters world_params, Landscape landscape,
+            List<PlayerConfig> playerConfigs, NotificationListener notification_listener, int initialGameSpeed) {
+        if (!isValidGamespeed(initialGameSpeed)) {
+            throw new IllegalArgumentException("Invalid initial game speed: " + initialGameSpeed);
+        }
         IO.println("****************** Generating landscape ********************");
         this.terrain = landscape.terrain();
         this.max_unit_count = world_params.maxUnitCount();
         this.notification_listener = notification_listener;
-        this.gamespeed = world_params.initialGameSpeed();
+        this.gamespeed = initialGameSpeed;
         this.worldParameters = world_params;
         long time_start = System.currentTimeMillis();
 

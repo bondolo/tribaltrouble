@@ -45,7 +45,7 @@ public final class Main {
 
         IslandConfig islandConfig = new IslandConfig(terrain, metersPerWorld, hills, vegetation, supplies, params
                 .seed());
-        WorldParameters worldParameters = new WorldParameters(1, "mapkey_" + mapCode, Player.INITIAL_UNIT_COUNT, 100);
+        WorldParameters worldParameters = new WorldParameters("mapkey_" + mapCode, Player.INITIAL_UNIT_COUNT, 100);
         UnitInfo defaultUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
 
         List<HeadlessMatchConfig.PlayerConfig> players = new ArrayList<>();
@@ -147,7 +147,6 @@ public final class Main {
             );
 
             WorldParameters worldParameters = new WorldParameters(
-                    1,
                     "headless_seed_" + seed,
                     Player.INITIAL_UNIT_COUNT,
                     100

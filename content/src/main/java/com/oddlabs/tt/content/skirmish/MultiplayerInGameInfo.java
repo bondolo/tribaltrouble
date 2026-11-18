@@ -1,19 +1,28 @@
 package com.oddlabs.tt.content.skirmish;
 
+import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.client.delegate.GameStatsDelegate;
+import com.oddlabs.tt.client.viewer.MultiplayerGameInfo;
 import com.oddlabs.tt.content.form.FreeQuitLabel;
 import com.oddlabs.tt.content.menu.InGameMainMenu;
 import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 
-public final class MultiplayerInGameInfo extends DefaultInGameInfo {
+/**
+ * In-game session metadata for multiplayer matches backed by a matchmaking {@link Game}.
+ */
+public final class MultiplayerInGameInfo extends DefaultInGameInfo implements MultiplayerGameInfo {
 
-    private final float random_start_position;
-    private final boolean is_rated;
+    private final Game game;
 
-    public MultiplayerInGameInfo(float random_start_position, boolean is_rated) {
-        this.random_start_position = random_start_position;
-        this.is_rated = is_rated;
+    public MultiplayerInGameInfo(Game game) {
+        super(game.getGamespeed());
+        this.game = game;
+    }
+
+    @Override
+    public Game getGame() {
+        return game;
     }
 
     @Override
@@ -33,7 +42,7 @@ public final class MultiplayerInGameInfo extends DefaultInGameInfo {
 
     @Override
     public boolean isRated() {
-        return is_rated;
+        return game.isRated();
     }
 
     @Override
@@ -43,6 +52,6 @@ public final class MultiplayerInGameInfo extends DefaultInGameInfo {
 
     @Override
     public float getRandomStartPosition() {
-        return random_start_position;
+        return game.getRandomStartPos();
     }
 }

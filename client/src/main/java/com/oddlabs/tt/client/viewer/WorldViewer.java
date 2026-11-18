@@ -148,7 +148,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
             playerConfigs.add(new PlayerConfig(player_infos.get(i), playerColours[i % playerColours.length], iface,
                     PlayerControllerType.fromSlot(slot), unitInfo, chieftainName));
         }
-        this.world = new World(world_params, world_info.landscape(), playerConfigs);
+        this.world = new World(world_params, world_info.landscape(), playerConfigs, ingame_info.getInitialGameSpeed());
         ProgressListener.progress(0.10f);
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);

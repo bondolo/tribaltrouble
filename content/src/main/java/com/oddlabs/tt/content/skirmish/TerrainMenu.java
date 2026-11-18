@@ -593,8 +593,7 @@ public final class TerrainMenu extends Group {
         IslandConfig islandConfig = new IslandConfig(terrain, SIZES[size],
                 hills / (float) SLIDER_MAX_VALUE, vegetation_amount / (float) SLIDER_MAX_VALUE,
                 supplies_amount / (float) SLIDER_MAX_VALUE, seed * seed);
-        WorldParameters worldParameters = new WorldParameters(AbstractOptionsMenu.getPreferredGamespeed(), label_mapcode
-                .getContents(),
+        WorldParameters worldParameters = new WorldParameters(label_mapcode.getContents(),
                 Player.INITIAL_UNIT_COUNT, Player.DEFAULT_MAX_UNIT_COUNT);
         return new SkirmishSetup(worldParameters, islandConfig, slots);
     }
@@ -619,7 +618,7 @@ public final class TerrainMenu extends Group {
         IslandConfig islandConfig = new IslandConfig(terrain, SIZES[size],
                 hills / (float) SLIDER_MAX_VALUE, vegetation_amount / (float) SLIDER_MAX_VALUE,
                 supplies_amount / (float) SLIDER_MAX_VALUE, seed * seed);
-        WorldParameters worldParameters = new WorldParameters(game.getGamespeed(), label_mapcode.getContents(),
+        WorldParameters worldParameters = new WorldParameters(label_mapcode.getContents(),
                 Player.INITIAL_UNIT_COUNT, game.getMaxUnitCount());
         return new MultiplayerSetup(worldParameters, game, islandConfig, p0_race, p0_team);
     }
@@ -629,7 +628,6 @@ public final class TerrainMenu extends Group {
         int vegetation_amount = slider_vegetation.getValue();
         int supplies_amount = slider_supplies.getValue();
         Terrain terrain = pm_terrain.getChosenItem().map(PulldownItem::getAttachment).orElse(Terrain.NATIVE);
-        Game game;
         boolean rated = cb_rated.isChecked();
         if (rated) {
             int first_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
@@ -642,7 +640,6 @@ public final class TerrainMenu extends Group {
             if (multiplayer_setup == null) {
                 return false;
             }
-            game = multiplayer_setup.game();
         } else {
             skirmish_setup = buildSkirmishSetup(terrain, hills, vegetation_amount, supplies_amount);
             if (!skirmish_setup.hasEnemyTeams()) {
@@ -650,7 +647,6 @@ public final class TerrainMenu extends Group {
                 gui_root.addModalForm(new MessageForm(gui_root, min_name));
                 return false;
             }
-            game = null;
         }
         if (owner != null)
             owner.terrainMenuOK();
@@ -662,8 +658,8 @@ public final class TerrainMenu extends Group {
                 + " | seed = " + seed * seed);
         String ai_string = i18n("ai");
         InGameInfo ingame_info = multiplayer
-                ? new MultiplayerInGameInfo(game.getRandomStartPos(), game.isRated())
-                : new DefaultInGameInfo();
+                ? new MultiplayerInGameInfo(multiplayer_setup.game())
+                : new DefaultInGameInfo(AbstractOptionsMenu.getPreferredGamespeed());
         WorldParameters parameters = multiplayer
                 ? multiplayer_setup.worldParameters() : skirmish_setup.worldParameters();
         IslandConfig islandConfig = multiplayer
@@ -675,7 +671,6 @@ public final class TerrainMenu extends Group {
                 parameters,
                 ingame_info,
                 new MatchLauncher.DefaultWorldInitAction(),
-                game,
                 islandConfig,
                 IntStream.rangeClosed(0, 5).mapToObj(i -> ai_string + i).toArray(String[]::new));
         if (!multiplayer) {

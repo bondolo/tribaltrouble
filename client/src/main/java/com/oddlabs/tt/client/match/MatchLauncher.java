@@ -6,6 +6,7 @@ import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.client.trigger.GameOverTrigger;
 import com.oddlabs.tt.client.viewer.InGameInfo;
+import com.oddlabs.tt.client.viewer.MultiplayerGameInfo;
 import com.oddlabs.tt.client.viewer.WorldInitAction;
 import com.oddlabs.tt.client.viewer.WorldStarter;
 import com.oddlabs.tt.client.viewer.WorldViewer;
@@ -67,11 +68,8 @@ public final class MatchLauncher {
      * @param guiRoot the root GUI container
      * @param screenManager the active screen manager
      * @param hostId the remote host ID
-     * @param gameSpeed the game simulation speed
-     * @param mapCode the terrain map code
      * @param owner the parent lobby form
-     * @param inGameInfo match metadata
-     * @param maxUnitCount maximum unit population limit
+     * @param inGameInfo multiplayer match metadata
      * @return the initialized game network coordinator
      */
     public static GameNetwork joinGame(
@@ -79,12 +77,11 @@ public final class MatchLauncher {
             GUIRoot guiRoot,
             ScreenManager screenManager,
             int hostId,
-            int gameSpeed,
-            String mapCode,
             MultiplayerLobby owner,
-            InGameInfo inGameInfo,
-            int maxUnitCount) {
-        WorldParameters worldParams = new WorldParameters(gameSpeed, mapCode, Player.INITIAL_UNIT_COUNT, maxUnitCount);
+            MultiplayerGameInfo inGameInfo) {
+        Game game = inGameInfo.getGame();
+        WorldParameters worldParams = new WorldParameters(
+                game.getMapcode(), Player.INITIAL_UNIT_COUNT, game.getMaxUnitCount());
         var matchmakingClient = peer.getNetwork().getMatchmakingClient();
         var chatHub = peer.getNetwork().getChatHub();
         var networkSelector = peer.getNetwork().getSelector();
@@ -116,7 +113,6 @@ public final class MatchLauncher {
      * @param worldParams world simulation parameters
      * @param inGameInfo match metadata
      * @param initAction initial trigger and post-load hook
-     * @param game existing matchmaking game registration if applicable
      * @param islandConfig procedural island parameters
      * @param aiNames bot player display names
      * @return the initialized game network coordinator
@@ -129,10 +125,10 @@ public final class MatchLauncher {
             WorldParameters worldParams,
             InGameInfo inGameInfo,
             WorldInitAction initAction,
-            @Nullable Game game,
             IslandConfig islandConfig,
             String[] aiNames) {
         boolean multiplayer = inGameInfo.isMultiplayer();
+        Game game = inGameInfo instanceof MultiplayerGameInfo mpInfo ? mpInfo.getGame() : null;
         WorldGenerator<Landscape> generator = new IslandGenerator(islandConfig);
         InetAddress address = multiplayer ? null : Utils.getLoopbackAddress();
         var matchmakingClient = peer.getNetwork().getMatchmakingClient();

@@ -37,7 +37,7 @@ final class MagicBehaviourTimingTest {
     void setUp() {
         int gridSize = 32;
         Landscape landscape = FlatLandscape.create(gridSize);
-        WorldParameters worldParams = new WorldParameters(2, "1", 5, 20);
+        WorldParameters worldParams = new WorldParameters("1", 5, 20);
 
         List<PlayerInfo> playerInfos = List.of(
                 new PlayerInfo(0, Race.VIKINGS, "VikingPlayer"),

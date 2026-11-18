@@ -7,7 +7,6 @@ import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.UnitType;
 
-import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.client.match.MatchLauncher;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -108,12 +107,11 @@ public abstract class Island {
                 supplies_amount, seed);
         return MatchLauncher.startNewGame(campaign.getPeer(), gui_root, campaign.getScreenManager(), null,
                 new WorldParameters(
-                        Game.GAMESPEED_NORMAL,
                         "Campaign" + campaign_num, initial_units,
                         Player.DEFAULT_MAX_UNIT_COUNT),
                 ingame_info,
                 init_action,
-                null, islandConfig, ai_names);
+                islandConfig, ai_names);
     }
 
     protected final WorldViewer getViewer() {

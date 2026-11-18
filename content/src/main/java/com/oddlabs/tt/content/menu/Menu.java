@@ -1,6 +1,5 @@
 package com.oddlabs.tt.content.menu;
 
-import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.audio.AudioSettings;
 import com.oddlabs.tt.base.animation.AnimationManager;
@@ -320,7 +319,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
             Peer peer, GUIRoot gui_root,
             boolean first_progress, WorldGenerator<Landscape> generator, ScreenManager screenManager) {
         peer.getFramePacer().freezeTime();
-        WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);
+        WorldParameters world_params = new WorldParameters("", 2, Player.DEFAULT_MAX_UNIT_COUNT);
         var players = List.of(new PlayerInfo(0, Race.NATIVES, ""));
         Landscape landscape = ProgressListener.subTask(0.40f,
                 () -> generator.generate(players.size(), world_params.initialUnitCount(), 0f));

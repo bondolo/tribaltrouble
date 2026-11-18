@@ -33,7 +33,7 @@ class PlayerStartingEntitiesTest {
     void setUp() {
         int gridSize = 128;
         Landscape landscape = FlatLandscape.create(gridSize);
-        WorldParameters worldParams = new WorldParameters(0, "1", 5, 20);
+        WorldParameters worldParams = new WorldParameters("1", 5, 20);
 
         List<PlayerInfo> playerInfos = List.of(
                 new PlayerInfo(0, Race.VIKINGS, "VikingPlayer"),
@@ -177,7 +177,7 @@ class PlayerStartingEntitiesTest {
     void testWorldInitializesPlayerEntitiesViaConfig() {
         int gridSize = 128;
         Landscape landscape = FlatLandscape.create(gridSize);
-        WorldParameters worldParams = new WorldParameters(0, "1", 5, 20);
+        WorldParameters worldParams = new WorldParameters("1", 5, 20);
         UnitInfo unitInfo = new UnitInfo(true, true, 1, true, 3, 2, 1, 0);
 
         List<PlayerConfig> configs = List.of(

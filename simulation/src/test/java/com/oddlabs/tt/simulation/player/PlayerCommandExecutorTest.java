@@ -42,7 +42,7 @@ class PlayerCommandExecutorTest {
         int gridSize = 64;
         Landscape landscape = FlatLandscape.create(gridSize,
                 FlatLandscape.generateStartingLocations(2, 20, 25.0f, 40.0f));
-        WorldParameters worldParams = new WorldParameters(0, "1", 5, 20);
+        WorldParameters worldParams = new WorldParameters("1", 5, 20);
 
         List<PlayerInfo> playerInfos = List.of(
                 new PlayerInfo(0, Race.VIKINGS, "VikingPlayer"),

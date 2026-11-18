@@ -41,7 +41,7 @@ class CommandAdapterPlayerInterfaceTest {
         adapter = new CommandAdapterPlayerInterface(emittedCommands::add);
 
         World world = new World(
-                new WorldParameters(0, "1", 5, 20),
+                new WorldParameters("1", 5, 20),
                 FlatLandscape.create(32, List.of(List.of(new SpawnLocation(10, 10)), List.of(new SpawnLocation(20,
                         20)))),
                 List.of(new PlayerConfig(new PlayerInfo(0, Race.VIKINGS, "Viking"), new Color.Linear(1f, 0f, 0f, 1f)))

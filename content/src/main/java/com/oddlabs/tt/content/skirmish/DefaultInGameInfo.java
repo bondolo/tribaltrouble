@@ -23,6 +23,7 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
 
+import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.content.menu.InGameMenuHook;
 
 /**
@@ -31,7 +32,21 @@ import com.oddlabs.tt.content.menu.InGameMenuHook;
  */
 public class DefaultInGameInfo implements InGameInfo, InGameMenuHook {
     private static final ResourceBundle terrain_menu_bundle = ResourceBundle.getBundle(TerrainMenu.class.getName());
+    private final int initialGameSpeed;
     private boolean replay_island_flag;
+
+    public DefaultInGameInfo() {
+        this(Game.GAMESPEED_NORMAL);
+    }
+
+    public DefaultInGameInfo(int initialGameSpeed) {
+        this.initialGameSpeed = initialGameSpeed;
+    }
+
+    @Override
+    public int getInitialGameSpeed() {
+        return initialGameSpeed;
+    }
 
     @Override
     public void openInGameMenu(WorldViewer viewer, Camera camera) {

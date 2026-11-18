@@ -40,7 +40,6 @@ class FullGameSimulationTest {
         );
 
         WorldParameters worldParameters = new WorldParameters(
-                1,
                 "headless_1v1_" + seed,
                 Player.INITIAL_UNIT_COUNT,
                 Player.DEFAULT_MAX_UNIT_COUNT
@@ -86,7 +85,6 @@ class FullGameSimulationTest {
         );
 
         WorldParameters worldParameters = new WorldParameters(
-                1,
                 "headless_jitter_1v1_" + seed,
                 Player.INITIAL_UNIT_COUNT,
                 Player.DEFAULT_MAX_UNIT_COUNT
@@ -137,7 +135,6 @@ class FullGameSimulationTest {
         );
 
         WorldParameters worldParameters = new WorldParameters(
-                1,
                 "headless_2v2_" + seed,
                 Player.INITIAL_UNIT_COUNT,
                 Player.DEFAULT_MAX_UNIT_COUNT
@@ -186,7 +183,6 @@ class FullGameSimulationTest {
         );
 
         WorldParameters worldParameters = new WorldParameters(
-                1,
                 "headless_procedural_" + seed,
                 Player.INITIAL_UNIT_COUNT,
                 Player.DEFAULT_MAX_UNIT_COUNT
@@ -263,7 +259,6 @@ class FullGameSimulationTest {
         );
 
         WorldParameters worldParameters = new WorldParameters(
-                1,
                 "headless_4teams_neutral_" + seed,
                 1,
                 Player.DEFAULT_MAX_UNIT_COUNT
@@ -312,7 +307,6 @@ class FullGameSimulationTest {
         );
 
         WorldParameters worldParameters = new WorldParameters(
-                1,
                 "headless_4teams_elim_" + seed,
                 1,
                 Player.DEFAULT_MAX_UNIT_COUNT
@@ -359,7 +353,6 @@ class FullGameSimulationTest {
         );
 
         WorldParameters worldParameters = new WorldParameters(
-                1,
                 "headless_4teams_multiple_" + seed,
                 1,
                 Player.DEFAULT_MAX_UNIT_COUNT
@@ -411,7 +404,6 @@ class FullGameSimulationTest {
         );
 
         WorldParameters worldParameters = new WorldParameters(
-                2,
                 "headless_huge_hilly_" + seed,
                 Player.INITIAL_UNIT_COUNT,
                 Player.DEFAULT_MAX_UNIT_COUNT

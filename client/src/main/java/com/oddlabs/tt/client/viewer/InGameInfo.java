@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.viewer;
 
+import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.gui.Group;
@@ -31,5 +32,10 @@ public interface InGameInfo {
      */
     default boolean showLoadingHints() {
         return true;
+    }
+
+    /** {@return the initial simulation game speed for this session} */
+    default int getInitialGameSpeed() {
+        return Game.GAMESPEED_NORMAL;
     }
 }

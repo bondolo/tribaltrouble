@@ -38,7 +38,7 @@ final class StunVisualModelTest {
     void setUp() {
         int gridSize = 32;
         Landscape landscape = FlatLandscape.create(gridSize);
-        WorldParameters worldParams = new WorldParameters(0, "1", 5, 20);
+        WorldParameters worldParams = new WorldParameters("1", 5, 20);
         List<PlayerInfo> playerInfos = List.of(new PlayerInfo(0, Race.VIKINGS, "Player"));
         Color.Linear[] playerColors = new Color.Linear[]{new Color.Linear(1f, 0f, 0f, 1f)};
         this.world = new World(worldParams, landscape, PlayerConfig.from(playerInfos, playerColors));
@@ -56,7 +56,7 @@ final class StunVisualModelTest {
         return (AudioImplementation) Proxy.newProxyInstance(
                 AudioImplementation.class.getClassLoader(),
                 new Class<?>[]{AudioImplementation.class},
-                (proxy, method, args) -> null
+                (_, _, _) -> null
         );
     }
 

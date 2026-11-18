@@ -467,9 +467,8 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
                     gui_root.addModalForm(new MessageForm(gui_root, min_wins));
                 } else {
                     Game game = selected_game.getGame();
-                    MatchLauncher.joinGame(peer, gui_root, main_menu.getScreenManager(), selected_game.getHostID(), game
-                            .getGamespeed(), game.getMapcode(), this, new MultiplayerInGameInfo(game
-                                    .getRandomStartPos(), game.isRated()), game.getMaxUnitCount());
+                    MatchLauncher.joinGame(peer, gui_root, main_menu.getScreenManager(), selected_game.getHostID(),
+                            this, new MultiplayerInGameInfo(game));
                 }
             }
         }

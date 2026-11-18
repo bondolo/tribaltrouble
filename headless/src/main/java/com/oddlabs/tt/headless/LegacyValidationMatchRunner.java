@@ -1,5 +1,6 @@
 package com.oddlabs.tt.headless;
 
+import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.net.HeadlessSimulationInstance;
 import com.oddlabs.tt.procedural.landscape.IslandGenerator;
 import com.oddlabs.tt.simulation.landscape.Landscape;
@@ -71,7 +72,7 @@ public final class LegacyValidationMatchRunner {
             player.initializeStartingArmy(
                     landscape.startingLocations().get(i),
                     pConfig.unitInfo(),
-                    config.worldParameters().initialGameSpeed(),
+                    Game.GAMESPEED_NORMAL,
                     null
             );
         }

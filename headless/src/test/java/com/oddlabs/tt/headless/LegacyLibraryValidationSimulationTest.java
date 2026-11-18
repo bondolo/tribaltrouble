@@ -98,7 +98,6 @@ public class LegacyLibraryValidationSimulationTest {
         );
 
         WorldParameters worldParameters = new WorldParameters(
-                2,
                 "MAP",
                 Player.INITIAL_UNIT_COUNT,
                 Player.DEFAULT_MAX_UNIT_COUNT

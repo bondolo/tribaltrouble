@@ -77,7 +77,6 @@ class LegacyValidationSimulationTest {
         );
 
         WorldParameters worldParameters = new WorldParameters(
-                2,
                 "42",
                 Player.INITIAL_UNIT_COUNT,
                 Player.DEFAULT_MAX_UNIT_COUNT

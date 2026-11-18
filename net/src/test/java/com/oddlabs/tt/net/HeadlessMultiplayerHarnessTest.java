@@ -72,7 +72,7 @@ class HeadlessMultiplayerHarnessTest {
     void testMultiInstanceHeadlessSession() throws Exception {
         int gridSize = 64; // 2 patches of 16
         Landscape landscapeData = createTestLandscape(gridSize);
-        WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
+        WorldParameters worldParams = new WorldParameters("1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(AIDifficulty.NORMAL, "VikingPlayer",
                 AIDifficulty.NORMAL, "NativePlayer");
         List<UnitInfo> unitInfos = createDefaultUnitInfos();
@@ -141,7 +141,7 @@ class HeadlessMultiplayerHarnessTest {
     void testAiPeerHeadlessSession() throws Exception {
         int gridSize = 64;
         Landscape landscapeData = createTestLandscape(gridSize);
-        WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
+        WorldParameters worldParams = new WorldParameters("1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(AIDifficulty.EASY, "VikingBot1",
                 AIDifficulty.NORMAL, "NativeBot2");
         List<UnitInfo> unitInfos = createDefaultUnitInfos();
@@ -176,7 +176,7 @@ class HeadlessMultiplayerHarnessTest {
     void testMultiInstanceHeadlessSessionWithJitter() throws Exception {
         int gridSize = 64;
         Landscape landscapeData = createTestLandscape(gridSize);
-        WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
+        WorldParameters worldParams = new WorldParameters("1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(AIDifficulty.NORMAL, "VikingJitter0",
                 AIDifficulty.NORMAL, "NativeJitter1");
         List<UnitInfo> unitInfos = createDefaultUnitInfos();
@@ -216,7 +216,7 @@ class HeadlessMultiplayerHarnessTest {
     void testAiPeerHeadlessSessionWithLaggyJitter() throws Exception {
         int gridSize = 64;
         Landscape landscapeData = createTestLandscape(gridSize);
-        WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
+        WorldParameters worldParams = new WorldParameters("1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(AIDifficulty.EASY, "VikingLagBot",
                 AIDifficulty.NORMAL, "NativeLagBot");
         List<UnitInfo> unitInfos = createDefaultUnitInfos();
@@ -250,7 +250,7 @@ class HeadlessMultiplayerHarnessTest {
     void testMultiInstanceConcurrentVirtualThreadStepping() throws Exception {
         int gridSize = 64;
         Landscape landscapeData = createTestLandscape(gridSize);
-        WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
+        WorldParameters worldParams = new WorldParameters("1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(AIDifficulty.NORMAL, "VikingConcurrent0",
                 AIDifficulty.NORMAL, "NativeConcurrent1");
         List<UnitInfo> unitInfos = createDefaultUnitInfos();
@@ -283,7 +283,7 @@ class HeadlessMultiplayerHarnessTest {
     void testMultiInstanceHeadlessSessionWithPassiveAiWandering() throws Exception {
         int gridSize = 64;
         Landscape landscapeData = createTestLandscape(gridSize);
-        WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
+        WorldParameters worldParams = new WorldParameters("1", 5, 20);
         List<PlayerSlot> playerSlots = createTestSlots(AIDifficulty.PASSIVE_CAMPAIGN, "VikingPassive",
                 AIDifficulty.PASSIVE_CAMPAIGN, "NativePassive");
         List<UnitInfo> unitInfos = createDefaultUnitInfos();
@@ -317,7 +317,7 @@ class HeadlessMultiplayerHarnessTest {
     void testMixedThreePlayerSessionWithHumanAndAiPeersAndLockstepAi() throws Exception {
         int gridSize = 64;
         Landscape landscapeData = createTestLandscape(gridSize, 3);
-        WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
+        WorldParameters worldParams = new WorldParameters("1", 5, 20);
 
         List<PlayerSlot> playerSlots = new ArrayList<>(3);
 
@@ -397,7 +397,7 @@ class HeadlessMultiplayerHarnessTest {
     @Test
     void testConfigurableTicksPerChecksum() throws Exception {
         Landscape landscape = createTestLandscape(128);
-        WorldParameters worldParams = new WorldParameters(0, "1", 5, 250);
+        WorldParameters worldParams = new WorldParameters("1", 5, 250);
         List<PlayerSlot> slots = createTestSlots(AIDifficulty.EASY, "BotA", AIDifficulty.EASY, "BotB");
         List<UnitInfo> unitInfos = createDefaultUnitInfos();
 
