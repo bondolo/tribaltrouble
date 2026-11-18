@@ -40,3 +40,12 @@ tasks.register<Test>("integrationTest") {
     systemProperty("junit.jupiter.execution.parallel.mode.default", System.getProperty("junit.jupiter.execution.parallel.mode.default", "concurrent"))
     systemProperties(System.getProperties().mapKeys { it.key.toString() })
 }
+
+tasks.register<JavaExec>("regenerateLegacyLibrary") {
+    description = "Regenerates legacy_validation_library.csv using LegacyValidationLibraryGenerator."
+    group = "verification"
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("com.oddlabs.tt.headless.LegacyValidationLibraryGenerator")
+    workingDir = rootProject.projectDir
+    jvmArgs("--add-modules", "jdk.incubator.vector")
+}
