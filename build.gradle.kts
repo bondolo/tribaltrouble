@@ -112,6 +112,8 @@ subprojects {
     tasks.withType<Test>().configureEach {
         useJUnitPlatform()
         environment("ALSOFT_DRIVERS", "null")
+        systemProperty("java.awt.headless", "true")
+        systemProperty("apple.awt.UIElement", "true")
     }
 
     // When -PlwjglxDebug is on, attach the lwjglx agent to every JavaExec + Test fork in this module and route the

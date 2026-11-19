@@ -5,6 +5,7 @@ plugins {
 
 application {
     mainClass.set("com.oddlabs.tt.headless.Main")
+    applicationDefaultJvmArgs = listOf("-Djava.awt.headless=true", "-Dapple.awt.UIElement=true")
 }
 
 dependencies {
@@ -25,6 +26,8 @@ tasks.test {
         excludeTags("integration")
     }
     systemProperties(System.getProperties().mapKeys { it.key.toString() })
+    systemProperty("java.awt.headless", "true")
+    systemProperty("apple.awt.UIElement", "true")
 }
 
 tasks.register<Test>("integrationTest") {
@@ -35,10 +38,12 @@ tasks.register<Test>("integrationTest") {
     useJUnitPlatform {
         includeTags("integration")
     }
+    systemProperties(System.getProperties().mapKeys { it.key.toString() })
     systemProperty("com.oddlabs.tt.legacy.deterministic", System.getProperty("com.oddlabs.tt.legacy.deterministic", "true"))
     systemProperty("junit.jupiter.execution.parallel.enabled", System.getProperty("junit.jupiter.execution.parallel.enabled", "true"))
     systemProperty("junit.jupiter.execution.parallel.mode.default", System.getProperty("junit.jupiter.execution.parallel.mode.default", "concurrent"))
-    systemProperties(System.getProperties().mapKeys { it.key.toString() })
+    systemProperty("java.awt.headless", "true")
+    systemProperty("apple.awt.UIElement", "true")
 }
 
 tasks.register<JavaExec>("regenerateLegacyLibrary") {
@@ -47,5 +52,5 @@ tasks.register<JavaExec>("regenerateLegacyLibrary") {
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("com.oddlabs.tt.headless.LegacyValidationLibraryGenerator")
     workingDir = rootProject.projectDir
-    jvmArgs("--add-modules", "jdk.incubator.vector")
+    jvmArgs("--add-modules", "jdk.incubator.vector", "-Djava.awt.headless=true", "-Dapple.awt.UIElement=true")
 }
