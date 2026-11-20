@@ -4,10 +4,7 @@ import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 
-/**
- * Multiplayer lobby form callback to receive notification when a game connection completes.
- */
+/// Multiplayer lobby form callback to receive notification when a game connection completes.
 public interface MultiplayerLobby {
-    void createGameMenu(GameNetwork game_network, Game game,
-            WorldGenerator<?> generator, int player_slot);
+  void createGameMenu(GameNetwork game_network, Game game, WorldGenerator<?> generator, int player_slot);
 }

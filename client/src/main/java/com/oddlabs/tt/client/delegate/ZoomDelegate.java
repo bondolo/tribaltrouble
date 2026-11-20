@@ -1,94 +1,88 @@
 package com.oddlabs.tt.client.delegate;
 
 import com.oddlabs.tt.client.camera.GameCamera;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.gui.CursorType;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.client.viewer.WorldViewer;
 
-/**
- * Camera drag zoom input delegate for adjusting camera distance.
- */
+/// Camera drag zoom input delegate for adjusting camera distance.
 public final class ZoomDelegate extends InGameDelegate<GameCamera> {
-    private static final float ZOOM_FACTOR_CORRECTION = .25f;
+  private static final float ZOOM_FACTOR_CORRECTION = .25f;
 
-    private final int start_x;
-    private final int start_y;
-    private final int physical_start_x;
-    private final int physical_start_y;
+  private final int start_x;
+  private final int start_y;
+  private final int physical_start_x;
+  private final int physical_start_y;
 
-    private final GameCamera game_camera;
+  private final GameCamera game_camera;
 
-    private boolean done = false;
+  private boolean done = false;
 
-    public ZoomDelegate(WorldViewer viewer, GameCamera camera) {
-        super(viewer, camera);
-        game_camera = camera;
-        var guiRoot = viewer.getGUIRoot();
-        physical_start_x = guiRoot.getMouseX();
-        physical_start_y = guiRoot.getMouseY();
-        float scale = guiRoot.getGlobalScale();
-        start_x = Math.round(physical_start_x / scale);
-        start_y = Math.round(physical_start_y / scale);
+  public ZoomDelegate(WorldViewer viewer, GameCamera camera) {
+    super(viewer, camera);
+    game_camera = camera;
+    var guiRoot = viewer.getGUIRoot();
+    physical_start_x = guiRoot.getMouseX();
+    physical_start_y = guiRoot.getMouseY();
+    float scale = guiRoot.getGlobalScale();
+    start_x = Math.round(physical_start_x / scale);
+    start_y = Math.round(physical_start_y / scale);
+  }
+
+  private void release() {
+    done = true;
+  }
+
+  @Override
+  public final void doRemove() {
+    super.doRemove();
+    if (!done) {
+      release();
     }
+  }
 
-    private void release() {
-        done = true;
+  @Override
+  public void handleInput(InputEvent event) {
+    if (!done && event.getPhase() == InputPhase.RELEASED && event.consumeAction(GameAction.CAMERA_ZOOM_MODE)) {
+      pop();
     }
+    event.consume();
+  }
 
-    @Override
-    public final void doRemove() {
-        super.doRemove();
-        if (!done) {
-            release();
-        }
+  @Override
+  public void mouseScrolled(int amount) {}
+
+  @Override
+  public void mouseMoved(int x, int y) {
+    if (!done) {
+      int dy = y - start_y;
+
+      float zoom_factor = dy * ZOOM_FACTOR_CORRECTION;
+      game_camera.zoom(zoom_factor);
+      getGUIRoot().setCursorPosition(physical_start_x, physical_start_y);
     }
+  }
 
-    @Override
-    public void handleInput(InputEvent event) {
-        if (!done && event.getPhase() == InputPhase.RELEASED && event.consumeAction(GameAction.CAMERA_ZOOM_MODE)) {
-            pop();
-        }
-        event.consume();
-    }
+  @Override
+  public void mouseDragged(
+      MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x, int absolute_y) {}
 
-    @Override
-    public void mouseScrolled(int amount) {
-    }
+  @Override
+  public void mousePressed(MouseButton button, int x, int y) {}
 
-    @Override
-    public void mouseMoved(int x, int y) {
-        if (!done) {
-            int dy = y - start_y;
+  @Override
+  public void mouseReleased(MouseButton button, int x, int y) {}
 
-            float zoom_factor = dy * ZOOM_FACTOR_CORRECTION;
-            game_camera.zoom(zoom_factor);
-            getGUIRoot().setCursorPosition(physical_start_x, physical_start_y);
-        }
-    }
+  @Override
+  protected CursorType getCursorType() {
+    return CursorType.NULL;
+  }
 
-    @Override
-    public void mouseDragged(MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x,
-            int absolute_y) {
-    }
-
-    @Override
-    public void mousePressed(MouseButton button, int x, int y) {
-    }
-
-    @Override
-    public void mouseReleased(MouseButton button, int x, int y) {
-    }
-
-    @Override
-    protected CursorType getCursorType() {
-        return CursorType.NULL;
-    }
-
-    @Override
-    public boolean renderCursor() {
-        return false;
-    }
+  @Override
+  public boolean renderCursor() {
+    return false;
+  }
 }

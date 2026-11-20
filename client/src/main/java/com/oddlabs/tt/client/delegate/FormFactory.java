@@ -1,7 +1,6 @@
 package com.oddlabs.tt.client.delegate;
 
 import com.oddlabs.tt.gui.Form;
-
 import java.util.function.Supplier;
 
 /**
@@ -11,10 +10,10 @@ import java.util.function.Supplier;
  */
 @FunctionalInterface
 public interface FormFactory<F extends Form> extends Supplier<F> {
-    F create();
+  F create();
 
-    @Override
-    default F get() {
-        return create();
-    }
+  @Override
+  default F get() {
+    return create();
+  }
 }

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.landscape;
 
 import com.oddlabs.tt.simulation.model.Terrain;
-
 import java.io.Serializable;
 
 /**
@@ -14,10 +13,5 @@ import java.io.Serializable;
  * @param supplies the resource supply deposit density factor
  * @param seed the random seed for procedural landscape generation
  */
-public record IslandConfig(Terrain terrain,
-                           int metersPerWorld,
-                           float hills,
-                           float vegetation,
-                           float supplies,
-                           int seed) implements Serializable {
-}
+public record IslandConfig(Terrain terrain, int metersPerWorld, float hills, float vegetation, float supplies, int seed)
+    implements Serializable {}

@@ -1,20 +1,21 @@
 package com.oddlabs.tt.content.campaign.viking;
 
+import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.content.campaign.Campaign;
 import com.oddlabs.tt.content.campaign.CampaignDialogForm;
 import com.oddlabs.tt.content.campaign.CampaignState;
 import com.oddlabs.tt.content.campaign.InGameCampaignDialogForm;
 import com.oddlabs.tt.content.campaign.Island;
-import com.oddlabs.tt.simulation.model.Race;
-
-import com.oddlabs.tt.simulation.model.Difficulty;
-
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.model.DeployType;
+import com.oddlabs.tt.simulation.model.Difficulty;
+import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.WeaponTier;
-import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
@@ -24,189 +25,202 @@ import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.PlayerEleminatedTrigger;
 import com.oddlabs.tt.simulation.trigger.ReinforcementsTrigger;
 import com.oddlabs.tt.simulation.trigger.TimeTrigger;
-import com.oddlabs.tt.client.trigger.VictoryTrigger;
-import com.oddlabs.tt.simulation.model.Target;
-import com.oddlabs.tt.base.util.Utils;
-
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
-/** Campaign level setup for Viking Island 4. */
+/// Campaign level setup for Viking Island 4.
 final class VikingIsland4 extends Island {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland4.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland4.class.getName());
 
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
-    }
+  private static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
 
-    VikingIsland4(Campaign campaign) {
-        super(campaign);
-    }
+  VikingIsland4(Campaign campaign) {
+    super(campaign);
+  }
 
-    @Override
-    public void init(GUIRoot gui_root) {
-        String[] ai_names = IntStream.range(0, 6)
-                .mapToObj(i -> i18n("name" + i))
-                .toArray(String[]::new);
-        // gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
-        GameNetwork game_network = startNewGame(gui_root, 256, Terrain.NATIVE, .65f, 1f, .5f,
-                786433, 4, VikingCampaign.MAX_UNITS, ai_names);
-        game_network.getClient().getServerInterface().setPlayerSlot(0,
-                SlotType.HUMAN,
-                Race.VIKINGS,
+  @Override
+  public void init(GUIRoot gui_root) {
+    String[] ai_names = IntStream.range(0, 6).mapToObj(i -> i18n("name" + i)).toArray(String[]::new);
+    // gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
+    GameNetwork game_network =
+        startNewGame(gui_root, 256, Terrain.NATIVE, .65f, 1f, .5f, 786433, 4, VikingCampaign.MAX_UNITS, ai_names);
+    game_network
+        .getClient()
+        .getServerInterface()
+        .setPlayerSlot(0, SlotType.HUMAN, Race.VIKINGS, 0, true, AIDifficulty.NONE);
+    game_network
+        .getClient()
+        .setUnitInfo(
+            0,
+            new UnitInfo(
+                false,
+                false,
                 0,
                 true,
-                AIDifficulty.NONE);
-        game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, true,
                 getCampaign().getState().getNumPeons(),
                 getCampaign().getState().getNumRockWarriors(),
                 getCampaign().getState().getNumIronWarriors(),
                 getCampaign().getState().getNumRubberWarriors()));
-        game_network.getClient().getServerInterface().setPlayerSlot(1,
-                SlotType.AI,
-                Race.VIKINGS,
-                PlayerInfo.TEAM_NEUTRAL,
-                true,
-                AIDifficulty.NEUTRAL_CAMPAIGN);
-        game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
-        game_network.getClient().getServerInterface().setPlayerSlot(2,
-                SlotType.AI,
-                Race.NATIVES,
-                1,
-                true,
-                AIDifficulty.PASSIVE_CAMPAIGN);
-        game_network.getClient().setUnitInfo(2, new UnitInfo(true, true, 2, true, 10, 10, 10, 10));
-        game_network.getClient().getServerInterface().startServer();
+    game_network
+        .getClient()
+        .getServerInterface()
+        .setPlayerSlot(1, SlotType.AI, Race.VIKINGS, PlayerInfo.TEAM_NEUTRAL, true, AIDifficulty.NEUTRAL_CAMPAIGN);
+    game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
+    game_network
+        .getClient()
+        .getServerInterface()
+        .setPlayerSlot(2, SlotType.AI, Race.NATIVES, 1, true, AIDifficulty.PASSIVE_CAMPAIGN);
+    game_network.getClient().setUnitInfo(2, new UnitInfo(true, true, 2, true, 10, 10, 10, 10));
+    game_network.getClient().getServerInterface().startServer();
+  }
+
+  @Override
+  protected void start() {
+    Runnable runnable;
+    final Player local_player = getViewer().getLocalPlayer();
+    final Player captive = getViewer().getWorld().getPlayers().get(1);
+    final Player enemy = getViewer().getWorld().getPlayers().get(2);
+
+    // Introduction
+    runnable =
+        () -> {
+          CampaignDialogForm dialog =
+              new InGameCampaignDialogForm(
+                  getViewer(),
+                  i18n("header0"),
+                  i18n("dialog0"),
+                  getCampaign().getIcons().getFaces()[0],
+                  Origin.AT_START);
+          addModalForm(dialog);
+        };
+    new GameStartedTrigger(getViewer().getWorld(), runnable);
+
+    final int attack1;
+    final int attack2;
+    final int defense;
+    switch (getCampaign().getState().getDifficulty()) {
+      case Difficulty.EASY -> {
+        attack1 = 4;
+        attack2 = 8;
+        defense = 10;
+      }
+      case Difficulty.NORMAL -> {
+        attack1 = 7;
+        attack2 = 12;
+        defense = 12;
+      }
+      case Difficulty.HARD -> {
+        attack1 = 11;
+        attack2 = 16;
+        defense = 20;
+      }
+      default -> throw new IllegalArgumentException("Unrecognized difficulty");
     }
 
-    @Override
-    protected void start() {
-        Runnable runnable;
-        final Player local_player = getViewer().getLocalPlayer();
-        final Player captive = getViewer().getWorld().getPlayers().get(1);
-        final Player enemy = getViewer().getWorld().getPlayers().get(2);
-
-        // Introduction
-        runnable = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header0"),
-                    i18n("dialog0"),
-                    getCampaign().getIcons().getFaces()[0],
-                    Origin.AT_START);
-            addModalForm(dialog);
-        };
-        new GameStartedTrigger(getViewer().getWorld(), runnable);
-
-        final int attack1;
-        final int attack2;
-        final int defense;
-        switch (getCampaign().getState().getDifficulty()) {
-            case Difficulty.EASY -> {
-                attack1 = 4;
-                attack2 = 8;
-                defense = 10;
-            }
-            case Difficulty.NORMAL -> {
-                attack1 = 7;
-                attack2 = 12;
-                defense = 12;
-            }
-            case Difficulty.HARD -> {
-                attack1 = 11;
-                attack2 = 16;
-                defense = 20;
-            }
-            default -> throw new IllegalArgumentException("Unrecognized difficulty");
-        }
-
-        // Attack1
-        Runnable attack1_runnable = () -> {
-            local_player.getArmory().filter(a -> !a.isDead())
-                    .map(a -> (Target) a)
-                    .or(() -> local_player.getChieftain().filter(c -> !c.isDead()))
-                    .ifPresent(target -> attack(enemy, target, attack1));
-            refillArmory(enemy);
-            deploy(enemy, attack2);
+    // Attack1
+    Runnable attack1_runnable =
+        () -> {
+          local_player
+              .getArmory()
+              .filter(a -> !a.isDead())
+              .map(a -> (Target) a)
+              .or(() -> local_player.getChieftain().filter(c -> !c.isDead()))
+              .ifPresent(target -> attack(enemy, target, attack1));
+          refillArmory(enemy);
+          deploy(enemy, attack2);
         };
 
-        // Attack2
-        Runnable attack2_runnable = () -> {
-            local_player.getArmory().filter(a -> !a.isDead())
-                    .map(a -> (Target) a)
-                    .or(() -> local_player.getChieftain().filter(c -> !c.isDead()))
-                    .ifPresent(target -> attack(enemy, target, attack2));
-            refillArmory(enemy);
-            deploy(enemy, defense);
+    // Attack2
+    Runnable attack2_runnable =
+        () -> {
+          local_player
+              .getArmory()
+              .filter(a -> !a.isDead())
+              .map(a -> (Target) a)
+              .or(() -> local_player.getChieftain().filter(c -> !c.isDead()))
+              .ifPresent(target -> attack(enemy, target, attack2));
+          refillArmory(enemy);
+          deploy(enemy, defense);
         };
-        switch (getCampaign().getState().getDifficulty()) {
-            case Difficulty.EASY -> {
-                new TimeTrigger(getViewer().getWorld(), 7f * 60f, attack1_runnable);
-                new TimeTrigger(getViewer().getWorld(), 11f * 60f, attack2_runnable);
-            }
-            case Difficulty.NORMAL -> {
-                new TimeTrigger(getViewer().getWorld(), 4.5f * 60f, attack1_runnable);
-                new TimeTrigger(getViewer().getWorld(), 8f * 60f, attack2_runnable);
-            }
-            case Difficulty.HARD -> {
-                new TimeTrigger(getViewer().getWorld(), 4f * 60f, attack1_runnable);
-                new TimeTrigger(getViewer().getWorld(), 6.5f * 60f, attack2_runnable);
-            }
-            default -> throw new IllegalArgumentException("Unrecognized difficulty");
-        }
+    switch (getCampaign().getState().getDifficulty()) {
+      case Difficulty.EASY -> {
+        new TimeTrigger(getViewer().getWorld(), 7f * 60f, attack1_runnable);
+        new TimeTrigger(getViewer().getWorld(), 11f * 60f, attack2_runnable);
+      }
+      case Difficulty.NORMAL -> {
+        new TimeTrigger(getViewer().getWorld(), 4.5f * 60f, attack1_runnable);
+        new TimeTrigger(getViewer().getWorld(), 8f * 60f, attack2_runnable);
+      }
+      case Difficulty.HARD -> {
+        new TimeTrigger(getViewer().getWorld(), 4f * 60f, attack1_runnable);
+        new TimeTrigger(getViewer().getWorld(), 6.5f * 60f, attack2_runnable);
+      }
+      default -> throw new IllegalArgumentException("Unrecognized difficulty");
+    }
 
-        // Winner prize
-        final Runnable prize = () -> {
-            getCampaign().getState().setIslandState(4, CampaignState.ISLAND_COMPLETED);
-            getCampaign().getState().setIslandState(5, CampaignState.ISLAND_AVAILABLE);
-            getCampaign().getState().setHasMagic0(true);
-            getCampaign().victory(getViewer());
+    // Winner prize
+    final Runnable prize =
+        () -> {
+          getCampaign().getState().setIslandState(4, CampaignState.ISLAND_COMPLETED);
+          getCampaign().getState().setIslandState(5, CampaignState.ISLAND_AVAILABLE);
+          getCampaign().getState().setHasMagic0(true);
+          getCampaign().victory(getViewer());
         };
 
-        // Winning condition
-        runnable = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header1"),
-                    i18n("dialog1"),
-                    getCampaign().getIcons().getFaces()[5],
-                    Origin.AT_END,
-                    prize);
-            addModalForm(dialog);
+    // Winning condition
+    runnable =
+        () -> {
+          CampaignDialogForm dialog =
+              new InGameCampaignDialogForm(
+                  getViewer(),
+                  i18n("header1"),
+                  i18n("dialog1"),
+                  getCampaign().getIcons().getFaces()[5],
+                  Origin.AT_END,
+                  prize);
+          addModalForm(dialog);
         };
-        new VictoryTrigger(getViewer(), runnable);
+    new VictoryTrigger(getViewer(), runnable);
 
-        // Place prisoner
-        placePrisoners(captive, enemy, 0, 0, 0, 0, true);
+    // Place prisoner
+    placePrisoners(captive, enemy, 0, 0, 0, 0, true);
 
-        // Put warrior in tower
-        getViewer().getAI(enemy).ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
+    // Put warrior in tower
+    getViewer().getAI(enemy).ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
 
-        // Fill native armory with units and weapons
-        int num_reinforcements = 100;
-        enemy.getArmory().ifPresent(armory -> {
-            if (armory.getWeaponSupplyCount(WeaponTier.IRON) < num_reinforcements)
-                armory.getWeaponContainer(WeaponTier.IRON).orElseThrow().increaseSupply(num_reinforcements);
-            if (armory.getUnitContainer().orElseThrow().getNumSupplies() < num_reinforcements)
-                armory.getUnitContainer().orElseThrow().increaseSupply(num_reinforcements);
+    // Fill native armory with units and weapons
+    int num_reinforcements = 100;
+    enemy
+        .getArmory()
+        .ifPresent(armory -> {
+          if (armory.getWeaponSupplyCount(WeaponTier.IRON) < num_reinforcements)
+            armory.getWeaponContainer(WeaponTier.IRON).orElseThrow().increaseSupply(num_reinforcements);
+          if (armory.getUnitContainer().orElseThrow().getNumSupplies() < num_reinforcements)
+            armory.getUnitContainer().orElseThrow().increaseSupply(num_reinforcements);
         });
 
-        // Deploy reinforcements when needed
-        new ReinforcementsTrigger(enemy, DeployType.IRON_WARRIOR);
+    // Deploy reinforcements when needed
+    new ReinforcementsTrigger(enemy, DeployType.IRON_WARRIOR);
 
-        // Defeat if netrauls eleminated
-        runnable = () -> getCampaign().defeated(getViewer(), i18n("game_over"));
-        new PlayerEleminatedTrigger(runnable, captive);
-    }
+    // Defeat if netrauls eleminated
+    runnable = () -> getCampaign().defeated(getViewer(), i18n("game_over"));
+    new PlayerEleminatedTrigger(runnable, captive);
+  }
 
-    @Override
-    public CharSequence getHeader() {
-        return i18n("header");
-    }
+  @Override
+  public CharSequence getHeader() {
+    return i18n("header");
+  }
 
-    @Override
-    public CharSequence getDescription() {
-        return i18n("description");
-    }
+  @Override
+  public CharSequence getDescription() {
+    return i18n("description");
+  }
 
-    @Override
-    public CharSequence getCurrentObjective() {
-        return i18n("objective");
-    }
+  @Override
+  public CharSequence getCurrentObjective() {
+    return i18n("objective");
+  }
 }

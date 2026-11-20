@@ -1,84 +1,80 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.gui.event.ValueListener;
-
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-/**
- * Single-line text input field restricted to numeric digit entry within defined bounds.
- */
+/// Single-line text input field restricted to numeric digit entry within defined bounds.
 public final class NumberEditLine extends EditLine {
-    private final Set<ValueListener> value_listeners = new CopyOnWriteArraySet<>();
+  private final Set<ValueListener> value_listeners = new CopyOnWriteArraySet<>();
 
-    private final long min_value;
-    private final long max_value;
+  private final long min_value;
+  private final long max_value;
 
-    private long value;
+  private long value;
 
-    public NumberEditLine(GUIRoot guiRoot, int width, int max_codepoints, int max_value) {
-        this(guiRoot, width, max_codepoints, 0, max_value, 0);
+  public NumberEditLine(GUIRoot guiRoot, int width, int max_codepoints, int max_value) {
+    this(guiRoot, width, max_codepoints, 0, max_value, 0);
+  }
+
+  public NumberEditLine(GUIRoot guiRoot, int width, int max_codepoints, int min_value, int max_value, int init_value) {
+    super(guiRoot, width, max_codepoints, "0123456789", Origin.AT_END);
+    this.min_value = min_value;
+    this.max_value = max_value;
+    setValue(init_value);
+  }
+
+  public final void addValueListener(ValueListener listener) {
+    value_listeners.add(listener);
+  }
+
+  public final void removeValueListener(ValueListener listener) {
+    value_listeners.remove(listener);
+  }
+
+  @Override
+  protected final void enterPressed(CharSequence text) {
+    validate();
+  }
+
+  private void validate() {
+    String str = getText().toString();
+
+    long value;
+    try {
+      value = crop(Long.parseLong(str));
+    } catch (NumberFormatException _) {
+      // ignore exception, assume minimum value
+      value = min_value;
     }
+    setValue(value);
+  }
 
-    public NumberEditLine(GUIRoot guiRoot, int width, int max_codepoints, int min_value, int max_value,
-            int init_value) {
-        super(guiRoot, width, max_codepoints, "0123456789", Origin.AT_END);
-        this.min_value = min_value;
-        this.max_value = max_value;
-        setValue(init_value);
+  private long crop(long value) {
+    return Math.clamp(value, min_value, max_value);
+  }
+
+  public final void setValue(long value) {
+    clear();
+    value = crop(value);
+    append(value);
+
+    if (value != this.value) {
+      this.value = value;
+      for (ValueListener listener : value_listeners) {
+        listener.valueSet(this.value);
+      }
     }
+  }
 
-    public final void addValueListener(ValueListener listener) {
-        value_listeners.add(listener);
-    }
+  public final long getValue() {
+    validate();
+    return value;
+  }
 
-    public final void removeValueListener(ValueListener listener) {
-        value_listeners.remove(listener);
-    }
-
-    @Override
-    protected final void enterPressed(CharSequence text) {
-        validate();
-    }
-
-    private void validate() {
-        String str = getText().toString();
-
-        long value;
-        try {
-            value = crop(Long.parseLong(str));
-        } catch (NumberFormatException _) {
-            // ignore exception, assume minimum value
-            value = min_value;
-        }
-        setValue(value);
-    }
-
-    private long crop(long value) {
-        return Math.clamp(value, min_value, max_value);
-    }
-
-    public final void setValue(long value) {
-        clear();
-        value = crop(value);
-        append(value);
-
-        if (value != this.value) {
-            this.value = value;
-            for (ValueListener listener : value_listeners) {
-                listener.valueSet(this.value);
-            }
-        }
-    }
-
-    public final long getValue() {
-        validate();
-        return value;
-    }
-
-    @Override
-    protected void focusNotify(boolean focus) {
-        validate();
-        super.focusNotify(focus);
-    }
+  @Override
+  protected void focusNotify(boolean focus) {
+    validate();
+    super.focusNotify(focus);
+  }
 }

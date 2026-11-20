@@ -1,318 +1,307 @@
 package com.oddlabs.tt.ai;
 
-import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.SimulationConfig;
-import com.oddlabs.tt.simulation.player.AIDifficulty;
-import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.BuildProductionContainer;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.simulation.model.Target;
-import org.jspecify.annotations.Nullable;
-
+import com.oddlabs.tt.simulation.player.AIDifficulty;
+import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerInterface;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SplittableRandom;
 import java.util.random.RandomGenerator;
+import org.jspecify.annotations.Nullable;
 
 /// Base artificial intelligence player controlling units and building construction.
 public abstract class AI {
-    private static final float SLEEP_SECONDS = 2f;
-    private static final float MIN_SLEEP_SECONDS = 5f;
-    private static boolean run_ai = SimulationConfig.DEFAULT_RUN_AI;
+  private static final float SLEEP_SECONDS = 2f;
+  private static final float MIN_SLEEP_SECONDS = 5f;
+  private static boolean run_ai = SimulationConfig.DEFAULT_RUN_AI;
 
-    public static boolean isRunAI() {
-        return run_ai;
-    }
+  public static boolean isRunAI() {
+    return run_ai;
+  }
 
-    public static void setRunAI(boolean run) {
-        run_ai = run;
-    }
+  public static void setRunAI(boolean run) {
+    run_ai = run;
+  }
 
-    public static @Nullable AI create(Player player, AIDifficulty difficulty) {
-        return switch (difficulty) {
-            case NORMAL -> new AdvancedAI(player, Difficulty.NORMAL);
-            case HARD -> new AdvancedAI(player, Difficulty.HARD);
-            case EASY -> new AdvancedAI(player, Difficulty.EASY);
-            case BATTLE_TUTORIAL, PASSIVE_CAMPAIGN ->
-                new PassiveAI(player, true);
-            case NEUTRAL_CAMPAIGN ->
-                new PassiveAI(player, false);
-            case TOWER_TUTORIAL, CHIEFTAIN_TUTORIAL, NONE -> null;
-        };
-    }
+  public static @Nullable AI create(Player player, AIDifficulty difficulty) {
+    return switch (difficulty) {
+      case NORMAL -> new AdvancedAI(player, Difficulty.NORMAL);
+      case HARD -> new AdvancedAI(player, Difficulty.HARD);
+      case EASY -> new AdvancedAI(player, Difficulty.EASY);
+      case BATTLE_TUTORIAL, PASSIVE_CAMPAIGN -> new PassiveAI(player, true);
+      case NEUTRAL_CAMPAIGN -> new PassiveAI(player, false);
+      case TOWER_TUTORIAL, CHIEFTAIN_TUTORIAL, NONE -> null;
+    };
+  }
 
-    public static @Nullable AI create(Player player, int slotDifficulty) {
-        return create(player, AIDifficulty.fromValue(slotDifficulty));
-    }
+  public static @Nullable AI create(Player player, int slotDifficulty) {
+    return create(player, AIDifficulty.fromValue(slotDifficulty));
+  }
 
-    private final Player owner;
-    private final RandomGenerator aiRandom;
-    private final List<Selectable<?>> idlePeons = new ArrayList<>();
-    private final List<Selectable<?>> idleChieftains = new ArrayList<>();
-    private final List<Selectable<?>> idleWarriors = new ArrayList<>();
-    private final List<Selectable<?>> gatherTreePeons = new ArrayList<>();
-    private final List<Selectable<?>> gatherRockPeons = new ArrayList<>();
-    private final List<Selectable<?>> gatherIronPeons = new ArrayList<>();
-    private final List<Selectable<?>> gatherRubberPeons = new ArrayList<>();
-    private final List<Building> armories = new ArrayList<>();
-    private final List<Building> quarters = new ArrayList<>();
-    private final List<Building> towers = new ArrayList<>();
-    private final List<Building> constructionSites = new ArrayList<>();
-    private final List<Selectable<?>> placeBuildingPeons = new ArrayList<>();
-    private final List<Selectable<?>> defendingUnits = new ArrayList<>();
-    private boolean armory_under_construction = false;
-    private boolean quarters_under_construction = false;
-    private boolean tower_under_construction = false;
-    private float sleep_time;
+  private final Player owner;
+  private final RandomGenerator aiRandom;
+  private final List<Selectable<?>> idlePeons = new ArrayList<>();
+  private final List<Selectable<?>> idleChieftains = new ArrayList<>();
+  private final List<Selectable<?>> idleWarriors = new ArrayList<>();
+  private final List<Selectable<?>> gatherTreePeons = new ArrayList<>();
+  private final List<Selectable<?>> gatherRockPeons = new ArrayList<>();
+  private final List<Selectable<?>> gatherIronPeons = new ArrayList<>();
+  private final List<Selectable<?>> gatherRubberPeons = new ArrayList<>();
+  private final List<Building> armories = new ArrayList<>();
+  private final List<Building> quarters = new ArrayList<>();
+  private final List<Building> towers = new ArrayList<>();
+  private final List<Building> constructionSites = new ArrayList<>();
+  private final List<Selectable<?>> placeBuildingPeons = new ArrayList<>();
+  private final List<Selectable<?>> defendingUnits = new ArrayList<>();
+  private boolean armory_under_construction = false;
+  private boolean quarters_under_construction = false;
+  private boolean tower_under_construction = false;
+  private float sleep_time;
 
-    protected AI(Player owner) {
-        this.owner = java.util.Objects.requireNonNull(owner, "owner must not be null");
-        int playerIndex = owner.getWorld().getPlayers().indexOf(owner);
-        long mapSeed = owner.getWorld().getWorldParameters().mapCode().hashCode();
-        long seed = (mapSeed ^ 0x9E3779B97F4A7C15L) + 10007L * (playerIndex >= 0 ? playerIndex : 0);
-        this.aiRandom = new SplittableRandom(seed);
-        reset();
-    }
+  protected AI(Player owner) {
+    this.owner = java.util.Objects.requireNonNull(owner, "owner must not be null");
+    int playerIndex = owner.getWorld().getPlayers().indexOf(owner);
+    long mapSeed = owner.getWorld().getWorldParameters().mapCode().hashCode();
+    long seed = (mapSeed ^ 0x9E3779B97F4A7C15L) + 10007L * (playerIndex >= 0 ? playerIndex : 0);
+    this.aiRandom = new SplittableRandom(seed);
+    reset();
+  }
 
-    protected final UnitGrid getUnitGrid() {
-        return owner.getWorld().getUnitGrid();
-    }
+  protected final UnitGrid getUnitGrid() {
+    return owner.getWorld().getUnitGrid();
+  }
 
-    protected final Player getOwner() {
-        return owner;
-    }
+  protected final Player getOwner() {
+    return owner;
+  }
 
-    public final PlayerInterface getPlayerInterface() {
-        return owner.getPlayerInterface();
-    }
+  public final PlayerInterface getPlayerInterface() {
+    return owner.getPlayerInterface();
+  }
 
-    protected final void reclassify() {
-        idlePeons.clear();
-        idleChieftains.clear();
-        idleWarriors.clear();
-        gatherTreePeons.clear();
-        gatherRockPeons.clear();
-        gatherIronPeons.clear();
-        gatherRubberPeons.clear();
-        armories.clear();
-        quarters.clear();
-        towers.clear();
-        constructionSites.clear();
-        placeBuildingPeons.clear();
-        defendingUnits.clear();
+  protected final void reclassify() {
+    idlePeons.clear();
+    idleChieftains.clear();
+    idleWarriors.clear();
+    gatherTreePeons.clear();
+    gatherRockPeons.clear();
+    gatherIronPeons.clear();
+    gatherRubberPeons.clear();
+    armories.clear();
+    quarters.clear();
+    towers.clear();
+    constructionSites.clear();
+    placeBuildingPeons.clear();
+    defendingUnits.clear();
 
-        for (Selectable<?> s : owner.getUnits().getSet()) {
-            switch (s) {
-                case Building b -> {
-                    if (b.getBuildStage() != Building.BuildStage.BUILT) {
-                        constructionSites.add(b);
-                    } else if (b.isOperating()) {
-                        if (b.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
-                            armories.add(b);
-                        } else if (b.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
-                            quarters.add(b);
-                        } else if (b.getAbilities().hasAbilities(Abilities.ATTACK)) {
-                            towers.add(b);
-                        }
-                    }
-                }
-                case Unit u -> {
-                    if (u.isIdle()) {
-                        if (u.getAbilities().hasAbilities(Abilities.BUILD)) {
-                            idlePeons.add(u);
-                        } else if (u.getAbilities().hasAbilities(Abilities.MAGIC)) {
-                            idleChieftains.add(u);
-                        } else if (u.getAbilities().hasAbilities(Abilities.ATTACK)) {
-                            idleWarriors.add(u);
-                        }
-                    } else if (u.getGatheringSupplyType() != null) {
-                        var gatherPeons = switch (u.getGatheringSupplyType()) {
-                            case WOOD -> gatherTreePeons;
-                            case IRON -> gatherIronPeons;
-                            case ROCK -> gatherRockPeons;
-                            case RUBBER -> gatherRubberPeons;
-                        };
-                        gatherPeons.add(u);
-                    } else if (u.isPlacingBuilding()) {
-                        placeBuildingPeons.add(u);
-                    } else if (u.isDefending()) {
-                        defendingUnits.add(u);
-                    }
-                }
+    for (Selectable<?> s : owner.getUnits().getSet()) {
+      switch (s) {
+        case Building b -> {
+          if (b.getBuildStage() != Building.BuildStage.BUILT) {
+            constructionSites.add(b);
+          } else if (b.isOperating()) {
+            if (b.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+              armories.add(b);
+            } else if (b.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
+              quarters.add(b);
+            } else if (b.getAbilities().hasAbilities(Abilities.ATTACK)) {
+              towers.add(b);
             }
+          }
         }
-
-        if (!armories.isEmpty()) {
-            armory_under_construction = false;
-            Building armoryBuilding = armories.getFirst();
-            PlayerInterface playerInterface = getPlayerInterface();
-            playerInterface.buildWeapons(armoryBuilding, WeaponTier.ROCK, BuildProductionContainer.INFINITE_LIMIT,
-                    true);
-            playerInterface.buildWeapons(armoryBuilding, WeaponTier.IRON, BuildProductionContainer.INFINITE_LIMIT,
-                    true);
-            playerInterface.buildWeapons(armoryBuilding, WeaponTier.RUBBER, BuildProductionContainer.INFINITE_LIMIT,
-                    true);
-        }
-        if (!quarters.isEmpty()) {
-            quarters_under_construction = false;
-        }
-        if (constructionSites.isEmpty() && placeBuildingPeons.isEmpty()) {
-            armory_under_construction = false;
-            quarters_under_construction = false;
-            tower_under_construction = false;
-        }
-    }
-
-    protected final List<Selectable<?>> getIdlePeons() {
-        return idlePeons;
-    }
-
-    protected final List<Selectable<?>> getIdleChieftains() {
-        return idleChieftains;
-    }
-
-    protected final List<Selectable<?>> getIdleWarriors() {
-        return idleWarriors;
-    }
-
-    protected final List<Selectable<?>> getGatherTreePeons() {
-        return gatherTreePeons;
-    }
-
-    protected final List<Selectable<?>> getGatherRockPeons() {
-        return gatherRockPeons;
-    }
-
-    protected final List<Selectable<?>> getGatherIronPeons() {
-        return gatherIronPeons;
-    }
-
-    protected final List<Selectable<?>> getGatherRubberPeons() {
-        return gatherRubberPeons;
-    }
-
-    protected final List<Building> getArmory() {
-        return armories;
-    }
-
-    protected final List<Building> getQuarters() {
-        return quarters;
-    }
-
-    protected final List<Building> getTowers() {
-        return towers;
-    }
-
-    protected final List<Building> getConstructionSites() {
-        return constructionSites;
-    }
-
-    protected final List<Selectable<?>> getPlaceBuildingPeons() {
-        return placeBuildingPeons;
-    }
-
-    protected final List<Selectable<?>> getDefendingUnits() {
-        return defendingUnits;
-    }
-
-    protected final boolean armoryUnderConstruction() {
-        return armory_under_construction;
-    }
-
-    protected final void setArmoryUnderConstruction(boolean armory_under_construction) {
-        this.armory_under_construction = armory_under_construction;
-    }
-
-    protected final boolean quartersUnderConstruction() {
-        return quarters_under_construction;
-    }
-
-    protected final void setQuartersUnderConstruction(boolean quarters_under_construction) {
-        this.quarters_under_construction = quarters_under_construction;
-    }
-
-    protected final boolean towerUnderConstruction() {
-        return tower_under_construction;
-    }
-
-    protected final void setTowerUnderConstruction(boolean tower_under_construction) {
-        this.tower_under_construction = tower_under_construction;
-    }
-
-    private void reset() {
-        if (AppConfig.LEGACY_DETERMINISTIC) {
-            sleep_time = owner.getWorld().getRandom().nextFloat() * SLEEP_SECONDS + MIN_SLEEP_SECONDS;
-        } else {
-            sleep_time = aiRandom.nextFloat(MIN_SLEEP_SECONDS,
-                    MIN_SLEEP_SECONDS + SLEEP_SECONDS);
-        }
-    }
-
-    protected final RandomGenerator getAIRandom() {
-        return aiRandom;
-    }
-
-    /**
-     * Executes one autonomous decision cycle for this artificial intelligence controller.
-     */
-    public abstract void tick();
-
-    protected final boolean shouldDoAction() {
-        sleep_time -= AnimationManager.ANIMATION_SECONDS_PER_TICK;
-        if (!run_ai || sleep_time >= 0)
-            return false;
-        reset();
-        return true;
-    }
-
-    public final void manTowers(int num_towers) {
-        reclassify();
-        if (towers.isEmpty() || idleWarriors.isEmpty())
-            return;
-
-        int length = Math.min(idleWarriors.size(), towers.size());
-        for (int i = 0; i < length; i++) {
-            getPlayerInterface().setTarget(idleWarriors.get(i), towers.get(i), Action.DEFAULT, false);
-        }
-    }
-
-    public static int attackLandscape(Player owner, Target target, int num_warriors) {
-        int ordered = 0;
-        PlayerInterface playerInterface = owner.getPlayerInterface();
-        for (Selectable<?> s : owner.getUnits().getSet()) {
-            if (s instanceof Unit unit && unit.getAbilities().hasAbilities(Abilities.THROW)) {
-                if (!unit.isAggressiveWalking()) {
-                    playerInterface.setLandscapeTarget(unit, target.getGridX(), target.getGridY(),
-                            Action.ATTACK, true);
-                    ordered++;
-                    if (ordered == num_warriors) {
-                        break;
-                    }
-                }
+        case Unit u -> {
+          if (u.isIdle()) {
+            if (u.getAbilities().hasAbilities(Abilities.BUILD)) {
+              idlePeons.add(u);
+            } else if (u.getAbilities().hasAbilities(Abilities.MAGIC)) {
+              idleChieftains.add(u);
+            } else if (u.getAbilities().hasAbilities(Abilities.ATTACK)) {
+              idleWarriors.add(u);
             }
+          } else if (u.getGatheringSupplyType() != null) {
+            var gatherPeons =
+                switch (u.getGatheringSupplyType()) {
+                  case WOOD -> gatherTreePeons;
+                  case IRON -> gatherIronPeons;
+                  case ROCK -> gatherRockPeons;
+                  case RUBBER -> gatherRubberPeons;
+                };
+            gatherPeons.add(u);
+          } else if (u.isPlacingBuilding()) {
+            placeBuildingPeons.add(u);
+          } else if (u.isDefending()) {
+            defendingUnits.add(u);
+          }
         }
-        return ordered;
+      }
     }
 
-    public static @Nullable Unit getWarrior(Player owner) {
-        for (Selectable<?> s : owner.getUnits().getSet()) {
-            if (s instanceof Unit unit && unit.getAbilities().hasAbilities(Abilities.THROW)) {
-                return unit;
-            }
-        }
-        return null;
+    if (!armories.isEmpty()) {
+      armory_under_construction = false;
+      Building armoryBuilding = armories.getFirst();
+      PlayerInterface playerInterface = getPlayerInterface();
+      playerInterface.buildWeapons(armoryBuilding, WeaponTier.ROCK, BuildProductionContainer.INFINITE_LIMIT, true);
+      playerInterface.buildWeapons(armoryBuilding, WeaponTier.IRON, BuildProductionContainer.INFINITE_LIMIT, true);
+      playerInterface.buildWeapons(armoryBuilding, WeaponTier.RUBBER, BuildProductionContainer.INFINITE_LIMIT, true);
     }
+    if (!quarters.isEmpty()) {
+      quarters_under_construction = false;
+    }
+    if (constructionSites.isEmpty() && placeBuildingPeons.isEmpty()) {
+      armory_under_construction = false;
+      quarters_under_construction = false;
+      tower_under_construction = false;
+    }
+  }
 
-    protected final Target getTarget(RandomGenerator random) {
-        return owner.getRadialTarget(random);
+  protected final List<Selectable<?>> getIdlePeons() {
+    return idlePeons;
+  }
+
+  protected final List<Selectable<?>> getIdleChieftains() {
+    return idleChieftains;
+  }
+
+  protected final List<Selectable<?>> getIdleWarriors() {
+    return idleWarriors;
+  }
+
+  protected final List<Selectable<?>> getGatherTreePeons() {
+    return gatherTreePeons;
+  }
+
+  protected final List<Selectable<?>> getGatherRockPeons() {
+    return gatherRockPeons;
+  }
+
+  protected final List<Selectable<?>> getGatherIronPeons() {
+    return gatherIronPeons;
+  }
+
+  protected final List<Selectable<?>> getGatherRubberPeons() {
+    return gatherRubberPeons;
+  }
+
+  protected final List<Building> getArmory() {
+    return armories;
+  }
+
+  protected final List<Building> getQuarters() {
+    return quarters;
+  }
+
+  protected final List<Building> getTowers() {
+    return towers;
+  }
+
+  protected final List<Building> getConstructionSites() {
+    return constructionSites;
+  }
+
+  protected final List<Selectable<?>> getPlaceBuildingPeons() {
+    return placeBuildingPeons;
+  }
+
+  protected final List<Selectable<?>> getDefendingUnits() {
+    return defendingUnits;
+  }
+
+  protected final boolean armoryUnderConstruction() {
+    return armory_under_construction;
+  }
+
+  protected final void setArmoryUnderConstruction(boolean armory_under_construction) {
+    this.armory_under_construction = armory_under_construction;
+  }
+
+  protected final boolean quartersUnderConstruction() {
+    return quarters_under_construction;
+  }
+
+  protected final void setQuartersUnderConstruction(boolean quarters_under_construction) {
+    this.quarters_under_construction = quarters_under_construction;
+  }
+
+  protected final boolean towerUnderConstruction() {
+    return tower_under_construction;
+  }
+
+  protected final void setTowerUnderConstruction(boolean tower_under_construction) {
+    this.tower_under_construction = tower_under_construction;
+  }
+
+  private void reset() {
+    if (AppConfig.LEGACY_DETERMINISTIC) {
+      sleep_time = owner.getWorld().getRandom().nextFloat() * SLEEP_SECONDS + MIN_SLEEP_SECONDS;
+    } else {
+      sleep_time = aiRandom.nextFloat(MIN_SLEEP_SECONDS, MIN_SLEEP_SECONDS + SLEEP_SECONDS);
     }
+  }
+
+  protected final RandomGenerator getAIRandom() {
+    return aiRandom;
+  }
+
+  /// Executes one autonomous decision cycle for this artificial intelligence controller.
+  public abstract void tick();
+
+  protected final boolean shouldDoAction() {
+    sleep_time -= AnimationManager.ANIMATION_SECONDS_PER_TICK;
+    if (!run_ai || sleep_time >= 0) return false;
+    reset();
+    return true;
+  }
+
+  public final void manTowers(int num_towers) {
+    reclassify();
+    if (towers.isEmpty() || idleWarriors.isEmpty()) return;
+
+    int length = Math.min(idleWarriors.size(), towers.size());
+    for (int i = 0; i < length; i++) {
+      getPlayerInterface().setTarget(idleWarriors.get(i), towers.get(i), Action.DEFAULT, false);
+    }
+  }
+
+  public static int attackLandscape(Player owner, Target target, int num_warriors) {
+    int ordered = 0;
+    PlayerInterface playerInterface = owner.getPlayerInterface();
+    for (Selectable<?> s : owner.getUnits().getSet()) {
+      if (s instanceof Unit unit && unit.getAbilities().hasAbilities(Abilities.THROW)) {
+        if (!unit.isAggressiveWalking()) {
+          playerInterface.setLandscapeTarget(unit, target.getGridX(), target.getGridY(), Action.ATTACK, true);
+          ordered++;
+          if (ordered == num_warriors) {
+            break;
+          }
+        }
+      }
+    }
+    return ordered;
+  }
+
+  public static @Nullable Unit getWarrior(Player owner) {
+    for (Selectable<?> s : owner.getUnits().getSet()) {
+      if (s instanceof Unit unit && unit.getAbilities().hasAbilities(Abilities.THROW)) {
+        return unit;
+      }
+    }
+    return null;
+  }
+
+  protected final Target getTarget(RandomGenerator random) {
+    return owner.getRadialTarget(random);
+  }
 }

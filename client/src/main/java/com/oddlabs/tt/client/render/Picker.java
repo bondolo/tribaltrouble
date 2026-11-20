@@ -1,16 +1,20 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
-import com.oddlabs.tt.engine.render.*;
-import com.oddlabs.tt.scenery.LandscapeRenderer;
-
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.client.GameplaySettings;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.camera.MapCamera;
+import com.oddlabs.tt.client.gui.GUIIcons;
+import com.oddlabs.tt.client.viewer.Selection;
+import com.oddlabs.tt.engine.render.*;
+import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.ToolTip;
+import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
@@ -21,21 +25,11 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.ModelToolTip;
 import com.oddlabs.tt.simulation.model.SceneryModel;
 import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
-import com.oddlabs.tt.engine.util.DebugRender;
-import com.oddlabs.tt.client.gui.GUIIcons;
-import com.oddlabs.tt.simulation.model.Target;
-import com.oddlabs.tt.base.geom.BoundingBox;
-import com.oddlabs.tt.gui.ToolTip;
-import com.oddlabs.tt.client.viewer.Selection;
 import com.oddlabs.util.Color;
-import org.joml.Matrix4f;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.jspecify.annotations.Nullable;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -44,600 +38,598 @@ import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.joml.Matrix4f;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Handles world element picking and selection by unprojecting screen coordinates
- * and performing ray-casting against bounding boxes.
- */
+/// Handles world element picking and selection by unprojecting screen coordinates and performing ray-casting against
+/// bounding boxes.
 public final class Picker implements Updatable<TimerAnimation> {
-    private static final int PICK_SIZE = 5;
-    private static final int SELECTION_THRESHOLD = 5;
-    private static final float PATCH_PICK_PRECISION = .1f;
-    private static final float PATCH_PICK_STEP = 2f;
-    private static final float TOOL_TIP_DELAY = .1f;
+  private static final int PICK_SIZE = 5;
+  private static final int SELECTION_THRESHOLD = 5;
+  private static final float PATCH_PICK_PRECISION = .1f;
+  private static final float PATCH_PICK_STEP = 2f;
+  private static final float TOOL_TIP_DELAY = .1f;
 
-    public record LandscapeLocation(float x, float y) implements Target {
+  public record LandscapeLocation(float x, float y) implements Target {
 
-        @Override
-        public int getGridX() {
-            return UnitGrid.toGridCoordinate(x);
-        }
-
-        @Override
-        public int getGridY() {
-            return UnitGrid.toGridCoordinate(y);
-        }
-
-        @Override
-        public float getPositionX() {
-            return x;
-        }
-
-        @Override
-        public float getPositionY() {
-            return y;
-        }
-
-        @Override
-        public float getSize() {
-            return 0;
-        }
-
-        @Override
-        public boolean isDead() {
-            return false;
-        }
-    }
-
-    private final Matrix4f proj = new Matrix4f();
-
-    private final Vector3f hit_result = new Vector3f();
-    private final Vector3f hit_far = new Vector3f();
-    private final Vector3f dir_vector = new Vector3f();
-    private final Vector2f nearFar = new Vector2f();
-
-    private final List<Target> element_pick_list = new ArrayList<>();
-    private final List<TreeSupply> tree_pick_list = new ArrayList<>();
-
-    private final CameraState tmp_camera = new CameraState();
-    private final SortedSet<LandscapeLeaf> patch_pick_set = new TreeSet<>(new LandscapeLeafComparator());
-    private final AnimationManager manager;
-    private final TimerAnimation tool_tip_timer;
-    private final LandscapeRenderer landscape_renderer;
-    private final @Nullable GUIIcons icons;
-    private final ElementRenderer<?> element_renderer;
-    private final TreePicker tree_renderer;
-    private final RenderQueues render_queues;
-    private final RespondManager respond_manager;
-    private final Player local_player;
-    private final GUIRoot gui_root;
-    private final Deque<LandscapeTargetRespond> target_responds = new ArrayDeque<>();
-    private final int[] viewport = new int[4];
-
-    private @Nullable Target current_hovered;
-    private @Nullable ToolTip current_tooltip;
-    private boolean render_tool_tip;
-
-    private int last_hover_physical_x = Integer.MIN_VALUE;
-    private int last_hover_physical_y = Integer.MIN_VALUE;
-    private float last_camera_x;
-    private float last_camera_y;
-    private float last_camera_z;
-    private float last_camera_vert;
-    private float last_camera_horiz;
-    private int last_camera_width;
-    private int last_camera_height;
-    private @Nullable TreeSupply last_hovered_tree;
-
-    private float patch_hit_x;
-    private float patch_hit_y;
-    private float patch_hit_z;
-
-    private List<Selectable<?>> old_target_selection = List.of();
-    private @Nullable Action old_target_action;
-    private boolean old_target_aggressive;
-
-    private int old_landscape_target_grid_x;
-    private int old_landscape_target_grid_y;
-
-    private @Nullable Target old_set_target_target;
-
-    public Picker(AnimationManager manager, Player local_player, GUIRoot gui_root,
-            RenderQueues render_queues, LandscapeRenderer landscape_renderer, Selection selection,
-            AudioImplementation audio) {
-        this(manager, local_player, gui_root, render_queues, landscape_renderer, selection, audio, null);
-    }
-
-    public Picker(AnimationManager manager, Player local_player, GUIRoot gui_root,
-            RenderQueues render_queues, LandscapeRenderer landscape_renderer, Selection selection,
-            AudioImplementation audio, @Nullable GUIIcons icons) {
-        this.manager = manager;
-        this.tool_tip_timer = new TimerAnimation(manager, this, TOOL_TIP_DELAY);
-        this.local_player = local_player;
-        this.gui_root = gui_root;
-        this.render_queues = render_queues;
-        this.respond_manager = new RespondManager(manager);
-        this.element_renderer = new ElementRenderer<>(local_player, render_queues, this, true,
-                selection, audio);
-        this.tree_renderer = new TreePicker(respond_manager);
-        this.tree_renderer.initTreeBounds(local_player.getWorld().getTreeRoot());
-        this.landscape_renderer = landscape_renderer;
-        this.icons = icons;
-    }
-
-    public RespondManager getRespondManager() {
-        return respond_manager;
-    }
-
-    AnimationManager getAnimationManager() {
-        return manager;
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T extends Target> @Nullable T getNearestPick(List<? extends Target> pick_list, Class<T> filter) {
-        T nearest_pickable = null;
-        float nearest_squared_distance = Float.POSITIVE_INFINITY;
-        for (Target pickable : pick_list) {
-            float squared_distance = RenderTools.getEyeDistanceSquared((BoundingBox) pickable, tmp_camera
-                    .getCurrentX(), tmp_camera.getCurrentY(), tmp_camera.getCurrentZ());
-            if (filter.isInstance(pickable) && squared_distance < nearest_squared_distance) {
-                nearest_squared_distance = squared_distance;
-                nearest_pickable = (T) pickable;
-            }
-        }
-        pick_list.clear();
-        return nearest_pickable;
-    }
-
-    private float getScale() {
-        return gui_root.getGlobalScale();
-    }
-
-    public void pickTarget(Army selected_army, CameraState camera,
-            PlayerInterface player_interface, int x, int y, Action action) {
-        float scale = getScale();
-        setupPicking(camera, x * scale, y * scale, PICK_SIZE, PICK_SIZE, viewport);
-        pickObjects();
-        Target nearest_pickable = getNearestPick(element_pick_list, Target.class);
-        List<Selectable<?>> selection = selected_army.filter(Abilities.TARGET);
-        boolean aggressive = GameplaySettings.from(gui_root.getGUI().getSettings()).aggressive_units;
-        if (nearest_pickable != null) {
-            if (!(nearest_pickable instanceof SceneryModel sceneryModel) || sceneryModel.isOccupying())
-                respond_manager.addResponder(nearest_pickable);
-            if (isNewSetTarget(selection, nearest_pickable, action, aggressive))
-                player_interface.setTarget(selection, nearest_pickable, action, aggressive);
-        } else {
-            pickResources();
-            final TreeSupply supply = getNearestPick(tree_pick_list, TreeSupply.class);
-            if (supply != null) {
-                respond_manager.addResponder(supply);
-                if (isNewSetTarget(selection, supply, action, aggressive))
-                    player_interface.setTarget(selection, supply, action, aggressive);
-            } else if (nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport)) {
-                target_responds.add(new LandscapeTargetRespond(manager, patch_hit_x, patch_hit_y));
-                int grid_x = UnitGrid.toGridCoordinate(patch_hit_x);
-                int grid_y = UnitGrid.toGridCoordinate(patch_hit_y);
-                if (isNewLandscapeTarget(selection, grid_x, grid_y, action, aggressive))
-                    player_interface.setLandscapeTarget(selection, grid_x, grid_y, action, aggressive);
-            }
-        }
-    }
-
-    Deque<LandscapeTargetRespond> getTargetResponds() {
-        return target_responds;
-    }
-
-    private boolean isNewSetTarget(List<Selectable<?>> selection, Target target, Action action,
-            boolean aggressive) {
-        old_landscape_target_grid_x = -1;
-        old_landscape_target_grid_y = -1;
-
-        boolean new_target = isNewOrder(selection, action, aggressive);
-
-        new_target |= target != old_set_target_target;
-
-        old_set_target_target = target;
-        return new_target;
-    }
-
-    private boolean isNewLandscapeTarget(List<Selectable<?>> selection, int grid_x, int grid_y,
-            Action action, boolean aggressive) {
-        old_set_target_target = null;
-
-        boolean new_target = isNewOrder(selection, action, aggressive);
-
-        new_target |= grid_x != old_landscape_target_grid_x;
-        new_target |= grid_y != old_landscape_target_grid_y;
-
-        old_landscape_target_grid_x = grid_x;
-        old_landscape_target_grid_y = grid_y;
-        return new_target;
-    }
-
-    private boolean isNewOrder(List<Selectable<?>> selection, Action action, boolean aggressive) {
-        boolean new_order = !selection.equals(old_target_selection)
-                || action != old_target_action
-                || aggressive != old_target_aggressive;
-
-        old_target_selection = selection;
-        old_target_action = action;
-        old_target_aggressive = aggressive;
-
-        return new_order;
-    }
-
-    public List<Selectable<?>> pickBoxed(CameraState camera, int x1, int y1, int x2, int y2,
-            int clicks) {
-        float scale = gui_root.getGlobalScale();
-        float sx1 = x1 * scale;
-        float sy1 = y1 * scale;
-        float sx2 = x2 * scale;
-        float sy2 = y2 * scale;
-
-        float cx = (sx1 + sx2) * 0.5f;
-        float cy = (sy1 + sy2) * 0.5f;
-        int width = (int) Math.abs(sx1 - sx2) + 1;
-        int height = (int) Math.abs(sy1 - sy2) + 1;
-        width = Math.max(width, PICK_SIZE);
-        height = Math.max(height, PICK_SIZE);
-        setupPicking(camera, cx, cy, width, height, viewport);
-        pickObjects();
-        return Math.abs(x1 - x2) < SELECTION_THRESHOLD && Math.abs(y1 - y2) < SELECTION_THRESHOLD
-                ? createSinglePick(camera, clicks)
-                : createBoxedPick();
-    }
-
-    private List<Selectable<?>> createSinglePick(CameraState camera, int clicks) {
-        Selectable<?> nearest = getNearestPick(element_pick_list, Selectable.class);
-        if (nearest != null) {
-            if (clicks > 1) {
-                if (nearest.getAbilities().hasAbilities(Abilities.THROW)) {
-                    return pickAll(camera, Abilities.THROW);
-                }
-                if (nearest.getAbilities().hasAbilities(Abilities.HARVEST)) {
-                    return pickAll(camera, Abilities.HARVEST);
-                }
-            }
-            return List.of(nearest);
-        }
-        return List.of();
-    }
-
-    private List<Selectable<?>> createBoxedPick() {
-        List<Selectable<?>> list = element_pick_list.stream()
-                .filter(Selectable.class::isInstance)
-                .<Selectable<?>>map(Selectable.class::cast)
-                .toList();
-        element_pick_list.clear();
-        return list;
-    }
-
-    private List<Selectable<?>> pickAll(CameraState camera, int ability_filter) {
-        List<Selectable<?>> complete_list = pickBoxed(camera, 0, 0, gui_root.getWidth() - 1, gui_root.getHeight() - 1,
-                2);
-        return complete_list.stream()
-                .filter(s -> s.getAbilities().hasAbilities(ability_filter))
-                .toList();
-    }
-
-    public void pickRotate(GameCamera camera) {
-        int x = gui_root.getWidth() / 2;
-        int y = camera.getRotateY();
-        float scale = getScale();
-        setupPicking(camera.getState(), x * scale, y * scale, PICK_SIZE, PICK_SIZE, viewport);
-        float seaLevel = local_player.getWorld().getHeightMap().getSeaLevelMeters();
-        if (!nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport) || patch_hit_z < seaLevel) {
-            float dz = tmp_camera.getCurrentZ() - seaLevel;
-            float maxRadius = camera.getDefaultRotateRadius();
-            if (dir_vector.z() < -0.0001f) {
-                float dist = Math.min(-dz / dir_vector.z(), maxRadius);
-                patch_hit_x = tmp_camera.getCurrentX() + dist * dir_vector.x();
-                patch_hit_y = tmp_camera.getCurrentY() + dist * dir_vector.y();
-            } else {
-                patch_hit_x = tmp_camera.getCurrentX() + dir_vector.x() * maxRadius;
-                patch_hit_y = tmp_camera.getCurrentY() + dir_vector.y() * maxRadius;
-            }
-            float metersPerWorld = local_player.getWorld().getHeightMap().getMetersPerWorld();
-            patch_hit_x = Math.clamp(patch_hit_x, 0, metersPerWorld);
-            patch_hit_y = Math.clamp(patch_hit_y, 0, metersPerWorld);
-            patch_hit_z = seaLevel;
-        }
-        int grid_x = UnitGrid.toGridCoordinate(patch_hit_x);
-        int grid_y = UnitGrid.toGridCoordinate(patch_hit_y);
-        camera.setRotationPoint(new LandscapeTarget(grid_x, grid_y));
-    }
-
-    private void calcPosAndDir(int pixel_x, int pixel_y, int[] viewport) {
-        tmp_camera.getProjectionModelView().unproject(pixel_x, pixel_y, 0.0f, viewport, hit_result);
-        tmp_camera.getProjectionModelView().unproject(pixel_x, pixel_y, 1.0f, viewport, hit_far);
-
-        hit_far.sub(hit_result, dir_vector).normalize();
-    }
-
-    private boolean nearestLandscape(int pixel_x, int pixel_y, int[] viewport) {
-        pickLandscape();
-        calcPosAndDir(pixel_x, pixel_y, viewport);
-        return doNearestLandscape(hit_result.x(), hit_result.y(), hit_result.z(), dir_vector.x(), dir_vector.y(),
-                dir_vector.z());
-    }
-
-    private boolean doNearestLandscape(float x, float y, float z, float dx, float dy, float dz) {
-        if (getHeight(x, y) > z) {
-            return false;
-        }
-        while (!patch_pick_set.isEmpty()) {
-            BoundingBox bb = patch_pick_set.removeFirst();
-            if (!bb.intersectsRay(x, y, z, dx, dy, dz, nearFar)) {
-                continue;
-            }
-            float t_min = Math.max(0f, nearFar.x);
-            float t_max = nearFar.y;
-            if (t_min >= t_max) {
-                continue;
-            }
-            float t_min_x = x + t_min * dx;
-            float t_min_y = y + t_min * dy;
-            float t_min_z = z + t_min * dz;
-            float t_min_height = getHeight(t_min_x, t_min_y);
-            if (t_min_height >= 0.001f + t_min_z) {
-                // Ray enters the bounding box already below the terrain surface.
-                // This is a valid degenerate case (e.g. steep camera angles in map overview mode).
-                continue;
-            }
-            boolean found_t_range = false;
-            for (float t_scan = t_min; t_scan <= t_max; t_scan += PATCH_PICK_STEP) {
-                float t_scan_next = Math.min(t_scan + PATCH_PICK_STEP, t_max);
-                float t_scan_x = x + t_scan_next * dx;
-                float t_scan_y = y + t_scan_next * dy;
-                float t_scan_z = z + t_scan_next * dz;
-                float t_scan_height = getHeight(t_scan_x, t_scan_y);
-                if (t_scan_height >= t_scan_z - 0.001f) {
-                    t_min = t_scan;
-                    t_max = t_scan_next;
-                    found_t_range = true;
-                    break;
-                }
-            }
-            if (!found_t_range) {
-                continue;
-            }
-            float t_mid_x;
-            float t_mid_y;
-            float t_mid_z;
-            float t_mid_height;
-            float height_diff;
-            float old_t_mid;
-            float t_mid = Float.NaN;
-            do {
-                old_t_mid = t_mid;
-                t_mid = (t_max + t_min) * .5f;
-                t_mid_x = x + t_mid * dx;
-                t_mid_y = y + t_mid * dy;
-                t_mid_z = z + t_mid * dz;
-                t_mid_height = getHeight(t_mid_x, t_mid_y);
-                height_diff = t_mid_height - t_mid_z;
-                if (height_diff >= 0)
-                    t_max = t_mid;
-                else
-                    t_min = t_mid;
-            } while (Math.abs(height_diff) > PATCH_PICK_PRECISION && t_mid != old_t_mid);
-            patch_hit_x = t_mid_x;
-            patch_hit_y = t_mid_y;
-            patch_hit_z = t_mid_height;
-            return true;
-        }
-        return false;
-    }
-
-    private float getHeight(float x, float y) {
-        return local_player.getWorld().getHeightMap().getNearestHeight(x, y);
-    }
-
-    public void pickMapGoto(int x, int y, MapCamera camera) {
-        float scale = getScale();
-        setupPicking(camera.getState(), x * scale, y * scale, PICK_SIZE, PICK_SIZE, viewport);
-        float seaLevel = local_player.getWorld().getHeightMap().getSeaLevelMeters();
-        if (nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport) && patch_hit_z >= seaLevel) {
-            camera.mapGoto(patch_hit_x, patch_hit_y);
-        } else if (dir_vector.z() != 0) {
-            float dz = tmp_camera.getCurrentZ() - seaLevel;
-            float factor = dz / dir_vector.z();
-            float hit_x = tmp_camera.getCurrentX() - factor * dir_vector.x();
-            float hit_y = tmp_camera.getCurrentY() - factor * dir_vector.y();
-            int worldSize = local_player.getWorld().getLandscapeEnvironment().getMetersPerWorld();
-            if (hit_x >= 0 && hit_x < worldSize && hit_y >= 0 && hit_y < worldSize) {
-                camera.mapGoto(hit_x, hit_y);
-            }
-        }
-    }
-
-    public Optional<Target> pickRallyPoint(CameraState camera, int x, int y,
-            Building building) {
-        float scale = getScale();
-        setupPicking(camera, x * scale, y * scale, PICK_SIZE, PICK_SIZE, viewport);
-        pickObjects();
-        Target nearest = getNearestPick(element_pick_list, Target.class);
-        if (nearest instanceof Building) {
-            return Optional.of(nearest);
-        } else if (nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport)) {
-            int grid_x = UnitGrid.toGridCoordinate(patch_hit_x);
-            int grid_y = UnitGrid.toGridCoordinate(patch_hit_y);
-            return Optional.of(building.getUnitGrid().findGridTargets(grid_x, grid_y, 1, false)[0]);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    private boolean isCameraUnchanged(CameraState camera) {
-        return camera.getCurrentX() == last_camera_x
-                && camera.getCurrentY() == last_camera_y
-                && camera.getCurrentZ() == last_camera_z
-                && camera.getCurrentVertAngle() == last_camera_vert
-                && camera.getHorizAngle() == last_camera_horiz
-                && camera.getWidth() == last_camera_width
-                && camera.getHeight() == last_camera_height;
-    }
-
-    private void updateCachedCamera(CameraState camera) {
-        last_camera_x = camera.getCurrentX();
-        last_camera_y = camera.getCurrentY();
-        last_camera_z = camera.getCurrentZ();
-        last_camera_vert = camera.getCurrentVertAngle();
-        last_camera_horiz = camera.getHorizAngle();
-        last_camera_width = camera.getWidth();
-        last_camera_height = camera.getHeight();
-    }
-
-    public void pickHoverPhysical(CameraState camera, int physical_x, int physical_y) {
-        setupPicking(camera, physical_x, physical_y, PICK_SIZE, PICK_SIZE, viewport);
-        pickObjects();
-        Target nearest = getNearestPick(element_pick_list, Target.class);
-        Target new_current_hovered;
-        if (nearest != null) {
-            new_current_hovered = nearest;
-        } else {
-            boolean mouseUnchanged = physical_x == last_hover_physical_x && physical_y == last_hover_physical_y;
-            boolean treeValid = last_hovered_tree == null
-                    || (!last_hovered_tree.isDead() && !last_hovered_tree.isEmpty());
-            if (mouseUnchanged && treeValid && isCameraUnchanged(camera)) {
-                new_current_hovered = last_hovered_tree;
-            } else {
-                pickResources();
-                last_hovered_tree = getNearestPick(tree_pick_list, TreeSupply.class);
-                last_hover_physical_x = physical_x;
-                last_hover_physical_y = physical_y;
-                updateCachedCamera(camera);
-                new_current_hovered = last_hovered_tree;
-            }
-        }
-        if (current_hovered != new_current_hovered) {
-            tool_tip_timer.resetTime();
-            boolean old_tip = current_hovered instanceof ModelToolTip;
-            boolean new_tip = new_current_hovered instanceof ModelToolTip;
-            if (!old_tip && new_tip) {
-                tool_tip_timer.start();
-                render_tool_tip = false;
-            }
-            if (old_tip && !new_tip) {
-                if (!render_tool_tip)
-                    tool_tip_timer.stop();
-                else
-                    render_tool_tip = false;
-            }
-            current_hovered = new_current_hovered;
-            current_tooltip = (new_tip && icons != null) ? new ToolTipAdapter((ModelToolTip) current_hovered,
-                    local_player, icons) : null;
-        }
+    @Override
+    public int getGridX() {
+      return UnitGrid.toGridCoordinate(x);
     }
 
     @Override
-    public void update(TimerAnimation anim) {
-        render_tool_tip = true;
-        tool_tip_timer.stop();
+    public int getGridY() {
+      return UnitGrid.toGridCoordinate(y);
     }
 
-    @Nullable
-    ToolTip getCurrentToolTip() {
-        return canRenderToolTip() ? current_tooltip : null;
+    @Override
+    public float getPositionX() {
+      return x;
     }
 
-    @Nullable
-    Target getCurrentHovered() {
-        return current_hovered;
+    @Override
+    public float getPositionY() {
+      return y;
     }
 
-    void addPick(Target target) {
-        element_pick_list.add(target);
+    @Override
+    public float getSize() {
+      return 0;
     }
 
-    private boolean canRenderToolTip() {
-        return render_tool_tip;
+    @Override
+    public boolean isDead() {
+      return false;
     }
+  }
 
-    void resetCurrentHovered() {
-        current_hovered = null;
-        current_tooltip = null;
-        last_hover_physical_x = Integer.MIN_VALUE;
-        last_hover_physical_y = Integer.MIN_VALUE;
-        last_hovered_tree = null;
+  private final Matrix4f proj = new Matrix4f();
+
+  private final Vector3f hit_result = new Vector3f();
+  private final Vector3f hit_far = new Vector3f();
+  private final Vector3f dir_vector = new Vector3f();
+  private final Vector2f nearFar = new Vector2f();
+
+  private final List<Target> element_pick_list = new ArrayList<>();
+  private final List<TreeSupply> tree_pick_list = new ArrayList<>();
+
+  private final CameraState tmp_camera = new CameraState();
+  private final SortedSet<LandscapeLeaf> patch_pick_set = new TreeSet<>(new LandscapeLeafComparator());
+  private final AnimationManager manager;
+  private final TimerAnimation tool_tip_timer;
+  private final LandscapeRenderer landscape_renderer;
+  private final @Nullable GUIIcons icons;
+  private final ElementRenderer<?> element_renderer;
+  private final TreePicker tree_renderer;
+  private final RenderQueues render_queues;
+  private final RespondManager respond_manager;
+  private final Player local_player;
+  private final GUIRoot gui_root;
+  private final Deque<LandscapeTargetRespond> target_responds = new ArrayDeque<>();
+  private final int[] viewport = new int[4];
+
+  private @Nullable Target current_hovered;
+  private @Nullable ToolTip current_tooltip;
+  private boolean render_tool_tip;
+
+  private int last_hover_physical_x = Integer.MIN_VALUE;
+  private int last_hover_physical_y = Integer.MIN_VALUE;
+  private float last_camera_x;
+  private float last_camera_y;
+  private float last_camera_z;
+  private float last_camera_vert;
+  private float last_camera_horiz;
+  private int last_camera_width;
+  private int last_camera_height;
+  private @Nullable TreeSupply last_hovered_tree;
+
+  private float patch_hit_x;
+  private float patch_hit_y;
+  private float patch_hit_z;
+
+  private List<Selectable<?>> old_target_selection = List.of();
+  private @Nullable Action old_target_action;
+  private boolean old_target_aggressive;
+
+  private int old_landscape_target_grid_x;
+  private int old_landscape_target_grid_y;
+
+  private @Nullable Target old_set_target_target;
+
+  public Picker(
+      AnimationManager manager,
+      Player local_player,
+      GUIRoot gui_root,
+      RenderQueues render_queues,
+      LandscapeRenderer landscape_renderer,
+      Selection selection,
+      AudioImplementation audio) {
+    this(manager, local_player, gui_root, render_queues, landscape_renderer, selection, audio, null);
+  }
+
+  public Picker(
+      AnimationManager manager,
+      Player local_player,
+      GUIRoot gui_root,
+      RenderQueues render_queues,
+      LandscapeRenderer landscape_renderer,
+      Selection selection,
+      AudioImplementation audio,
+      @Nullable GUIIcons icons) {
+    this.manager = manager;
+    this.tool_tip_timer = new TimerAnimation(manager, this, TOOL_TIP_DELAY);
+    this.local_player = local_player;
+    this.gui_root = gui_root;
+    this.render_queues = render_queues;
+    this.respond_manager = new RespondManager(manager);
+    this.element_renderer = new ElementRenderer<>(local_player, render_queues, this, true, selection, audio);
+    this.tree_renderer = new TreePicker(respond_manager);
+    this.tree_renderer.initTreeBounds(local_player.getWorld().getTreeRoot());
+    this.landscape_renderer = landscape_renderer;
+    this.icons = icons;
+  }
+
+  public RespondManager getRespondManager() {
+    return respond_manager;
+  }
+
+  AnimationManager getAnimationManager() {
+    return manager;
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T extends Target> @Nullable T getNearestPick(List<? extends Target> pick_list, Class<T> filter) {
+    T nearest_pickable = null;
+    float nearest_squared_distance = Float.POSITIVE_INFINITY;
+    for (Target pickable : pick_list) {
+      float squared_distance =
+          RenderTools.getEyeDistanceSquared(
+              (BoundingBox) pickable, tmp_camera.getCurrentX(), tmp_camera.getCurrentY(), tmp_camera.getCurrentZ());
+      if (filter.isInstance(pickable) && squared_distance < nearest_squared_distance) {
+        nearest_squared_distance = squared_distance;
+        nearest_pickable = (T) pickable;
+      }
     }
+    pick_list.clear();
+    return nearest_pickable;
+  }
 
-    public Optional<LandscapeLocation> pickLocation(CameraState camera) {
-        int x = gui_root.getMouseX();
-        int y = gui_root.getMouseY();
-        setupPicking(camera, x, y, PICK_SIZE, PICK_SIZE, viewport);
+  private float getScale() {
+    return gui_root.getGlobalScale();
+  }
 
-        return !nearestLandscape(x, y, viewport) ? Optional.empty() : Optional.of(new LandscapeLocation(patch_hit_x,
-                patch_hit_y));
+  public void pickTarget(
+      Army selected_army, CameraState camera, PlayerInterface player_interface, int x, int y, Action action) {
+    float scale = getScale();
+    setupPicking(camera, x * scale, y * scale, PICK_SIZE, PICK_SIZE, viewport);
+    pickObjects();
+    Target nearest_pickable = getNearestPick(element_pick_list, Target.class);
+    List<Selectable<?>> selection = selected_army.filter(Abilities.TARGET);
+    boolean aggressive = GameplaySettings.from(gui_root.getGUI().getSettings()).aggressive_units;
+    if (nearest_pickable != null) {
+      if (!(nearest_pickable instanceof SceneryModel sceneryModel) || sceneryModel.isOccupying())
+        respond_manager.addResponder(nearest_pickable);
+      if (isNewSetTarget(selection, nearest_pickable, action, aggressive))
+        player_interface.setTarget(selection, nearest_pickable, action, aggressive);
+    } else {
+      pickResources();
+      final TreeSupply supply = getNearestPick(tree_pick_list, TreeSupply.class);
+      if (supply != null) {
+        respond_manager.addResponder(supply);
+        if (isNewSetTarget(selection, supply, action, aggressive))
+          player_interface.setTarget(selection, supply, action, aggressive);
+      } else if (nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport)) {
+        target_responds.add(new LandscapeTargetRespond(manager, patch_hit_x, patch_hit_y));
+        int grid_x = UnitGrid.toGridCoordinate(patch_hit_x);
+        int grid_y = UnitGrid.toGridCoordinate(patch_hit_y);
+        if (isNewLandscapeTarget(selection, grid_x, grid_y, action, aggressive))
+          player_interface.setLandscapeTarget(selection, grid_x, grid_y, action, aggressive);
+      }
     }
+  }
 
-    private void setupPicking(CameraState camera, float x_center, float y_center, int width, int height,
-            int[] viewport) {
-        proj.identity();
-        var window = gui_root.getLocalInput().getWindow();
-        viewport[0] = 0;
-        viewport[1] = 0;
-        viewport[2] = window.getWidth();
-        viewport[3] = window.getHeight();
+  Deque<LandscapeTargetRespond> getTargetResponds() {
+    return target_responds;
+  }
 
-        if (width > 0 && height > 0) {
-            float tx = (viewport[2] - 2 * (x_center - viewport[0])) / width;
-            float ty = (viewport[3] - 2 * (y_center - viewport[1])) / height;
-            float sx = (float) viewport[2] / width;
-            float sy = (float) viewport[3] / height;
-            proj.translate(tx, ty, 0f);
-            proj.scale(sx, sy, 1.0f);
+  private boolean isNewSetTarget(List<Selectable<?>> selection, Target target, Action action, boolean aggressive) {
+    old_landscape_target_grid_x = -1;
+    old_landscape_target_grid_y = -1;
+
+    boolean new_target = isNewOrder(selection, action, aggressive);
+
+    new_target |= target != old_set_target_target;
+
+    old_set_target_target = target;
+    return new_target;
+  }
+
+  private boolean isNewLandscapeTarget(
+      List<Selectable<?>> selection, int grid_x, int grid_y, Action action, boolean aggressive) {
+    old_set_target_target = null;
+
+    boolean new_target = isNewOrder(selection, action, aggressive);
+
+    new_target |= grid_x != old_landscape_target_grid_x;
+    new_target |= grid_y != old_landscape_target_grid_y;
+
+    old_landscape_target_grid_x = grid_x;
+    old_landscape_target_grid_y = grid_y;
+    return new_target;
+  }
+
+  private boolean isNewOrder(List<Selectable<?>> selection, Action action, boolean aggressive) {
+    boolean new_order =
+        !selection.equals(old_target_selection) || action != old_target_action || aggressive != old_target_aggressive;
+
+    old_target_selection = selection;
+    old_target_action = action;
+    old_target_aggressive = aggressive;
+
+    return new_order;
+  }
+
+  public List<Selectable<?>> pickBoxed(CameraState camera, int x1, int y1, int x2, int y2, int clicks) {
+    float scale = gui_root.getGlobalScale();
+    float sx1 = x1 * scale;
+    float sy1 = y1 * scale;
+    float sx2 = x2 * scale;
+    float sy2 = y2 * scale;
+
+    float cx = (sx1 + sx2) * 0.5f;
+    float cy = (sy1 + sy2) * 0.5f;
+    int width = (int) Math.abs(sx1 - sx2) + 1;
+    int height = (int) Math.abs(sy1 - sy2) + 1;
+    width = Math.max(width, PICK_SIZE);
+    height = Math.max(height, PICK_SIZE);
+    setupPicking(camera, cx, cy, width, height, viewport);
+    pickObjects();
+    return Math.abs(x1 - x2) < SELECTION_THRESHOLD && Math.abs(y1 - y2) < SELECTION_THRESHOLD
+        ? createSinglePick(camera, clicks)
+        : createBoxedPick();
+  }
+
+  private List<Selectable<?>> createSinglePick(CameraState camera, int clicks) {
+    Selectable<?> nearest = getNearestPick(element_pick_list, Selectable.class);
+    if (nearest != null) {
+      if (clicks > 1) {
+        if (nearest.getAbilities().hasAbilities(Abilities.THROW)) {
+          return pickAll(camera, Abilities.THROW);
         }
-
-        proj.mul(camera.getProjectionMatrix());
-
-        tmp_camera.set(camera);
-        tmp_camera.setView(proj, width, height);
-    }
-
-    private void pickLandscape() {
-        patch_pick_set.clear();
-        landscape_renderer.pick(tmp_camera, false, patch_pick_set);
-    }
-
-    private void pickObjects() {
-        element_pick_list.clear();
-        element_renderer.setup(tmp_camera);
-        element_renderer.visit(local_player.getWorld().getElementRoot());
-    }
-
-    private void pickResources() {
-        tree_pick_list.clear();
-        tree_renderer.setup(tmp_camera);
-        tree_renderer.visit(local_player.getWorld().getTreeRoot());
-        tree_renderer.getAllPicks(tree_pick_list);
-    }
-
-    public void debugRender() {
-        DebugRender.drawPoint(patch_hit_x, patch_hit_y, patch_hit_z, 10f, Color.Linear.WHITE);
-    }
-
-    private final class LandscapeLeafComparator implements Comparator<LandscapeLeaf> {
-        @Override
-        public int compare(LandscapeLeaf l1, LandscapeLeaf l2) {
-            float l1_dist = RenderTools.getCameraDistanceXYSquared(l1, tmp_camera.getCurrentX(), tmp_camera
-                    .getCurrentY());
-            float l2_dist = RenderTools.getCameraDistanceXYSquared(l2, tmp_camera.getCurrentX(), tmp_camera
-                    .getCurrentY());
-            int c = Float.compare(l1_dist, l2_dist);
-            if (c != 0) {
-                return c;
-            }
-            c = Float.compare(l1.bmin_x, l2.bmin_x);
-            if (c != 0) {
-                return c;
-            }
-            c = Float.compare(l1.bmin_y, l2.bmin_y);
-            if (c != 0) {
-                return c;
-            }
-            assert l1 == l2;
-            return 0;
+        if (nearest.getAbilities().hasAbilities(Abilities.HARVEST)) {
+          return pickAll(camera, Abilities.HARVEST);
         }
+      }
+      return List.of(nearest);
     }
+    return List.of();
+  }
+
+  private List<Selectable<?>> createBoxedPick() {
+    List<Selectable<?>> list =
+        element_pick_list.stream()
+            .filter(Selectable.class::isInstance)
+            .<Selectable<?>>map(Selectable.class::cast)
+            .toList();
+    element_pick_list.clear();
+    return list;
+  }
+
+  private List<Selectable<?>> pickAll(CameraState camera, int ability_filter) {
+    List<Selectable<?>> complete_list = pickBoxed(camera, 0, 0, gui_root.getWidth() - 1, gui_root.getHeight() - 1, 2);
+    return complete_list.stream().filter(s -> s.getAbilities().hasAbilities(ability_filter)).toList();
+  }
+
+  public void pickRotate(GameCamera camera) {
+    int x = gui_root.getWidth() / 2;
+    int y = camera.getRotateY();
+    float scale = getScale();
+    setupPicking(camera.getState(), x * scale, y * scale, PICK_SIZE, PICK_SIZE, viewport);
+    float seaLevel = local_player.getWorld().getHeightMap().getSeaLevelMeters();
+    if (!nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport) || patch_hit_z < seaLevel) {
+      float dz = tmp_camera.getCurrentZ() - seaLevel;
+      float maxRadius = camera.getDefaultRotateRadius();
+      if (dir_vector.z() < -0.0001f) {
+        float dist = Math.min(-dz / dir_vector.z(), maxRadius);
+        patch_hit_x = tmp_camera.getCurrentX() + dist * dir_vector.x();
+        patch_hit_y = tmp_camera.getCurrentY() + dist * dir_vector.y();
+      } else {
+        patch_hit_x = tmp_camera.getCurrentX() + dir_vector.x() * maxRadius;
+        patch_hit_y = tmp_camera.getCurrentY() + dir_vector.y() * maxRadius;
+      }
+      float metersPerWorld = local_player.getWorld().getHeightMap().getMetersPerWorld();
+      patch_hit_x = Math.clamp(patch_hit_x, 0, metersPerWorld);
+      patch_hit_y = Math.clamp(patch_hit_y, 0, metersPerWorld);
+      patch_hit_z = seaLevel;
+    }
+    int grid_x = UnitGrid.toGridCoordinate(patch_hit_x);
+    int grid_y = UnitGrid.toGridCoordinate(patch_hit_y);
+    camera.setRotationPoint(new LandscapeTarget(grid_x, grid_y));
+  }
+
+  private void calcPosAndDir(int pixel_x, int pixel_y, int[] viewport) {
+    tmp_camera.getProjectionModelView().unproject(pixel_x, pixel_y, 0.0f, viewport, hit_result);
+    tmp_camera.getProjectionModelView().unproject(pixel_x, pixel_y, 1.0f, viewport, hit_far);
+
+    hit_far.sub(hit_result, dir_vector).normalize();
+  }
+
+  private boolean nearestLandscape(int pixel_x, int pixel_y, int[] viewport) {
+    pickLandscape();
+    calcPosAndDir(pixel_x, pixel_y, viewport);
+    return doNearestLandscape(
+        hit_result.x(), hit_result.y(), hit_result.z(), dir_vector.x(), dir_vector.y(), dir_vector.z());
+  }
+
+  private boolean doNearestLandscape(float x, float y, float z, float dx, float dy, float dz) {
+    if (getHeight(x, y) > z) {
+      return false;
+    }
+    while (!patch_pick_set.isEmpty()) {
+      BoundingBox bb = patch_pick_set.removeFirst();
+      if (!bb.intersectsRay(x, y, z, dx, dy, dz, nearFar)) {
+        continue;
+      }
+      float t_min = Math.max(0f, nearFar.x);
+      float t_max = nearFar.y;
+      if (t_min >= t_max) {
+        continue;
+      }
+      float t_min_x = x + t_min * dx;
+      float t_min_y = y + t_min * dy;
+      float t_min_z = z + t_min * dz;
+      float t_min_height = getHeight(t_min_x, t_min_y);
+      if (t_min_height >= 0.001f + t_min_z) {
+        // Ray enters the bounding box already below the terrain surface.
+        // This is a valid degenerate case (e.g. steep camera angles in map overview mode).
+        continue;
+      }
+      boolean found_t_range = false;
+      for (float t_scan = t_min; t_scan <= t_max; t_scan += PATCH_PICK_STEP) {
+        float t_scan_next = Math.min(t_scan + PATCH_PICK_STEP, t_max);
+        float t_scan_x = x + t_scan_next * dx;
+        float t_scan_y = y + t_scan_next * dy;
+        float t_scan_z = z + t_scan_next * dz;
+        float t_scan_height = getHeight(t_scan_x, t_scan_y);
+        if (t_scan_height >= t_scan_z - 0.001f) {
+          t_min = t_scan;
+          t_max = t_scan_next;
+          found_t_range = true;
+          break;
+        }
+      }
+      if (!found_t_range) {
+        continue;
+      }
+      float t_mid_x;
+      float t_mid_y;
+      float t_mid_z;
+      float t_mid_height;
+      float height_diff;
+      float old_t_mid;
+      float t_mid = Float.NaN;
+      do {
+        old_t_mid = t_mid;
+        t_mid = (t_max + t_min) * .5f;
+        t_mid_x = x + t_mid * dx;
+        t_mid_y = y + t_mid * dy;
+        t_mid_z = z + t_mid * dz;
+        t_mid_height = getHeight(t_mid_x, t_mid_y);
+        height_diff = t_mid_height - t_mid_z;
+        if (height_diff >= 0) t_max = t_mid;
+        else t_min = t_mid;
+      } while (Math.abs(height_diff) > PATCH_PICK_PRECISION && t_mid != old_t_mid);
+      patch_hit_x = t_mid_x;
+      patch_hit_y = t_mid_y;
+      patch_hit_z = t_mid_height;
+      return true;
+    }
+    return false;
+  }
+
+  private float getHeight(float x, float y) {
+    return local_player.getWorld().getHeightMap().getNearestHeight(x, y);
+  }
+
+  public void pickMapGoto(int x, int y, MapCamera camera) {
+    float scale = getScale();
+    setupPicking(camera.getState(), x * scale, y * scale, PICK_SIZE, PICK_SIZE, viewport);
+    float seaLevel = local_player.getWorld().getHeightMap().getSeaLevelMeters();
+    if (nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport) && patch_hit_z >= seaLevel) {
+      camera.mapGoto(patch_hit_x, patch_hit_y);
+    } else if (dir_vector.z() != 0) {
+      float dz = tmp_camera.getCurrentZ() - seaLevel;
+      float factor = dz / dir_vector.z();
+      float hit_x = tmp_camera.getCurrentX() - factor * dir_vector.x();
+      float hit_y = tmp_camera.getCurrentY() - factor * dir_vector.y();
+      int worldSize = local_player.getWorld().getLandscapeEnvironment().getMetersPerWorld();
+      if (hit_x >= 0 && hit_x < worldSize && hit_y >= 0 && hit_y < worldSize) {
+        camera.mapGoto(hit_x, hit_y);
+      }
+    }
+  }
+
+  public Optional<Target> pickRallyPoint(CameraState camera, int x, int y, Building building) {
+    float scale = getScale();
+    setupPicking(camera, x * scale, y * scale, PICK_SIZE, PICK_SIZE, viewport);
+    pickObjects();
+    Target nearest = getNearestPick(element_pick_list, Target.class);
+    if (nearest instanceof Building) {
+      return Optional.of(nearest);
+    } else if (nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport)) {
+      int grid_x = UnitGrid.toGridCoordinate(patch_hit_x);
+      int grid_y = UnitGrid.toGridCoordinate(patch_hit_y);
+      return Optional.of(building.getUnitGrid().findGridTargets(grid_x, grid_y, 1, false)[0]);
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  private boolean isCameraUnchanged(CameraState camera) {
+    return camera.getCurrentX() == last_camera_x
+        && camera.getCurrentY() == last_camera_y
+        && camera.getCurrentZ() == last_camera_z
+        && camera.getCurrentVertAngle() == last_camera_vert
+        && camera.getHorizAngle() == last_camera_horiz
+        && camera.getWidth() == last_camera_width
+        && camera.getHeight() == last_camera_height;
+  }
+
+  private void updateCachedCamera(CameraState camera) {
+    last_camera_x = camera.getCurrentX();
+    last_camera_y = camera.getCurrentY();
+    last_camera_z = camera.getCurrentZ();
+    last_camera_vert = camera.getCurrentVertAngle();
+    last_camera_horiz = camera.getHorizAngle();
+    last_camera_width = camera.getWidth();
+    last_camera_height = camera.getHeight();
+  }
+
+  public void pickHoverPhysical(CameraState camera, int physical_x, int physical_y) {
+    setupPicking(camera, physical_x, physical_y, PICK_SIZE, PICK_SIZE, viewport);
+    pickObjects();
+    Target nearest = getNearestPick(element_pick_list, Target.class);
+    Target new_current_hovered;
+    if (nearest != null) {
+      new_current_hovered = nearest;
+    } else {
+      boolean mouseUnchanged = physical_x == last_hover_physical_x && physical_y == last_hover_physical_y;
+      boolean treeValid = last_hovered_tree == null || (!last_hovered_tree.isDead() && !last_hovered_tree.isEmpty());
+      if (mouseUnchanged && treeValid && isCameraUnchanged(camera)) {
+        new_current_hovered = last_hovered_tree;
+      } else {
+        pickResources();
+        last_hovered_tree = getNearestPick(tree_pick_list, TreeSupply.class);
+        last_hover_physical_x = physical_x;
+        last_hover_physical_y = physical_y;
+        updateCachedCamera(camera);
+        new_current_hovered = last_hovered_tree;
+      }
+    }
+    if (current_hovered != new_current_hovered) {
+      tool_tip_timer.resetTime();
+      boolean old_tip = current_hovered instanceof ModelToolTip;
+      boolean new_tip = new_current_hovered instanceof ModelToolTip;
+      if (!old_tip && new_tip) {
+        tool_tip_timer.start();
+        render_tool_tip = false;
+      }
+      if (old_tip && !new_tip) {
+        if (!render_tool_tip) tool_tip_timer.stop();
+        else render_tool_tip = false;
+      }
+      current_hovered = new_current_hovered;
+      current_tooltip =
+          (new_tip && icons != null) ? new ToolTipAdapter((ModelToolTip) current_hovered, local_player, icons) : null;
+    }
+  }
+
+  @Override
+  public void update(TimerAnimation anim) {
+    render_tool_tip = true;
+    tool_tip_timer.stop();
+  }
+
+  @Nullable ToolTip getCurrentToolTip() {
+    return canRenderToolTip() ? current_tooltip : null;
+  }
+
+  @Nullable Target getCurrentHovered() {
+    return current_hovered;
+  }
+
+  void addPick(Target target) {
+    element_pick_list.add(target);
+  }
+
+  private boolean canRenderToolTip() {
+    return render_tool_tip;
+  }
+
+  void resetCurrentHovered() {
+    current_hovered = null;
+    current_tooltip = null;
+    last_hover_physical_x = Integer.MIN_VALUE;
+    last_hover_physical_y = Integer.MIN_VALUE;
+    last_hovered_tree = null;
+  }
+
+  public Optional<LandscapeLocation> pickLocation(CameraState camera) {
+    int x = gui_root.getMouseX();
+    int y = gui_root.getMouseY();
+    setupPicking(camera, x, y, PICK_SIZE, PICK_SIZE, viewport);
+
+    return !nearestLandscape(x, y, viewport)
+        ? Optional.empty()
+        : Optional.of(new LandscapeLocation(patch_hit_x, patch_hit_y));
+  }
+
+  private void setupPicking(CameraState camera, float x_center, float y_center, int width, int height, int[] viewport) {
+    proj.identity();
+    var window = gui_root.getLocalInput().getWindow();
+    viewport[0] = 0;
+    viewport[1] = 0;
+    viewport[2] = window.getWidth();
+    viewport[3] = window.getHeight();
+
+    if (width > 0 && height > 0) {
+      float tx = (viewport[2] - 2 * (x_center - viewport[0])) / width;
+      float ty = (viewport[3] - 2 * (y_center - viewport[1])) / height;
+      float sx = (float) viewport[2] / width;
+      float sy = (float) viewport[3] / height;
+      proj.translate(tx, ty, 0f);
+      proj.scale(sx, sy, 1.0f);
+    }
+
+    proj.mul(camera.getProjectionMatrix());
+
+    tmp_camera.set(camera);
+    tmp_camera.setView(proj, width, height);
+  }
+
+  private void pickLandscape() {
+    patch_pick_set.clear();
+    landscape_renderer.pick(tmp_camera, false, patch_pick_set);
+  }
+
+  private void pickObjects() {
+    element_pick_list.clear();
+    element_renderer.setup(tmp_camera);
+    element_renderer.visit(local_player.getWorld().getElementRoot());
+  }
+
+  private void pickResources() {
+    tree_pick_list.clear();
+    tree_renderer.setup(tmp_camera);
+    tree_renderer.visit(local_player.getWorld().getTreeRoot());
+    tree_renderer.getAllPicks(tree_pick_list);
+  }
+
+  public void debugRender() {
+    DebugRender.drawPoint(patch_hit_x, patch_hit_y, patch_hit_z, 10f, Color.Linear.WHITE);
+  }
+
+  private final class LandscapeLeafComparator implements Comparator<LandscapeLeaf> {
+    @Override
+    public int compare(LandscapeLeaf l1, LandscapeLeaf l2) {
+      float l1_dist = RenderTools.getCameraDistanceXYSquared(l1, tmp_camera.getCurrentX(), tmp_camera.getCurrentY());
+      float l2_dist = RenderTools.getCameraDistanceXYSquared(l2, tmp_camera.getCurrentX(), tmp_camera.getCurrentY());
+      int c = Float.compare(l1_dist, l2_dist);
+      if (c != 0) {
+        return c;
+      }
+      c = Float.compare(l1.bmin_x, l2.bmin_x);
+      if (c != 0) {
+        return c;
+      }
+      c = Float.compare(l1.bmin_y, l2.bmin_y);
+      if (c != 0) {
+        return c;
+      }
+      assert l1 == l2;
+      return 0;
+    }
+  }
 }

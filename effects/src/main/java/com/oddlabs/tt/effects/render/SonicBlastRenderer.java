@@ -1,12 +1,9 @@
 package com.oddlabs.tt.effects.render;
 
-
-import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.effects.particle.SonicBlastEffect;
 import com.oddlabs.tt.engine.procedural.GeneratorNoise;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.RenderQueues;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.shader.VertexLayout;
 import com.oddlabs.tt.engine.render.state.BlendMode;
@@ -16,131 +13,124 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import com.oddlabs.util.Color;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.system.MemoryStack;
-
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.system.MemoryStack;
 
-/**
- * Renders the Sonic Blast expanding ring effect.
- */
+/// Renders the Sonic Blast expanding ring effect.
 public final class SonicBlastRenderer implements AutoCloseable {
-    private static final Color.Linear BLAST_COLOR = new Color.Linear(0.7f, 0.85f, 1.0f, 1.0f);
-    private static final VertexLayout<SonicBlastShader.Attribute> LAYOUT = new VertexLayout<>(
-            SonicBlastShader.Attribute.POSITION,
-            SonicBlastShader.Attribute.TEX_COORD
-    );
-    private final SonicBlastShader shader = new SonicBlastShader();
-    private final FloatVBO vbo;
-    private final VertexArray vao = new VertexArray();
-    private final Texture[] noiseTextures;
-    private final Matrix4f effectMatrix = new Matrix4f();
+  private static final Color.Linear BLAST_COLOR = new Color.Linear(0.7f, 0.85f, 1.0f, 1.0f);
+  private static final VertexLayout<SonicBlastShader.Attribute> LAYOUT =
+      new VertexLayout<>(SonicBlastShader.Attribute.POSITION, SonicBlastShader.Attribute.TEX_COORD);
+  private final SonicBlastShader shader = new SonicBlastShader();
+  private final FloatVBO vbo;
+  private final VertexArray vao = new VertexArray();
+  private final Texture[] noiseTextures;
+  private final Matrix4f effectMatrix = new Matrix4f();
 
-    public SonicBlastRenderer() {
-        // Create a simple quad centered at 0,0 on XY plane, scaled to 1x1
-        try (var stack = MemoryStack.stackPush()) {
-            FloatBuffer buffer = stack.mallocFloat(4 * 5); // 4 verts * (3 pos + 2 uv)
-            float s = 0.5f;
-            // Pos (x,y,z), UV (u,v)
-            buffer.put(-s).put(-s).put(0).put(0).put(0);
-            buffer.put(s).put(-s).put(0).put(1).put(0);
-            buffer.put(-s).put(s).put(0).put(0).put(1);
-            buffer.put(s).put(s).put(0).put(1).put(1);
-            buffer.flip();
+  public SonicBlastRenderer() {
+    // Create a simple quad centered at 0,0 on XY plane, scaled to 1x1
+    try (var stack = MemoryStack.stackPush()) {
+      FloatBuffer buffer = stack.mallocFloat(4 * 5); // 4 verts * (3 pos + 2 uv)
+      float s = 0.5f;
+      // Pos (x,y,z), UV (u,v)
+      buffer.put(-s).put(-s).put(0).put(0).put(0);
+      buffer.put(s).put(-s).put(0).put(1).put(0);
+      buffer.put(-s).put(s).put(0).put(0).put(1);
+      buffer.put(s).put(s).put(0).put(1).put(1);
+      buffer.flip();
 
-            vbo = new FloatVBO(GL15.GL_STATIC_DRAW, buffer);
+      vbo = new FloatVBO(GL15.GL_STATIC_DRAW, buffer);
+    }
+
+    // Utilize procedural generator for ring noise
+    this.noiseTextures = new GeneratorNoise(64, 42).generate();
+
+    vao.bind();
+    vbo.bind();
+    LAYOUT.bind(shader);
+    vao.unbind();
+  }
+
+  private final List<SonicBlastEffect> activeEffects = new ArrayList<>();
+
+  public void prepare(Queue<SonicBlastEffect> queue) {
+    activeEffects.clear();
+    activeEffects.addAll(queue);
+    queue.clear();
+  }
+
+  public void render(RenderContext context, RenderQueues render_queues, CameraState state, Matrix4fc modelView) {
+    if (activeEffects.isEmpty()) return;
+
+    try (var _ = shader.use();
+        var _ = context.withBlendMode(BlendMode.ADDITIVE);
+        var _ = context.withDepthMode(DepthMode.READ_ONLY);
+        var _ = context.withCullMode(CullMode.NONE)) {
+
+      // Bind generated noise texture for ring turbulence
+      context.setTexture(0, noiseTextures[0].getHandle());
+      shader.setUniform(shader.locTexture0, 0);
+
+      vao.bind();
+
+      for (int i = 0; i < activeEffects.size(); i++) {
+        SonicBlastEffect effect = activeEffects.get(i);
+        if (effect.isDead()) continue;
+        if (!state.inNoDetailMode() && !effect.getBounds().testFrustum(state.getFrustum())) {
+          continue;
         }
 
-        // Utilize procedural generator for ring noise
-        this.noiseTextures = new GeneratorNoise(64, 42).generate();
+        float x = effect.getPositionX();
+        float y = effect.getPositionY();
+        float z = effect.getPositionZ();
+        // Visual radius is 20% larger than damage radius ("felt but no damage")
+        float visualRadius = effect.getMaxRadius() * 1.2f;
+        float r = visualRadius * 2.0f; // Quad size (diameter)
 
-        vao.bind();
-        vbo.bind();
-        LAYOUT.bind(shader);
-        vao.unbind();
+        var hm = effect.getWorld().getHeightMap();
+        float h_l = hm.getNearestHeight(x - 0.5f, y);
+        float h_r = hm.getNearestHeight(x + 0.5f, y);
+        float h_d = hm.getNearestHeight(x, y - 0.5f);
+        float h_u = hm.getNearestHeight(x, y + 0.5f);
+
+        float dh_dx = h_r - h_l;
+        float dh_dy = h_u - h_d;
+        float angleX = (float) Math.atan2(dh_dx, 1.0f);
+        float angleY = (float) Math.atan2(dh_dy, 1.0f);
+
+        // Position, align to terrain slope, and scale the quad
+        effectMatrix.set(modelView).translate(x, y, z).rotateY(-angleX).rotateX(angleY).scale(r, r, 1.0f);
+
+        shader.setUniformColor3(shader.locColor, effect.getColor());
+        shader.setUniform(shader.locModelViewMatrix, effectMatrix);
+        shader.setUniform(shader.locTime, effect.getTime());
+        shader.setUniform(shader.locMaxRadius, visualRadius);
+        shader.setUniform(shader.locExpansionSpeed, visualRadius / Math.max(effect.getDuration(), 0.001f));
+
+        GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
+      }
+
+      vao.unbind();
+      context.setActiveTexture(0);
+    } finally {
+      activeEffects.clear();
     }
+  }
 
-    private final List<SonicBlastEffect> activeEffects = new ArrayList<>();
-
-    public void prepare(Queue<SonicBlastEffect> queue) {
-        activeEffects.clear();
-        activeEffects.addAll(queue);
-        queue.clear();
+  @Override
+  public void close() {
+    shader.close();
+    vbo.close();
+    vao.close();
+    for (Texture t : noiseTextures) {
+      t.close();
     }
-
-    public void render(RenderContext context, RenderQueues render_queues, CameraState state,
-            Matrix4fc modelView) {
-        if (activeEffects.isEmpty()) return;
-
-        try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ADDITIVE); var _ = context.withDepthMode(
-                DepthMode.READ_ONLY); var _ = context.withCullMode(CullMode.NONE)) {
-
-            // Bind generated noise texture for ring turbulence
-            context.setTexture(0, noiseTextures[0].getHandle());
-            shader.setUniform(shader.locTexture0, 0);
-
-            vao.bind();
-
-            for (int i = 0; i < activeEffects.size(); i++) {
-                SonicBlastEffect effect = activeEffects.get(i);
-                if (effect.isDead()) continue;
-                if (!state.inNoDetailMode() && !effect.getBounds().testFrustum(state.getFrustum())) {
-                    continue;
-                }
-
-                float x = effect.getPositionX();
-                float y = effect.getPositionY();
-                float z = effect.getPositionZ();
-                // Visual radius is 20% larger than damage radius ("felt but no damage")
-                float visualRadius = effect.getMaxRadius() * 1.2f;
-                float r = visualRadius * 2.0f; // Quad size (diameter)
-
-                var hm = effect.getWorld().getHeightMap();
-                float h_l = hm.getNearestHeight(x - 0.5f, y);
-                float h_r = hm.getNearestHeight(x + 0.5f, y);
-                float h_d = hm.getNearestHeight(x, y - 0.5f);
-                float h_u = hm.getNearestHeight(x, y + 0.5f);
-
-                float dh_dx = h_r - h_l;
-                float dh_dy = h_u - h_d;
-                float angleX = (float) Math.atan2(dh_dx, 1.0f);
-                float angleY = (float) Math.atan2(dh_dy, 1.0f);
-
-                // Position, align to terrain slope, and scale the quad
-                effectMatrix.set(modelView)
-                        .translate(x, y, z)
-                        .rotateY(-angleX)
-                        .rotateX(angleY)
-                        .scale(r, r, 1.0f);
-
-                shader.setUniformColor3(shader.locColor, effect.getColor());
-                shader.setUniform(shader.locModelViewMatrix, effectMatrix);
-                shader.setUniform(shader.locTime, effect.getTime());
-                shader.setUniform(shader.locMaxRadius, visualRadius);
-                shader.setUniform(shader.locExpansionSpeed, visualRadius / Math.max(effect
-                        .getDuration(), 0.001f));
-
-                GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
-            }
-
-            vao.unbind();
-            context.setActiveTexture(0);
-        } finally {
-            activeEffects.clear();
-        }
-    }
-
-    @Override
-    public void close() {
-        shader.close();
-        vbo.close();
-        vao.close();
-        for (Texture t : noiseTextures) {
-            t.close();
-        }
-    }
+  }
 }

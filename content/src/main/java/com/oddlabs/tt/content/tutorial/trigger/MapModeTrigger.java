@@ -1,18 +1,16 @@
 package com.oddlabs.tt.content.tutorial.trigger;
 
+import com.oddlabs.tt.client.camera.MapCamera;
 import com.oddlabs.tt.content.tutorial.Tutorial;
 
-import com.oddlabs.tt.client.camera.MapCamera;
-
-/** Tutorial trigger waiting for the player to enter map camera mode. */
+/// Tutorial trigger waiting for the player to enter map camera mode.
 final class MapModeTrigger extends TutorialTrigger {
-    MapModeTrigger() {
-        super(.1f, 1f, "map_mode");
-    }
+  MapModeTrigger() {
+    super(.1f, 1f, "map_mode");
+  }
 
-    @Override
-    public void run(Tutorial tutorial) {
-        if (tutorial.getViewer().getDelegate().getCamera() instanceof MapCamera)
-            tutorial.next(new FromMapModeTrigger());
-    }
+  @Override
+  public void run(Tutorial tutorial) {
+    if (tutorial.getViewer().getDelegate().getCamera() instanceof MapCamera) tutorial.next(new FromMapModeTrigger());
+  }
 }

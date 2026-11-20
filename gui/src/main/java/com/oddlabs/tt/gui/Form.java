@@ -1,218 +1,201 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.font.Font;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.gui.event.CloseListener;
 import com.oddlabs.tt.gui.event.MouseMotionListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.jspecify.annotations.Nullable;
-
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import org.jspecify.annotations.Nullable;
 
-/** Floating dialog window or panel container with optional caption and close button. */
+/// Floating dialog window or panel container with optional caption and close button.
 public class Form extends Group {
-    private final Set<CloseListener> close_listeners = new CopyOnWriteArraySet<>();
+  private final Set<CloseListener> close_listeners = new CopyOnWriteArraySet<>();
 
-    private final @Nullable String caption;
-    private boolean drag = false;
+  private final @Nullable String caption;
+  private boolean drag = false;
 
-    public Form(GUIRoot guiRoot, @Nullable String caption) {
-        super(guiRoot, true);
-        this.caption = caption;
-        setFocusCycle(true);
+  public Form(GUIRoot guiRoot, @Nullable String caption) {
+    super(guiRoot, true);
+    this.caption = caption;
+    setFocusCycle(true);
+  }
+
+  public Form(GUIRoot guiRoot) {
+    this(guiRoot, null);
+  }
+
+  @Override
+  public final void compileCanvas() {
+    var formData = skin.getFormData();
+    int spacing = formData.objectSpacing();
+    Box form;
+
+    if (caption != null) {
+      form = formData.form();
+      super.compileCanvas(
+          form.getLeftOffset() + spacing,
+          form.getBottomOffset() + spacing,
+          form.getRightOffset() + spacing,
+          form.getTopOffset() + spacing);
+
+      Font font = formData.captionFont();
+
+      GUIObject label = new Label(caption, font);
+      label.setPos(formData.captionLeft(), getHeight() - formData.captionY() - font.getHeight() / 2);
+      label.addMouseMotionListener(new DragListener(this));
+      addChild(label);
+
+      GUIObject close_button = new IconButton(getGUIRoot(), formData.formClose(), null);
+      close_button.setTabStop(false);
+      close_button.setPos(
+          getWidth() - close_button.getWidth() - formData.closeRight(),
+          getHeight() - close_button.getHeight() - formData.closeTop());
+      close_button.addMouseClickListener((_, _, _, _) -> this.cancel());
+      addChild(close_button);
+    } else {
+      form = formData.slimForm();
+      super.compileCanvas(
+          form.getLeftOffset() + spacing,
+          form.getBottomOffset() + spacing,
+          form.getRightOffset() + spacing,
+          form.getTopOffset() + spacing);
     }
+  }
 
-    public Form(GUIRoot guiRoot) {
-        this(guiRoot, null);
+  public final void centerPos() {
+    var root = getParentGUIRoot();
+    setPos((root.getWidth() - getWidth()) / 2, (root.getHeight() - getHeight()) / 2);
+  }
+
+  @Override
+  protected void renderGeometry(GUIRenderer renderer) {
+    var data = skin.getFormData();
+    var form = caption != null ? data.form() : data.slimForm();
+    var skinMode =
+        isDisabled() ? ModeIconQuads.Mode.DISABLED : isActive() ? ModeIconQuads.Mode.ACTIVE : ModeIconQuads.Mode.NORMAL;
+    form.render(renderer, 0f, 0f, getWidth(), getHeight(), skinMode);
+  }
+
+  @Override
+  protected final void mousePressed(MouseButton button, int x, int y) {
+    if (caption != null && y >= getHeight() - skin.getFormData().form().getTopOffset()) drag = true;
+  }
+
+  @Override
+  protected final void mouseReleased(MouseButton button, int x, int y) {
+    drag = false;
+  }
+
+  @Override
+  public final void mouseDragged(MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x, int abs_y) {
+    if (drag) setPos(getX() + rel_x, getY() + rel_y);
+  }
+
+  @Override
+  protected final void mouseScrolled(int amount) {}
+
+  @Override
+  protected void mouseMoved(int x, int y) {}
+
+  @Override
+  protected final void mouseExited() {}
+
+  @Override
+  protected final void mouseEntered() {}
+
+  @Override
+  protected final void mouseClicked(MouseButton button, int x, int y, int clicks) {}
+
+  @Override
+  protected void handleInput(InputEvent event) {
+    if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
+      if (event.consumeAction(GameAction.UI_NEXT_PANEL)) {
+        cyclePanelGroup(this, FocusDirection.FORWARD);
+        event.consume();
+        return;
+      }
+      if (event.consumeAction(GameAction.UI_PREV_PANEL)) {
+        cyclePanelGroup(this, FocusDirection.BACKWARD);
+        event.consume();
+        return;
+      }
+      if (event.consumeAction(GameAction.UI_CANCEL)) {
+        cancel();
+        event.consume();
+        return;
+      }
+    }
+    super.handleInput(event);
+  }
+
+  private boolean cyclePanelGroup(GUIObject root, FocusDirection dir) {
+    if (root instanceof PanelGroup pg) {
+      pg.cyclePanel(dir);
+      return true;
+    }
+    GUIObject child = root.getFirstChild();
+    while (child != null) {
+      if (cyclePanelGroup(child, dir)) return true;
+      child = child.getNext();
+    }
+    return false;
+  }
+
+  @Override
+  protected final void mouseHeld(MouseButton button, int x, int y) {}
+
+  public final void closedAll() {
+    closed();
+    close_listeners.forEach(CloseListener::closed);
+  }
+
+  protected void closed() {}
+
+  public final void addCloseListener(CloseListener listener) {
+    close_listeners.add(listener);
+  }
+
+  public final void removeCloseListener(CloseListener listener) {
+    close_listeners.remove(listener);
+  }
+
+  public void cancel() {
+    doCancel();
+    remove();
+  }
+
+  protected void doCancel() {}
+
+  @Override
+  public final void remove() {
+    if (getParent() != null) closedAll();
+    super.remove();
+  }
+
+  private static final class DragListener implements MouseMotionListener {
+    private final Form owner;
+
+    DragListener(Form owner) {
+      this.owner = owner;
     }
 
     @Override
-    public final void compileCanvas() {
-        var formData = skin.getFormData();
-        int spacing = formData.objectSpacing();
-        Box form;
-
-        if (caption != null) {
-            form = formData.form();
-            super.compileCanvas(form.getLeftOffset() + spacing,
-                    form.getBottomOffset() + spacing,
-                    form.getRightOffset() + spacing,
-                    form.getTopOffset() + spacing);
-
-            Font font = formData.captionFont();
-
-            GUIObject label = new Label(caption, font);
-            label.setPos(formData.captionLeft(), getHeight() - formData.captionY() - font.getHeight() / 2);
-            label.addMouseMotionListener(new DragListener(this));
-            addChild(label);
-
-            GUIObject close_button = new IconButton(getGUIRoot(), formData.formClose(), null);
-            close_button.setTabStop(false);
-            close_button.setPos(getWidth() - close_button.getWidth() - formData.closeRight(),
-                    getHeight() - close_button.getHeight() - formData.closeTop());
-            close_button.addMouseClickListener((_, _, _, _) -> this.cancel());
-            addChild(close_button);
-        } else {
-            form = formData.slimForm();
-            super.compileCanvas(form.getLeftOffset() + spacing,
-                    form.getBottomOffset() + spacing,
-                    form.getRightOffset() + spacing,
-                    form.getTopOffset() + spacing);
-        }
-    }
-
-    public final void centerPos() {
-        var root = getParentGUIRoot();
-        setPos((root.getWidth() - getWidth()) / 2, (root.getHeight() - getHeight()) / 2);
+    public void mouseDragged(MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x, int abs_y) {
+      owner.mouseDragged(button, x, y, rel_x, rel_y, abs_x, abs_y);
     }
 
     @Override
-    protected void renderGeometry(GUIRenderer renderer) {
-        var data = skin.getFormData();
-        var form = caption != null
-                ? data.form()
-                : data.slimForm();
-        var skinMode = isDisabled()
-                ? ModeIconQuads.Mode.DISABLED
-                : isActive() ? ModeIconQuads.Mode.ACTIVE : ModeIconQuads.Mode.NORMAL;
-        form.render(renderer, 0f, 0f, getWidth(), getHeight(), skinMode);
-    }
+    public void mouseMoved(int x, int y) {}
 
     @Override
-    protected final void mousePressed(MouseButton button, int x, int y) {
-        if (caption != null && y >= getHeight() - skin.getFormData().form().getTopOffset())
-            drag = true;
-    }
+    public void mouseEntered() {}
 
     @Override
-    protected final void mouseReleased(MouseButton button, int x, int y) {
-        drag = false;
-    }
-
-    @Override
-    public final void mouseDragged(MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x,
-            int abs_y) {
-        if (drag)
-            setPos(getX() + rel_x, getY() + rel_y);
-    }
-
-    @Override
-    protected final void mouseScrolled(int amount) {
-    }
-
-    @Override
-    protected void mouseMoved(int x, int y) {
-    }
-
-    @Override
-    protected final void mouseExited() {
-    }
-
-    @Override
-    protected final void mouseEntered() {
-    }
-
-    @Override
-    protected final void mouseClicked(MouseButton button, int x, int y, int clicks) {
-    }
-
-    @Override
-    protected void handleInput(InputEvent event) {
-        if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
-            if (event.consumeAction(GameAction.UI_NEXT_PANEL)) {
-                cyclePanelGroup(this, FocusDirection.FORWARD);
-                event.consume();
-                return;
-            }
-            if (event.consumeAction(GameAction.UI_PREV_PANEL)) {
-                cyclePanelGroup(this, FocusDirection.BACKWARD);
-                event.consume();
-                return;
-            }
-            if (event.consumeAction(GameAction.UI_CANCEL)) {
-                cancel();
-                event.consume();
-                return;
-            }
-        }
-        super.handleInput(event);
-    }
-
-    private boolean cyclePanelGroup(GUIObject root, FocusDirection dir) {
-        if (root instanceof PanelGroup pg) {
-            pg.cyclePanel(dir);
-            return true;
-        }
-        GUIObject child = root.getFirstChild();
-        while (child != null) {
-            if (cyclePanelGroup(child, dir)) return true;
-            child = child.getNext();
-        }
-        return false;
-    }
-
-    @Override
-    protected final void mouseHeld(MouseButton button, int x, int y) {
-    }
-
-    public final void closedAll() {
-        closed();
-        close_listeners.forEach(CloseListener::closed);
-    }
-
-    protected void closed() {
-    }
-
-    public final void addCloseListener(CloseListener listener) {
-        close_listeners.add(listener);
-    }
-
-    public final void removeCloseListener(CloseListener listener) {
-        close_listeners.remove(listener);
-    }
-
-    public void cancel() {
-        doCancel();
-        remove();
-    }
-
-    protected void doCancel() {
-    }
-
-    @Override
-    public final void remove() {
-        if (getParent() != null)
-            closedAll();
-        super.remove();
-    }
-
-    private static final class DragListener implements MouseMotionListener {
-        private final Form owner;
-
-        DragListener(Form owner) {
-            this.owner = owner;
-        }
-
-        @Override
-        public void mouseDragged(MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x,
-                int abs_y) {
-            owner.mouseDragged(button, x, y, rel_x, rel_y, abs_x, abs_y);
-        }
-
-        @Override
-        public void mouseMoved(int x, int y) {
-        }
-
-        @Override
-        public void mouseEntered() {
-        }
-
-        @Override
-        public void mouseExited() {
-        }
-    }
+    public void mouseExited() {}
+  }
 }

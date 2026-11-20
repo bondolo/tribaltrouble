@@ -1,72 +1,66 @@
 package com.oddlabs.tt.base.util;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
 public final class PocketList<T> {
-    private final List<T>[] pockets;
-    private int min_list_index;
-    private int max_list_index;
-    private int size;
+  private final List<T>[] pockets;
+  private int min_list_index;
+  private int max_list_index;
+  private int size;
 
-    @SuppressWarnings("unchecked")
-    public PocketList(int num_pockets) {
-        pockets = IntStream.range(0, num_pockets)
-                .mapToObj(_ -> new ArrayList<T>())
-                .toArray(List[]::new);
-        reset();
+  @SuppressWarnings("unchecked")
+  public PocketList(int num_pockets) {
+    pockets = IntStream.range(0, num_pockets).mapToObj(_ -> new ArrayList<T>()).toArray(List[]::new);
+    reset();
+  }
+
+  public void add(int cost, T obj) {
+    if (cost >= pockets.length) cost = pockets.length - 1;
+    pockets[cost].add(obj);
+    if (cost < min_list_index) min_list_index = cost;
+    if (cost > max_list_index) max_list_index = cost;
+    size++;
+  }
+
+  public T removeBest() {
+    assert !isEmpty();
+    List<T> current_pocket = pockets[min_list_index];
+    while (current_pocket.isEmpty()) {
+      min_list_index++;
+      current_pocket = pockets[min_list_index];
     }
+    T node = current_pocket.removeLast();
+    size--;
+    return node;
+  }
 
-    public void add(int cost, T obj) {
-        if (cost >= pockets.length)
-            cost = pockets.length - 1;
-        pockets[cost].add(obj);
-        if (cost < min_list_index)
-            min_list_index = cost;
-        if (cost > max_list_index)
-            max_list_index = cost;
-        size++;
+  public void clear() {
+    for (int i = min_list_index; i <= max_list_index; i++) {
+      pockets[i].clear();
     }
+    //		check();
+    reset();
+  }
 
-    public T removeBest() {
-        assert !isEmpty();
-        List<T> current_pocket = pockets[min_list_index];
-        while (current_pocket.isEmpty()) {
-            min_list_index++;
-            current_pocket = pockets[min_list_index];
-        }
-        T node = current_pocket.removeLast();
-        size--;
-        return node;
-    }
+  /*	private final void check() {
+  		for (int i = 0; i < pockets.length; i++)
+  			assert pockets[i].isEmpty(): min_list_index + " " + max_list_index + " " + i;
+  	}
+  */
 
-    public void clear() {
-        for (int i = min_list_index; i <= max_list_index; i++) {
-            pockets[i].clear();
-        }
-//		check();
-        reset();
-    }
+  public boolean isEmpty() {
+    return size == 0;
+  }
 
-    /*	private final void check() {
-    		for (int i = 0; i < pockets.length; i++)
-    			assert pockets[i].isEmpty(): min_list_index + " " + max_list_index + " " + i;
-    	}
-    */
+  public int size() {
+    return size;
+  }
 
-    public boolean isEmpty() {
-        return size == 0;
-    }
-
-    public int size() {
-        return size;
-    }
-
-    private void reset() {
-        min_list_index = pockets.length;
-        max_list_index = 0;
-        size = 0;
-    }
+  private void reset() {
+    min_list_index = pockets.length;
+    max_list_index = 0;
+    size = 0;
+  }
 }

@@ -9,41 +9,37 @@ import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.model.WeaponTier;
 import org.jspecify.annotations.Nullable;
 
-/**
- * A weapon factory for units that deal damage instantly to their targets
- * (e.g., melee units or non-projectile weapons).
- */
+/// A weapon factory for units that deal damage instantly to their targets (e.g., melee units or non-projectile
+/// weapons).
 public final class InstantHitFactory extends WeaponFactory {
 
-    public InstantHitFactory(float hit_chance, float range, float release_ratio) {
-        super(hit_chance, range, release_ratio);
+  public InstantHitFactory(float hit_chance, float range, float release_ratio) {
+    super(hit_chance, range, release_ratio);
+  }
+
+  @Override
+  protected void doAttack(boolean hit, Unit src, Selectable<?> target) {
+    int damage = 1;
+
+    if (target instanceof Building && target.getTemplate().getAbilities().hasAbilities(Abilities.ATTACK)) damage = 6;
+    else if (!hit) return;
+
+    float dx = target.getPositionX() - src.getPositionX();
+    float dy = target.getPositionY() - src.getPositionY();
+    float dir_len_inv = 1f / (float) Math.hypot(dx, dy);
+    if (target instanceof Unit unitTarget) {
+      if (AppConfig.LEGACY_DETERMINISTIC) {
+        int soundCount = src.getTemplate().getUnitType() == UnitType.CHIEFTAIN ? 4 : 5;
+        src.getWorld().getRandom().nextInt(soundCount);
+        src.getWorld().getRandom().nextFloat();
+      }
+      src.getWorld().getNotificationListener().onUnitAttack(src, unitTarget);
     }
+    target.hit(damage, dx * dir_len_inv, dy * dir_len_inv, src.getOwner());
+  }
 
-    @Override
-    protected void doAttack(boolean hit, Unit src, Selectable<?> target) {
-        int damage = 1;
-
-        if (target instanceof Building && target.getTemplate().getAbilities().hasAbilities(Abilities.ATTACK))
-            damage = 6;
-        else if (!hit)
-            return;
-
-        float dx = target.getPositionX() - src.getPositionX();
-        float dy = target.getPositionY() - src.getPositionY();
-        float dir_len_inv = 1f / (float) Math.hypot(dx, dy);
-        if (target instanceof Unit unitTarget) {
-            if (AppConfig.LEGACY_DETERMINISTIC) {
-                int soundCount = src.getTemplate().getUnitType() == UnitType.CHIEFTAIN ? 4 : 5;
-                src.getWorld().getRandom().nextInt(soundCount);
-                src.getWorld().getRandom().nextFloat();
-            }
-            src.getWorld().getNotificationListener().onUnitAttack(src, unitTarget);
-        }
-        target.hit(damage, dx * dir_len_inv, dy * dir_len_inv, src.getOwner());
-    }
-
-    @Override
-    public @Nullable WeaponTier getTier() {
-        return null;
-    }
+  @Override
+  public @Nullable WeaponTier getTier() {
+    return null;
+  }
 }

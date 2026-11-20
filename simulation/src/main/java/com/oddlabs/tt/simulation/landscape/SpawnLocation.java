@@ -6,5 +6,4 @@ package com.oddlabs.tt.simulation.landscape;
  * @param x world X coordinate in meters
  * @param y world Y coordinate in meters
  */
-public record SpawnLocation(float x, float y) implements Location {
-}
+public record SpawnLocation(float x, float y) implements Location {}

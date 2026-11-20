@@ -1,30 +1,28 @@
 package com.oddlabs.tt.content.tutorial.trigger;
 
+import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.content.tutorial.Tutorial;
 
-import com.oddlabs.tt.client.camera.GameCamera;
-
-/** Tutorial trigger waiting for the player to rotate the camera left and right. */
+/// Tutorial trigger waiting for the player to rotate the camera left and right.
 final class RotateTrigger extends TutorialTrigger {
-    private final boolean[] rotate_dirs = new boolean[2];
+  private final boolean[] rotate_dirs = new boolean[2];
 
-    RotateTrigger() {
-        super(.1f, 2f, "rotate");
-    }
+  RotateTrigger() {
+    super(.1f, 2f, "rotate");
+  }
 
-    @Override
-    public void run(Tutorial tutorial) {
-        GameCamera camera = tutorial.getViewer().getCamera();
-        if (camera.rotateRight()) {
-            rotate_dirs[0] = true;
-        }
-        if (camera.rotateLeft()) {
-            rotate_dirs[1] = true;
-        }
-        for (boolean rotateDir : rotate_dirs) {
-            if (!rotateDir)
-                return;
-        }
-        tutorial.next(new PitchTrigger());
+  @Override
+  public void run(Tutorial tutorial) {
+    GameCamera camera = tutorial.getViewer().getCamera();
+    if (camera.rotateRight()) {
+      rotate_dirs[0] = true;
     }
+    if (camera.rotateLeft()) {
+      rotate_dirs[1] = true;
+    }
+    for (boolean rotateDir : rotate_dirs) {
+      if (!rotateDir) return;
+    }
+    tutorial.next(new PitchTrigger());
+  }
 }

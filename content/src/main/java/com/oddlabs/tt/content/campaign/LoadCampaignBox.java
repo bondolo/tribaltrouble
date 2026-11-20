@@ -1,6 +1,8 @@
 package com.oddlabs.tt.content.campaign;
 
-import com.oddlabs.tt.gui.MessageForm;
+import com.oddlabs.event.Deterministic;
+import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.gui.Box;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.DateLabel;
@@ -8,18 +10,14 @@ import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.MultiColumnComboBox;
 import com.oddlabs.tt.gui.Row;
 import com.oddlabs.tt.gui.event.RowListener;
-import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.event.Deterministic;
 import com.oddlabs.util.DeterministicSerializer;
 import com.oddlabs.util.DeterministicSerializerLoopbackInterface;
-import org.jspecify.annotations.Nullable;
-
 import java.io.FileNotFoundException;
 import java.io.InvalidClassException;
 import java.nio.file.Files;
@@ -30,150 +28,151 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Multi-column combo box widget displaying saved campaign states with save/load coordination.
- */
-final class LoadCampaignBox extends GUIObject implements DeterministicSerializerLoopbackInterface<
-        CampaignState[]> {
-    private static final Logger logger = Logger.getLogger(LoadCampaignBox.class.getSimpleName());
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(LoadCampaignBox.class.getName());
+/// Multi-column combo box widget displaying saved campaign states with save/load coordination.
+final class LoadCampaignBox extends GUIObject implements DeterministicSerializerLoopbackInterface<CampaignState[]> {
+  private static final Logger logger = Logger.getLogger(LoadCampaignBox.class.getSimpleName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(LoadCampaignBox.class.getName());
 
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  static final Path SAVEGAMES_FILE_NAME = Path.of("savegames");
+  private static final Map<String, String> CLASS_ALIASES =
+      Map.of(
+          "com.oddlabs.tt.player.campaign.CampaignState", CampaignState.class.getName(),
+          "com.oddlabs.tt.simulation.campaign.CampaignState", CampaignState.class.getName());
+
+  private static final int WIDTH_NAME = 210;
+  private static final int WIDTH_RACE = 70;
+  private static final int WIDTH_DIFFICULTY = 130;
+  private static final int WIDTH_DATE = 170;
+
+  private final MultiColumnComboBox<CampaignState> list_box;
+  private final GUIRoot gui_root;
+  private final Deterministic deterministic;
+  private final Path dataDir;
+
+  LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener, Deterministic deterministic, Path dataDir) {
+    this.deterministic = deterministic;
+    this.dataDir = dataDir;
+    this.gui_root = gui_root;
+    list_box =
+        new MultiColumnComboBox<>(
+            gui_root,
+            262,
+            new ColumnInfo(i18n("name"), WIDTH_NAME),
+            new ColumnInfo(i18n("race"), WIDTH_RACE),
+            new ColumnInfo(i18n("difficulty"), WIDTH_DIFFICULTY),
+            new ColumnInfo(i18n("date"), WIDTH_DATE));
+    list_box.addRowListener(listener);
+    addChild(list_box);
+    setCanFocus(true);
+    setDim(list_box.getWidth(), list_box.getHeight());
+
+    refresh();
+  }
+
+  LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener, Peer peer) {
+    this(gui_root, listener, peer.getEventQueue().getDeterministic(), peer.getGamePaths().dataDir());
+  }
+
+  static <T> void saveSavegames(
+      Deterministic deterministic,
+      Path dataDir,
+      CampaignState[] states,
+      DeterministicSerializerLoopbackInterface<T> callback) {
+    DeterministicSerializer.save(deterministic, states, getSaveSavegamesFile(dataDir), callback);
+  }
+
+  static <T> void saveSavegames(
+      Peer peer, CampaignState[] states, DeterministicSerializerLoopbackInterface<T> callback) {
+    saveSavegames(peer.getEventQueue().getDeterministic(), peer.getGamePaths().dataDir(), states, callback);
+  }
+
+  private static Path getSaveSavegamesFile(Path dataDir) {
+    return dataDir.resolve(SAVEGAMES_FILE_NAME);
+  }
+
+  static <T> void loadSavegames(
+      Deterministic deterministic, Path dataDir, DeterministicSerializerLoopbackInterface<T> callback) {
+    DeterministicSerializer.load(deterministic, getLoadSavegamesFile(dataDir), callback, CLASS_ALIASES);
+  }
+
+  static <T> void loadSavegames(Peer peer, DeterministicSerializerLoopbackInterface<T> callback) {
+    loadSavegames(peer.getEventQueue().getDeterministic(), peer.getGamePaths().dataDir(), callback);
+  }
+
+  private static Path getLoadSavegamesFile(Path dataDir) {
+    Path file = getSaveSavegamesFile(dataDir);
+    return !Files.isReadable(file) ? Utils.getInstallDir().resolve(SAVEGAMES_FILE_NAME) : file;
+  }
+
+  @Override
+  public void setFocus(FocusDirection direction) {
+    list_box.setFocus(direction);
+  }
+
+  public @Nullable CampaignState getSelected() {
+    return list_box.getSelected();
+  }
+
+  public void refresh() {
+    list_box.clear();
+    LoadCampaignBox.loadSavegames(deterministic, dataDir, this);
+  }
+
+  private void fillSlots(CampaignState[] campaign_states) {
+    var comboData = gui_root.getSkin().getMultiColumnComboBoxData();
+    Box box = comboData.box();
+    var font = comboData.font();
+    for (CampaignState campaign_state : campaign_states) {
+      String race =
+          switch (campaign_state.getRace()) {
+            case Race.VIKINGS -> i18n("vikings");
+            case Race.NATIVES -> i18n("natives");
+            default -> throw new IllegalArgumentException("invalid race");
+          };
+      String difficulty =
+          switch (campaign_state.getDifficulty()) {
+            case Difficulty.EASY -> i18n("easy");
+            case Difficulty.NORMAL -> i18n("normal");
+            case Difficulty.HARD -> i18n("hard");
+            default -> throw new IllegalArgumentException("invalid difficulty");
+          };
+      Row<CampaignState, Label> row =
+          new Row<>(
+              gui_root,
+              List.of(
+                  new Label(campaign_state.getName(), font, WIDTH_NAME - box.getLeftOffset() - 1),
+                  new Label(race, font, WIDTH_RACE),
+                  new Label(difficulty, font, WIDTH_DIFFICULTY),
+                  new DateLabel(campaign_state.getDate(), font, WIDTH_DATE - box.getRightOffset() + 1)),
+              campaign_state);
+      list_box.addRow(row);
     }
+  }
 
-    static final Path SAVEGAMES_FILE_NAME = Path.of("savegames");
-    private static final Map<String, String> CLASS_ALIASES = Map.of(
-            "com.oddlabs.tt.player.campaign.CampaignState", CampaignState.class.getName(),
-            "com.oddlabs.tt.simulation.campaign.CampaignState", CampaignState.class.getName()
-    );
-
-    private static final int WIDTH_NAME = 210;
-    private static final int WIDTH_RACE = 70;
-    private static final int WIDTH_DIFFICULTY = 130;
-    private static final int WIDTH_DATE = 170;
-
-    private final MultiColumnComboBox<CampaignState> list_box;
-    private final GUIRoot gui_root;
-    private final Deterministic deterministic;
-    private final Path dataDir;
-
-    LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener, Deterministic deterministic, Path dataDir) {
-        this.deterministic = deterministic;
-        this.dataDir = dataDir;
-        this.gui_root = gui_root;
-        list_box = new MultiColumnComboBox<>(
-                gui_root,
-                262,
-                new ColumnInfo(i18n("name"), WIDTH_NAME),
-                new ColumnInfo(i18n("race"), WIDTH_RACE),
-                new ColumnInfo(i18n("difficulty"), WIDTH_DIFFICULTY),
-                new ColumnInfo(i18n("date"), WIDTH_DATE));
-        list_box.addRowListener(listener);
-        addChild(list_box);
-        setCanFocus(true);
-        setDim(list_box.getWidth(), list_box.getHeight());
-
-        refresh();
+  @Override
+  public void loadSucceeded(CampaignState[] campaign_states) {
+    fillSlots(campaign_states);
+    if (list_box.getSize() > 0) {
+      list_box.selectFirst();
     }
+  }
 
-    LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener, Peer peer) {
-        this(gui_root, listener, peer.getEventQueue().getDeterministic(), peer.getGamePaths().dataDir());
+  @Override
+  public void failed(Throwable e) {
+    logger.log(Level.SEVERE, "Failed to load savegames", e);
+    if (e instanceof FileNotFoundException || e instanceof NoSuchFileException) {
+    } else if (e instanceof InvalidClassException || e instanceof ClassNotFoundException) {
+      String invalid_message = i18n("invalid_message", SAVEGAMES_FILE_NAME);
+      gui_root.addModalForm(new MessageForm(gui_root, invalid_message));
+    } else {
+      String failed_message = i18n("failed_message", SAVEGAMES_FILE_NAME, e.getMessage());
+      gui_root.addModalForm(new MessageForm(gui_root, failed_message));
     }
-
-    static <T> void saveSavegames(Deterministic deterministic, Path dataDir, CampaignState[] states,
-            DeterministicSerializerLoopbackInterface<T> callback) {
-        DeterministicSerializer.save(deterministic, states,
-                getSaveSavegamesFile(dataDir), callback);
-    }
-
-    static <T> void saveSavegames(Peer peer, CampaignState[] states,
-            DeterministicSerializerLoopbackInterface<T> callback) {
-        saveSavegames(peer.getEventQueue().getDeterministic(), peer.getGamePaths().dataDir(), states, callback);
-    }
-
-    private static Path getSaveSavegamesFile(Path dataDir) {
-        return dataDir.resolve(SAVEGAMES_FILE_NAME);
-    }
-
-    static <T> void loadSavegames(Deterministic deterministic, Path dataDir, DeterministicSerializerLoopbackInterface<
-            T> callback) {
-        DeterministicSerializer.load(deterministic, getLoadSavegamesFile(dataDir),
-                callback, CLASS_ALIASES);
-    }
-
-    static <T> void loadSavegames(Peer peer, DeterministicSerializerLoopbackInterface<T> callback) {
-        loadSavegames(peer.getEventQueue().getDeterministic(), peer.getGamePaths().dataDir(), callback);
-    }
-
-    private static Path getLoadSavegamesFile(Path dataDir) {
-        Path file = getSaveSavegamesFile(dataDir);
-        return !Files.isReadable(file) ? Utils.getInstallDir().resolve(SAVEGAMES_FILE_NAME) : file;
-    }
-
-    @Override
-    public void setFocus(FocusDirection direction) {
-        list_box.setFocus(direction);
-    }
-
-    public @Nullable CampaignState getSelected() {
-        return list_box.getSelected();
-    }
-
-    public void refresh() {
-        list_box.clear();
-        LoadCampaignBox.loadSavegames(deterministic, dataDir, this);
-    }
-
-    private void fillSlots(CampaignState[] campaign_states) {
-        var comboData = gui_root.getSkin().getMultiColumnComboBoxData();
-        Box box = comboData.box();
-        var font = comboData.font();
-        for (CampaignState campaign_state : campaign_states) {
-            String race = switch (campaign_state.getRace()) {
-                case Race.VIKINGS -> i18n("vikings");
-                case Race.NATIVES -> i18n("natives");
-                default -> throw new IllegalArgumentException("invalid race");
-            };
-            String difficulty = switch (campaign_state.getDifficulty()) {
-                case Difficulty.EASY -> i18n("easy");
-                case Difficulty.NORMAL -> i18n("normal");
-                case Difficulty.HARD -> i18n("hard");
-                default -> throw new IllegalArgumentException("invalid difficulty");
-            };
-            Row<CampaignState, Label> row = new Row<>(
-                    gui_root,
-                    List.of(
-                            new Label(campaign_state.getName(), font,
-                                    WIDTH_NAME - box.getLeftOffset() - 1),
-                            new Label(race, font, WIDTH_RACE),
-                            new Label(difficulty, font, WIDTH_DIFFICULTY),
-                            new DateLabel(campaign_state.getDate(), font,
-                                    WIDTH_DATE - box.getRightOffset() + 1)
-                    ), campaign_state);
-            list_box.addRow(row);
-        }
-    }
-
-    @Override
-    public void loadSucceeded(CampaignState[] campaign_states) {
-        fillSlots(campaign_states);
-        if (list_box.getSize() > 0) {
-            list_box.selectFirst();
-        }
-    }
-
-    @Override
-    public void failed(Throwable e) {
-        logger.log(Level.SEVERE, "Failed to load savegames", e);
-        if (e instanceof FileNotFoundException || e instanceof NoSuchFileException) {
-        } else if (e instanceof InvalidClassException || e instanceof ClassNotFoundException) {
-            String invalid_message = i18n("invalid_message", SAVEGAMES_FILE_NAME);
-            gui_root.addModalForm(new MessageForm(gui_root, invalid_message));
-        } else {
-            String failed_message = i18n("failed_message", SAVEGAMES_FILE_NAME, e.getMessage());
-            gui_root.addModalForm(new MessageForm(gui_root, failed_message));
-        }
-    }
+  }
 }

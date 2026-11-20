@@ -1,30 +1,27 @@
 package com.oddlabs.tt.content.tutorial.trigger;
 
 import com.oddlabs.tt.content.tutorial.Tutorial;
-
 import com.oddlabs.tt.content.tutorial.TutorialForm;
 import com.oddlabs.tt.simulation.model.Unit;
 
-/** Tutorial trigger waiting for the local player's unit count to reach a target. */
+/// Tutorial trigger waiting for the local player's unit count to reach a target.
 final class UnitCountTrigger extends TutorialTrigger {
-    private final int target_count;
+  private final int target_count;
 
-    UnitCountTrigger(int target_count) {
-        super(1f, 0f, "unit_count", new Object[]{target_count});
-        this.target_count = target_count;
-    }
+  UnitCountTrigger(int target_count) {
+    super(1f, 0f, "unit_count", new Object[] {target_count});
+    this.target_count = target_count;
+  }
 
-    @Override
-    public void run(Tutorial tutorial) {
-        var set = tutorial.getViewer().getLocalPlayer().getUnits().getSet();
-        var it = set.iterator();
-        int count = 0;
-        while (it.hasNext()) {
-            var s = it.next();
-            if (s instanceof Unit)
-                count++;
-        }
-        if (count >= target_count)
-            tutorial.done(TutorialForm.TUTORIAL_QUARTERS);
+  @Override
+  public void run(Tutorial tutorial) {
+    var set = tutorial.getViewer().getLocalPlayer().getUnits().getSet();
+    var it = set.iterator();
+    int count = 0;
+    while (it.hasNext()) {
+      var s = it.next();
+      if (s instanceof Unit) count++;
     }
+    if (count >= target_count) tutorial.done(TutorialForm.TUTORIAL_QUARTERS);
+  }
 }

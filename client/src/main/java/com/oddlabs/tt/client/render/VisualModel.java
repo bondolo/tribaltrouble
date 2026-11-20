@@ -5,32 +5,30 @@ import com.oddlabs.tt.simulation.model.ClientModel;
 import com.oddlabs.tt.simulation.model.Model;
 import java.util.SequencedCollection;
 
-/**
- * Manages the client-side visual accessories for a simulation model.
- */
+/// Manages the client-side visual accessories for a simulation model.
 public interface VisualModel extends ClientModel {
-    Model getModel();
+  Model getModel();
 
-    SequencedCollection<Accessory> getAccessories();
+  SequencedCollection<Accessory> getAccessories();
 
-    boolean isExpired();
+  boolean isExpired();
 
-    /**
-     * update the visual model
-     *
-     * @param dt time delta since last update
-     */
-    void update(float dt);
+  /**
+   * update the visual model
+   *
+   * @param `dt` time delta since last update
+   */
+  void update(float dt);
 
-    @Override
-    void close();
+  @Override
+  void close();
 
-    void addAccessory(Accessory accessory);
+  void addAccessory(Accessory accessory);
 
-    /**
-     * Renders or picks this visual model in the current scene context.
-     *
-     * @param renderState the active render state
-     */
-    void visit(RenderState renderState);
+  /**
+   * Renders or picks this visual model in the current scene context.
+   *
+   * @param `renderState` the active render state
+   */
+  void visit(RenderState renderState);
 }

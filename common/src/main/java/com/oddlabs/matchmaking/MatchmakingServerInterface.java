@@ -5,68 +5,68 @@ import com.oddlabs.net.HostSequenceID;
 import org.jspecify.annotations.Nullable;
 
 public interface MatchmakingServerInterface {
-    int TYPE_NONE = 0;
-    int TYPE_GAME = 1;
-    int TYPE_CHAT_ROOM_LIST = 2;
-    int TYPE_RANKING_LIST = 3;
+  int TYPE_NONE = 0;
+  int TYPE_GAME = 1;
+  int TYPE_CHAT_ROOM_LIST = 2;
+  int TYPE_RANKING_LIST = 3;
 
-    int MATCHMAKING_SERVER_PORT = 33214;
+  int MATCHMAKING_SERVER_PORT = 33214;
 
-    int MAX_PLAYERS = 6;
-    int MIN_PLAYERS = 1;
-    int MIN_ROOM_NAME_LENGTH = 1;
-    int MAX_ROOM_NAME_LENGTH = 20;
-    int MAX_ROOM_USERS = 50;
-    String ALLOWED_ROOM_CHARS
-            = "abcdefghijklmnopqrstuvwxyzæøåABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ0123456789èéêëìíîïðñòóôõöùúûüýÿ-_,.:;?+={}[]()/&%#!<\\>'*";
+  int MAX_PLAYERS = 6;
+  int MIN_PLAYERS = 1;
+  int MIN_ROOM_NAME_LENGTH = 1;
+  int MAX_ROOM_NAME_LENGTH = 20;
+  int MAX_ROOM_USERS = 50;
+  String ALLOWED_ROOM_CHARS =
+      "abcdefghijklmnopqrstuvwxyzæøåABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ0123456789èéêëìíîïðñòóôõöùúûüýÿ-_,.:;?+={}[]()/&%#!<\\>'*";
 
-    void setProfile(String nick);
+  void setProfile(String nick);
 
-    void createProfile(String nick);
+  void createProfile(String nick);
 
-    void deleteProfile(String nick);
+  void deleteProfile(String nick);
 
-    void requestProfiles();
+  void requestProfiles();
 
-    void logPriority(String nick, int priority);
+  void logPriority(String nick, int priority);
 
-    void registerGame(@Nullable Game game);
+  void registerGame(@Nullable Game game);
 
-    void unregisterGame();
+  void unregisterGame();
 
-    void sendMessageToRoom(String msg);
+  void sendMessageToRoom(String msg);
 
-    void sendPrivateMessage(String nick, String msg);
+  void sendPrivateMessage(String nick, String msg);
 
-    void joinRoom(String name);
+  void joinRoom(String name);
 
-    void leaveRoom();
+  void leaveRoom();
 
-    void requestInfo(String nick);
+  void requestInfo(String nick);
 
-    void requestList(int type, int update_key);
+  void requestList(int type, int update_key);
 
-    void acceptTunnel(HostSequenceID host_seq);
+  void acceptTunnel(HostSequenceID host_seq);
 
-    void openTunnel(int address_to, int seq);
+  void openTunnel(int address_to, int seq);
 
-    void closeTunnel(HostSequenceID address_to);
+  void closeTunnel(HostSequenceID address_to);
 
-    void routeEvent(HostSequenceID from, ARMIEvent event);
+  void routeEvent(HostSequenceID from, ARMIEvent event);
 
-    void multicastEvent(ARMIEvent event);
+  void multicastEvent(ARMIEvent event);
 
-    void setMulticast(HostSequenceID[] addresses);
+  void setMulticast(HostSequenceID[] addresses);
 
-    void gameStartedNotify(GameSession game_session);
+  void gameStartedNotify(GameSession game_session);
 
-    void gameQuitNotify(String nick);
+  void gameQuitNotify(String nick);
 
-    void freeQuitStopNotify();
+  void freeQuitStopNotify();
 
-    void gameLostNotify();
+  void gameLostNotify();
 
-    void gameWonNotify();
+  void gameWonNotify();
 
-    void updateGameStatus(int tick, int[] status);
+  void updateGameStatus(int tick, int[] status);
 }

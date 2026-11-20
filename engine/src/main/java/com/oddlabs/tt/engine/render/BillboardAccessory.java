@@ -1,11 +1,9 @@
 package com.oddlabs.tt.engine.render;
 
-/**
- * An accessory that requires camera billboard alignment.
- */
+/// An accessory that requires camera billboard alignment.
 public interface BillboardAccessory extends AnimatedAccessory {
-    @Override
-    default boolean hasTeamColor() {
-        return false;
-    }
+  @Override
+  default boolean hasTeamColor() {
+    return false;
+  }
 }

@@ -4,10 +4,10 @@ package com.oddlabs.tt.simulation.player;
 @FunctionalInterface
 public interface PlayerCommandExecutor {
 
-    /**
-     * Executes the given command on this player context, validating entities and ownership.
-     *
-     * @param command the command to execute
-     */
-    void execute(PlayerCommand command);
+  /**
+   * Executes the given command on this player context, validating entities and ownership.
+   *
+   * @param command the command to execute
+   */
+  void execute(PlayerCommand command);
 }

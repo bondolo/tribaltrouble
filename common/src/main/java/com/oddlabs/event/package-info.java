@@ -1,6 +1,4 @@
-/**
- * Provides event dispatching and determinism tracking annotations.
- */
+/** Provides event dispatching and determinism tracking annotations. */
 @NullMarked
 package com.oddlabs.event;
 

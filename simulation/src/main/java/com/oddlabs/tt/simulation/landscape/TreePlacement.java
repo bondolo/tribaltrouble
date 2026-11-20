@@ -6,5 +6,4 @@ package com.oddlabs.tt.simulation.landscape;
  * @param x grid column coordinate
  * @param y grid row coordinate
  */
-public record TreePlacement(int x, int y) implements Placement {
-}
+public record TreePlacement(int x, int y) implements Placement {}

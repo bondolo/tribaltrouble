@@ -1,6 +1,4 @@
-/**
- * Matchmaking server services and session coordination.
- */
+/** Matchmaking server services and session coordination. */
 @NullMarked
 package com.oddlabs.matchserver;
 

@@ -1,65 +1,61 @@
 package com.oddlabs.tt.content.campaign;
 
-import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.trigger.IntervalTrigger;
+import java.util.ResourceBundle;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ResourceBundle;
-
-/**
- * Monitors campaign levels to check for the defeat condition, such as chieftain death or unit loss.
- */
+/// Monitors campaign levels to check for the defeat condition, such as chieftain death or unit loss.
 public final class DefeatTrigger extends IntervalTrigger {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(DefeatTrigger.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(DefeatTrigger.class.getName());
 
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  private final Campaign campaign;
+  private final Unit chieftain;
+  private final @Nullable Runnable runnable;
+  private final WorldViewer viewer;
+
+  private boolean triggered_by_chieftain_death = false;
+
+  public DefeatTrigger(WorldViewer viewer, Campaign campaign, Unit chieftain) {
+    this(viewer, campaign, chieftain, null);
+  }
+
+  public DefeatTrigger(WorldViewer viewer, Campaign campaign, Unit chieftain, @Nullable Runnable runnable) {
+    super(viewer.getWorld(), .5f, 0f);
+    this.viewer = viewer;
+    this.campaign = campaign;
+    this.chieftain = chieftain;
+    this.runnable = runnable;
+  }
+
+  @Override
+  protected void check() {
+    Player current = viewer.getLocalPlayer();
+    if (chieftain != current.getChieftain().orElse(null)) {
+      triggered_by_chieftain_death = true;
+      triggered();
     }
 
-    private final Campaign campaign;
-    private final Unit chieftain;
-    private final @Nullable Runnable runnable;
-    private final WorldViewer viewer;
-
-    private boolean triggered_by_chieftain_death = false;
-
-    public DefeatTrigger(WorldViewer viewer, Campaign campaign, Unit chieftain) {
-        this(viewer, campaign, chieftain, null);
+    int units = current.getUnitCountContainer().getNumSupplies();
+    if (units == 0 && !current.hasActiveChieftain()) {
+      triggered();
     }
+  }
 
-    public DefeatTrigger(WorldViewer viewer, Campaign campaign, Unit chieftain,
-            @Nullable Runnable runnable) {
-        super(viewer.getWorld(), .5f, 0f);
-        this.viewer = viewer;
-        this.campaign = campaign;
-        this.chieftain = chieftain;
-        this.runnable = runnable;
+  @Override
+  protected void done() {
+    if (runnable == null) {
+      String game_over_message = i18n(triggered_by_chieftain_death ? "defeat_by_chieftain" : "defeat");
+      campaign.defeated(viewer, game_over_message);
+    } else {
+      runnable.run();
     }
-
-    @Override
-    protected void check() {
-        Player current = viewer.getLocalPlayer();
-        if (chieftain != current.getChieftain().orElse(null)) {
-            triggered_by_chieftain_death = true;
-            triggered();
-        }
-
-        int units = current.getUnitCountContainer().getNumSupplies();
-        if (units == 0 && !current.hasActiveChieftain()) {
-            triggered();
-        }
-    }
-
-    @Override
-    protected void done() {
-        if (runnable == null) {
-            String game_over_message = i18n(triggered_by_chieftain_death ? "defeat_by_chieftain" : "defeat");
-            campaign.defeated(viewer, game_over_message);
-        } else {
-            runnable.run();
-        }
-    }
+  }
 }

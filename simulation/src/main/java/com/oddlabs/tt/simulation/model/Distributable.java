@@ -1,15 +1,12 @@
 package com.oddlabs.tt.simulation.model;
 
-/**
- * Marker interface for simulation objects that can be identified and distributed over network events.
- */
+/// Marker interface for simulation objects that can be identified and distributed over network events.
 public interface Distributable {
-    int NO_ID = 0;
+  int NO_ID = 0;
 
-    default int getId() {
-        return NO_ID;
-    }
+  default int getId() {
+    return NO_ID;
+  }
 
-    default void setId(int id) {
-    }
+  default void setId(int id) {}
 }

@@ -1,70 +1,66 @@
 package com.oddlabs.tt.window;
 
-import com.oddlabs.tt.base.global.PropertiesSerializer;
-import com.oddlabs.tt.base.global.SettingsRegistry;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.Properties;
-
 import static com.oddlabs.tt.base.global.SettingsHelper.getBoolean;
 import static com.oddlabs.tt.base.global.SettingsHelper.getInt;
 import static com.oddlabs.tt.base.global.SettingsHelper.setProperty;
 
-/**
- * Display, resolution, window mode, and presentation settings.
- */
+import com.oddlabs.tt.base.global.PropertiesSerializer;
+import com.oddlabs.tt.base.global.SettingsRegistry;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.Properties;
+
+/// Display, resolution, window mode, and presentation settings.
 public final class WindowSettings implements Serializable, PropertiesSerializer {
-    @Serial
-    private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
-    /**
-     * Retrieves the {@link WindowSettings} instance registered with the given settings registry.
-     *
-     * @param settings the settings registry
-     * @return the registered window settings
-     */
-    public static WindowSettings from(SettingsRegistry settings) {
-        return settings.get(WindowSettings.class);
-    }
+  /**
+   * Retrieves the {@link WindowSettings} instance registered with the given settings registry.
+   *
+   * @param `settings` the settings registry
+   * @return the registered window settings
+   */
+  public static WindowSettings from(SettingsRegistry settings) {
+    return settings.get(WindowSettings.class);
+  }
 
-    public int view_width = -1;
-    public int view_height = -1;
-    public int view_freq = -1;
-    public int view_samples = 4;
+  public int view_width = -1;
+  public int view_height = -1;
+  public int view_freq = -1;
+  public int view_samples = 4;
 
-    public int new_view_width = -1;
-    public int new_view_height = -1;
-    public int new_view_freq = -1;
-    public int new_view_samples = 4;
+  public int new_view_width = -1;
+  public int new_view_height = -1;
+  public int new_view_freq = -1;
+  public int new_view_samples = 4;
 
-    public boolean fullscreen = true;
-    public final boolean vsync = true;
+  public boolean fullscreen = true;
+  public final boolean vsync = true;
 
-    @Override
-    public void saveToProperties(Properties props) {
-        WindowSettings defaults = new WindowSettings();
-        setProperty(props, "view_width", view_width, defaults.view_width);
-        setProperty(props, "view_height", view_height, defaults.view_height);
-        setProperty(props, "view_freq", view_freq, defaults.view_freq);
-        setProperty(props, "new_view_width", new_view_width, defaults.new_view_width);
-        setProperty(props, "new_view_height", new_view_height, defaults.new_view_height);
-        setProperty(props, "new_view_freq", new_view_freq, defaults.new_view_freq);
-        setProperty(props, "new_view_samples", new_view_samples, defaults.new_view_samples);
-        setProperty(props, "fullscreen", fullscreen, defaults.fullscreen);
-        setProperty(props, "view_samples", view_samples, defaults.view_samples);
-    }
+  @Override
+  public void saveToProperties(Properties props) {
+    WindowSettings defaults = new WindowSettings();
+    setProperty(props, "view_width", view_width, defaults.view_width);
+    setProperty(props, "view_height", view_height, defaults.view_height);
+    setProperty(props, "view_freq", view_freq, defaults.view_freq);
+    setProperty(props, "new_view_width", new_view_width, defaults.new_view_width);
+    setProperty(props, "new_view_height", new_view_height, defaults.new_view_height);
+    setProperty(props, "new_view_freq", new_view_freq, defaults.new_view_freq);
+    setProperty(props, "new_view_samples", new_view_samples, defaults.new_view_samples);
+    setProperty(props, "fullscreen", fullscreen, defaults.fullscreen);
+    setProperty(props, "view_samples", view_samples, defaults.view_samples);
+  }
 
-    @Override
-    public void loadFromProperties(Properties props) {
-        view_width = getInt(props, "view_width", view_width);
-        view_height = getInt(props, "view_height", view_height);
-        view_freq = getInt(props, "view_freq", view_freq);
-        new_view_width = getInt(props, "new_view_width", new_view_width);
-        new_view_height = getInt(props, "new_view_height", new_view_height);
-        new_view_freq = getInt(props, "new_view_freq", new_view_freq);
-        new_view_samples = getInt(props, "new_view_samples", new_view_samples);
-        fullscreen = getBoolean(props, "fullscreen", fullscreen);
-        view_samples = getInt(props, "view_samples", view_samples);
-    }
+  @Override
+  public void loadFromProperties(Properties props) {
+    view_width = getInt(props, "view_width", view_width);
+    view_height = getInt(props, "view_height", view_height);
+    view_freq = getInt(props, "view_freq", view_freq);
+    new_view_width = getInt(props, "new_view_width", new_view_width);
+    new_view_height = getInt(props, "new_view_height", new_view_height);
+    new_view_freq = getInt(props, "new_view_freq", new_view_freq);
+    new_view_samples = getInt(props, "new_view_samples", new_view_samples);
+    fullscreen = getBoolean(props, "fullscreen", fullscreen);
+    view_samples = getInt(props, "view_samples", view_samples);
+  }
 }

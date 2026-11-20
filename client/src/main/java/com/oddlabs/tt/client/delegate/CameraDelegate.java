@@ -5,61 +5,59 @@ import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.input.InputEvent;
 
-/**
- * Bridges user interface input events and viewport projection with an active camera.
- */
+/// Bridges user interface input events and viewport projection with an active camera.
 public abstract class CameraDelegate<C extends Camera> extends Delegate {
-    private final GUIRoot gui_root;
-    private C camera;
+  private final GUIRoot gui_root;
+  private C camera;
 
-    public CameraDelegate(GUIRoot gui_root, C camera) {
-        this.camera = camera;
-        this.gui_root = gui_root;
-    }
+  public CameraDelegate(GUIRoot gui_root, C camera) {
+    this.camera = camera;
+    this.gui_root = gui_root;
+  }
 
-    public final GUIRoot getGUIRoot() {
-        return gui_root;
-    }
+  public final GUIRoot getGUIRoot() {
+    return gui_root;
+  }
 
-    public final void setCamera(C camera) {
-        this.camera = camera;
-    }
+  public final void setCamera(C camera) {
+    this.camera = camera;
+  }
 
-    public final C getCamera() {
-        return camera;
-    }
+  public final C getCamera() {
+    return camera;
+  }
 
-    @Override
-    public final CameraState getCameraState() {
-        return camera.getState();
-    }
+  @Override
+  public final CameraState getCameraState() {
+    return camera.getState();
+  }
 
-    @Override
-    public void updateView(int width, int height) {
-        camera.updateView(width, height);
-    }
+  @Override
+  public void updateView(int width, int height) {
+    camera.updateView(width, height);
+  }
 
-    @Override
-    public void handleInput(InputEvent event) {
-        camera.handleInput(event);
-        if (!event.isConsumed()) {
-            super.handleInput(event);
-        }
+  @Override
+  public void handleInput(InputEvent event) {
+    camera.handleInput(event);
+    if (!event.isConsumed()) {
+      super.handleInput(event);
     }
+  }
 
-    @Override
-    protected void doAdd() {
-        super.doAdd();
-        getCamera().enable();
-    }
+  @Override
+  protected void doAdd() {
+    super.doAdd();
+    getCamera().enable();
+  }
 
-    @Override
-    protected void doRemove() {
-        super.doRemove();
-        getCamera().disable();
-    }
+  @Override
+  protected void doRemove() {
+    super.doRemove();
+    getCamera().disable();
+  }
 
-    public final void pop() {
-        gui_root.removeDelegate(this);
-    }
+  public final void pop() {
+    gui_root.removeDelegate(this);
+  }
 }

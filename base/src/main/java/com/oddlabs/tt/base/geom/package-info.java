@@ -1,6 +1,4 @@
-/**
- * Geometric primitives and spatial bounds providers.
- */
+/** Geometric primitives and spatial bounds providers. */
 @NullMarked
 package com.oddlabs.tt.base.geom;
 

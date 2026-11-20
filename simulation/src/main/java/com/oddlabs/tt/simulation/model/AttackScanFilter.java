@@ -6,68 +6,67 @@ import com.oddlabs.tt.simulation.player.Player;
 import org.jspecify.annotations.Nullable;
 
 public final class AttackScanFilter implements ScanFilter {
-    public enum Priority {
-        NONE(0),
-        QUARTERS(1),
-        ARMORY(1),
-        TOWER(2),
-        PEON(3),
-        WARRIOR(4); // also chieftain
+  public enum Priority {
+    NONE(0),
+    QUARTERS(1),
+    ARMORY(1),
+    TOWER(2),
+    PEON(3),
+    WARRIOR(4); // also chieftain
 
-        public final int value;
+    public final int value;
 
-        Priority(int value) {
-            this.value = value;
-        }
+    Priority(int value) {
+      this.value = value;
     }
+  }
 
-    public static final int UNIT_RANGE = 8;
-    public static final int TOWER_RANGE = (int) (RaceData.THROW_RANGE
-            + MountUnitContainer.ATTACK_RANGE_INCREASE);
+  public static final int UNIT_RANGE = 8;
+  public static final int TOWER_RANGE = (int) (RaceData.THROW_RANGE + MountUnitContainer.ATTACK_RANGE_INCREASE);
 
-    private final int max_range;
+  private final int max_range;
 
-    private final Player owner;
+  private final Player owner;
 
-    private @Nullable Selectable<?> target = null;
-    private Priority target_priority = Priority.NONE;
+  private @Nullable Selectable<?> target = null;
+  private Priority target_priority = Priority.NONE;
 
-    public AttackScanFilter(Player owner, int max_range) {
-        this.owner = owner;
-        this.max_range = max_range;
+  public AttackScanFilter(Player owner, int max_range) {
+    this.owner = owner;
+    this.max_range = max_range;
+  }
+
+  public @Nullable Selectable<?> removeTarget() {
+    Selectable<?> result = target;
+    target = null;
+    target_priority = Priority.NONE;
+    return result;
+  }
+
+  @Override
+  public int getMinRadius() {
+    return 1;
+  }
+
+  @Override
+  public int getMaxRadius() {
+    return max_range;
+  }
+
+  @Override
+  public boolean requiresOccupant() {
+    return true;
+  }
+
+  @Override
+  public boolean filter(int grid_x, int grid_y, @Nullable Occupant occ) {
+    if (occ instanceof Selectable<?> s && owner.isEnemy(s.getOwner())) {
+      Priority priority = s.getAttackPriority();
+      if (target_priority.value < priority.value) {
+        target_priority = priority;
+        target = s;
+      }
     }
-
-    public @Nullable Selectable<?> removeTarget() {
-        Selectable<?> result = target;
-        target = null;
-        target_priority = Priority.NONE;
-        return result;
-    }
-
-    @Override
-    public int getMinRadius() {
-        return 1;
-    }
-
-    @Override
-    public int getMaxRadius() {
-        return max_range;
-    }
-
-    @Override
-    public boolean requiresOccupant() {
-        return true;
-    }
-
-    @Override
-    public boolean filter(int grid_x, int grid_y, @Nullable Occupant occ) {
-        if (occ instanceof Selectable<?> s && owner.isEnemy(s.getOwner())) {
-            Priority priority = s.getAttackPriority();
-            if (target_priority.value < priority.value) {
-                target_priority = priority;
-                target = s;
-            }
-        }
-        return false;
-    }
+    return false;
+  }
 }

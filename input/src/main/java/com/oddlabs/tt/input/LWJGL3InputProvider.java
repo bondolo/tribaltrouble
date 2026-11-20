@@ -1,20 +1,5 @@
 package com.oddlabs.tt.input;
 
-import com.oddlabs.tt.window.LWJGL3Window;
-import com.oddlabs.tt.window.WindowEventListener;
-import org.jspecify.annotations.Nullable;
-import org.lwjgl.sdl.SDL_Event;
-import org.lwjgl.sdl.SDL_KeyboardEvent;
-import org.lwjgl.sdl.SDL_MouseButtonEvent;
-import org.lwjgl.sdl.SDL_MouseMotionEvent;
-import org.lwjgl.sdl.SDL_MouseWheelEvent;
-import org.lwjgl.system.MemoryUtil;
-
-import java.nio.ByteBuffer;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.logging.Logger;
-
 import static org.lwjgl.sdl.SDLEvents.SDL_EVENT_KEY_DOWN;
 import static org.lwjgl.sdl.SDLEvents.SDL_EVENT_KEY_UP;
 import static org.lwjgl.sdl.SDLEvents.SDL_EVENT_MOUSE_BUTTON_DOWN;
@@ -33,362 +18,375 @@ import static org.lwjgl.sdl.SDLMouse.SDL_SetWindowRelativeMouseMode;
 import static org.lwjgl.sdl.SDLMouse.SDL_ShowCursor;
 import static org.lwjgl.sdl.SDLMouse.SDL_WarpMouseInWindow;
 
-/**
- * SDL3 based implementation of the InputProvider interface.
- */
+import com.oddlabs.tt.window.LWJGL3Window;
+import com.oddlabs.tt.window.WindowEventListener;
+import java.nio.ByteBuffer;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.logging.Logger;
+import org.jspecify.annotations.Nullable;
+import org.lwjgl.sdl.SDL_Event;
+import org.lwjgl.sdl.SDL_KeyboardEvent;
+import org.lwjgl.sdl.SDL_MouseButtonEvent;
+import org.lwjgl.sdl.SDL_MouseMotionEvent;
+import org.lwjgl.sdl.SDL_MouseWheelEvent;
+import org.lwjgl.system.MemoryUtil;
+
+/// SDL3 based implementation of the InputProvider interface.
 public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEventListener {
 
-    private static final Logger logger = Logger.getLogger(LWJGL3InputProvider.class.getName());
+  private static final Logger logger = Logger.getLogger(LWJGL3InputProvider.class.getName());
 
-    private final LWJGL3Window window;
-    private long windowHandle;
-    private @Nullable Runnable focusGainedCallback;
+  private final LWJGL3Window window;
+  private long windowHandle;
+  private @Nullable Runnable focusGainedCallback;
 
-    // Keyboard State
-    // @GuardedBy("this")
-    private final Deque<KeyEvent> keyEvents = new ArrayDeque<>();
-    private @Nullable KeyEvent currentKeyEvent;
-    private @Nullable ByteBuffer keyboardState;
+  // Keyboard State
+  // @GuardedBy("this")
+  private final Deque<KeyEvent> keyEvents = new ArrayDeque<>();
+  private @Nullable KeyEvent currentKeyEvent;
+  private @Nullable ByteBuffer keyboardState;
 
-    // Mouse State
-    private final Deque<MouseEvent> mouseEvents = new ArrayDeque<>();
-    private @Nullable MouseEvent currentMouseEvent;
-    private double mouseX;
-    private double mouseY;
-    private int mouseButtonMask;
-    private int lastPhysicalX = Integer.MIN_VALUE;
-    private int lastPhysicalY = Integer.MIN_VALUE;
-    private boolean cursorVisible = false;
+  // Mouse State
+  private final Deque<MouseEvent> mouseEvents = new ArrayDeque<>();
+  private @Nullable MouseEvent currentMouseEvent;
+  private double mouseX;
+  private double mouseY;
+  private int mouseButtonMask;
+  private int lastPhysicalX = Integer.MIN_VALUE;
+  private int lastPhysicalY = Integer.MIN_VALUE;
+  private boolean cursorVisible = false;
 
-    private static class KeyEvent {
-        final int key;
-        final boolean pressed;
-        final int scancode;
-        final int mods;
-        final boolean repeat;
-        int codepoint;
+  private static class KeyEvent {
+    final int key;
+    final boolean pressed;
+    final int scancode;
+    final int mods;
+    final boolean repeat;
+    int codepoint;
 
-        KeyEvent(int key, boolean pressed, int scancode, int mods, boolean repeat) {
-            this.key = key;
-            this.pressed = pressed;
-            this.scancode = scancode;
-            this.mods = mods;
-            this.repeat = repeat;
-        }
-
-        KeyEvent(int key, boolean pressed, int scancode, int mods, boolean repeat, int codepoint) {
-            this(key, pressed, scancode, mods, repeat);
-            this.codepoint = codepoint;
-        }
+    KeyEvent(int key, boolean pressed, int scancode, int mods, boolean repeat) {
+      this.key = key;
+      this.pressed = pressed;
+      this.scancode = scancode;
+      this.mods = mods;
+      this.repeat = repeat;
     }
 
-    private record MouseEvent(int button, boolean state, int x, int y, int dWheel, int dWheelX) {
+    KeyEvent(int key, boolean pressed, int scancode, int mods, boolean repeat, int codepoint) {
+      this(key, pressed, scancode, mods, repeat);
+      this.codepoint = codepoint;
     }
+  }
 
-    public LWJGL3InputProvider(LWJGL3Window win) {
-        this.window = win;
+  private record MouseEvent(int button, boolean state, int x, int y, int dWheel, int dWheelX) {}
+
+  public LWJGL3InputProvider(LWJGL3Window win) {
+    this.window = win;
+  }
+
+  public void setFocusGainedCallback(@Nullable Runnable callback) {
+    this.focusGainedCallback = callback;
+  }
+
+  @Override
+  public void onFocusGained() {
+    if (focusGainedCallback != null) {
+      focusGainedCallback.run();
     }
+  }
 
-    public void setFocusGainedCallback(@Nullable Runnable callback) {
-        this.focusGainedCallback = callback;
+  @Override
+  public void handleSDLEvent(SDL_Event event) {
+    processEvent(event);
+  }
+
+  public void initCallbacks() {
+    this.windowHandle = window.getHandle();
+    if (windowHandle == MemoryUtil.NULL) {
+      throw new IllegalStateException("Window handle is NULL. Window might not be created yet.");
     }
+    window.setEventListener(this);
+    SDL_StartTextInput(windowHandle);
+    this.keyboardState = SDL_GetKeyboardState();
+    SDL_HideCursor();
+  }
 
-    @Override
-    public void onFocusGained() {
-        if (focusGainedCallback != null) {
-            focusGainedCallback.run();
-        }
-    }
+  public void processEvent(SDL_Event event) {
+    switch (event.type()) {
+      case SDL_EVENT_KEY_DOWN, SDL_EVENT_KEY_UP -> {
+        SDL_KeyboardEvent keyEvent = event.key();
+        int scancode = keyEvent.scancode();
+        boolean pressed = event.type() == SDL_EVENT_KEY_DOWN;
+        int mods = keyEvent.mod();
+        boolean repeat = keyEvent.repeat();
 
-    @Override
-    public void handleSDLEvent(SDL_Event event) {
-        processEvent(event);
-    }
-
-    public void initCallbacks() {
-        this.windowHandle = window.getHandle();
-        if (windowHandle == MemoryUtil.NULL) {
-            throw new IllegalStateException("Window handle is NULL. Window might not be created yet.");
-        }
-        window.setEventListener(this);
-        SDL_StartTextInput(windowHandle);
-        this.keyboardState = SDL_GetKeyboardState();
-        SDL_HideCursor();
-    }
-
-    public void processEvent(SDL_Event event) {
-        switch (event.type()) {
-            case SDL_EVENT_KEY_DOWN, SDL_EVENT_KEY_UP -> {
-                SDL_KeyboardEvent keyEvent = event.key();
-                int scancode = keyEvent.scancode();
-                boolean pressed = event.type() == SDL_EVENT_KEY_DOWN;
-                int mods = keyEvent.mod();
-                boolean repeat = keyEvent.repeat();
-
-                var e = new KeyEvent(scancode, pressed, scancode, mods, repeat);
-                synchronized (keyEvents) {
-                    keyEvents.add(e);
-                }
-            }
-            case SDL_EVENT_TEXT_INPUT -> {
-                // TODO: Handle multi-codepoint strings from SDL text input (e.g., for IME/emoji).
-                // Currently only the first codepoint is taken.
-                String text = event.text().textString();
-                if (!text.isEmpty()) {
-                    int c = text.codePointAt(0);
-                    synchronized (keyEvents) {
-                        if (!keyEvents.isEmpty()) {
-                            KeyEvent last = keyEvents.getLast();
-                            if (last.pressed) {
-                                last.codepoint = c;
-                                return;
-                            }
-                        }
-                        keyEvents.add(new KeyEvent(0, true, 0, 0, false, c));
-                    }
-                }
-            }
-            case SDL_EVENT_MOUSE_MOTION -> {
-                SDL_MouseMotionEvent motionEvent = event.motion();
-                float density = window.getPixelDensity();
-                int framebufferHeight = window.getHeight();
-                if (isGrabbed()) {
-                    this.mouseX += Math.round(motionEvent.xrel() * density);
-                    this.mouseY -= Math.round(motionEvent.yrel() * density);
-                } else {
-                    this.mouseX = Math.round(motionEvent.x() * density);
-                    this.mouseY = framebufferHeight - Math.round(motionEvent.y() * density) - 1;
-                }
-                int intX = (int) mouseX;
-                int intY = (int) mouseY;
-                synchronized (mouseEvents) {
-                    MouseEvent last = mouseEvents.peekLast();
-                    if (last != null) {
-                        if (last.x() == intX && last.y() == intY) {
-                            return;
-                        }
-                        if (last.button() == -1 && last.dWheel() == 0 && last.dWheelX() == 0) {
-                            mouseEvents.removeLast();
-                        }
-                    } else {
-                        if (lastPhysicalX == intX && lastPhysicalY == intY) {
-                            return;
-                        }
-                    }
-                    mouseEvents.add(new MouseEvent(-1, false, intX, intY, 0, 0));
-                }
-            }
-            case SDL_EVENT_MOUSE_BUTTON_DOWN, SDL_EVENT_MOUSE_BUTTON_UP -> {
-                SDL_MouseButtonEvent buttonEvent = event.button();
-                boolean pressed = event.type() == SDL_EVENT_MOUSE_BUTTON_DOWN;
-                int sdlButton = buttonEvent.button();
-                int button = switch (sdlButton) {
-                    case 1 -> 0; // SDL_BUTTON_LEFT -> Left
-                    case 3 -> 1; // SDL_BUTTON_RIGHT -> Right
-                    case 2 -> 2; // SDL_BUTTON_MIDDLE -> Middle
-                    default -> sdlButton - 1;
-                };
-                if (button >= 0 && button < 32) {
-                    if (pressed) {
-                        mouseButtonMask |= (1 << button);
-                    } else {
-                        mouseButtonMask &= ~(1 << button);
-                    }
-                }
-                synchronized (mouseEvents) {
-                    mouseEvents.add(new MouseEvent(button, pressed, (int) mouseX, (int) mouseY, 0, 0));
-                }
-            }
-            case SDL_EVENT_MOUSE_WHEEL -> {
-                SDL_MouseWheelEvent wheelEvent = event.wheel();
-                synchronized (mouseEvents) {
-                    mouseEvents.add(new MouseEvent(-1, false, (int) mouseX, (int) mouseY, (int) (wheelEvent.y()
-                            * 120), (int) (wheelEvent.x() * 120)));
-                }
-            }
-        }
-    }
-
-    @Override
-    public void close() {
-        setNativeCursor(null);
-        SDL_ShowCursor();
-        if (windowHandle != MemoryUtil.NULL) {
-            SDL_StopTextInput(windowHandle);
-            windowHandle = MemoryUtil.NULL;
-        }
-        window.setEventListener(null);
-    }
-
-    @Override
-    public void pollKeyboard() {
-        // Events populated by callbacks
-    }
-
-    @Override
-    public boolean nextKeyboardEvent() {
+        var e = new KeyEvent(scancode, pressed, scancode, mods, repeat);
         synchronized (keyEvents) {
-            if (keyEvents.isEmpty()) return false;
-            currentKeyEvent = keyEvents.poll();
-            return true;
+          keyEvents.add(e);
         }
-    }
-
-    @Override
-    public int getEventKey() {
-        return currentKeyEvent != null ? currentKeyEvent.key : 0;
-    }
-
-    @Override
-    public boolean getEventKeyState() {
-        return currentKeyEvent != null && currentKeyEvent.pressed;
-    }
-
-    @Override
-    public int getEventKeyMods() {
-        return currentKeyEvent != null ? currentKeyEvent.mods : 0;
-    }
-
-    @Override
-    public int getEventCodepoint() {
-        return currentKeyEvent != null ? currentKeyEvent.codepoint : 0;
-    }
-
-    @Override
-    public boolean isRepeatEvent() {
-        return currentKeyEvent != null && currentKeyEvent.repeat;
-    }
-
-    @Override
-    public boolean isKeyDown(int keyCode) {
-        ByteBuffer state = this.keyboardState;
-        if (state == null) {
-            state = SDL_GetKeyboardState();
-            this.keyboardState = state;
+      }
+      case SDL_EVENT_TEXT_INPUT -> {
+        // TODO: Handle multi-codepoint strings from SDL text input (e.g., for IME/emoji).
+        // Currently only the first codepoint is taken.
+        String text = event.text().textString();
+        if (!text.isEmpty()) {
+          int c = text.codePointAt(0);
+          synchronized (keyEvents) {
+            if (!keyEvents.isEmpty()) {
+              KeyEvent last = keyEvents.getLast();
+              if (last.pressed) {
+                last.codepoint = c;
+                return;
+              }
+            }
+            keyEvents.add(new KeyEvent(0, true, 0, 0, false, c));
+          }
         }
-        return state != null && keyCode >= 0 && keyCode < state.limit() && state.get(keyCode) != 0;
-    }
-
-    @Override
-    public void pollMouse() {
-        // Populated by processEvent
-    }
-
-    @Override
-    public boolean nextMouseEvent() {
+      }
+      case SDL_EVENT_MOUSE_MOTION -> {
+        SDL_MouseMotionEvent motionEvent = event.motion();
+        float density = window.getPixelDensity();
+        int framebufferHeight = window.getHeight();
+        if (isGrabbed()) {
+          this.mouseX += Math.round(motionEvent.xrel() * density);
+          this.mouseY -= Math.round(motionEvent.yrel() * density);
+        } else {
+          this.mouseX = Math.round(motionEvent.x() * density);
+          this.mouseY = framebufferHeight - Math.round(motionEvent.y() * density) - 1;
+        }
+        int intX = (int) mouseX;
+        int intY = (int) mouseY;
         synchronized (mouseEvents) {
-            if (mouseEvents.isEmpty()) return false;
-            currentMouseEvent = mouseEvents.poll();
-            if (currentMouseEvent != null) {
-                lastPhysicalX = currentMouseEvent.x();
-                lastPhysicalY = currentMouseEvent.y();
+          MouseEvent last = mouseEvents.peekLast();
+          if (last != null) {
+            if (last.x() == intX && last.y() == intY) {
+              return;
             }
-            return true;
+            if (last.button() == -1 && last.dWheel() == 0 && last.dWheelX() == 0) {
+              mouseEvents.removeLast();
+            }
+          } else {
+            if (lastPhysicalX == intX && lastPhysicalY == intY) {
+              return;
+            }
+          }
+          mouseEvents.add(new MouseEvent(-1, false, intX, intY, 0, 0));
         }
-    }
-
-    @Override
-    public int getEventButton() {
-        return currentMouseEvent != null ? currentMouseEvent.button() : -1;
-    }
-
-    @Override
-    public boolean getEventButtonState() {
-        return currentMouseEvent != null && currentMouseEvent.state();
-    }
-
-    @Override
-    public int getEventDWheel() {
-        return currentMouseEvent != null ? currentMouseEvent.dWheel() : 0;
-    }
-
-    @Override
-    public int getEventDWheelX() {
-        return currentMouseEvent != null ? currentMouseEvent.dWheelX() : 0;
-    }
-
-    @Override
-    public int getEventX() {
-        return currentMouseEvent != null ? currentMouseEvent.x() : (int) mouseX;
-    }
-
-    @Override
-    public int getEventY() {
-        return currentMouseEvent != null ? currentMouseEvent.y() : (int) mouseY;
-    }
-
-    @Override
-    public int getMouseX() {
-        return (int) mouseX;
-    }
-
-    @Override
-    public int getMouseY() {
-        return (int) mouseY;
-    }
-
-    @Override
-    public boolean isButtonDown(int button) {
+      }
+      case SDL_EVENT_MOUSE_BUTTON_DOWN, SDL_EVENT_MOUSE_BUTTON_UP -> {
+        SDL_MouseButtonEvent buttonEvent = event.button();
+        boolean pressed = event.type() == SDL_EVENT_MOUSE_BUTTON_DOWN;
+        int sdlButton = buttonEvent.button();
+        int button =
+            switch (sdlButton) {
+              case 1 -> 0; // SDL_BUTTON_LEFT -> Left
+              case 3 -> 1; // SDL_BUTTON_RIGHT -> Right
+              case 2 -> 2; // SDL_BUTTON_MIDDLE -> Middle
+              default -> sdlButton - 1;
+            };
         if (button >= 0 && button < 32) {
-            return (mouseButtonMask & (1 << button)) != 0;
+          if (pressed) {
+            mouseButtonMask |= (1 << button);
+          } else {
+            mouseButtonMask &= ~(1 << button);
+          }
         }
-        return false;
-    }
-
-    @Override
-    public void setCursorPosition(int x, int y) {
-        if (windowHandle == MemoryUtil.NULL) return;
-        this.mouseX = x;
-        this.mouseY = y;
-        this.lastPhysicalX = x;
-        this.lastPhysicalY = y;
-        if (!isGrabbed()) {
-            float density = window.getPixelDensity();
-            float screenX = x / density;
-            float screenY = (window.getHeight() - y - 1) / density;
-            SDL_WarpMouseInWindow(windowHandle, screenX, screenY);
+        synchronized (mouseEvents) {
+          mouseEvents.add(new MouseEvent(button, pressed, (int) mouseX, (int) mouseY, 0, 0));
         }
-    }
-
-    @Override
-    public void setGrabbed(boolean grabbed) {
-        if (windowHandle == MemoryUtil.NULL) return;
-        SDL_SetWindowRelativeMouseMode(windowHandle, grabbed);
-    }
-
-    @Override
-    public boolean isGrabbed() {
-        if (windowHandle == MemoryUtil.NULL) return false;
-        return SDL_GetWindowRelativeMouseMode(windowHandle);
-    }
-
-    @Override
-    public void setCursorVisible(boolean visible) {
-        if (windowHandle == MemoryUtil.NULL) return;
-        this.cursorVisible = visible;
-        if (visible) {
-            SDL_ShowCursor();
-        } else {
-            SDL_HideCursor();
+      }
+      case SDL_EVENT_MOUSE_WHEEL -> {
+        SDL_MouseWheelEvent wheelEvent = event.wheel();
+        synchronized (mouseEvents) {
+          mouseEvents.add(
+              new MouseEvent(
+                  -1, false, (int) mouseX, (int) mouseY, (int) (wheelEvent.y() * 120), (int) (wheelEvent.x() * 120)));
         }
+      }
     }
+  }
 
-    @Override
-    public void setNativeCursor(@Nullable Long cursor) {
-        if (windowHandle == MemoryUtil.NULL) return;
-
-        if (null != cursor && cursor != MemoryUtil.NULL) {
-            SDL_SetCursor(cursor);
-        } else {
-            long defaultCursor = SDL_GetDefaultCursor();
-            if (defaultCursor != MemoryUtil.NULL) {
-                SDL_SetCursor(defaultCursor);
-            }
-        }
-        if (cursorVisible) {
-            SDL_ShowCursor();
-        } else {
-            SDL_HideCursor();
-        }
+  @Override
+  public void close() {
+    setNativeCursor(null);
+    SDL_ShowCursor();
+    if (windowHandle != MemoryUtil.NULL) {
+      SDL_StopTextInput(windowHandle);
+      windowHandle = MemoryUtil.NULL;
     }
+    window.setEventListener(null);
+  }
+
+  @Override
+  public void pollKeyboard() {
+    // Events populated by callbacks
+  }
+
+  @Override
+  public boolean nextKeyboardEvent() {
+    synchronized (keyEvents) {
+      if (keyEvents.isEmpty()) return false;
+      currentKeyEvent = keyEvents.poll();
+      return true;
+    }
+  }
+
+  @Override
+  public int getEventKey() {
+    return currentKeyEvent != null ? currentKeyEvent.key : 0;
+  }
+
+  @Override
+  public boolean getEventKeyState() {
+    return currentKeyEvent != null && currentKeyEvent.pressed;
+  }
+
+  @Override
+  public int getEventKeyMods() {
+    return currentKeyEvent != null ? currentKeyEvent.mods : 0;
+  }
+
+  @Override
+  public int getEventCodepoint() {
+    return currentKeyEvent != null ? currentKeyEvent.codepoint : 0;
+  }
+
+  @Override
+  public boolean isRepeatEvent() {
+    return currentKeyEvent != null && currentKeyEvent.repeat;
+  }
+
+  @Override
+  public boolean isKeyDown(int keyCode) {
+    ByteBuffer state = this.keyboardState;
+    if (state == null) {
+      state = SDL_GetKeyboardState();
+      this.keyboardState = state;
+    }
+    return state != null && keyCode >= 0 && keyCode < state.limit() && state.get(keyCode) != 0;
+  }
+
+  @Override
+  public void pollMouse() {
+    // Populated by processEvent
+  }
+
+  @Override
+  public boolean nextMouseEvent() {
+    synchronized (mouseEvents) {
+      if (mouseEvents.isEmpty()) return false;
+      currentMouseEvent = mouseEvents.poll();
+      if (currentMouseEvent != null) {
+        lastPhysicalX = currentMouseEvent.x();
+        lastPhysicalY = currentMouseEvent.y();
+      }
+      return true;
+    }
+  }
+
+  @Override
+  public int getEventButton() {
+    return currentMouseEvent != null ? currentMouseEvent.button() : -1;
+  }
+
+  @Override
+  public boolean getEventButtonState() {
+    return currentMouseEvent != null && currentMouseEvent.state();
+  }
+
+  @Override
+  public int getEventDWheel() {
+    return currentMouseEvent != null ? currentMouseEvent.dWheel() : 0;
+  }
+
+  @Override
+  public int getEventDWheelX() {
+    return currentMouseEvent != null ? currentMouseEvent.dWheelX() : 0;
+  }
+
+  @Override
+  public int getEventX() {
+    return currentMouseEvent != null ? currentMouseEvent.x() : (int) mouseX;
+  }
+
+  @Override
+  public int getEventY() {
+    return currentMouseEvent != null ? currentMouseEvent.y() : (int) mouseY;
+  }
+
+  @Override
+  public int getMouseX() {
+    return (int) mouseX;
+  }
+
+  @Override
+  public int getMouseY() {
+    return (int) mouseY;
+  }
+
+  @Override
+  public boolean isButtonDown(int button) {
+    if (button >= 0 && button < 32) {
+      return (mouseButtonMask & (1 << button)) != 0;
+    }
+    return false;
+  }
+
+  @Override
+  public void setCursorPosition(int x, int y) {
+    if (windowHandle == MemoryUtil.NULL) return;
+    this.mouseX = x;
+    this.mouseY = y;
+    this.lastPhysicalX = x;
+    this.lastPhysicalY = y;
+    if (!isGrabbed()) {
+      float density = window.getPixelDensity();
+      float screenX = x / density;
+      float screenY = (window.getHeight() - y - 1) / density;
+      SDL_WarpMouseInWindow(windowHandle, screenX, screenY);
+    }
+  }
+
+  @Override
+  public void setGrabbed(boolean grabbed) {
+    if (windowHandle == MemoryUtil.NULL) return;
+    SDL_SetWindowRelativeMouseMode(windowHandle, grabbed);
+  }
+
+  @Override
+  public boolean isGrabbed() {
+    if (windowHandle == MemoryUtil.NULL) return false;
+    return SDL_GetWindowRelativeMouseMode(windowHandle);
+  }
+
+  @Override
+  public void setCursorVisible(boolean visible) {
+    if (windowHandle == MemoryUtil.NULL) return;
+    this.cursorVisible = visible;
+    if (visible) {
+      SDL_ShowCursor();
+    } else {
+      SDL_HideCursor();
+    }
+  }
+
+  @Override
+  public void setNativeCursor(@Nullable Long cursor) {
+    if (windowHandle == MemoryUtil.NULL) return;
+
+    if (null != cursor && cursor != MemoryUtil.NULL) {
+      SDL_SetCursor(cursor);
+    } else {
+      long defaultCursor = SDL_GetDefaultCursor();
+      if (defaultCursor != MemoryUtil.NULL) {
+        SDL_SetCursor(defaultCursor);
+      }
+    }
+    if (cursorVisible) {
+      SDL_ShowCursor();
+    } else {
+      SDL_HideCursor();
+    }
+  }
 }

@@ -1,24 +1,23 @@
 package com.oddlabs.tt.window;
 
-import org.joml.Vector2f;
-import org.jspecify.annotations.Nullable;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.sdl.SDLDialog;
-import org.lwjgl.sdl.SDL_DialogFileFilter;
-import org.lwjgl.sdl.SDL_DisplayMode;
-import org.lwjgl.sdl.SDL_Event;
-import org.lwjgl.sdl.SDL_KeyboardEvent;
-import org.lwjgl.sdl.SDL_Rect;
-import org.lwjgl.sdl.SDL_Surface;
-import org.lwjgl.stb.STBImage;
-import org.lwjgl.system.JNI;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.system.macosx.MacOSXLibrary;
-import org.lwjgl.system.macosx.ObjCRuntime;
+import static org.lwjgl.sdl.SDLError.SDL_GetError;
+import static org.lwjgl.sdl.SDLEvents.*;
+import static org.lwjgl.sdl.SDLInit.SDL_INIT_VIDEO;
+import static org.lwjgl.sdl.SDLInit.SDL_Init;
+import static org.lwjgl.sdl.SDLInit.SDL_Quit;
+import static org.lwjgl.sdl.SDLKeycode.SDL_KMOD_ALT;
+import static org.lwjgl.sdl.SDLMouse.SDL_GetDefaultCursor;
+import static org.lwjgl.sdl.SDLMouse.SDL_SetCursor;
+import static org.lwjgl.sdl.SDLMouse.SDL_ShowCursor;
+import static org.lwjgl.sdl.SDLPixels.SDL_BITSPERPIXEL;
+import static org.lwjgl.sdl.SDLPixels.SDL_PIXELFORMAT_ABGR8888;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F11;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_ENTER;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_RETURN;
+import static org.lwjgl.sdl.SDLStdinc.nSDL_free;
+import static org.lwjgl.sdl.SDLSurface.SDL_CreateSurfaceFrom;
+import static org.lwjgl.sdl.SDLSurface.SDL_DestroySurface;
+import static org.lwjgl.sdl.SDLVideo.*;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
@@ -43,1109 +42,1155 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.joml.Vector2f;
+import org.jspecify.annotations.Nullable;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.sdl.SDLDialog;
+import org.lwjgl.sdl.SDL_DialogFileFilter;
+import org.lwjgl.sdl.SDL_DisplayMode;
+import org.lwjgl.sdl.SDL_Event;
+import org.lwjgl.sdl.SDL_KeyboardEvent;
+import org.lwjgl.sdl.SDL_Rect;
+import org.lwjgl.sdl.SDL_Surface;
+import org.lwjgl.stb.STBImage;
+import org.lwjgl.system.JNI;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.system.macosx.MacOSXLibrary;
+import org.lwjgl.system.macosx.ObjCRuntime;
 
-import static org.lwjgl.sdl.SDLError.SDL_GetError;
-import static org.lwjgl.sdl.SDLEvents.*;
-import static org.lwjgl.sdl.SDLInit.SDL_INIT_VIDEO;
-import static org.lwjgl.sdl.SDLInit.SDL_Init;
-import static org.lwjgl.sdl.SDLInit.SDL_Quit;
-import static org.lwjgl.sdl.SDLKeycode.SDL_KMOD_ALT;
-import static org.lwjgl.sdl.SDLMouse.SDL_GetDefaultCursor;
-import static org.lwjgl.sdl.SDLMouse.SDL_SetCursor;
-import static org.lwjgl.sdl.SDLMouse.SDL_ShowCursor;
-import static org.lwjgl.sdl.SDLPixels.SDL_BITSPERPIXEL;
-import static org.lwjgl.sdl.SDLPixels.SDL_PIXELFORMAT_ABGR8888;
-import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F11;
-import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_ENTER;
-import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_RETURN;
-import static org.lwjgl.sdl.SDLStdinc.nSDL_free;
-import static org.lwjgl.sdl.SDLSurface.SDL_CreateSurfaceFrom;
-import static org.lwjgl.sdl.SDLSurface.SDL_DestroySurface;
-import static org.lwjgl.sdl.SDLVideo.*;
-
-/**
- * SDL 3 based implementation of the Window interface.
- */
+/// SDL 3 based implementation of the Window interface.
 public final class LWJGL3Window implements Window {
-    private static final Logger logger = Logger.getLogger(LWJGL3Window.class.getSimpleName());
-    private static final String os = System.getProperty("os.name").toLowerCase();
-    private static final boolean isMac = os.contains("mac");
+  private static final Logger logger = Logger.getLogger(LWJGL3Window.class.getSimpleName());
+  private static final String os = System.getProperty("os.name").toLowerCase();
+  private static final boolean isMac = os.contains("mac");
 
-    private static final boolean DEBUG = Boolean.getBoolean("com.oddlabs.tt.developer");
-    private static final AtomicBoolean initialized = new AtomicBoolean(false);
+  private static final boolean DEBUG = Boolean.getBoolean("com.oddlabs.tt.developer");
+  private static final AtomicBoolean initialized = new AtomicBoolean(false);
 
-    private static long objc_msgSend = MemoryUtil.NULL;
-    private static long nsAppClass = MemoryUtil.NULL;
-    private static long sharedApplicationSel = MemoryUtil.NULL;
-    private static long isActiveSel = MemoryUtil.NULL;
-    private static long nsApp = MemoryUtil.NULL;
+  private static long objc_msgSend = MemoryUtil.NULL;
+  private static long nsAppClass = MemoryUtil.NULL;
+  private static long sharedApplicationSel = MemoryUtil.NULL;
+  private static long isActiveSel = MemoryUtil.NULL;
+  private static long nsApp = MemoryUtil.NULL;
 
-    private static final int kDisplayModeNativeFlag = 0x02000000;
+  private static final int kDisplayModeNativeFlag = 0x02000000;
 
-    private static long cgMainDisplayID = MemoryUtil.NULL;
-    private static long cgDisplayCopyAllDisplayModes = MemoryUtil.NULL;
-    private static long cgDisplayModeGetIOFlags = MemoryUtil.NULL;
-    private static long cgDisplayModeGetPixelWidth = MemoryUtil.NULL;
-    private static long cgDisplayModeGetPixelHeight = MemoryUtil.NULL;
-    private static long cgDisplayModeGetWidth = MemoryUtil.NULL;
-    private static long cgDisplayModeGetHeight = MemoryUtil.NULL;
-    private static long cgDisplayModeGetRefreshRate = MemoryUtil.NULL;
-    private static long cfArrayGetCount = MemoryUtil.NULL;
-    private static long cfArrayGetValueAtIndex = MemoryUtil.NULL;
-    private static long cfRelease = MemoryUtil.NULL;
-    private static @Nullable MethodHandle cgDisplayScreenSizeHandle = null;
+  private static long cgMainDisplayID = MemoryUtil.NULL;
+  private static long cgDisplayCopyAllDisplayModes = MemoryUtil.NULL;
+  private static long cgDisplayModeGetIOFlags = MemoryUtil.NULL;
+  private static long cgDisplayModeGetPixelWidth = MemoryUtil.NULL;
+  private static long cgDisplayModeGetPixelHeight = MemoryUtil.NULL;
+  private static long cgDisplayModeGetWidth = MemoryUtil.NULL;
+  private static long cgDisplayModeGetHeight = MemoryUtil.NULL;
+  private static long cgDisplayModeGetRefreshRate = MemoryUtil.NULL;
+  private static long cfArrayGetCount = MemoryUtil.NULL;
+  private static long cfArrayGetValueAtIndex = MemoryUtil.NULL;
+  private static long cfRelease = MemoryUtil.NULL;
+  private static @Nullable MethodHandle cgDisplayScreenSizeHandle = null;
 
-    private static boolean macInitialized = false;
+  private static boolean macInitialized = false;
 
-    private static void initMacFFI() {
-        if (isMac && !macInitialized) {
-            try {
-                objc_msgSend = ObjCRuntime.getLibrary().getFunctionAddress("objc_msgSend");
-                nsAppClass = ObjCRuntime.objc_getClass("NSApplication");
-                sharedApplicationSel = ObjCRuntime.sel_getUid("sharedApplication");
-                isActiveSel = ObjCRuntime.sel_getUid("isActive");
-                nsApp = JNI.invokePPP(nsAppClass, sharedApplicationSel, objc_msgSend);
+  private static void initMacFFI() {
+    if (isMac && !macInitialized) {
+      try {
+        objc_msgSend = ObjCRuntime.getLibrary().getFunctionAddress("objc_msgSend");
+        nsAppClass = ObjCRuntime.objc_getClass("NSApplication");
+        sharedApplicationSel = ObjCRuntime.sel_getUid("sharedApplication");
+        isActiveSel = ObjCRuntime.sel_getUid("isActive");
+        nsApp = JNI.invokePPP(nsAppClass, sharedApplicationSel, objc_msgSend);
 
-                var cg = MacOSXLibrary.create("/System/Library/Frameworks/CoreGraphics.framework");
-                cgMainDisplayID = cg.getFunctionAddress("CGMainDisplayID");
-                cgDisplayCopyAllDisplayModes = cg.getFunctionAddress("CGDisplayCopyAllDisplayModes");
-                cgDisplayModeGetIOFlags = cg.getFunctionAddress("CGDisplayModeGetIOFlags");
-                cgDisplayModeGetPixelWidth = cg.getFunctionAddress("CGDisplayModeGetPixelWidth");
-                cgDisplayModeGetPixelHeight = cg.getFunctionAddress("CGDisplayModeGetPixelHeight");
-                cgDisplayModeGetWidth = cg.getFunctionAddress("CGDisplayModeGetWidth");
-                cgDisplayModeGetHeight = cg.getFunctionAddress("CGDisplayModeGetHeight");
-                cgDisplayModeGetRefreshRate = cg.getFunctionAddress("CGDisplayModeGetRefreshRate");
+        var cg = MacOSXLibrary.create("/System/Library/Frameworks/CoreGraphics.framework");
+        cgMainDisplayID = cg.getFunctionAddress("CGMainDisplayID");
+        cgDisplayCopyAllDisplayModes = cg.getFunctionAddress("CGDisplayCopyAllDisplayModes");
+        cgDisplayModeGetIOFlags = cg.getFunctionAddress("CGDisplayModeGetIOFlags");
+        cgDisplayModeGetPixelWidth = cg.getFunctionAddress("CGDisplayModeGetPixelWidth");
+        cgDisplayModeGetPixelHeight = cg.getFunctionAddress("CGDisplayModeGetPixelHeight");
+        cgDisplayModeGetWidth = cg.getFunctionAddress("CGDisplayModeGetWidth");
+        cgDisplayModeGetHeight = cg.getFunctionAddress("CGDisplayModeGetHeight");
+        cgDisplayModeGetRefreshRate = cg.getFunctionAddress("CGDisplayModeGetRefreshRate");
 
-                var cf = MacOSXLibrary.create("/System/Library/Frameworks/CoreFoundation.framework");
-                cfArrayGetCount = cf.getFunctionAddress("CFArrayGetCount");
-                cfArrayGetValueAtIndex = cf.getFunctionAddress("CFArrayGetValueAtIndex");
-                cfRelease = cf.getFunctionAddress("CFRelease");
+        var cf = MacOSXLibrary.create("/System/Library/Frameworks/CoreFoundation.framework");
+        cfArrayGetCount = cf.getFunctionAddress("CFArrayGetCount");
+        cfArrayGetValueAtIndex = cf.getFunctionAddress("CFArrayGetValueAtIndex");
+        cfRelease = cf.getFunctionAddress("CFRelease");
 
-                Linker linker = Linker.nativeLinker();
-                SymbolLookup cgLookup = SymbolLookup.libraryLookup(
-                        "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics", Arena.global());
-                cgLookup.find("CGDisplayScreenSize").ifPresent(fn -> {
-                    MemoryLayout cgSizeLayout = MemoryLayout.structLayout(
-                            ValueLayout.JAVA_DOUBLE.withName("width"),
-                            ValueLayout.JAVA_DOUBLE.withName("height")
-                    );
-                    cgDisplayScreenSizeHandle = linker.downcallHandle(fn,
-                            FunctionDescriptor.of(cgSizeLayout, ValueLayout.JAVA_INT));
-                });
+        Linker linker = Linker.nativeLinker();
+        SymbolLookup cgLookup =
+            SymbolLookup.libraryLookup(
+                "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics", Arena.global());
+        cgLookup
+            .find("CGDisplayScreenSize")
+            .ifPresent(fn -> {
+              MemoryLayout cgSizeLayout =
+                  MemoryLayout.structLayout(
+                      ValueLayout.JAVA_DOUBLE.withName("width"), ValueLayout.JAVA_DOUBLE.withName("height"));
+              cgDisplayScreenSizeHandle =
+                  linker.downcallHandle(fn, FunctionDescriptor.of(cgSizeLayout, ValueLayout.JAVA_INT));
+            });
 
-                macInitialized = true;
-            } catch (Throwable t) {
-                logger.log(Level.WARNING, "Failed to initialize macOS FFI caching", t);
-            }
-        }
+        macInitialized = true;
+      } catch (Throwable t) {
+        logger.log(Level.WARNING, "Failed to initialize macOS FFI caching", t);
+      }
     }
+  }
 
-    static @Nullable List<SerializableDisplayMode> getMacNativeDisplayModes() {
-        if (!isMac) return null;
-        initMacFFI();
-        if (!macInitialized) return null;
+  static @Nullable List<SerializableDisplayMode> getMacNativeDisplayModes() {
+    if (!isMac) return null;
+    initMacFFI();
+    if (!macInitialized) return null;
 
+    try {
+      int displayID = JNI.invokeI(cgMainDisplayID);
+      long modesArray = JNI.invokePP(displayID, MemoryUtil.NULL, cgDisplayCopyAllDisplayModes);
+      if (modesArray == MemoryUtil.NULL) return null;
+
+      int count = (int) JNI.invokePJ(modesArray, cfArrayGetCount);
+      int nativeW = 0;
+      int nativeH = 0;
+      for (int i = 0; i < count; i++) {
+        long mode = JNI.invokePPJ(modesArray, i, cfArrayGetValueAtIndex);
+        if (mode == MemoryUtil.NULL) continue;
+
+        int flags = JNI.invokePI(mode, cgDisplayModeGetIOFlags);
+        if ((flags & kDisplayModeNativeFlag) != 0) {
+          int w = (int) JNI.invokePJ(mode, cgDisplayModeGetPixelWidth);
+          int h = (int) JNI.invokePJ(mode, cgDisplayModeGetPixelHeight);
+          if (w > nativeW) nativeW = w;
+          if (h > nativeH) nativeH = h;
+        }
+      }
+
+      if (nativeW > 0 && nativeH > 0) {
+        logger.info("Mac native display panel dimensions: " + nativeW + "x" + nativeH);
+      }
+
+      List<SerializableDisplayMode> result = new ArrayList<>(count);
+      for (int i = 0; i < count; i++) {
+        long mode = JNI.invokePPJ(modesArray, i, cfArrayGetValueAtIndex);
+        if (mode == MemoryUtil.NULL) continue;
+
+        int flags = JNI.invokePI(mode, cgDisplayModeGetIOFlags);
+        boolean isUsableForDesktop = (flags & 0x00000004) != 0;
+        boolean isSafeForHardware = (flags & 0x00000008) != 0;
+        boolean isStretched = (flags & 0x04000000) != 0;
+        boolean isInterlaced = (flags & 0x00000020) != 0;
+        boolean isTelevisionOutput = (flags & 0x00200000) != 0;
+
+        if (!isUsableForDesktop || !isSafeForHardware || isStretched || isInterlaced || isTelevisionOutput) {
+          continue;
+        }
+
+        int w = (int) JNI.invokePJ(mode, cgDisplayModeGetPixelWidth);
+        int h = (int) JNI.invokePJ(mode, cgDisplayModeGetPixelHeight);
+        int pointW = cgDisplayModeGetWidth != MemoryUtil.NULL ? (int) JNI.invokePJ(mode, cgDisplayModeGetWidth) : w;
+        int pointH = cgDisplayModeGetHeight != MemoryUtil.NULL ? (int) JNI.invokePJ(mode, cgDisplayModeGetHeight) : h;
+
+        // Option 2 in fullscreen exclusive mode: hide non-1.0 density modes
+        if (pointW != w || pointH != h) {
+          continue;
+        }
+
+        if (nativeW > 0 && nativeH > 0 && (w > nativeW || h > nativeH)) {
+          continue;
+        }
+
+        if (w >= SerializableDisplayMode.MIN_WIDTH && h >= SerializableDisplayMode.MIN_HEIGHT) {
+          int freq = 60;
+          if (cgDisplayModeGetRefreshRate != MemoryUtil.NULL) {
+            double rate = JNI.invokePD(mode, cgDisplayModeGetRefreshRate);
+            if (rate > 0) {
+              freq = (int) Math.round(rate);
+            }
+          }
+          result.add(new SerializableDisplayMode(w, h, 32, freq));
+        }
+      }
+      JNI.invokePV(modesArray, cfRelease);
+      return result;
+    } catch (Throwable t) {
+      logger.log(Level.WARNING, "Failed to query CoreGraphics display modes via FFI", t);
+      return null;
+    }
+  }
+
+  private static boolean isMacApplicationActive() {
+    if (isMac) {
+      initMacFFI();
+      if (macInitialized && nsApp != MemoryUtil.NULL) {
         try {
-            int displayID = JNI.invokeI(cgMainDisplayID);
-            long modesArray = JNI.invokePP(displayID, MemoryUtil.NULL, cgDisplayCopyAllDisplayModes);
-            if (modesArray == MemoryUtil.NULL) return null;
-
-            int count = (int) JNI.invokePJ(modesArray, cfArrayGetCount);
-            int nativeW = 0;
-            int nativeH = 0;
-            for (int i = 0; i < count; i++) {
-                long mode = JNI.invokePPJ(modesArray, i, cfArrayGetValueAtIndex);
-                if (mode == MemoryUtil.NULL) continue;
-
-                int flags = JNI.invokePI(mode, cgDisplayModeGetIOFlags);
-                if ((flags & kDisplayModeNativeFlag) != 0) {
-                    int w = (int) JNI.invokePJ(mode, cgDisplayModeGetPixelWidth);
-                    int h = (int) JNI.invokePJ(mode, cgDisplayModeGetPixelHeight);
-                    if (w > nativeW) nativeW = w;
-                    if (h > nativeH) nativeH = h;
-                }
-            }
-
-            if (nativeW > 0 && nativeH > 0) {
-                logger.info("Mac native display panel dimensions: " + nativeW + "x" + nativeH);
-            }
-
-            List<SerializableDisplayMode> result = new ArrayList<>(count);
-            for (int i = 0; i < count; i++) {
-                long mode = JNI.invokePPJ(modesArray, i, cfArrayGetValueAtIndex);
-                if (mode == MemoryUtil.NULL) continue;
-
-                int flags = JNI.invokePI(mode, cgDisplayModeGetIOFlags);
-                boolean isUsableForDesktop = (flags & 0x00000004) != 0;
-                boolean isSafeForHardware = (flags & 0x00000008) != 0;
-                boolean isStretched = (flags & 0x04000000) != 0;
-                boolean isInterlaced = (flags & 0x00000020) != 0;
-                boolean isTelevisionOutput = (flags & 0x00200000) != 0;
-
-                if (!isUsableForDesktop || !isSafeForHardware || isStretched || isInterlaced || isTelevisionOutput) {
-                    continue;
-                }
-
-                int w = (int) JNI.invokePJ(mode, cgDisplayModeGetPixelWidth);
-                int h = (int) JNI.invokePJ(mode, cgDisplayModeGetPixelHeight);
-                int pointW = cgDisplayModeGetWidth != MemoryUtil.NULL ? (int) JNI.invokePJ(mode, cgDisplayModeGetWidth)
-                        : w;
-                int pointH = cgDisplayModeGetHeight != MemoryUtil.NULL ? (int) JNI.invokePJ(mode,
-                        cgDisplayModeGetHeight) : h;
-
-                // Option 2 in fullscreen exclusive mode: hide non-1.0 density modes
-                if (pointW != w || pointH != h) {
-                    continue;
-                }
-
-                if (nativeW > 0 && nativeH > 0 && (w > nativeW || h > nativeH)) {
-                    continue;
-                }
-
-                if (w >= SerializableDisplayMode.MIN_WIDTH && h >= SerializableDisplayMode.MIN_HEIGHT) {
-                    int freq = 60;
-                    if (cgDisplayModeGetRefreshRate != MemoryUtil.NULL) {
-                        double rate = JNI.invokePD(mode, cgDisplayModeGetRefreshRate);
-                        if (rate > 0) {
-                            freq = (int) Math.round(rate);
-                        }
-                    }
-                    result.add(new SerializableDisplayMode(w, h, 32, freq));
-                }
-            }
-            JNI.invokePV(modesArray, cfRelease);
-            return result;
+          return JNI.invokePPZ(nsApp, isActiveSel, objc_msgSend);
         } catch (Throwable t) {
-            logger.log(Level.WARNING, "Failed to query CoreGraphics display modes via FFI", t);
-            return null;
+          logger.log(Level.WARNING, "Failed to call [NSApp isActive]", t);
         }
+      }
     }
+    return false;
+  }
 
-    private static boolean isMacApplicationActive() {
-        if (isMac) {
-            initMacFFI();
-            if (macInitialized && nsApp != MemoryUtil.NULL) {
-                try {
-                    return JNI.invokePPZ(nsApp, isActiveSel, objc_msgSend);
-                } catch (Throwable t) {
-                    logger.log(Level.WARNING, "Failed to call [NSApp isActive]", t);
-                }
-            }
-        }
-        return false;
+  private long windowHandle = MemoryUtil.NULL;
+  private long glContext = MemoryUtil.NULL;
+  private String title = "Tribal Trouble";
+  private boolean resized;
+  private boolean closeRequested;
+  private boolean active;
+  private boolean iconified;
+  private @Nullable WindowEventListener eventListener;
+  private boolean pendingFullscreenRestore;
+  private @Nullable SerializableDisplayMode lastCreatedMode;
+
+  private static final int RESTORE_NONE = 0;
+  private static final int RESTORE_LEAVING_FULLSCREEN = 1;
+  private static final int RESTORE_UNMINIMIZING = 2;
+
+  private int restoreState = RESTORE_NONE;
+  private boolean lastMacAppActive;
+
+  private WindowSettings settings;
+
+  private int cachedWidth = SerializableDisplayMode.MIN_WIDTH;
+  private int cachedHeight = SerializableDisplayMode.MIN_HEIGHT;
+  private int cachedLogicalWidth = SerializableDisplayMode.MIN_WIDTH;
+  private int cachedLogicalHeight = SerializableDisplayMode.MIN_HEIGHT;
+  private long cachedWindowFlags;
+
+  private void updateCachedWindowFlags() {
+    if (windowHandle != MemoryUtil.NULL) {
+      cachedWindowFlags = SDL_GetWindowFlags(windowHandle);
+    } else {
+      cachedWindowFlags = 0;
     }
+  }
 
-    private long windowHandle = MemoryUtil.NULL;
-    private long glContext = MemoryUtil.NULL;
-    private String title = "Tribal Trouble";
-    private boolean resized;
-    private boolean closeRequested;
-    private boolean active;
-    private boolean iconified;
-    private @Nullable WindowEventListener eventListener;
-    private boolean pendingFullscreenRestore;
-    private @Nullable SerializableDisplayMode lastCreatedMode;
+  public LWJGL3Window() {
+    this(new WindowSettings());
+  }
 
-    private static final int RESTORE_NONE = 0;
-    private static final int RESTORE_LEAVING_FULLSCREEN = 1;
-    private static final int RESTORE_UNMINIMIZING = 2;
+  public LWJGL3Window(WindowSettings settings) {
+    this.settings = settings;
+    ensureSDL();
+  }
 
-    private int restoreState = RESTORE_NONE;
-    private boolean lastMacAppActive;
+  @Override
+  public WindowSettings getSettings() {
+    return settings;
+  }
 
-    private WindowSettings settings;
+  @Override
+  public void setSettings(WindowSettings settings) {
+    this.settings = settings;
+  }
 
-    private int cachedWidth = SerializableDisplayMode.MIN_WIDTH;
-    private int cachedHeight = SerializableDisplayMode.MIN_HEIGHT;
-    private int cachedLogicalWidth = SerializableDisplayMode.MIN_WIDTH;
-    private int cachedLogicalHeight = SerializableDisplayMode.MIN_HEIGHT;
-    private long cachedWindowFlags;
+  @Override
+  public void setEventListener(@Nullable WindowEventListener listener) {
+    this.eventListener = listener;
+  }
 
-    private void updateCachedWindowFlags() {
-        if (windowHandle != MemoryUtil.NULL) {
-            cachedWindowFlags = SDL_GetWindowFlags(windowHandle);
+  private static void ensureSDL() {
+    if (initialized.compareAndSet(false, true)) {
+      if (!SDL_Init(SDL_INIT_VIDEO)) {
+        initialized.set(false);
+        throw new IllegalStateException("Unable to initialize SDL: " + SDL_GetError());
+      }
+    }
+  }
+
+  private @Nullable SDL_DisplayMode findMatchingDisplayMode(
+      MemoryStack stack, int displayID, SerializableDisplayMode targetMode) {
+    PointerBuffer pb = SDL_GetFullscreenDisplayModes(displayID);
+    if (pb == null) {
+      return null;
+    }
+    SDL_DisplayMode bestMatch = null;
+    int targetW = targetMode.getWidth();
+    int targetH = targetMode.getHeight();
+    int targetFreq = targetMode.getFrequency();
+
+    int n = pb.remaining();
+    for (int i = 0; i < n; i++) {
+      SDL_DisplayMode mode = SDL_DisplayMode.create(pb.get(i));
+      if (Math.abs(mode.pixel_density() - 1.0f) > 0.01f) {
+        continue;
+      }
+      int modePhysW = mode.w();
+      int modePhysH = mode.h();
+      if (modePhysW == targetW && modePhysH == targetH) {
+        if (bestMatch == null) {
+          bestMatch = mode;
         } else {
-            cachedWindowFlags = 0;
-        }
-    }
-
-    public LWJGL3Window() {
-        this(new WindowSettings());
-    }
-
-    public LWJGL3Window(WindowSettings settings) {
-        this.settings = settings;
-        ensureSDL();
-    }
-
-    @Override
-    public WindowSettings getSettings() {
-        return settings;
-    }
-
-    @Override
-    public void setSettings(WindowSettings settings) {
-        this.settings = settings;
-    }
-
-    @Override
-    public void setEventListener(@Nullable WindowEventListener listener) {
-        this.eventListener = listener;
-    }
-
-    private static void ensureSDL() {
-        if (initialized.compareAndSet(false, true)) {
-            if (!SDL_Init(SDL_INIT_VIDEO)) {
-                initialized.set(false);
-                throw new IllegalStateException("Unable to initialize SDL: " + SDL_GetError());
+          double currentDiff = Math.abs(bestMatch.refresh_rate() - targetFreq);
+          double newDiff = Math.abs(mode.refresh_rate() - targetFreq);
+          if (newDiff < currentDiff) {
+            bestMatch = mode;
+          } else if (newDiff == currentDiff) {
+            if (mode.refresh_rate() > bestMatch.refresh_rate()) {
+              bestMatch = mode;
             }
+          }
         }
+      }
     }
 
-    private @Nullable SDL_DisplayMode findMatchingDisplayMode(MemoryStack stack, int displayID,
-            SerializableDisplayMode targetMode) {
-        PointerBuffer pb = SDL_GetFullscreenDisplayModes(displayID);
-        if (pb == null) {
-            return null;
-        }
-        SDL_DisplayMode bestMatch = null;
-        int targetW = targetMode.getWidth();
-        int targetH = targetMode.getHeight();
-        int targetFreq = targetMode.getFrequency();
+    if (bestMatch != null) {
+      logger.info(
+          "findMatchingDisplayMode: matched "
+              + targetW
+              + "x"
+              + targetH
+              + " -> SDL mode "
+              + bestMatch.w()
+              + "x"
+              + bestMatch.h()
+              + " density="
+              + bestMatch.pixel_density()
+              + " freq="
+              + bestMatch.refresh_rate());
+    } else {
+      logger.warning("findMatchingDisplayMode: no SDL fullscreen mode found for " + targetW + "x" + targetH);
+    }
 
+    SDL_DisplayMode result = null;
+    if (bestMatch != null) {
+      result = SDL_DisplayMode.malloc(stack).set(bestMatch);
+    }
+
+    nSDL_free(pb.address());
+    return result;
+  }
+
+  @Override
+  public void create(SerializableDisplayMode mode, boolean fullscreen) {
+    logger.log(Level.INFO, "Creating window: " + mode + ", fullscreen: " + fullscreen);
+    this.lastCreatedMode = mode;
+
+    int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle) : SDL_GetPrimaryDisplay();
+    if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
+
+    SDL_DisplayMode desktop = SDL_GetDesktopDisplayMode(displayID);
+    int maxW = 3840;
+    int maxH = 2160;
+    if (!fullscreen) {
+      try (MemoryStack stack = MemoryStack.stackPush()) {
+        SDL_Rect rect = SDL_Rect.malloc(stack);
+        if (SDL_GetDisplayUsableBounds(displayID, rect)) {
+          maxW = rect.w();
+          maxH = rect.h();
+        } else if (desktop != null) {
+          maxW = desktop.w();
+          maxH = desktop.h();
+        }
+      }
+    } else {
+      if (desktop != null) {
+        maxW = desktop.w();
+        maxH = desktop.h();
+      }
+      PointerBuffer pb = SDL_GetFullscreenDisplayModes(displayID);
+      if (pb != null) {
         int n = pb.remaining();
         for (int i = 0; i < n; i++) {
-            SDL_DisplayMode mode = SDL_DisplayMode.create(pb.get(i));
-            if (Math.abs(mode.pixel_density() - 1.0f) > 0.01f) {
-                continue;
-            }
-            int modePhysW = mode.w();
-            int modePhysH = mode.h();
-            if (modePhysW == targetW && modePhysH == targetH) {
-                if (bestMatch == null) {
-                    bestMatch = mode;
-                } else {
-                    double currentDiff = Math.abs(bestMatch.refresh_rate() - targetFreq);
-                    double newDiff = Math.abs(mode.refresh_rate() - targetFreq);
-                    if (newDiff < currentDiff) {
-                        bestMatch = mode;
-                    } else if (newDiff == currentDiff) {
-                        if (mode.refresh_rate() > bestMatch.refresh_rate()) {
-                            bestMatch = mode;
-                        }
-                    }
-                }
-            }
+          SDL_DisplayMode dm = SDL_DisplayMode.create(pb.get(i));
+          if (Math.abs(dm.pixel_density() - 1.0f) <= 0.01f) {
+            if (dm.w() > maxW) maxW = dm.w();
+            if (dm.h() > maxH) maxH = dm.h();
+          }
         }
-
-        if (bestMatch != null) {
-            logger.info("findMatchingDisplayMode: matched " + targetW + "x" + targetH
-                    + " -> SDL mode " + bestMatch.w() + "x" + bestMatch.h()
-                    + " density=" + bestMatch.pixel_density()
-                    + " freq=" + bestMatch.refresh_rate());
-        } else {
-            logger.warning("findMatchingDisplayMode: no SDL fullscreen mode found for " + targetW + "x" + targetH);
-        }
-
-        SDL_DisplayMode result = null;
-        if (bestMatch != null) {
-            result = SDL_DisplayMode.malloc(stack).set(bestMatch);
-        }
-
         nSDL_free(pb.address());
-        return result;
+      }
     }
 
-    @Override
-    public void create(SerializableDisplayMode mode, boolean fullscreen) {
-        logger.log(Level.INFO, "Creating window: " + mode + ", fullscreen: " + fullscreen);
-        this.lastCreatedMode = mode;
-
-        int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle)
-                : SDL_GetPrimaryDisplay();
-        if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
-
-        SDL_DisplayMode desktop = SDL_GetDesktopDisplayMode(displayID);
-        int maxW = 3840;
-        int maxH = 2160;
-        if (!fullscreen) {
-            try (MemoryStack stack = MemoryStack.stackPush()) {
-                SDL_Rect rect = SDL_Rect.malloc(stack);
-                if (SDL_GetDisplayUsableBounds(displayID, rect)) {
-                    maxW = rect.w();
-                    maxH = rect.h();
-                } else if (desktop != null) {
-                    maxW = desktop.w();
-                    maxH = desktop.h();
-                }
-            }
-        } else {
-            if (desktop != null) {
-                maxW = desktop.w();
-                maxH = desktop.h();
-            }
-            PointerBuffer pb = SDL_GetFullscreenDisplayModes(displayID);
-            if (pb != null) {
-                int n = pb.remaining();
-                for (int i = 0; i < n; i++) {
-                    SDL_DisplayMode dm = SDL_DisplayMode.create(pb.get(i));
-                    if (Math.abs(dm.pixel_density() - 1.0f) <= 0.01f) {
-                        if (dm.w() > maxW) maxW = dm.w();
-                        if (dm.h() > maxH) maxH = dm.h();
-                    }
-                }
-                nSDL_free(pb.address());
-            }
-        }
-
-        if (mode.getWidth() > maxW || mode.getHeight() > maxH) {
-            logger.warning(String.format("Requested mode %dx%d exceeds maximum display resolution %dx%d. Clamping.",
-                    mode.getWidth(), mode.getHeight(), maxW, maxH));
-            mode = new SerializableDisplayMode(maxW, maxH, mode.getBitsPerPixel(), mode.getFrequency());
-        }
-
-        if (windowHandle == MemoryUtil.NULL) {
-            createWindow(mode, fullscreen);
-        } else {
-            try {
-                setDisplayMode(mode);
-                setFullscreen(fullscreen);
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "Failed to update existing window, recreating", e);
-                destroy();
-                createWindow(mode, fullscreen);
-            }
-        }
-        updateCachedDimensions();
-        updateCachedWindowFlags();
-        this.active = true;
-        this.iconified = false;
+    if (mode.getWidth() > maxW || mode.getHeight() > maxH) {
+      logger.warning(
+          String.format(
+              "Requested mode %dx%d exceeds maximum display resolution %dx%d. Clamping.",
+              mode.getWidth(), mode.getHeight(), maxW, maxH));
+      mode = new SerializableDisplayMode(maxW, maxH, mode.getBitsPerPixel(), mode.getFrequency());
     }
 
-    private void createWindow(SerializableDisplayMode mode, boolean fullscreen) {
-        long flags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_RESIZABLE;
-
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
-
-        float density = getPixelDensity();
-        if (settings.view_samples > 0 && density <= 1.0f) {
-            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, settings.view_samples);
-        } else {
-            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-        }
-
-        windowHandle = SDL_CreateWindow(title, mode.getWidth(), mode.getHeight(), flags);
-        if (windowHandle == MemoryUtil.NULL) {
-            throw new IllegalStateException("Failed to create SDL window: " + SDL_GetError());
-        }
-
-        if (fullscreen) {
-            try (MemoryStack stack = MemoryStack.stackPush()) {
-                int displayID = SDL_GetDisplayForWindow(windowHandle);
-                if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
-                SDL_DisplayMode match = findMatchingDisplayMode(stack, displayID, mode);
-                if (match != null) {
-                    SDL_SetWindowFullscreenMode(windowHandle, match);
-                    logger.info("createWindow: applied fullscreen mode " + match.w() + "x" + match.h() + " density="
-                            + match.pixel_density() + " freq=" + match.refresh_rate());
-                } else {
-                    SDL_SetWindowFullscreenMode(windowHandle, null);
-                    logger.info("createWindow: set borderless desktop fullscreen for mode " + mode);
-                }
-            }
-            if (!SDL_SetWindowFullscreen(windowHandle, true)) {
-                logger.warning(() -> "Failed to set fullscreen mode during createWindow: " + SDL_GetError());
-            }
-        }
-
-        glContext = SDL_GL_CreateContext(windowHandle);
-        if (glContext == MemoryUtil.NULL) {
-            SDL_DestroyWindow(windowHandle);
-            windowHandle = MemoryUtil.NULL;
-            throw new IllegalStateException("Failed to create OpenGL context: " + SDL_GetError());
-        }
-
-        try {
-            makeCurrent();
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to make context current", e);
-        }
-
-        GL.createCapabilities();
-        logger.info("OpenGL Context Created: " + org.lwjgl.opengl.GL11.glGetString(org.lwjgl.opengl.GL11.GL_VERSION));
-
-        clearWindow();
-        processEvents(false, 0);
-
-        updateCachedDimensions();
-        updateCachedWindowFlags();
-        GL11.glViewport(0, 0, cachedWidth, cachedHeight);
-        if (eventListener != null) {
-            eventListener.onResized(cachedWidth, cachedHeight);
-        }
-    }
-
-    private void clearWindow() {
-        if (windowHandle == MemoryUtil.NULL || glContext == MemoryUtil.NULL) {
-            return;
-        }
-        try {
-            if (SDL_GL_MakeCurrent(windowHandle, glContext)) {
-                GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
-                GL11.glDisable(GL11.GL_SCISSOR_TEST);
-                GL11.glColorMask(true, true, true, true);
-                GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-                GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-                SDL_GL_SwapWindow(windowHandle);
-                GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-                SDL_GL_SwapWindow(windowHandle);
-                SDL_SyncWindow(windowHandle);
-            }
-        } catch (Throwable t) {
-            logger.log(Level.FINE, "Failed to clear window", t);
-        }
-    }
-
-    private void resetCursor() {
-        try {
-            long defaultCursor = SDL_GetDefaultCursor();
-            if (defaultCursor != MemoryUtil.NULL) {
-                SDL_SetCursor(defaultCursor);
-            } else {
-                SDL_SetCursor(MemoryUtil.NULL);
-            }
-            SDL_ShowCursor();
-        } catch (Throwable t) {
-            logger.log(Level.FINE, "Failed to reset cursor", t);
-        }
-    }
-
-    private void destroy() {
-        clearWindow();
-        resetCursor();
-        if (glContext != MemoryUtil.NULL) {
-            SDL_GL_DestroyContext(glContext);
-            glContext = MemoryUtil.NULL;
-        }
-        if (windowHandle != MemoryUtil.NULL) {
-            SDL_DestroyWindow(windowHandle);
-            windowHandle = MemoryUtil.NULL;
-        }
-        cachedWindowFlags = 0;
-    }
-
-    @Override
-    public void close() {
+    if (windowHandle == MemoryUtil.NULL) {
+      createWindow(mode, fullscreen);
+    } else {
+      try {
+        setDisplayMode(mode);
+        setFullscreen(fullscreen);
+      } catch (Exception e) {
+        logger.log(Level.WARNING, "Failed to update existing window, recreating", e);
         destroy();
-        if (initialized.compareAndSet(true, false)) {
-            SDL_Quit();
-        }
+        createWindow(mode, fullscreen);
+      }
+    }
+    updateCachedDimensions();
+    updateCachedWindowFlags();
+    this.active = true;
+    this.iconified = false;
+  }
+
+  private void createWindow(SerializableDisplayMode mode, boolean fullscreen) {
+    long flags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_RESIZABLE;
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+
+    float density = getPixelDensity();
+    if (settings.view_samples > 0 && density <= 1.0f) {
+      SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+      SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, settings.view_samples);
+    } else {
+      SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+      SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
     }
 
-    @Override
-    public void update() {
-        if (windowHandle != MemoryUtil.NULL && glContext != MemoryUtil.NULL) {
-            if (!SDL_GL_SwapWindow(windowHandle)) {
-                logger.warning(() -> "SDL_GL_SwapWindow failed: " + SDL_GetError());
+    windowHandle = SDL_CreateWindow(title, mode.getWidth(), mode.getHeight(), flags);
+    if (windowHandle == MemoryUtil.NULL) {
+      throw new IllegalStateException("Failed to create SDL window: " + SDL_GetError());
+    }
+
+    if (fullscreen) {
+      try (MemoryStack stack = MemoryStack.stackPush()) {
+        int displayID = SDL_GetDisplayForWindow(windowHandle);
+        if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
+        SDL_DisplayMode match = findMatchingDisplayMode(stack, displayID, mode);
+        if (match != null) {
+          SDL_SetWindowFullscreenMode(windowHandle, match);
+          logger.info(
+              "createWindow: applied fullscreen mode "
+                  + match.w()
+                  + "x"
+                  + match.h()
+                  + " density="
+                  + match.pixel_density()
+                  + " freq="
+                  + match.refresh_rate());
+        } else {
+          SDL_SetWindowFullscreenMode(windowHandle, null);
+          logger.info("createWindow: set borderless desktop fullscreen for mode " + mode);
+        }
+      }
+      if (!SDL_SetWindowFullscreen(windowHandle, true)) {
+        logger.warning(() -> "Failed to set fullscreen mode during createWindow: " + SDL_GetError());
+      }
+    }
+
+    glContext = SDL_GL_CreateContext(windowHandle);
+    if (glContext == MemoryUtil.NULL) {
+      SDL_DestroyWindow(windowHandle);
+      windowHandle = MemoryUtil.NULL;
+      throw new IllegalStateException("Failed to create OpenGL context: " + SDL_GetError());
+    }
+
+    try {
+      makeCurrent();
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to make context current", e);
+    }
+
+    GL.createCapabilities();
+    logger.info("OpenGL Context Created: " + org.lwjgl.opengl.GL11.glGetString(org.lwjgl.opengl.GL11.GL_VERSION));
+
+    clearWindow();
+    processEvents(false, 0);
+
+    updateCachedDimensions();
+    updateCachedWindowFlags();
+    GL11.glViewport(0, 0, cachedWidth, cachedHeight);
+    if (eventListener != null) {
+      eventListener.onResized(cachedWidth, cachedHeight);
+    }
+  }
+
+  private void clearWindow() {
+    if (windowHandle == MemoryUtil.NULL || glContext == MemoryUtil.NULL) {
+      return;
+    }
+    try {
+      if (SDL_GL_MakeCurrent(windowHandle, glContext)) {
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+        GL11.glDisable(GL11.GL_SCISSOR_TEST);
+        GL11.glColorMask(true, true, true, true);
+        GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+        SDL_GL_SwapWindow(windowHandle);
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+        SDL_GL_SwapWindow(windowHandle);
+        SDL_SyncWindow(windowHandle);
+      }
+    } catch (Throwable t) {
+      logger.log(Level.FINE, "Failed to clear window", t);
+    }
+  }
+
+  private void resetCursor() {
+    try {
+      long defaultCursor = SDL_GetDefaultCursor();
+      if (defaultCursor != MemoryUtil.NULL) {
+        SDL_SetCursor(defaultCursor);
+      } else {
+        SDL_SetCursor(MemoryUtil.NULL);
+      }
+      SDL_ShowCursor();
+    } catch (Throwable t) {
+      logger.log(Level.FINE, "Failed to reset cursor", t);
+    }
+  }
+
+  private void destroy() {
+    clearWindow();
+    resetCursor();
+    if (glContext != MemoryUtil.NULL) {
+      SDL_GL_DestroyContext(glContext);
+      glContext = MemoryUtil.NULL;
+    }
+    if (windowHandle != MemoryUtil.NULL) {
+      SDL_DestroyWindow(windowHandle);
+      windowHandle = MemoryUtil.NULL;
+    }
+    cachedWindowFlags = 0;
+  }
+
+  @Override
+  public void close() {
+    destroy();
+    if (initialized.compareAndSet(true, false)) {
+      SDL_Quit();
+    }
+  }
+
+  @Override
+  public void update() {
+    if (windowHandle != MemoryUtil.NULL && glContext != MemoryUtil.NULL) {
+      if (!SDL_GL_SwapWindow(windowHandle)) {
+        logger.warning(() -> "SDL_GL_SwapWindow failed: " + SDL_GetError());
+      }
+    }
+  }
+
+  public long getHandle() {
+    return windowHandle;
+  }
+
+  private void updateCachedDimensions() {
+    if (windowHandle == MemoryUtil.NULL) return;
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      IntBuffer w = stack.mallocInt(1);
+      IntBuffer h = stack.mallocInt(1);
+
+      SDL_GetWindowSizeInPixels(windowHandle, w, h);
+      cachedWidth = Math.max(1, w.get(0));
+      cachedHeight = Math.max(1, h.get(0));
+
+      SDL_GetWindowSize(windowHandle, w, h);
+      cachedLogicalWidth = Math.max(1, w.get(0));
+      cachedLogicalHeight = Math.max(1, h.get(0));
+    }
+  }
+
+  public void syncViewport() {
+    if (windowHandle == MemoryUtil.NULL) return;
+    updateCachedDimensions();
+    GL11.glViewport(0, 0, cachedWidth, cachedHeight);
+    if (eventListener != null) {
+      eventListener.onResized(cachedWidth, cachedHeight);
+    }
+  }
+
+  @Override
+  public void pollEvents() {
+    processEvents(false, 0);
+  }
+
+  @Override
+  public void waitEvents(int timeoutMs) {
+    if (timeoutMs < 0) {
+      throw new IllegalArgumentException("timeoutMs cannot be negative: " + timeoutMs);
+    }
+    processEvents(true, timeoutMs);
+  }
+
+  private void processEvents(boolean wait, int timeoutMs) {
+    if (windowHandle == MemoryUtil.NULL) {
+      return;
+    }
+    resized = false;
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      SDL_Event event = SDL_Event.malloc(stack);
+
+      boolean hasEvents = false;
+      if (wait) {
+        int sdlTimeout = timeoutMs == 0 ? -1 : timeoutMs;
+        if (SDL_WaitEventTimeout(event, sdlTimeout)) {
+          hasEvents = true;
+        }
+      }
+
+      while (hasEvents || SDL_PollEvent(event)) {
+        hasEvents = false; // Reset so next iterations use PollEvent
+
+        int type = event.type();
+        switch (type) {
+          case SDL_EVENT_QUIT -> closeRequested = true;
+          case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED, SDL_EVENT_WINDOW_RESIZED -> {
+            int prevWidth = cachedWidth;
+            int prevHeight = cachedHeight;
+            updateCachedDimensions();
+            if (cachedWidth != prevWidth || cachedHeight != prevHeight) {
+              resized = true;
+              logger.info(
+                  "[Window] Resized: Framebuffer "
+                      + cachedWidth
+                      + "x"
+                      + cachedHeight
+                      + " (Logical: "
+                      + cachedLogicalWidth
+                      + "x"
+                      + cachedLogicalHeight
+                      + ")");
+              GL11.glViewport(0, 0, cachedWidth, cachedHeight);
+              if (eventListener != null) {
+                eventListener.onResized(cachedWidth, cachedHeight);
+              }
             }
+          }
+          case SDL_EVENT_WINDOW_SHOWN, SDL_EVENT_WINDOW_RESTORED -> {
+            logger.info("MacNative: Window shown/restored event received.");
+            iconified = false;
+            active = true;
+            if (pendingFullscreenRestore) {
+              logger.info("MacNative: Pending restore active. Re-applying fullscreen.");
+              pendingFullscreenRestore = false;
+              if (eventListener != null) {
+                eventListener.onFocusGained();
+              }
+            }
+          }
+          case SDL_EVENT_WINDOW_MINIMIZED -> {
+            logger.info("MacNative: Window minimized event received.");
+            iconified = true;
+            active = false;
+          }
+          case SDL_EVENT_WINDOW_OCCLUDED -> {
+            logger.fine("MacNative: Window occluded event received.");
+          }
+          case SDL_EVENT_WINDOW_FOCUS_GAINED -> {
+            active = true;
+            if (settings.fullscreen) {
+              long flags = SDL_GetWindowFlags(windowHandle);
+              boolean isMinimized = (flags & SDL_WINDOW_MINIMIZED) != 0;
+              if (isMinimized) {
+                logger.info("MacNative: Focus gained while minimized. Triggering restore.");
+                restore();
+              }
+            }
+            if (eventListener != null) {
+              eventListener.onFocusGained();
+            }
+          }
+          case SDL_EVENT_WINDOW_FOCUS_LOST -> {
+            active = false;
+          }
+          case SDL_EVENT_KEY_DOWN -> {
+            SDL_KeyboardEvent keyEvent = event.key();
+            int scancode = keyEvent.scancode();
+            int mod = keyEvent.mod();
+            if (scancode == SDL_SCANCODE_F11
+                || ((scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER)
+                    && (mod & SDL_KMOD_ALT) != 0)) {
+              if (eventListener != null) {
+                eventListener.onToggleFullscreen();
+              }
+            }
+          }
         }
-    }
 
-    public long getHandle() {
-        return windowHandle;
-    }
-
-    private void updateCachedDimensions() {
-        if (windowHandle == MemoryUtil.NULL) return;
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer w = stack.mallocInt(1);
-            IntBuffer h = stack.mallocInt(1);
-
-            SDL_GetWindowSizeInPixels(windowHandle, w, h);
-            cachedWidth = Math.max(1, w.get(0));
-            cachedHeight = Math.max(1, h.get(0));
-
-            SDL_GetWindowSize(windowHandle, w, h);
-            cachedLogicalWidth = Math.max(1, w.get(0));
-            cachedLogicalHeight = Math.max(1, h.get(0));
-        }
-    }
-
-    public void syncViewport() {
-        if (windowHandle == MemoryUtil.NULL) return;
-        updateCachedDimensions();
-        GL11.glViewport(0, 0, cachedWidth, cachedHeight);
         if (eventListener != null) {
-            eventListener.onResized(cachedWidth, cachedHeight);
+          eventListener.handleSDLEvent(event);
         }
+      }
+    }
+    updateCachedWindowFlags();
+  }
+
+  @Override
+  public boolean isOpen() {
+    return windowHandle != MemoryUtil.NULL;
+  }
+
+  @Override
+  public boolean isCloseRequested() {
+    return closeRequested;
+  }
+
+  @Override
+  public void setCloseRequested(boolean value) {
+    this.closeRequested = value;
+  }
+
+  @Override
+  public boolean isActive() {
+    if (windowHandle != MemoryUtil.NULL) {
+      return (cachedWindowFlags & SDL_WINDOW_INPUT_FOCUS) != 0 || active;
+    }
+    return active;
+  }
+
+  @Override
+  public boolean isVisible() {
+    if (windowHandle == MemoryUtil.NULL) return false;
+    return (cachedWindowFlags & SDL_WINDOW_HIDDEN) == 0;
+  }
+
+  @Override
+  public boolean isIconified() {
+    if (windowHandle == MemoryUtil.NULL) return false;
+    return (cachedWindowFlags & SDL_WINDOW_MINIMIZED) != 0 || iconified;
+  }
+
+  @Override
+  public boolean isMaximized() {
+    if (windowHandle == MemoryUtil.NULL) return false;
+    return (cachedWindowFlags & SDL_WINDOW_MAXIMIZED) != 0;
+  }
+
+  @Override
+  public boolean wasResized() {
+    return resized;
+  }
+
+  @Override
+  public int getWidth() {
+    return cachedWidth;
+  }
+
+  @Override
+  public int getHeight() {
+    return cachedHeight;
+  }
+
+  @Override
+  public int getLogicalWidth() {
+    return cachedLogicalWidth;
+  }
+
+  @Override
+  public int getLogicalHeight() {
+    return cachedLogicalHeight;
+  }
+
+  @Override
+  public void setTitle(String title) {
+    this.title = title != null ? title : "Tribal Trouble";
+    if (windowHandle != MemoryUtil.NULL) {
+      SDL_SetWindowTitle(windowHandle, this.title);
+    }
+  }
+
+  @Override
+  public void setVSyncEnabled(boolean enabled) {
+    if (windowHandle != MemoryUtil.NULL && glContext != MemoryUtil.NULL) {
+      SDL_GL_SetSwapInterval(enabled ? 1 : 0);
+    }
+  }
+
+  @Override
+  public void setFullscreen(boolean fullscreen) throws Exception {
+    if (windowHandle == MemoryUtil.NULL) return;
+
+    boolean isCurrentlyFs = isFullscreen();
+    if (isCurrentlyFs == fullscreen) {
+      return;
     }
 
-    @Override
-    public void pollEvents() {
-        processEvents(false, 0);
-    }
-
-    @Override
-    public void waitEvents(int timeoutMs) {
-        if (timeoutMs < 0) {
-            throw new IllegalArgumentException("timeoutMs cannot be negative: " + timeoutMs);
-        }
-        processEvents(true, timeoutMs);
-    }
-
-    private void processEvents(boolean wait, int timeoutMs) {
-        if (windowHandle == MemoryUtil.NULL) {
-            return;
-        }
-        resized = false;
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            SDL_Event event = SDL_Event.malloc(stack);
-
-            boolean hasEvents = false;
-            if (wait) {
-                int sdlTimeout = timeoutMs == 0 ? -1 : timeoutMs;
-                if (SDL_WaitEventTimeout(event, sdlTimeout)) {
-                    hasEvents = true;
-                }
-            }
-
-            while (hasEvents || SDL_PollEvent(event)) {
-                hasEvents = false; // Reset so next iterations use PollEvent
-
-                int type = event.type();
-                switch (type) {
-                    case SDL_EVENT_QUIT -> closeRequested = true;
-                    case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED, SDL_EVENT_WINDOW_RESIZED -> {
-                        int prevWidth = cachedWidth;
-                        int prevHeight = cachedHeight;
-                        updateCachedDimensions();
-                        if (cachedWidth != prevWidth || cachedHeight != prevHeight) {
-                            resized = true;
-                            logger.info("[Window] Resized: Framebuffer " + cachedWidth + "x" + cachedHeight
-                                    + " (Logical: " + cachedLogicalWidth + "x" + cachedLogicalHeight + ")");
-                            GL11.glViewport(0, 0, cachedWidth, cachedHeight);
-                            if (eventListener != null) {
-                                eventListener.onResized(cachedWidth, cachedHeight);
-                            }
-                        }
-                    }
-                    case SDL_EVENT_WINDOW_SHOWN, SDL_EVENT_WINDOW_RESTORED -> {
-                        logger.info("MacNative: Window shown/restored event received.");
-                        iconified = false;
-                        active = true;
-                        if (pendingFullscreenRestore) {
-                            logger.info("MacNative: Pending restore active. Re-applying fullscreen.");
-                            pendingFullscreenRestore = false;
-                            if (eventListener != null) {
-                                eventListener.onFocusGained();
-                            }
-                        }
-                    }
-                    case SDL_EVENT_WINDOW_MINIMIZED -> {
-                        logger.info("MacNative: Window minimized event received.");
-                        iconified = true;
-                        active = false;
-                    }
-                    case SDL_EVENT_WINDOW_OCCLUDED -> {
-                        logger.fine("MacNative: Window occluded event received.");
-                    }
-                    case SDL_EVENT_WINDOW_FOCUS_GAINED -> {
-                        active = true;
-                        if (settings.fullscreen) {
-                            long flags = SDL_GetWindowFlags(windowHandle);
-                            boolean isMinimized = (flags & SDL_WINDOW_MINIMIZED) != 0;
-                            if (isMinimized) {
-                                logger.info("MacNative: Focus gained while minimized. Triggering restore.");
-                                restore();
-                            }
-                        }
-                        if (eventListener != null) {
-                            eventListener.onFocusGained();
-                        }
-                    }
-                    case SDL_EVENT_WINDOW_FOCUS_LOST -> {
-                        active = false;
-                    }
-                    case SDL_EVENT_KEY_DOWN -> {
-                        SDL_KeyboardEvent keyEvent = event.key();
-                        int scancode = keyEvent.scancode();
-                        int mod = keyEvent.mod();
-                        if (scancode == SDL_SCANCODE_F11 ||
-                                ((scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER) && (mod
-                                        & SDL_KMOD_ALT) != 0)) {
-                            if (eventListener != null) {
-                                eventListener.onToggleFullscreen();
-                            }
-                        }
-                    }
-                }
-
-                if (eventListener != null) {
-                    eventListener.handleSDLEvent(event);
-                }
-            }
-        }
-        updateCachedWindowFlags();
-    }
-
-    @Override
-    public boolean isOpen() {
-        return windowHandle != MemoryUtil.NULL;
-    }
-
-    @Override
-    public boolean isCloseRequested() {
-        return closeRequested;
-    }
-
-    @Override
-    public void setCloseRequested(boolean value) {
-        this.closeRequested = value;
-    }
-
-    @Override
-    public boolean isActive() {
-        if (windowHandle != MemoryUtil.NULL) {
-            return (cachedWindowFlags & SDL_WINDOW_INPUT_FOCUS) != 0 || active;
-        }
-        return active;
-    }
-
-    @Override
-    public boolean isVisible() {
-        if (windowHandle == MemoryUtil.NULL) return false;
-        return (cachedWindowFlags & SDL_WINDOW_HIDDEN) == 0;
-    }
-
-    @Override
-    public boolean isIconified() {
-        if (windowHandle == MemoryUtil.NULL) return false;
-        return (cachedWindowFlags & SDL_WINDOW_MINIMIZED) != 0 || iconified;
-    }
-
-    @Override
-    public boolean isMaximized() {
-        if (windowHandle == MemoryUtil.NULL) return false;
-        return (cachedWindowFlags & SDL_WINDOW_MAXIMIZED) != 0;
-    }
-
-    @Override
-    public boolean wasResized() {
-        return resized;
-    }
-
-    @Override
-    public int getWidth() {
-        return cachedWidth;
-    }
-
-    @Override
-    public int getHeight() {
-        return cachedHeight;
-    }
-
-    @Override
-    public int getLogicalWidth() {
-        return cachedLogicalWidth;
-    }
-
-    @Override
-    public int getLogicalHeight() {
-        return cachedLogicalHeight;
-    }
-
-    @Override
-    public void setTitle(String title) {
-        this.title = title != null ? title : "Tribal Trouble";
-        if (windowHandle != MemoryUtil.NULL) {
-            SDL_SetWindowTitle(windowHandle, this.title);
-        }
-    }
-
-    @Override
-    public void setVSyncEnabled(boolean enabled) {
-        if (windowHandle != MemoryUtil.NULL && glContext != MemoryUtil.NULL) {
-            SDL_GL_SetSwapInterval(enabled ? 1 : 0);
-        }
-    }
-
-    @Override
-    public void setFullscreen(boolean fullscreen) throws Exception {
-        if (windowHandle == MemoryUtil.NULL) return;
-
-        boolean isCurrentlyFs = isFullscreen();
-        if (isCurrentlyFs == fullscreen) {
-            return;
-        }
-
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            if (fullscreen) {
-                int displayID = SDL_GetDisplayForWindow(windowHandle);
-                if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
-
-                SerializableDisplayMode targetMode = getDisplayMode();
-                SDL_DisplayMode match = findMatchingDisplayMode(stack, displayID, targetMode);
-
-                if (match != null) {
-                    SDL_SetWindowFullscreenMode(windowHandle, match);
-                    logger.info("setFullscreen: applied exclusive mode " + match.w() + "x" + match.h() + " density="
-                            + match.pixel_density() + " freq=" + match.refresh_rate());
-                } else {
-                    SDL_SetWindowFullscreenMode(windowHandle, null);
-                    logger.info("setFullscreen: set borderless desktop fullscreen for mode " + targetMode);
-                }
-            } else {
-                SDL_SetWindowFullscreenMode(windowHandle, null);
-            }
-
-            if (!SDL_SetWindowFullscreen(windowHandle, fullscreen)) {
-                throw new IllegalStateException("Failed to toggle fullscreen: " + SDL_GetError());
-            }
-
-            if (!fullscreen) {
-                SDL_SetWindowBordered(windowHandle, true);
-                SDL_SetWindowSize(windowHandle, settings.view_width, settings.view_height);
-                SDL_SetWindowPosition(windowHandle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-            }
-
-            updateCachedDimensions();
-            GL11.glViewport(0, 0, cachedWidth, cachedHeight);
-            if (eventListener != null) {
-                eventListener.onResized(cachedWidth, cachedHeight);
-            }
-        }
-    }
-
-    @Override
-    public List<SerializableDisplayMode> getFullscreenDisplayModes() {
-        int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle)
-                : SDL_GetPrimaryDisplay();
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      if (fullscreen) {
+        int displayID = SDL_GetDisplayForWindow(windowHandle);
         if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
 
-        List<SerializableDisplayMode> modes = new ArrayList<>();
+        SerializableDisplayMode targetMode = getDisplayMode();
+        SDL_DisplayMode match = findMatchingDisplayMode(stack, displayID, targetMode);
 
-        // Option 1 in non-exclusive fullscreen: include desktop mode presented as screen resolution
-        SDL_DisplayMode desktop = SDL_GetDesktopDisplayMode(displayID);
-        if (desktop != null) {
-            int deskW = desktop.w();
-            int deskH = desktop.h();
-            if (deskW >= SerializableDisplayMode.MIN_WIDTH && deskH >= SerializableDisplayMode.MIN_HEIGHT) {
-                modes.add(new SerializableDisplayMode(deskW, deskH, SDL_BITSPERPIXEL(desktop.format()),
-                        (int) desktop.refresh_rate()));
-            }
+        if (match != null) {
+          SDL_SetWindowFullscreenMode(windowHandle, match);
+          logger.info(
+              "setFullscreen: applied exclusive mode "
+                  + match.w()
+                  + "x"
+                  + match.h()
+                  + " density="
+                  + match.pixel_density()
+                  + " freq="
+                  + match.refresh_rate());
+        } else {
+          SDL_SetWindowFullscreenMode(windowHandle, null);
+          logger.info("setFullscreen: set borderless desktop fullscreen for mode " + targetMode);
         }
+      } else {
+        SDL_SetWindowFullscreenMode(windowHandle, null);
+      }
 
-        List<SerializableDisplayMode> macNativeModes = getMacNativeDisplayModes();
-        if (macNativeModes != null && !macNativeModes.isEmpty()) {
-            modes.addAll(macNativeModes);
-            return filterAndSortModes(modes);
-        }
+      if (!SDL_SetWindowFullscreen(windowHandle, fullscreen)) {
+        throw new IllegalStateException("Failed to toggle fullscreen: " + SDL_GetError());
+      }
 
-        PointerBuffer pb = SDL_GetFullscreenDisplayModes(displayID);
-        if (pb != null) {
-            int n = pb.remaining();
-            for (int i = 0; i < n; i++) {
-                SDL_DisplayMode dm = SDL_DisplayMode.create(pb.get(i));
-                float density = dm.pixel_density();
-                // Option 2 in fullscreen exclusive mode: hide non-1.0 density modes
-                if (Math.abs(density - 1.0f) > 0.01f) {
-                    continue;
-                }
-                int bpp = SDL_BITSPERPIXEL(dm.format());
-                int physW = dm.w();
-                int physH = dm.h();
+      if (!fullscreen) {
+        SDL_SetWindowBordered(windowHandle, true);
+        SDL_SetWindowSize(windowHandle, settings.view_width, settings.view_height);
+        SDL_SetWindowPosition(windowHandle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+      }
 
-                if (physW >= SerializableDisplayMode.MIN_WIDTH && physH >= SerializableDisplayMode.MIN_HEIGHT) {
-                    modes.add(new SerializableDisplayMode(physW, physH, bpp, (int) dm.refresh_rate()));
-                }
-            }
-            nSDL_free(pb.address());
-        }
+      updateCachedDimensions();
+      GL11.glViewport(0, 0, cachedWidth, cachedHeight);
+      if (eventListener != null) {
+        eventListener.onResized(cachedWidth, cachedHeight);
+      }
+    }
+  }
 
-        return filterAndSortModes(modes);
+  @Override
+  public List<SerializableDisplayMode> getFullscreenDisplayModes() {
+    int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle) : SDL_GetPrimaryDisplay();
+    if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
+
+    List<SerializableDisplayMode> modes = new ArrayList<>();
+
+    // Option 1 in non-exclusive fullscreen: include desktop mode presented as screen resolution
+    SDL_DisplayMode desktop = SDL_GetDesktopDisplayMode(displayID);
+    if (desktop != null) {
+      int deskW = desktop.w();
+      int deskH = desktop.h();
+      if (deskW >= SerializableDisplayMode.MIN_WIDTH && deskH >= SerializableDisplayMode.MIN_HEIGHT) {
+        modes.add(
+            new SerializableDisplayMode(
+                deskW, deskH, SDL_BITSPERPIXEL(desktop.format()), (int) desktop.refresh_rate()));
+      }
     }
 
-    private record Resolution(int width, int height) {
+    List<SerializableDisplayMode> macNativeModes = getMacNativeDisplayModes();
+    if (macNativeModes != null && !macNativeModes.isEmpty()) {
+      modes.addAll(macNativeModes);
+      return filterAndSortModes(modes);
     }
 
-    private static int compareModePreference(SerializableDisplayMode m1, SerializableDisplayMode m2) {
-        if (m1.getFrequency() != m2.getFrequency()) {
-            return Integer.compare(m1.getFrequency(), m2.getFrequency());
+    PointerBuffer pb = SDL_GetFullscreenDisplayModes(displayID);
+    if (pb != null) {
+      int n = pb.remaining();
+      for (int i = 0; i < n; i++) {
+        SDL_DisplayMode dm = SDL_DisplayMode.create(pb.get(i));
+        float density = dm.pixel_density();
+        // Option 2 in fullscreen exclusive mode: hide non-1.0 density modes
+        if (Math.abs(density - 1.0f) > 0.01f) {
+          continue;
         }
-        return Integer.compare(m1.getBitsPerPixel(), m2.getBitsPerPixel());
-    }
+        int bpp = SDL_BITSPERPIXEL(dm.format());
+        int physW = dm.w();
+        int physH = dm.h();
 
-    static List<SerializableDisplayMode> filterAndSortModes(List<SerializableDisplayMode> modes) {
-        Map<Resolution, SerializableDisplayMode> bestModes = new HashMap<>();
-        for (SerializableDisplayMode mode : modes) {
-            Resolution key = new Resolution(mode.getWidth(), mode.getHeight());
-            bestModes.merge(key, mode, (existing, replacement) -> compareModePreference(replacement, existing) > 0
-                    ? replacement : existing);
+        if (physW >= SerializableDisplayMode.MIN_WIDTH && physH >= SerializableDisplayMode.MIN_HEIGHT) {
+          modes.add(new SerializableDisplayMode(physW, physH, bpp, (int) dm.refresh_rate()));
         }
-        return bestModes.values().stream()
-                .sorted((m1, m2) -> {
-                    int cmp = Integer.compare(m2.getWidth(), m1.getWidth());
-                    if (cmp != 0) return cmp;
-                    return Integer.compare(m2.getHeight(), m1.getHeight());
-                })
-                .collect(Collectors.toList());
+      }
+      nSDL_free(pb.address());
     }
 
-    @Override
-    public List<SerializableDisplayMode> getWindowedDisplayModes() {
-        int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle)
-                : SDL_GetPrimaryDisplay();
+    return filterAndSortModes(modes);
+  }
+
+  private record Resolution(int width, int height) {}
+
+  private static int compareModePreference(SerializableDisplayMode m1, SerializableDisplayMode m2) {
+    if (m1.getFrequency() != m2.getFrequency()) {
+      return Integer.compare(m1.getFrequency(), m2.getFrequency());
+    }
+    return Integer.compare(m1.getBitsPerPixel(), m2.getBitsPerPixel());
+  }
+
+  static List<SerializableDisplayMode> filterAndSortModes(List<SerializableDisplayMode> modes) {
+    Map<Resolution, SerializableDisplayMode> bestModes = new HashMap<>();
+    for (SerializableDisplayMode mode : modes) {
+      Resolution key = new Resolution(mode.getWidth(), mode.getHeight());
+      bestModes.merge(
+          key,
+          mode,
+          (existing, replacement) -> compareModePreference(replacement, existing) > 0 ? replacement : existing);
+    }
+    return bestModes.values().stream()
+        .sorted((m1, m2) -> {
+          int cmp = Integer.compare(m2.getWidth(), m1.getWidth());
+          if (cmp != 0) return cmp;
+          return Integer.compare(m2.getHeight(), m1.getHeight());
+        })
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<SerializableDisplayMode> getWindowedDisplayModes() {
+    int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle) : SDL_GetPrimaryDisplay();
+    if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
+
+    int maxW = 3840;
+    int maxH = 2160;
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      SDL_Rect rect = SDL_Rect.malloc(stack);
+      if (SDL_GetDisplayUsableBounds(displayID, rect)) {
+        maxW = rect.w();
+        maxH = rect.h();
+      }
+    }
+
+    final int limitW = maxW;
+    final int limitH = maxH;
+
+    return Arrays.stream(SerializableDisplayMode.WINDOWED_PRESETS)
+        .filter(mode -> mode.getWidth() <= limitW && mode.getHeight() <= limitH)
+        .sorted(Comparator.comparingInt(SerializableDisplayMode::getWidth).reversed())
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public SerializableDisplayMode getDisplayMode() {
+    if (lastCreatedMode != null) {
+      return lastCreatedMode;
+    }
+    if (isExclusiveFullscreen()) {
+      return new SerializableDisplayMode(cachedWidth, cachedHeight, 32, 60);
+    }
+    return new SerializableDisplayMode(cachedLogicalWidth, cachedLogicalHeight, 32, 60);
+  }
+
+  @Override
+  public void setDisplayMode(SerializableDisplayMode mode) throws Exception {
+    this.lastCreatedMode = mode;
+    if (windowHandle == MemoryUtil.NULL) return;
+
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      if (isFullscreen()) {
+        int displayID = SDL_GetDisplayForWindow(windowHandle);
         if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
-
-        int maxW = 3840;
-        int maxH = 2160;
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            SDL_Rect rect = SDL_Rect.malloc(stack);
-            if (SDL_GetDisplayUsableBounds(displayID, rect)) {
-                maxW = rect.w();
-                maxH = rect.h();
-            }
+        SDL_DisplayMode match = findMatchingDisplayMode(stack, displayID, mode);
+        if (match != null) {
+          SDL_SetWindowFullscreenMode(windowHandle, match);
+          SDL_SyncWindow(windowHandle);
+          logger.info(
+              "setDisplayMode: switched fullscreen to "
+                  + match.w()
+                  + "x"
+                  + match.h()
+                  + " density="
+                  + match.pixel_density()
+                  + " freq="
+                  + match.refresh_rate());
+        } else {
+          SDL_SetWindowFullscreenMode(windowHandle, null);
+          SDL_SyncWindow(windowHandle);
+          logger.info("setDisplayMode: switched to borderless desktop fullscreen for mode " + mode);
         }
-
-        final int limitW = maxW;
-        final int limitH = maxH;
-
-        return Arrays.stream(SerializableDisplayMode.WINDOWED_PRESETS)
-                .filter(mode -> mode.getWidth() <= limitW && mode.getHeight() <= limitH)
-                .sorted(Comparator.comparingInt(SerializableDisplayMode::getWidth).reversed())
-                .collect(Collectors.toList());
+      } else {
+        SDL_SetWindowSize(windowHandle, mode.getWidth(), mode.getHeight());
+        SDL_SetWindowPosition(windowHandle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+        SDL_SyncWindow(windowHandle);
+      }
+      updateCachedDimensions();
+      GL11.glViewport(0, 0, cachedWidth, cachedHeight);
+      if (eventListener != null) {
+        eventListener.onResized(cachedWidth, cachedHeight);
+      }
     }
+  }
 
-    @Override
-    public SerializableDisplayMode getDisplayMode() {
-        if (lastCreatedMode != null) {
-            return lastCreatedMode;
-        }
-        if (isExclusiveFullscreen()) {
-            return new SerializableDisplayMode(cachedWidth, cachedHeight, 32, 60);
-        }
-        return new SerializableDisplayMode(cachedLogicalWidth, cachedLogicalHeight, 32, 60);
+  @Override
+  public void setIcon(Path imagePath) {
+    if (windowHandle == MemoryUtil.NULL || imagePath == null) return;
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      IntBuffer w = stack.mallocInt(1);
+      IntBuffer h = stack.mallocInt(1);
+      IntBuffer comp = stack.mallocInt(1);
+
+      ByteBuffer image = STBImage.stbi_load(imagePath.toString(), w, h, comp, 4);
+      if (image == null) {
+        logger.warning("Failed to load icon image: " + STBImage.stbi_failure_reason());
+        return;
+      }
+
+      SDL_Surface surface = SDL_CreateSurfaceFrom(w.get(0), h.get(0), SDL_PIXELFORMAT_ABGR8888, image, w.get(0) * 4);
+      if (surface != null) {
+        SDL_SetWindowIcon(windowHandle, surface);
+        SDL_DestroySurface(surface);
+      }
+      STBImage.stbi_image_free(image);
     }
+  }
 
-    @Override
-    public void setDisplayMode(SerializableDisplayMode mode) throws Exception {
-        this.lastCreatedMode = mode;
-        if (windowHandle == MemoryUtil.NULL) return;
+  @Override
+  public void restore() {
+    if (windowHandle != MemoryUtil.NULL) {
+      SDL_RestoreWindow(windowHandle);
+      updateCachedWindowFlags();
+    }
+  }
 
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            if (isFullscreen()) {
-                int displayID = SDL_GetDisplayForWindow(windowHandle);
-                if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
-                SDL_DisplayMode match = findMatchingDisplayMode(stack, displayID, mode);
-                if (match != null) {
-                    SDL_SetWindowFullscreenMode(windowHandle, match);
-                    SDL_SyncWindow(windowHandle);
-                    logger.info("setDisplayMode: switched fullscreen to " + match.w() + "x" + match.h() + " density="
-                            + match.pixel_density() + " freq=" + match.refresh_rate());
-                } else {
-                    SDL_SetWindowFullscreenMode(windowHandle, null);
-                    SDL_SyncWindow(windowHandle);
-                    logger.info("setDisplayMode: switched to borderless desktop fullscreen for mode " + mode);
+  @Override
+  public void minimize() {
+    if (windowHandle != MemoryUtil.NULL) {
+      SDL_MinimizeWindow(windowHandle);
+      updateCachedWindowFlags();
+    }
+  }
+
+  @Override
+  public void show() {
+    if (windowHandle != MemoryUtil.NULL) {
+      SDL_ShowWindow(windowHandle);
+      updateCachedWindowFlags();
+    }
+  }
+
+  @Override
+  public void focus() {
+    if (windowHandle != MemoryUtil.NULL) {
+      SDL_RaiseWindow(windowHandle);
+    }
+  }
+
+  @Override
+  public void makeCurrent() throws Exception {
+    if (windowHandle != MemoryUtil.NULL && glContext != MemoryUtil.NULL) {
+      if (!SDL_GL_MakeCurrent(windowHandle, glContext)) {
+        throw new IllegalStateException("Failed to make OpenGL context current: " + SDL_GetError());
+      }
+    }
+  }
+
+  @Override
+  public boolean isFullscreen() {
+    if (windowHandle == MemoryUtil.NULL) return false;
+    long flags = SDL_GetWindowFlags(windowHandle);
+    return (flags & SDL_WINDOW_FULLSCREEN) != 0;
+  }
+
+  @Override
+  public Vector2f getMonitorPhysicalSize() {
+    if (isMac) {
+      initMacFFI();
+      if (cgDisplayScreenSizeHandle != null && cgMainDisplayID != MemoryUtil.NULL) {
+        try (Arena arena = Arena.ofConfined()) {
+          int displayID = JNI.invokeI(cgMainDisplayID);
+          MemorySegment result =
+              (MemorySegment) cgDisplayScreenSizeHandle.invokeExact((SegmentAllocator) arena, displayID);
+          double width = result.get(ValueLayout.JAVA_DOUBLE, 0);
+          double height = result.get(ValueLayout.JAVA_DOUBLE, 8);
+          if (width > 0 && height > 0) {
+            return new Vector2f((float) width, (float) height);
+          }
+        } catch (Throwable t) {
+          logger.log(Level.FINE, "Failed to query macOS physical display size", t);
+        }
+      }
+    }
+    return new Vector2f(500, 300);
+  }
+
+  @Override
+  public Vector2f getMonitorContentScale() {
+    int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle) : SDL_GetPrimaryDisplay();
+    if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
+    float scale = SDL_GetDisplayContentScale(displayID);
+    if (scale <= 0f) {
+      scale = getPixelDensity();
+    }
+    return new Vector2f(scale, scale);
+  }
+
+  @Override
+  public Vector2f getWindowContentScale() {
+    float density = getPixelDensity();
+    return new Vector2f(density, density);
+  }
+
+  @Override
+  public float getPixelDensity() {
+    if (windowHandle == MemoryUtil.NULL) return 1.0f;
+    float density = SDL_GetWindowPixelDensity(windowHandle);
+    return density > 0f ? density : 1.0f;
+  }
+
+  @Override
+  public boolean isExclusiveFullscreenMode(SerializableDisplayMode mode) {
+    if (windowHandle == MemoryUtil.NULL) return false;
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      int displayID = SDL_GetDisplayForWindow(windowHandle);
+      if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
+      return findMatchingDisplayMode(stack, displayID, mode) != null;
+    }
+  }
+
+  @Override
+  public boolean isExclusiveFullscreen() {
+    if (windowHandle == MemoryUtil.NULL) return false;
+    return isFullscreen() && SDL_GetWindowFullscreenMode(windowHandle) != null;
+  }
+
+  @Override
+  public void updateSystemUI(boolean playing) {}
+
+  @Override
+  public void showOpenFileDialog(String filterName, String filterPattern, Consumer<@Nullable Path> callback) {
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      SDL_DialogFileFilter.Buffer filters = SDL_DialogFileFilter.malloc(1, stack);
+      filters.get(0).name(stack.UTF8(filterName)).pattern(stack.UTF8(filterPattern));
+      SDLDialog.SDL_ShowOpenFileDialog(
+          (userdata, filelist, filter) -> {
+            if (filelist != MemoryUtil.NULL) {
+              long ptr = MemoryUtil.memGetAddress(filelist);
+              if (ptr != MemoryUtil.NULL) {
+                String path = MemoryUtil.memUTF8(ptr);
+                if (path != null) {
+                  callback.accept(Path.of(path));
+                  return;
                 }
-            } else {
-                SDL_SetWindowSize(windowHandle, mode.getWidth(), mode.getHeight());
-                SDL_SetWindowPosition(windowHandle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-                SDL_SyncWindow(windowHandle);
+              }
             }
-            updateCachedDimensions();
-            GL11.glViewport(0, 0, cachedWidth, cachedHeight);
-            if (eventListener != null) {
-                eventListener.onResized(cachedWidth, cachedHeight);
-            }
-        }
+            callback.accept(null);
+          },
+          MemoryUtil.NULL,
+          windowHandle,
+          filters,
+          (CharSequence) null,
+          false);
     }
+  }
 
-    @Override
-    public void setIcon(Path imagePath) {
-        if (windowHandle == MemoryUtil.NULL || imagePath == null) return;
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer w = stack.mallocInt(1);
-            IntBuffer h = stack.mallocInt(1);
-            IntBuffer comp = stack.mallocInt(1);
-
-            ByteBuffer image = STBImage.stbi_load(imagePath.toString(), w, h, comp, 4);
-            if (image == null) {
-                logger.warning("Failed to load icon image: " + STBImage.stbi_failure_reason());
-                return;
-            }
-
-            SDL_Surface surface = SDL_CreateSurfaceFrom(w.get(0), h.get(0), SDL_PIXELFORMAT_ABGR8888, image, w.get(0)
-                    * 4);
-            if (surface != null) {
-                SDL_SetWindowIcon(windowHandle, surface);
-                SDL_DestroySurface(surface);
-            }
-            STBImage.stbi_image_free(image);
-        }
-    }
-
-    @Override
-    public void restore() {
-        if (windowHandle != MemoryUtil.NULL) {
-            SDL_RestoreWindow(windowHandle);
-            updateCachedWindowFlags();
-        }
-    }
-
-    @Override
-    public void minimize() {
-        if (windowHandle != MemoryUtil.NULL) {
-            SDL_MinimizeWindow(windowHandle);
-            updateCachedWindowFlags();
-        }
-    }
-
-    @Override
-    public void show() {
-        if (windowHandle != MemoryUtil.NULL) {
-            SDL_ShowWindow(windowHandle);
-            updateCachedWindowFlags();
-        }
-    }
-
-    @Override
-    public void focus() {
-        if (windowHandle != MemoryUtil.NULL) {
-            SDL_RaiseWindow(windowHandle);
-        }
-    }
-
-    @Override
-    public void makeCurrent() throws Exception {
-        if (windowHandle != MemoryUtil.NULL && glContext != MemoryUtil.NULL) {
-            if (!SDL_GL_MakeCurrent(windowHandle, glContext)) {
-                throw new IllegalStateException("Failed to make OpenGL context current: " + SDL_GetError());
-            }
-        }
-    }
-
-    @Override
-    public boolean isFullscreen() {
-        if (windowHandle == MemoryUtil.NULL) return false;
-        long flags = SDL_GetWindowFlags(windowHandle);
-        return (flags & SDL_WINDOW_FULLSCREEN) != 0;
-    }
-
-    @Override
-    public Vector2f getMonitorPhysicalSize() {
-        if (isMac) {
-            initMacFFI();
-            if (cgDisplayScreenSizeHandle != null && cgMainDisplayID != MemoryUtil.NULL) {
-                try (Arena arena = Arena.ofConfined()) {
-                    int displayID = JNI.invokeI(cgMainDisplayID);
-                    MemorySegment result = (MemorySegment) cgDisplayScreenSizeHandle.invokeExact((SegmentAllocator) arena, displayID);
-                    double width = result.get(ValueLayout.JAVA_DOUBLE, 0);
-                    double height = result.get(ValueLayout.JAVA_DOUBLE, 8);
-                    if (width > 0 && height > 0) {
-                        return new Vector2f((float) width, (float) height);
-                    }
-                } catch (Throwable t) {
-                    logger.log(Level.FINE, "Failed to query macOS physical display size", t);
+  @Override
+  public void showSaveFileDialog(
+      String filterName, String filterPattern, @Nullable String defaultLocation, Consumer<@Nullable Path> callback) {
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      SDL_DialogFileFilter.Buffer filters = SDL_DialogFileFilter.malloc(1, stack);
+      filters.get(0).name(stack.UTF8(filterName)).pattern(stack.UTF8(filterPattern));
+      SDLDialog.SDL_ShowSaveFileDialog(
+          (userdata, filelist, filter) -> {
+            if (filelist != MemoryUtil.NULL) {
+              long ptr = MemoryUtil.memGetAddress(filelist);
+              if (ptr != MemoryUtil.NULL) {
+                String path = MemoryUtil.memUTF8(ptr);
+                if (path != null) {
+                  callback.accept(Path.of(path));
+                  return;
                 }
+              }
             }
-        }
-        return new Vector2f(500, 300);
+            callback.accept(null);
+          },
+          MemoryUtil.NULL,
+          windowHandle,
+          filters,
+          defaultLocation);
     }
-
-    @Override
-    public Vector2f getMonitorContentScale() {
-        int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle)
-                : SDL_GetPrimaryDisplay();
-        if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
-        float scale = SDL_GetDisplayContentScale(displayID);
-        if (scale <= 0f) {
-            scale = getPixelDensity();
-        }
-        return new Vector2f(scale, scale);
-    }
-
-    @Override
-    public Vector2f getWindowContentScale() {
-        float density = getPixelDensity();
-        return new Vector2f(density, density);
-    }
-
-    @Override
-    public float getPixelDensity() {
-        if (windowHandle == MemoryUtil.NULL) return 1.0f;
-        float density = SDL_GetWindowPixelDensity(windowHandle);
-        return density > 0f ? density : 1.0f;
-    }
-
-    @Override
-    public boolean isExclusiveFullscreenMode(SerializableDisplayMode mode) {
-        if (windowHandle == MemoryUtil.NULL) return false;
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            int displayID = SDL_GetDisplayForWindow(windowHandle);
-            if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
-            return findMatchingDisplayMode(stack, displayID, mode) != null;
-        }
-    }
-
-    @Override
-    public boolean isExclusiveFullscreen() {
-        if (windowHandle == MemoryUtil.NULL) return false;
-        return isFullscreen() && SDL_GetWindowFullscreenMode(windowHandle) != null;
-    }
-
-    @Override
-    public void updateSystemUI(boolean playing) {
-    }
-
-    @Override
-    public void showOpenFileDialog(String filterName, String filterPattern, Consumer<@Nullable Path> callback) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            SDL_DialogFileFilter.Buffer filters = SDL_DialogFileFilter.malloc(1, stack);
-            filters.get(0).name(stack.UTF8(filterName)).pattern(stack.UTF8(filterPattern));
-            SDLDialog.SDL_ShowOpenFileDialog((userdata, filelist, filter) -> {
-                if (filelist != MemoryUtil.NULL) {
-                    long ptr = MemoryUtil.memGetAddress(filelist);
-                    if (ptr != MemoryUtil.NULL) {
-                        String path = MemoryUtil.memUTF8(ptr);
-                        if (path != null) {
-                            callback.accept(Path.of(path));
-                            return;
-                        }
-                    }
-                }
-                callback.accept(null);
-            }, MemoryUtil.NULL, windowHandle, filters, (CharSequence) null, false);
-        }
-    }
-
-    @Override
-    public void showSaveFileDialog(String filterName, String filterPattern, @Nullable String defaultLocation,
-            Consumer<@Nullable Path> callback) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            SDL_DialogFileFilter.Buffer filters = SDL_DialogFileFilter.malloc(1, stack);
-            filters.get(0).name(stack.UTF8(filterName)).pattern(stack.UTF8(filterPattern));
-            SDLDialog.SDL_ShowSaveFileDialog((userdata, filelist, filter) -> {
-                if (filelist != MemoryUtil.NULL) {
-                    long ptr = MemoryUtil.memGetAddress(filelist);
-                    if (ptr != MemoryUtil.NULL) {
-                        String path = MemoryUtil.memUTF8(ptr);
-                        if (path != null) {
-                            callback.accept(Path.of(path));
-                            return;
-                        }
-                    }
-                }
-                callback.accept(null);
-            }, MemoryUtil.NULL, windowHandle, filters, defaultLocation);
-        }
-    }
+  }
 }

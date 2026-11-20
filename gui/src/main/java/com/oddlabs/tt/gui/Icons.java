@@ -7,6 +7,12 @@ import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.util.Color;
 import com.oddlabs.util.Utils;
+import java.io.IOException;
+import java.net.URL;
+import java.util.NoSuchElementException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -14,119 +20,106 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.net.URL;
-import java.util.NoSuchElementException;
-
-/**
- * Utilities for loading icon atlases.
- */
+/// Utilities for loading icon atlases.
 public final class Icons {
-    private Icons() {
-        // no instances
+  private Icons() {
+    // no instances
+  }
+
+  static Node loadFile(String xml_file, @Nullable ErrorHandler error_handler) {
+    URL url = Utils.makeURL(xml_file);
+
+    try {
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setValidating(true);
+      DocumentBuilder builder = factory.newDocumentBuilder();
+      builder.setErrorHandler(error_handler);
+      Document document = builder.parse(url.openStream());
+      return document.getDocumentElement();
+    } catch (ParserConfigurationException | SAXException | IOException e) {
+      throw new IllegalStateException("Failed to load icon atlas: " + xml_file, e);
     }
+  }
 
+  static Texture loadTexture(Node n) {
+    return loadTexture(n.getAttributes().getNamedItem("texture").getNodeValue());
+  }
 
-    static Node loadFile(String xml_file, @Nullable ErrorHandler error_handler) {
-        URL url = Utils.makeURL(xml_file);
+  public static Texture loadTexture(String tex_file) {
+    return Resources.findResource(TextureFile.forUI(tex_file));
+  }
 
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setValidating(true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            builder.setErrorHandler(error_handler);
-            Document document = builder.parse(url.openStream());
-            return document.getDocumentElement();
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new IllegalStateException("Failed to load icon atlas: " + xml_file, e);
-        }
+  static Node getNodeByName(String name, Node n) {
+    NodeList nl = n.getChildNodes();
+    for (int i = 0; i < nl.getLength(); i++) {
+      if (nl.item(i).getNodeName().equals(name)) return nl.item(i);
     }
+    assert false : "Missing node: " + name;
+    throw new NoSuchElementException("Missing node: " + name);
+  }
 
-    static Texture loadTexture(Node n) {
-        return loadTexture(n.getAttributes().getNamedItem("texture").getNodeValue());
-    }
+  static int getInt(Node n, String key) {
+    String string = n.getAttributes().getNamedItem(key).getNodeValue();
+    return Integer.parseInt(string);
+  }
 
-    public static Texture loadTexture(String tex_file) {
-        return Resources.findResource(TextureFile.forUI(tex_file));
-    }
+  static float getFloat(Node n, String key) {
+    String string = n.getAttributes().getNamedItem(key).getNodeValue();
+    return Float.parseFloat(string);
+  }
 
-    static Node getNodeByName(String name, Node n) {
-        NodeList nl = n.getChildNodes();
-        for (int i = 0; i < nl.getLength(); i++) {
-            if (nl.item(i).getNodeName().equals(name))
-                return nl.item(i);
-        }
-        assert false : "Missing node: " + name;
-        throw new NoSuchElementException("Missing node: " + name);
-    }
+  static ModeIconQuads getNamedIconQuads(Node n, String name, Texture texture) {
+    return getIconQuads(getNodeByName(name, n), texture);
+  }
 
-    static int getInt(Node n, String key) {
-        String string = n.getAttributes().getNamedItem(key).getNodeValue();
-        return Integer.parseInt(string);
-    }
+  static IconQuad getNamedIconQuad(Node n, String name, Texture texture) {
+    return getIconQuad(getNodeByName(name, n), texture);
+  }
 
-    static float getFloat(Node n, String key) {
-        String string = n.getAttributes().getNamedItem(key).getNodeValue();
-        return Float.parseFloat(string);
-    }
+  static ModeIconQuads getIconQuads(Node n, Texture texture) {
+    return new ModeIconQuads(
+        getIconQuad(getNodeByName("normal", n), texture),
+        getIconQuad(getNodeByName("active", n), texture),
+        getIconQuad(getNodeByName("disabled", n), texture));
+  }
 
-    static ModeIconQuads getNamedIconQuads(Node n, String name,
-            Texture texture) {
-        return getIconQuads(getNodeByName(name, n), texture);
-    }
+  static IconQuad getIconQuad(Node n, Texture texture) {
+    Node q = getNodeByName("quad", n);
+    return parseIconQuad(q, texture);
+  }
 
-    static IconQuad getNamedIconQuad(Node n, String name, Texture texture) {
-        return getIconQuad(getNodeByName(name, n), texture);
-    }
+  static IconQuad parseIconQuad(Node q, Texture texture) {
+    int left = getInt(q, "left");
+    int top = getInt(q, "top");
+    int right = getInt(q, "right");
+    int bottom = getInt(q, "bottom");
 
-    static ModeIconQuads getIconQuads(Node n, Texture texture) {
-        return new ModeIconQuads(
-                getIconQuad(getNodeByName("normal", n), texture),
-                getIconQuad(getNodeByName("active", n), texture),
-                getIconQuad(getNodeByName("disabled", n), texture)
-        );
-    }
+    float texW = texture.getWidth();
+    float texH = texture.getHeight();
 
-    static IconQuad getIconQuad(Node n, Texture texture) {
-        Node q = getNodeByName("quad", n);
-        return parseIconQuad(q, texture);
-    }
+    // Apply a half-texel inset to UVs to prevent atlas bleeding with GL_LINEAR filtering.
+    // We only apply this if the quad has sufficient size to avoid flipping UVs.
+    float insetU = (right - left) >= 1 ? 0.5f : 0.0f;
+    float insetV = (bottom - top) >= 1 ? 0.5f : 0.0f;
 
-    static IconQuad parseIconQuad(Node q, Texture texture) {
-        int left = getInt(q, "left");
-        int top = getInt(q, "top");
-        int right = getInt(q, "right");
-        int bottom = getInt(q, "bottom");
+    float u1 = (left + insetU) / texW;
+    float v1 = 1f - (bottom - insetV) / texH;
+    float u2 = (right - insetU) / texW;
+    float v2 = 1f - (top + insetV) / texH;
 
-        float texW = texture.getWidth();
-        float texH = texture.getHeight();
+    return new IconQuad(u1, v1, u2, v2, (right - left) / 2, (bottom - top) / 2, texture);
+  }
 
-        // Apply a half-texel inset to UVs to prevent atlas bleeding with GL_LINEAR filtering.
-        // We only apply this if the quad has sufficient size to avoid flipping UVs.
-        float insetU = (right - left) >= 1 ? 0.5f : 0.0f;
-        float insetV = (bottom - top) >= 1 ? 0.5f : 0.0f;
+  static Color.Linear getNamedColor(Node n, String name) {
+    return getColor(getNodeByName(name, n));
+  }
 
-        float u1 = (left + insetU) / texW;
-        float v1 = 1f - (bottom - insetV) / texH;
-        float u2 = (right - insetU) / texW;
-        float v2 = 1f - (top + insetV) / texH;
-
-        return new IconQuad(u1, v1, u2, v2, (right - left) / 2, (bottom - top) / 2, texture);
-    }
-
-    static Color.Linear getNamedColor(Node n, String name) {
-        return getColor(getNodeByName(name, n));
-    }
-
-    static Color.Linear getColor(Node n) {
-        Node q = getNodeByName("color", n);
-        float r = getFloat(q, "r");
-        float g = getFloat(q, "g");
-        float b = getFloat(q, "b");
-        float a = getFloat(q, "a");
-        return new Color.Standard(r, g, b, a).linear();
-    }
+  static Color.Linear getColor(Node n) {
+    Node q = getNodeByName("color", n);
+    float r = getFloat(q, "r");
+    float g = getFloat(q, "g");
+    float b = getFloat(q, "b");
+    float a = getFloat(q, "a");
+    return new Color.Standard(r, g, b, a).linear();
+  }
 }

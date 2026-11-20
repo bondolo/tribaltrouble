@@ -14,95 +14,89 @@ import org.jspecify.annotations.Nullable;
 
 /// Domain-level query and actuation boundary between `UnitState` implementations and world entities.
 public interface UnitContext {
-    int getGridX();
+  int getGridX();
 
-    int getGridY();
+  int getGridY();
 
-    boolean isDead();
+  boolean isDead();
 
-    boolean hasAbility(int abilityMask);
+  boolean hasAbility(int abilityMask);
 
-    /// Returns whether the entity is within `maxDist` (or adjacent when `maxDist == 0`) of `target`.
-    boolean isCloseEnough(float maxDist, Target target);
+  /// Returns whether the entity is within `maxDist` (or adjacent when `maxDist == 0`) of `target`.
+  boolean isCloseEnough(float maxDist, Target target);
 
-    float getAttackRange(Target target);
+  float getAttackRange(Target target);
 
-    @Nullable
-    Selectable<?> scanForEnemy(int range);
+  @Nullable Selectable<?> scanForEnemy(int range);
 
-    int getCarriedSupplyCount();
+  int getCarriedSupplyCount();
 
-    @Nullable
-    SupplyType getCarriedSupplyType();
+  @Nullable SupplyType getCarriedSupplyType();
 
-    boolean isSupplyFull();
+  boolean isSupplyFull();
 
-    boolean isLegacyDeterministic();
+  boolean isLegacyDeterministic();
 
-    float nextRandomFloat();
+  float nextRandomFloat();
 
-    void switchToIdleAnimation();
+  void switchToIdleAnimation();
 
-    void switchToMovingAnimation();
+  void switchToMovingAnimation();
 
-    void switchAnimation(float speed, Unit.Animation animation);
+  void switchAnimation(float speed, Unit.Animation animation);
 
-    void initWalkTarget(Target target, float range);
+  void initWalkTarget(Target target, float range);
 
-    void initSupplyFinderWalk(SupplyType supplyType);
+  void initSupplyFinderWalk(SupplyType supplyType);
 
-    @Nullable
-    Supply getFoundSupply();
+  @Nullable Supply getFoundSupply();
 
-    void initSupplyBuildingFinderWalk();
+  void initSupplyBuildingFinderWalk();
 
-    @Nullable
-    Building getFoundSupplyBuilding();
+  @Nullable Building getFoundSupplyBuilding();
 
-    PathTracker.State stepWalk(float dt);
+  PathTracker.State stepWalk(float dt);
 
-    @Nullable
-    Movable getCurrentWalkBlocker();
+  @Nullable Movable getCurrentWalkBlocker();
 
-    void aimAtTarget(Target target);
+  void aimAtTarget(Target target);
 
-    void setOffsetZ(float z);
+  void setOffsetZ(float z);
 
-    float getWeaponSecondsPerRelease(float animSpeed);
+  float getWeaponSecondsPerRelease(float animSpeed);
 
-    void launchWeaponAttack(Selectable<?> target);
+  void launchWeaponAttack(Selectable<?> target);
 
-    /// Consumes harvest swing PRNG (when legacy-deterministic), emits harvest notification, and increments carried
-    /// supply if `supply.hit()`.
-    void onHarvestSwing(Supply supply);
+  /// Consumes harvest swing PRNG (when legacy-deterministic), emits harvest notification, and increments carried supply
+  /// if `supply.hit()`.
+  void onHarvestSwing(Supply supply);
 
-    void consumeOneWoodForRepair();
+  void consumeOneWoodForRepair();
 
-    /// Consumes repair swing PRNG (when legacy-deterministic) and emits repair notification.
-    void onRepairSwing();
+  /// Consumes repair swing PRNG (when legacy-deterministic) and emits repair notification.
+  void onRepairSwing();
 
-    void applyRepairPoint(Building building);
+  void applyRepairPoint(Building building);
 
-    /// Deposits carried supplies into `building`; returns `true` if supplies remain or cannot deposit more.
-    boolean depositSupplyIntoBuilding(Building building);
+  /// Deposits carried supplies into `building`; returns `true` if supplies remain or cannot deposit more.
+  boolean depositSupplyIntoBuilding(Building building);
 
-    boolean isBuildingPlacementLegal(Building building);
+  boolean isBuildingPlacementLegal(Building building);
 
-    void placeBuilding(Building building);
+  void placeBuilding(Building building);
 
-    boolean isFriendlySupplyContainerBuilding(Building building);
+  boolean isFriendlySupplyContainerBuilding(Building building);
 
-    boolean canEnterBuilding(Building building);
+  boolean canEnterBuilding(Building building);
 
-    void enterBuilding(Building building);
+  void enterBuilding(Building building);
 
-    /// Enters `building` without depositing carried supplies or weapon tier.
-    void enterBuildingWithoutDeposit(Building building);
+  /// Enters `building` without depositing carried supplies or weapon tier.
+  void enterBuildingWithoutDeposit(Building building);
 
-    @Nullable
-    Magic executeMagic(MagicFactory factory);
+  @Nullable Magic executeMagic(MagicFactory factory);
 
-    void registerMagic(Magic magic);
+  void registerMagic(Magic magic);
 
-    void removeFromWorld();
+  void removeFromWorld();
 }

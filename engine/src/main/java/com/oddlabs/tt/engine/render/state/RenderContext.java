@@ -5,179 +5,173 @@ import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.vbo.VBO;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Manages low-level OpenGL rendering state and hardware pipeline bindings.
- */
+/// Manages low-level OpenGL rendering state and hardware pipeline bindings.
 public interface RenderContext {
-    ScopedValue<RenderContext> CURRENT = ScopedValue.newInstance();
+  ScopedValue<RenderContext> CURRENT = ScopedValue.newInstance();
 
-    static RenderContext current() {
-        if (!CURRENT.isBound()) {
-            throw new IllegalStateException("RenderContext is not bound on this thread");
-        }
-        return CURRENT.get();
+  static RenderContext current() {
+    if (!CURRENT.isBound()) {
+      throw new IllegalStateException("RenderContext is not bound on this thread");
     }
+    return CURRENT.get();
+  }
 
-    GpuTimer gpuTimer();
+  GpuTimer gpuTimer();
 
-    // State Management
-    void setBlendMode(BlendMode mode);
+  // State Management
+  void setBlendMode(BlendMode mode);
 
-    void setDepthMode(DepthMode mode);
+  void setDepthMode(DepthMode mode);
 
-    void setCullMode(CullMode mode);
+  void setCullMode(CullMode mode);
 
-    // Alpha to Coverage
-    void setSampleAlphaToCoverage(boolean enabled);
+  // Alpha to Coverage
+  void setSampleAlphaToCoverage(boolean enabled);
 
-    // Low-level state
-    void setDepthTest(boolean enabled);
+  // Low-level state
+  void setDepthTest(boolean enabled);
 
-    void setDepthMask(boolean enabled);
+  void setDepthMask(boolean enabled);
 
-    void setBlend(boolean enabled);
+  void setBlend(boolean enabled);
 
-    void setCullFace(boolean enabled);
+  void setCullFace(boolean enabled);
 
-    void setCullFaceMode(int mode);
+  void setCullFaceMode(int mode);
 
-    // Depth Func
-    void setDepthFunc(int func);
+  // Depth Func
+  void setDepthFunc(int func);
 
-    // Color Mask
-    void setColorMask(boolean r, boolean g, boolean b, boolean a);
+  // Color Mask
+  void setColorMask(boolean r, boolean g, boolean b, boolean a);
 
-    // Texture Management
-    void setActiveTexture(int unit);
+  // Texture Management
+  void setActiveTexture(int unit);
 
-    void setTexture(int unit, int textureHandle);
+  void setTexture(int unit, int textureHandle);
 
-    void setTexture(int unit, int textureHandle, int target);
+  void setTexture(int unit, int textureHandle, int target);
 
-    default void setTexture(int unit, @Nullable Texture texture) {
-        if (texture != null) {
-            setTexture(unit, texture.getHandle(), texture.getTarget());
-        } else {
-            setTexture(unit, 0);
-        }
+  default void setTexture(int unit, @Nullable Texture texture) {
+    if (texture != null) {
+      setTexture(unit, texture.getHandle(), texture.getTarget());
+    } else {
+      setTexture(unit, 0);
     }
+  }
 
-    // Viewport
-    void setViewport(int x, int y, int w, int h);
+  // Viewport
+  void setViewport(int x, int y, int w, int h);
 
-    int getViewportWidth();
+  int getViewportWidth();
 
-    int getViewportHeight();
+  int getViewportHeight();
 
-    // Scissor
-    void setScissorTest(boolean enabled);
+  // Scissor
+  void setScissorTest(boolean enabled);
 
-    void setScissor(int x, int y, int w, int h);
+  void setScissor(int x, int y, int w, int h);
 
-    ScopedState withScissor(int x, int y, int w, int h);
+  ScopedState withScissor(int x, int y, int w, int h);
 
-    // VAO
-    void bindVertexArray(int vao);
+  // VAO
+  void bindVertexArray(int vao);
 
-    // VBO / FBO
-    void bindBuffer(int target, int buffer);
+  // VBO / FBO
+  void bindBuffer(int target, int buffer);
 
-    void bindFramebuffer(int target, int framebuffer);
+  void bindFramebuffer(int target, int framebuffer);
 
-    void invalidateTexture(int handle);
+  void invalidateTexture(int handle);
 
-    void invalidateBuffer(int handle);
+  void invalidateBuffer(int handle);
 
-    void invalidateFramebuffer(int handle);
+  void invalidateFramebuffer(int handle);
 
-    void invalidateVertexArray(int handle);
+  void invalidateVertexArray(int handle);
 
-    default void bindBuffer(int target, @Nullable VBO vbo) {
-        bindBuffer(target, vbo != null ? vbo.getHandle() : 0);
-    }
+  default void bindBuffer(int target, @Nullable VBO vbo) {
+    bindBuffer(target, vbo != null ? vbo.getHandle() : 0);
+  }
 
-    // Clearing
-    void clearColor(float r, float g, float b, float a);
+  // Clearing
+  void clearColor(float r, float g, float b, float a);
 
-    void clear(boolean color, boolean depth);
+  void clear(boolean color, boolean depth);
 
-    // Scoped State (Try-with-resources)
-    // These return a Closeable that restores the PREVIOUS state.
-    ScopedState withBlendMode(BlendMode mode);
+  // Scoped State (Try-with-resources)
+  // These return a Closeable that restores the PREVIOUS state.
+  ScopedState withBlendMode(BlendMode mode);
 
-    ScopedState withDepthMode(DepthMode mode);
+  ScopedState withDepthMode(DepthMode mode);
 
-    ScopedState withCullMode(CullMode mode);
+  ScopedState withCullMode(CullMode mode);
 
-    ScopedState withSampleAlphaToCoverage(boolean enabled);
+  ScopedState withSampleAlphaToCoverage(boolean enabled);
 
-    ScopedState withColorMask(boolean r, boolean g, boolean b, boolean a);
+  ScopedState withColorMask(boolean r, boolean g, boolean b, boolean a);
 
-    ScopedState withDepthFunc(int func);
+  ScopedState withDepthFunc(int func);
 
-    ScopedState withDrawBuffers(boolean mask);
+  ScopedState withDrawBuffers(boolean mask);
 
-    ScopedState withFramebufferSrgb(boolean enabled);
+  ScopedState withFramebufferSrgb(boolean enabled);
 
-    // UBO Management
-    void updateGlobalState(java.nio.ByteBuffer data);
+  // UBO Management
+  void updateGlobalState(java.nio.ByteBuffer data);
 
-    // Custom State
-    void setBlendFunc(int src, int dst);
+  // Custom State
+  void setBlendFunc(int src, int dst);
 
-    void setBlendEquation(int equation);
+  void setBlendEquation(int equation);
 
-    /**
-     * Resets the blend functions for all draw buffers to the current global setBlendFunc state.
-     * This is useful to clear per-buffer blend states (e.g. from glBlendFunci) after complex composite operations.
-     */
-    void resetBlendFunc();
+  /// Resets the blend functions for all draw buffers to the current global setBlendFunc state. This is useful to clear
+  /// per-buffer blend states (e.g. from glBlendFunci) after complex composite operations.
+  void resetBlendFunc();
 
-    void setDrawBuffers(boolean mask);
+  void setDrawBuffers(boolean mask);
 
-    void setDrawBuffers(int[] attachments);
+  void setDrawBuffers(int[] attachments);
 
-    void setFramebufferSrgb(boolean enabled);
+  void setFramebufferSrgb(boolean enabled);
 
-    // Lifecycle & Debug
-    void init();
+  // Lifecycle & Debug
+  void init();
 
-    /**
-     * Resets shadowed pipeline state, forcing subsequent state transitions to communicate with OpenGL.
-     */
-    void reset();
+  /// Resets shadowed pipeline state, forcing subsequent state transitions to communicate with OpenGL.
+  void reset();
 
-    void applyDefaults(boolean enableMultisample);
+  void applyDefaults(boolean enableMultisample);
 
-    void setMultisampleEnabled(boolean enabled);
+  void setMultisampleEnabled(boolean enabled);
 
-    boolean isMultisampleEnabled();
+  boolean isMultisampleEnabled();
 
-    /**
-     * Sets the effective sample count for multisampling.
-     *
-     * @param samples the sample count (e.g. 0, 2, 4)
-     */
-    void setEffectiveSamples(int samples);
+  /**
+   * Sets the effective sample count for multisampling.
+   *
+   * @param `samples` the sample count (e.g. 0, 2, 4)
+   */
+  void setEffectiveSamples(int samples);
 
-    /**
-     * Returns the effective sample count for multisampling.
-     *
-     * @return the sample count (0 if multisampling is disabled)
-     */
-    int getEffectiveSamples();
+  /**
+   * Returns the effective sample count for multisampling.
+   *
+   * @return the sample count (0 if multisampling is disabled)
+   */
+  int getEffectiveSamples();
 
-    /**
-     * Returns the maximum number of samples supported for multisampling by the hardware.
-     *
-     * @return the maximum hardware sample count
-     */
-    int getMaxSamples();
+  /**
+   * Returns the maximum number of samples supported for multisampling by the hardware.
+   *
+   * @return the maximum hardware sample count
+   */
+  int getMaxSamples();
 
-    /**
-     * Verifies that the tracked state matches the actual OpenGL state.
-     *
-     * @throws IllegalStateException if a mismatch is found.
-     */
-    void validate();
+  /**
+   * Verifies that the tracked state matches the actual OpenGL state.
+   *
+   * @throws `IllegalStateException` if a mismatch is found.
+   */
+  void validate();
 }

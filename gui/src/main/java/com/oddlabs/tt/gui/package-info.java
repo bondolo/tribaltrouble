@@ -1,6 +1,4 @@
-/**
- * Graphical user interface components and icon management.
- */
+/** Graphical user interface components and icon management. */
 @NullMarked
 package com.oddlabs.tt.gui;
 

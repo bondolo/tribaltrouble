@@ -1,136 +1,109 @@
 package com.oddlabs.tt.audio;
 
+import java.io.IOException;
+import java.net.URL;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
-import java.io.IOException;
-import java.net.URL;
-
-/**
- * Manages audio playback, including positional audio sources, music, and ambient sounds.
- * Responsible for initializing the audio backend, allocating sources, and controlling global audio properties like
- * listener orientation and master gain.
- */
+/// Manages audio playback, including positional audio sources, music, and ambient sounds. Responsible for initializing
+/// the audio backend, allocating sources, and controlling global audio properties like listener orientation and master
+/// gain.
 public interface AudioManager extends AudioImplementation, AutoCloseable {
 
-    @Override
-    default void close() {
-    }
+  @Override
+  default void close() {}
 
-    @Override
-    AudioPlayer newAudio(float x, float y, float z, AudioParameters params);
+  @Override
+  AudioPlayer newAudio(float x, float y, float z, AudioParameters params);
 
-    void update(float dt);
+  void update(float dt);
 
-    AudioManager startSources();
+  AudioManager startSources();
 
-    AudioManager stopSources();
+  AudioManager stopSources();
 
-    Vector3fc getListenerPosition();
+  Vector3fc getListenerPosition();
 
-    float getMasterGain();
+  float getMasterGain();
 
-    float getMusicGain();
+  float getMusicGain();
 
-    float getSfxGain();
+  float getSfxGain();
 
-    boolean isEFXSupported();
+  boolean isEFXSupported();
 
-    boolean isHRTFSupported();
+  boolean isHRTFSupported();
 
-    boolean isSfxEnabled();
+  boolean isSfxEnabled();
 
-    AudioManager setHeadphoneMode(boolean enabled);
+  AudioManager setHeadphoneMode(boolean enabled);
 
-    AudioManager setListenerOrientation(Vector3fc forward, Vector3fc up);
+  AudioManager setListenerOrientation(Vector3fc forward, Vector3fc up);
 
-    AudioManager setListenerPosition(float x, float y, float z);
+  AudioManager setListenerPosition(float x, float y, float z);
 
-    AudioManager setMasterGain(float gain);
+  AudioManager setMasterGain(float gain);
 
-    AudioManager setMusicGain(float gain);
+  AudioManager setMusicGain(float gain);
 
-    AudioManager setSfxGain(float gain);
+  AudioManager setSfxGain(float gain);
 
-    AudioManager setSfxEnabled(boolean enabled);
+  AudioManager setSfxEnabled(boolean enabled);
 
-    boolean startPlaying();
+  boolean startPlaying();
 
-    Audio createAudio(URL file) throws IOException;
+  Audio createAudio(URL file) throws IOException;
 
-    /**
-     * Toggles music playback on or off based on current settings.
-     */
-    default void toggleMusic() {
-    }
+  /// Toggles music playback on or off based on current settings.
+  default void toggleMusic() {}
 
-    /**
-     * Enables or disables music playback.
-     */
-    default void setMusicEnabled(boolean enabled) {
-    }
+  /// Enables or disables music playback.
+  default void setMusicEnabled(boolean enabled) {}
 
-    /**
-     * Returns true if music playback is currently enabled in settings.
-     */
-    default boolean isMusicEnabled() {
-        return false;
-    }
+  /// Returns true if music playback is currently enabled in settings.
+  default boolean isMusicEnabled() {
+    return false;
+  }
 
-    /**
-     * Sets the background music track with an optional start delay in seconds.
-     */
-    default void setMusic(AudioParameters musicAudio, float delay) {
-    }
+  /// Sets the background music track with an optional start delay in seconds.
+  default void setMusic(AudioParameters musicAudio, float delay) {}
 
-    /**
-     * Sets the background music track immediately.
-     */
-    default void setMusic(AudioParameters musicAudio) {
-        setMusic(musicAudio, 0f);
-    }
+  /// Sets the background music track immediately.
+  default void setMusic(AudioParameters musicAudio) {
+    setMusic(musicAudio, 0f);
+  }
 
-    /**
-     * Returns the currently active music audio player, or null if no track is playing.
-     */
-    default @Nullable AudioPlayer getMusicPlayer() {
-        return null;
-    }
+  /// Returns the currently active music audio player, or null if no track is playing.
+  default @Nullable AudioPlayer getMusicPlayer() {
+    return null;
+  }
 
-    /**
-     * Default exponential decay rate for music fade-out (~2.5 seconds).
-     */
-    float DEFAULT_MUSIC_DECAY_RATE = 1.2f;
+  /// Default exponential decay rate for music fade-out (~2.5 seconds).
+  float DEFAULT_MUSIC_DECAY_RATE = 1.2f;
 
-    /**
-     * Stops the current music track immediately.
-     */
-    default void stopMusic() {
-    }
+  /// Stops the current music track immediately.
+  default void stopMusic() {}
 
-    /**
-     * Stops the current music track with the given fade-out rate.
-     *
-     * @param decayRate the rate of exponential decay (higher values result in a faster fade-out)
-     */
-    default void stopMusic(float decayRate) {
-    }
+  /**
+   * Stops the current music track with the given fade-out rate.
+   *
+   * @param `decayRate` the rate of exponential decay (higher values result in a faster fade-out)
+   */
+  default void stopMusic(float decayRate) {}
 
-    /**
-     * Sets the active environmental reverb preset.
-     *
-     * @param type The reverb type to apply.
-     */
-    default void setReverb(ReverbType type) {
-    }
+  /**
+   * Sets the active environmental reverb preset.
+   *
+   * @param `type` The reverb type to apply.
+   */
+  default void setReverb(ReverbType type) {}
 
-    /**
-     * Blends between two environmental reverb presets.
-     *
-     * @param from The source reverb environment.
-     * @param to The target reverb environment.
-     * @param factor Blending factor [0.0 - 1.0].
-     */
-    default void setReverb(ReverbType from, ReverbType to, float factor) {
-    }
+  /**
+   * Blends between two environmental reverb presets.
+   *
+   * @param `from` The source reverb environment.
+   * @param `to` The target reverb environment.
+   * @param `factor` Blending factor [0.0 - 1.0].
+   */
+  default void setReverb(ReverbType from, ReverbType to, float factor) {}
 }

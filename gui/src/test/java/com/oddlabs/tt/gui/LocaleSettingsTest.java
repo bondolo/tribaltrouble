@@ -1,30 +1,29 @@
 package com.oddlabs.tt.gui;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Properties;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 final class LocaleSettingsTest {
 
-    @Test
-    void testDefaultValues() {
-        LocaleSettings settings = new LocaleSettings();
-        assertEquals("default", settings.language);
-    }
+  @Test
+  void testDefaultValues() {
+    LocaleSettings settings = new LocaleSettings();
+    assertEquals("default", settings.language);
+  }
 
-    @Test
-    void testSerializationRoundTrip() {
-        LocaleSettings original = new LocaleSettings();
-        original.language = "da";
+  @Test
+  void testSerializationRoundTrip() {
+    LocaleSettings original = new LocaleSettings();
+    original.language = "da";
 
-        Properties props = new Properties();
-        original.saveToProperties(props);
+    Properties props = new Properties();
+    original.saveToProperties(props);
 
-        LocaleSettings loaded = new LocaleSettings();
-        loaded.loadFromProperties(props);
+    LocaleSettings loaded = new LocaleSettings();
+    loaded.loadFromProperties(props);
 
-        assertEquals("da", loaded.language);
-    }
+    assertEquals("da", loaded.language);
+  }
 }

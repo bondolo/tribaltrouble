@@ -8,151 +8,147 @@ import com.oddlabs.tt.simulation.landscape.SupplyPlacement;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.util.LinkedList;
-import org.jspecify.annotations.Nullable;
-
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Base class for spatial partition tree nodes in the world entity grid.
- */
-public abstract sealed class AbstractElementNode<T extends Element<T>> extends BoundingBox permits ElementNode,
-        ElementLeaf {
-    private final LinkedList<T> models = new LinkedList<>();
+/// Base class for spatial partition tree nodes in the world entity grid.
+public abstract sealed class AbstractElementNode<T extends Element<T>> extends BoundingBox
+    permits ElementNode, ElementLeaf {
+  private final LinkedList<T> models = new LinkedList<>();
 
-    private int child_count = 0;
+  private int child_count = 0;
 
-    private final @Nullable AbstractElementNode<T> owner;
+  private final @Nullable AbstractElementNode<T> owner;
 
-    protected AbstractElementNode(@Nullable AbstractElementNode<T> owner) {
-        this.owner = owner;
+  protected AbstractElementNode(@Nullable AbstractElementNode<T> owner) {
+    this.owner = owner;
+  }
+
+  protected final int getChildCount() {
+    return child_count - models.size();
+  }
+
+  protected final AbstractElementNode<T> insertElement(T model) {
+    expandBoundsZ(model.bmin_z);
+    expandBoundsZ(model.bmax_z);
+    return doInsertElement(model);
+  }
+
+  protected abstract AbstractElementNode<T> doInsertElement(T model);
+
+  public final void removeElement(T model) {
+    models.remove(model);
+  }
+
+  protected final void incElementCount() {
+    child_count++;
+  }
+
+  protected final AbstractElementNode<T> reinsertElement(T model) {
+    child_count--;
+    assert child_count >= 0;
+    if (contains(model) || owner == null) {
+      return insertElement(model);
+    } else {
+      return owner.reinsertElement(model);
     }
+  }
 
-    protected final int getChildCount() {
-        return child_count - models.size();
-    }
+  private int getDepth() {
+    if (owner != null) return 1 + owner.getDepth();
+    else return 0;
+  }
 
-    protected final AbstractElementNode<T> insertElement(T model) {
-        expandBoundsZ(model.bmin_z);
-        expandBoundsZ(model.bmax_z);
-        return doInsertElement(model);
-    }
+  protected final AbstractElementNode<T> addElement(T model) {
+    models.addLast(model);
+    return this;
+  }
 
-    protected abstract AbstractElementNode<T> doInsertElement(T model);
+  public final LinkedList<T> getModels() {
+    return models;
+  }
 
-    public final void removeElement(T model) {
-        models.remove(model);
-    }
+  public static <T extends Element<T>> AbstractElementNode<T> newRoot(HeightMap heightmap) {
+    AbstractElementNode<T> root = new ElementNode<>(null, heightmap.getGridUnitsPerWorld(), 0, 0);
+    return root;
+  }
 
-    protected final void incElementCount() {
-        child_count++;
-    }
+  public static void buildSupplies(
+      World world,
+      List<SupplyPlacement> ironPlacements,
+      List<SupplyPlacement> rockPlacements,
+      List<PlantLocation>[] plants,
+      Terrain terrain) {
+    buildRockSupplies(world, rockPlacements);
+    buildIronSupplies(world, ironPlacements);
+    addPlants(world, plants, terrain);
+  }
 
-    protected final AbstractElementNode<T> reinsertElement(T model) {
-        child_count--;
-        assert child_count >= 0;
-        if (contains(model) || owner == null) {
-            return insertElement(model);
+  private static void buildRockSupplies(World world, List<SupplyPlacement> placements) {
+    IO.println("num_rocks = " + placements.size());
+    placements.forEach(placement -> {
+      int grid_x = placement.x();
+      int grid_y = placement.y();
+      float x = UnitGrid.coordinateFromGrid(grid_x) + world.getRandom().nextFloat(-.5f, .5f);
+      float y = UnitGrid.coordinateFromGrid(grid_y) + world.getRandom().nextFloat(-.5f, .5f);
+      if (AppConfig.LEGACY_DETERMINISTIC) {
+        world.getRandom().nextFloat();
+      }
+      new RockSupply(world, grid_x, grid_y, x, y, true);
+    });
+  }
+
+  private static void buildIronSupplies(World world, List<SupplyPlacement> placements) {
+    IO.println("num_iron = " + placements.size());
+    placements.forEach(placement -> {
+      int grid_x = placement.x();
+      int grid_y = placement.y();
+      float x = UnitGrid.coordinateFromGrid(grid_x) + world.getRandom().nextFloat(-.5f, .5f);
+      float y = UnitGrid.coordinateFromGrid(grid_y) + world.getRandom().nextFloat(-.5f, .5f);
+      if (AppConfig.LEGACY_DETERMINISTIC) {
+        world.getRandom().nextFloat();
+      }
+      new IronSupply(world, grid_x, grid_y, x, y, true);
+    });
+  }
+
+  private static void addPlants(World world, List<PlantLocation>[] plants, Terrain terrain) {
+    int num_plants = 0;
+    for (int t = 0; t < plants.length; t++) {
+      num_plants += plants[t].size();
+      for (PlantLocation placement : plants[t]) {
+        float dir_x =
+            AppConfig.LEGACY_DETERMINISTIC ? world.getRandom().nextFloat() : ThreadLocalRandom.current().nextFloat();
+        float dir_y =
+            AppConfig.LEGACY_DETERMINISTIC ? world.getRandom().nextFloat() : ThreadLocalRandom.current().nextFloat();
+        float len_sqr = dir_x * dir_x + dir_y * dir_y;
+        if (len_sqr < .001) {
+          dir_x = 1f;
+          dir_y = 0f;
         } else {
-            return owner.reinsertElement(model);
+          float inv_len = 1f / (float) Math.sqrt(len_sqr);
+          dir_x *= inv_len;
+          dir_y *= inv_len;
         }
-    }
-
-    private int getDepth() {
-        if (owner != null)
-            return 1 + owner.getDepth();
-        else
-            return 0;
-    }
-
-    protected final AbstractElementNode<T> addElement(T model) {
-        models.addLast(model);
-        return this;
-    }
-
-    public final LinkedList<T> getModels() {
-        return models;
-    }
-
-    public static <T extends Element<T>> AbstractElementNode<T> newRoot(HeightMap heightmap) {
-        AbstractElementNode<T> root = new ElementNode<>(null, heightmap.getGridUnitsPerWorld(), 0, 0);
-        return root;
-    }
-
-    public static void buildSupplies(World world, List<SupplyPlacement> ironPlacements, List<
-            SupplyPlacement> rockPlacements, List<PlantLocation>[] plants, Terrain terrain) {
-        buildRockSupplies(world, rockPlacements);
-        buildIronSupplies(world, ironPlacements);
-        addPlants(world, plants, terrain);
-    }
-
-    private static void buildRockSupplies(World world, List<SupplyPlacement> placements) {
-        IO.println("num_rocks = " + placements.size());
-        placements.forEach(placement -> {
-            int grid_x = placement.x();
-            int grid_y = placement.y();
-            float x = UnitGrid.coordinateFromGrid(grid_x) + world.getRandom().nextFloat(-.5f, .5f);
-            float y = UnitGrid.coordinateFromGrid(grid_y) + world.getRandom().nextFloat(-.5f, .5f);
-            if (AppConfig.LEGACY_DETERMINISTIC) {
-                world.getRandom().nextFloat();
-            }
-            new RockSupply(world, grid_x, grid_y, x, y, true);
-        });
-    }
-
-    private static void buildIronSupplies(World world, List<SupplyPlacement> placements) {
-        IO.println("num_iron = " + placements.size());
-        placements.forEach(placement -> {
-            int grid_x = placement.x();
-            int grid_y = placement.y();
-            float x = UnitGrid.coordinateFromGrid(grid_x) + world.getRandom().nextFloat(-.5f, .5f);
-            float y = UnitGrid.coordinateFromGrid(grid_y) + world.getRandom().nextFloat(-.5f, .5f);
-            if (AppConfig.LEGACY_DETERMINISTIC) {
-                world.getRandom().nextFloat();
-            }
-            new IronSupply(world, grid_x, grid_y, x, y, true);
-        });
-    }
-
-    private static void addPlants(World world, List<PlantLocation>[] plants,
-            Terrain terrain) {
-        int num_plants = 0;
-        for (int t = 0; t < plants.length; t++) {
-            num_plants += plants[t].size();
-            for (PlantLocation placement : plants[t]) {
-                float dir_x = AppConfig.LEGACY_DETERMINISTIC
-                        ? world.getRandom().nextFloat()
-                        : ThreadLocalRandom.current().nextFloat();
-                float dir_y = AppConfig.LEGACY_DETERMINISTIC
-                        ? world.getRandom().nextFloat()
-                        : ThreadLocalRandom.current().nextFloat();
-                float len_sqr = dir_x * dir_x + dir_y * dir_y;
-                if (len_sqr < .001) {
-                    dir_x = 1f;
-                    dir_y = 0f;
-                } else {
-                    float inv_len = 1f / (float) Math.sqrt(len_sqr);
-                    dir_x *= inv_len;
-                    dir_y *= inv_len;
-                }
-                new Plants(world, placement.x(), placement.y(), dir_x, dir_y,
-                        terrain, t);
-            }
-            if (AppConfig.LEGACY_DETERMINISTIC) {
-                int sizeMultiplier = switch (world.getHeightMap().getMetersPerWorld()) {
-                    case 256 -> 1;
-                    case 512 -> 4;
-                    case 1024 -> 16;
-                    default -> 1;
-                };
-                int maxPlantsPerType = sizeMultiplier * 64;
-                int dummySlots = maxPlantsPerType - plants[t].size();
-                for (int i = 0; i < dummySlots; i++) {
-                    world.getRandom().nextFloat();
-                    world.getRandom().nextFloat();
-                }
-            }
+        new Plants(world, placement.x(), placement.y(), dir_x, dir_y, terrain, t);
+      }
+      if (AppConfig.LEGACY_DETERMINISTIC) {
+        int sizeMultiplier =
+            switch (world.getHeightMap().getMetersPerWorld()) {
+              case 256 -> 1;
+              case 512 -> 4;
+              case 1024 -> 16;
+              default -> 1;
+            };
+        int maxPlantsPerType = sizeMultiplier * 64;
+        int dummySlots = maxPlantsPerType - plants[t].size();
+        for (int i = 0; i < dummySlots; i++) {
+          world.getRandom().nextFloat();
+          world.getRandom().nextFloat();
         }
-        IO.println("num_plants = " + num_plants);
+      }
     }
+    IO.println("num_plants = " + num_plants);
+  }
 }

@@ -1,6 +1,4 @@
-/**
- * Campaign-specific island definitions and scenario logic.
- */
+/** Campaign-specific island definitions and scenario logic. */
 @NullMarked
 package com.oddlabs.tt.content.campaign;
 

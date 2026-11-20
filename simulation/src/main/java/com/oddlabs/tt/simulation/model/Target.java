@@ -1,22 +1,20 @@
 package com.oddlabs.tt.simulation.model;
 
-/**
- * Spatial or entity target that can be tracked, selected, or attacked.
- */
+/// Spatial or entity target that can be tracked, selected, or attacked.
 public interface Target {
-    int getGridX();
+  int getGridX();
 
-    int getGridY();
+  int getGridY();
 
-    float getPositionX();
+  float getPositionX();
 
-    float getPositionY();
+  float getPositionY();
 
-    float getSize();
+  float getSize();
 
-    boolean isDead();
+  boolean isDead();
 
-    default boolean isAlive() {
-        return !isDead();
-    }
+  default boolean isAlive() {
+    return !isDead();
+  }
 }

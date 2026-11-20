@@ -1,6 +1,4 @@
-/**
- * OpenGL Vertex Buffer Object (VBO) and Vertex Array Object (VAO) management.
- */
+/** OpenGL Vertex Buffer Object (VBO) and Vertex Array Object (VAO) management. */
 @NullMarked
 package com.oddlabs.tt.engine.vbo;
 

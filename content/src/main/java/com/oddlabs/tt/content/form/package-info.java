@@ -1,6 +1,4 @@
-/**
- * Game menus, dialogs, settings panels, and modal forms.
- */
+/** Game menus, dialogs, settings panels, and modal forms. */
 @NullMarked
 package com.oddlabs.tt.content.form;
 

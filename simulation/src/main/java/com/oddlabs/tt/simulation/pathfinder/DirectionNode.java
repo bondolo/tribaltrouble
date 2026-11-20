@@ -7,5 +7,4 @@ package com.oddlabs.tt.simulation.pathfinder;
  * @param directionX delta X along the grid (-1, 0, or 1)
  * @param directionY delta Y along the grid (-1, 0, or 1)
  */
-public record DirectionNode(float invLength, int directionX, int directionY) {
-}
+public record DirectionNode(float invLength, int directionX, int directionY) {}

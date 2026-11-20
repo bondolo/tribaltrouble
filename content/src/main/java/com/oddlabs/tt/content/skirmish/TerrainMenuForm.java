@@ -4,36 +4,32 @@ import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Form;
 
-/**
- * Form wrapper embedding the skirmish terrain configuration menu.
- */
+/// Form wrapper embedding the skirmish terrain configuration menu.
 public final class TerrainMenuForm extends Form implements TerrainMenuListener {
-    private final TerrainMenu terrain;
+  private final TerrainMenu terrain;
 
-    public TerrainMenuForm(Menu main_menu) {
-        super(main_menu.getGUIRoot());
-        terrain = new TerrainMenu(main_menu, false, this);
-        addChild(terrain);
-        terrain.place();
-        compileCanvas();
+  public TerrainMenuForm(Menu main_menu) {
+    super(main_menu.getGUIRoot());
+    terrain = new TerrainMenu(main_menu, false, this);
+    addChild(terrain);
+    terrain.place();
+    compileCanvas();
+  }
+
+  @Override
+  public void setFocus(FocusDirection direction) {
+    if (direction == FocusDirection.BACKWARD) {
+      super.setFocus(direction);
+    } else {
+      terrain.setFocus(direction);
     }
+  }
 
-    @Override
-    public void setFocus(FocusDirection direction) {
-        if (direction == FocusDirection.BACKWARD) {
-            super.setFocus(direction);
-        } else {
-            terrain.setFocus(direction);
-        }
-    }
+  @Override
+  public void terrainMenuCancel() {
+    cancel();
+  }
 
-    @Override
-    public void terrainMenuCancel() {
-        cancel();
-    }
-
-    @Override
-    public void terrainMenuOK() {
-
-    }
+  @Override
+  public void terrainMenuOK() {}
 }

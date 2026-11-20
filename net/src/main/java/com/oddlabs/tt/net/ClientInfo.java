@@ -9,63 +9,60 @@ import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.SlotType;
-
 import java.io.IOException;
 
-/** Server-side context representing a connected client session. */
+/// Server-side context representing a connected client session.
 public final class ClientInfo implements GameServerInterface, ConnectionInterface {
-    private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(GameServerInterface.class);
-    private final Server server;
-    private final PlayerSlot player_slot;
+  private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(GameServerInterface.class);
+  private final Server server;
+  private final PlayerSlot player_slot;
 
-    public ClientInfo(Server server, PlayerSlot player_slot) {
-        this.player_slot = player_slot;
-        this.server = server;
-    }
+  public ClientInfo(Server server, PlayerSlot player_slot) {
+    this.player_slot = player_slot;
+    this.server = server;
+  }
 
-    @Override
-    public void handle(Object sender, ARMIEvent armi_event) {
-        try {
-            armi_event.execute(interface_methods, this);
-        } catch (IllegalARMIEventException e) {
-            server.handleError((AbstractConnection) sender, e);
-        }
+  @Override
+  public void handle(Object sender, ARMIEvent armi_event) {
+    try {
+      armi_event.execute(interface_methods, this);
+    } catch (IllegalARMIEventException e) {
+      server.handleError((AbstractConnection) sender, e);
     }
+  }
 
-    @Override
-    public void writeBufferDrained(AbstractConnection conn) {
-    }
+  @Override
+  public void writeBufferDrained(AbstractConnection conn) {}
 
-    @Override
-    public void error(AbstractConnection conn, IOException e) {
-        server.handleError(conn, e);
-    }
+  @Override
+  public void error(AbstractConnection conn, IOException e) {
+    server.handleError(conn, e);
+  }
 
-    @Override
-    public void connected(AbstractConnection conn) {
-    }
+  @Override
+  public void connected(AbstractConnection conn) {}
 
-    public PlayerSlot getPlayerSlot() {
-        return player_slot;
-    }
+  public PlayerSlot getPlayerSlot() {
+    return player_slot;
+  }
 
-    @Override
-    public void resetSlotState(int slot, boolean open) {
-        server.resetSlotState(player_slot, slot, open);
-    }
+  @Override
+  public void resetSlotState(int slot, boolean open) {
+    server.resetSlotState(player_slot, slot, open);
+  }
 
-    @Override
-    public void setPlayerSlot(int slot, SlotType type, Race race, int team, boolean ready, AIDifficulty ai_difficulty) {
-        server.setPlayerSlot(player_slot, slot, type, race, team, ready, ai_difficulty);
-    }
+  @Override
+  public void setPlayerSlot(int slot, SlotType type, Race race, int team, boolean ready, AIDifficulty ai_difficulty) {
+    server.setPlayerSlot(player_slot, slot, type, race, team, ready, ai_difficulty);
+  }
 
-    @Override
-    public void startServer() {
-        server.startServer(player_slot);
-    }
+  @Override
+  public void startServer() {
+    server.startServer(player_slot);
+  }
 
-    @Override
-    public void chat(String chat) {
-        server.chat(player_slot, chat);
-    }
+  @Override
+  public void chat(String chat) {
+    server.chat(player_slot, chat);
+  }
 }

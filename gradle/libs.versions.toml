@@ -2,6 +2,7 @@
 errorprone = "2.52.0"
 errorpronePlugin = "5.2.0"
 flyway = "11.3.4"
+googleJavaFormat = "2.0.0"
 joml = "1.10.9"
 jspecify = "1.0.1"
 junit = "6.1.3"

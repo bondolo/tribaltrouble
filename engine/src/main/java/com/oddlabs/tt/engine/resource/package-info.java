@@ -1,6 +1,4 @@
-/**
- * Resource management for engine graphics assets, fonts, and world descriptors.
- */
+/** Resource management for engine graphics assets, fonts, and world descriptors. */
 @NullMarked
 package com.oddlabs.tt.engine.resource;
 

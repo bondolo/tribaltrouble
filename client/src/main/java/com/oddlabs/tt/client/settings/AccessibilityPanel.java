@@ -1,5 +1,8 @@
 package com.oddlabs.tt.client.settings;
 
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
+
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.gui.CheckBox;
@@ -15,326 +18,326 @@ import com.oddlabs.tt.gui.Slider;
 import com.oddlabs.tt.gui.TitledBorderGroup;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.util.Color;
-
 import java.util.EnumSet;
 import java.util.Set;
 
-import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
-
-/**
- * Settings panel for accessibility features including UI scaling, cursor sizing,
- * high contrast modes, color vision deficiency (CVD) filters, and custom player colors.
- */
+/// Settings panel for accessibility features including UI scaling, cursor sizing, high contrast modes, color vision
+/// deficiency (CVD) filters, and custom player colors.
 public final class AccessibilityPanel extends Panel {
-    private static final int MAX_VALUE = 20;
-    private static final int GROUP_WIDTH = 450;
+  private static final int MAX_VALUE = 20;
+  private static final int GROUP_WIDTH = 450;
+
+  /// Colour vision deficiency (CVD) correction modes.
+  public enum CVDMode {
+    NONE(0),
+    PROTANOPIA(1),
+    DEUTERANOPIA(2),
+    TRITANOPIA(3);
+
+    private final int value;
+
+    private static final Set<CVDMode> VALUES = EnumSet.allOf(CVDMode.class);
+
+    CVDMode(int value) {
+      this.value = value;
+    }
 
     /**
-     * Colour vision deficiency (CVD) correction modes.
+     * Gets the legacy integer value associated with this CVD mode.
+     *
+     * @return the legacy integer value
      */
-    public enum CVDMode {
-        NONE(0),
-        PROTANOPIA(1),
-        DEUTERANOPIA(2),
-        TRITANOPIA(3);
-
-        private final int value;
-
-        private static final Set<CVDMode> VALUES = EnumSet.allOf(CVDMode.class);
-
-        CVDMode(int value) {
-            this.value = value;
-        }
-
-        /**
-         * Gets the legacy integer value associated with this CVD mode.
-         *
-         * @return the legacy integer value
-         */
-        public int getValue() {
-            return value;
-        }
-
-        /**
-         * Resolves the {@link CVDMode} associated with the given legacy integer value.
-         *
-         * @param value legacy integer value
-         * @return the corresponding {@link CVDMode}
-         * @throws IllegalArgumentException if the legacy value is unrecognized
-         */
-        public static CVDMode fromValue(int value) {
-            for (CVDMode mode : VALUES) {
-                if (mode.value == value) {
-                    return mode;
-                }
-            }
-            throw new IllegalArgumentException("Unknown CVD mode value: " + value);
-        }
+    public int getValue() {
+      return value;
     }
 
-    public AccessibilityPanel(GUIRoot gui_root) {
-        super(gui_root, AbstractOptionsMenu.i18n("accessibility_caption"));
-        var groupData = skin.getGroupData();
-        var editFont = skin.getEditFont();
-        var objectSpacing = skin.getFormData().objectSpacing();
-        AccessibilitySettings accessibility = AccessibilitySettings.from(gui_root.getGUI().getSettings());
-
-        final int SLIDER_PADDING = groupData.group().getLeftOffset() + groupData
-                .group().getRightOffset();
-        final int FULL_SLIDER_WIDTH = GROUP_WIDTH - SLIDER_PADDING;
-
-        // Contrast
-        TitledBorderGroup group_contrast = new TitledBorderGroup(gui_root, AbstractOptionsMenu.i18n("contrast_header"));
-        group_contrast.setFixedWidth(GROUP_WIDTH);
-        addChild(group_contrast);
-
-        CheckBox cb_high_contrast = new CheckBox(gui_root, accessibility.high_contrast, AbstractOptionsMenu
-                .i18n("high_contrast"), AbstractOptionsMenu.i18n("high_contrast_tip"));
-        group_contrast.addChild(cb_high_contrast);
-
-        CheckBox cb_invert_colors = new CheckBox(gui_root, accessibility.invert_colours,
-                AbstractOptionsMenu.i18n("invert_colours"), AbstractOptionsMenu.i18n("invert_colours_tip"));
-        cb_invert_colors.setDisabled(!accessibility.high_contrast);
-        group_contrast.addChild(cb_invert_colors);
-
-        Label label_contrast_intensity = new Label(AbstractOptionsMenu.i18n("contrast_intensity"), editFont);
-        group_contrast.addChild(label_contrast_intensity);
-
-        // Support up to 2.0 intensity (40 steps)
-        int label_area_width = 140;
-        label_contrast_intensity.setDim(label_area_width, label_contrast_intensity.getHeight());
-        int contrast_slider_width = GROUP_WIDTH - label_area_width - SLIDER_PADDING - objectSpacing;
-
-        Slider slider_contrast = new Slider(gui_root, contrast_slider_width, 0, 2 * MAX_VALUE,
-                (int) (accessibility.contrast_intensity * MAX_VALUE));
-        slider_contrast.setDisabled(!accessibility.high_contrast);
-        label_contrast_intensity.setDisabled(!accessibility.high_contrast);
-        group_contrast.addChild(slider_contrast);
-
-        Label label_contrast_brightness = new Label(AbstractOptionsMenu.i18n("contrast_brightness"), editFont);
-        label_contrast_brightness.setDim(label_area_width, label_contrast_brightness.getHeight());
-        label_contrast_brightness.setDisabled(!accessibility.high_contrast);
-        group_contrast.addChild(label_contrast_brightness);
-
-        Slider slider_brightness = new Slider(gui_root, contrast_slider_width, -MAX_VALUE, MAX_VALUE,
-                (int) (accessibility.contrast_brightness * 3 * MAX_VALUE));
-        slider_brightness.setDisabled(!accessibility.high_contrast);
-        group_contrast.addChild(slider_brightness);
-
-        Label label_contrast_clarity = new Label(AbstractOptionsMenu.i18n("contrast_clarity"), editFont);
-        label_contrast_clarity.setDim(label_area_width, label_contrast_clarity.getHeight());
-        label_contrast_clarity.setDisabled(!accessibility.high_contrast);
-        group_contrast.addChild(label_contrast_clarity);
-
-        Slider slider_clarity = new Slider(gui_root, contrast_slider_width, 0, MAX_VALUE,
-                (int) (accessibility.contrast_clarity
-                        * MAX_VALUE));
-        slider_clarity.setDisabled(!accessibility.high_contrast);
-        group_contrast.addChild(slider_clarity);
-
-        cb_high_contrast.addCheckBoxListener(marked -> {
-            accessibility.high_contrast = marked;
-            cb_invert_colors.setDisabled(!marked);
-            slider_contrast.setDisabled(!marked);
-            label_contrast_intensity.setDisabled(!marked);
-            slider_brightness.setDisabled(!marked);
-            label_contrast_brightness.setDisabled(!marked);
-            slider_clarity.setDisabled(!marked);
-            label_contrast_clarity.setDisabled(!marked);
-        });
-
-        cb_invert_colors.addCheckBoxListener(marked -> accessibility.invert_colours = marked);
-
-        slider_contrast.addValueListener(value -> accessibility.contrast_intensity
-                = (float) value / MAX_VALUE);
-
-        slider_brightness.addValueListener(value -> accessibility.contrast_brightness
-                = (float) value / (3 * MAX_VALUE));
-
-        slider_clarity.addValueListener(value -> accessibility.contrast_clarity = (float) value
-                / MAX_VALUE);
-
-        cb_high_contrast.place();
-        cb_invert_colors.place(cb_high_contrast, RIGHT_MID);
-        cb_invert_colors.setPos(GROUP_WIDTH - cb_invert_colors.getWidth() - groupData.group()
-                .getRightOffset(), cb_invert_colors.getY());
-
-        label_contrast_intensity.place(cb_high_contrast, BOTTOM_LEFT);
-        slider_contrast.place(label_contrast_intensity, RIGHT_MID);
-
-        label_contrast_brightness.place(label_contrast_intensity, BOTTOM_LEFT);
-        slider_brightness.place(label_contrast_brightness, RIGHT_MID);
-
-        label_contrast_clarity.place(label_contrast_brightness, BOTTOM_LEFT);
-        slider_clarity.place(label_contrast_clarity, RIGHT_MID);
-
-        group_contrast.compileCanvas();
-
-        // CVD
-        TitledBorderGroup group_cvd = new TitledBorderGroup(gui_root, AbstractOptionsMenu.i18n("cvd_header"));
-        group_cvd.setFixedWidth(GROUP_WIDTH);
-        addChild(group_cvd);
-
-        PulldownMenu<CVDMode> pm_cvd = new PulldownMenu<>(gui_root);
-        pm_cvd.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("cvd_standard"), CVDMode.NONE));
-        pm_cvd.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("cvd_protanopia"), CVDMode.PROTANOPIA));
-        pm_cvd.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("cvd_deuteranopia"),
-                CVDMode.DEUTERANOPIA));
-        pm_cvd.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("cvd_tritanopia"), CVDMode.TRITANOPIA));
-
-        Label label_cvd_mode = new Label(AbstractOptionsMenu.i18n("colour_vision"), editFont);
-        label_cvd_mode.setDim(label_area_width, label_cvd_mode.getHeight());
-        group_cvd.addChild(label_cvd_mode);
-
-        Label label_cvd_intensity = new Label(AbstractOptionsMenu.i18n("cvd_intensity"), editFont);
-        label_cvd_intensity.setDim(label_area_width, label_cvd_intensity.getHeight());
-        group_cvd.addChild(label_cvd_intensity);
-
-        // Support up to 2.0 intensity (40 steps)
-        Slider slider_cvd = new Slider(gui_root, contrast_slider_width, 0, 2 * MAX_VALUE,
-                (int) (accessibility.cvd_intensity
-                        * MAX_VALUE));
-        group_cvd.addChild(slider_cvd);
-
-        pm_cvd.addItemChosenListener((_, _) -> {
-            CVDMode mode = pm_cvd.getChosenItem().map(PulldownItem::getAttachment).orElse(CVDMode.NONE);
-            accessibility.cvd_mode = mode.getValue();
-            slider_cvd.setDisabled(mode == CVDMode.NONE);
-            label_cvd_intensity.setDisabled(mode == CVDMode.NONE);
-        });
-
-        int initial_cvd_mode = Math.clamp(accessibility.cvd_mode, 0, pm_cvd.getSize() - 1);
-        PulldownButton<CVDMode> pb_cvd = new PulldownButton<>(gui_root, pm_cvd, initial_cvd_mode,
-                contrast_slider_width);
-        group_cvd.addChild(pb_cvd);
-
-        slider_cvd.addValueListener(value -> accessibility.cvd_intensity = (float) value
-                / MAX_VALUE);
-
-        label_cvd_mode.place();
-        pb_cvd.place(label_cvd_mode, RIGHT_MID);
-        label_cvd_intensity.place(label_cvd_mode, BOTTOM_LEFT);
-        slider_cvd.place(label_cvd_intensity, RIGHT_MID);
-        group_cvd.compileCanvas();
-
-        // Team Colours
-        TitledBorderGroup group_player_colours = new TitledBorderGroup(gui_root, AbstractOptionsMenu.i18n(
-                "team_header"));
-        group_player_colours.setFixedWidth(GROUP_WIDTH);
-        addChild(group_player_colours);
-
-        PulldownMenu<Integer> pm_player = new PulldownMenu<>(gui_root);
-        for (int i = 0; i < accessibility.player_colours.length; i++) {
-            String player_str = AbstractOptionsMenu.i18n("player", Integer.toString(i + 1));
-            PulldownItem<Integer> item = new PulldownItem<>(gui_root, player_str, i);
-            item.setLabelColor(accessibility.linear_player_colours[i]);
-            pm_player.addItem(item);
+    /**
+     * Resolves the {@link CVDMode} associated with the given legacy integer value.
+     *
+     * @param `value` legacy integer value
+     * @return the corresponding {@link CVDMode}
+     * @throws `IllegalArgumentException` if the legacy value is unrecognized
+     */
+    public static CVDMode fromValue(int value) {
+      for (CVDMode mode : VALUES) {
+        if (mode.value == value) {
+          return mode;
         }
-        PulldownButton<Integer> pb_player = new PulldownButton<>(gui_root, pm_player, 0, 150);
-        group_player_colours.addChild(pb_player);
+      }
+      throw new IllegalArgumentException("Unknown CVD mode value: " + value);
+    }
+  }
 
-        // Colour Preview Box
-        class ColourBox extends GUIObject {
-            private Color.Linear colour = Color.Linear.WHITE;
+  public AccessibilityPanel(GUIRoot gui_root) {
+    super(gui_root, AbstractOptionsMenu.i18n("accessibility_caption"));
+    var groupData = skin.getGroupData();
+    var editFont = skin.getEditFont();
+    var objectSpacing = skin.getFormData().objectSpacing();
+    AccessibilitySettings accessibility = AccessibilitySettings.from(gui_root.getGUI().getSettings());
 
-            ColourBox() {
-                setDim(20, 20);
-            }
+    final int SLIDER_PADDING = groupData.group().getLeftOffset() + groupData.group().getRightOffset();
+    final int FULL_SLIDER_WIDTH = GROUP_WIDTH - SLIDER_PADDING;
 
-            @Override
-            protected void renderGeometry(GUIRenderer renderer) {
-                renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), colour);
-            }
+    // Contrast
+    TitledBorderGroup group_contrast = new TitledBorderGroup(gui_root, AbstractOptionsMenu.i18n("contrast_header"));
+    group_contrast.setFixedWidth(GROUP_WIDTH);
+    addChild(group_contrast);
 
-            void setColour(Color c) {
-                this.colour = c instanceof Color.Linear linear ? linear : new Color.Linear(c);
-            }
-        }
-        ColourBox colourBox = new ColourBox();
-        group_player_colours.addChild(colourBox);
+    CheckBox cb_high_contrast =
+        new CheckBox(
+            gui_root,
+            accessibility.high_contrast,
+            AbstractOptionsMenu.i18n("high_contrast"),
+            AbstractOptionsMenu.i18n("high_contrast_tip"));
+    group_contrast.addChild(cb_high_contrast);
 
-        // Hue Slider (Colour Ramp)
-        Slider slider_hue = new Slider(gui_root, FULL_SLIDER_WIDTH, 0, 360, 0);
-        group_player_colours.addChild(slider_hue);
+    CheckBox cb_invert_colors =
+        new CheckBox(
+            gui_root,
+            accessibility.invert_colours,
+            AbstractOptionsMenu.i18n("invert_colours"),
+            AbstractOptionsMenu.i18n("invert_colours_tip"));
+    cb_invert_colors.setDisabled(!accessibility.high_contrast);
+    group_contrast.addChild(cb_invert_colors);
 
-        // Reset Button
-        HorizButton button_reset = new HorizButton(gui_root, AbstractOptionsMenu.i18n("reset"), 100);
-        group_player_colours.addChild(button_reset);
+    Label label_contrast_intensity = new Label(AbstractOptionsMenu.i18n("contrast_intensity"), editFont);
+    group_contrast.addChild(label_contrast_intensity);
 
-        final boolean[] isRefreshing = new boolean[]{false};
+    // Support up to 2.0 intensity (40 steps)
+    int label_area_width = 140;
+    label_contrast_intensity.setDim(label_area_width, label_contrast_intensity.getHeight());
+    int contrast_slider_width = GROUP_WIDTH - label_area_width - SLIDER_PADDING - objectSpacing;
 
-        // Update logic
-        Runnable updateColour = () -> {
-            if (isRefreshing[0]) {
-                return;
-            }
-            int playerIndex = pm_player.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-            float hue = slider_hue.getValue();
-            var newColour = Color.Standard.hsbToRgb(hue / 360f, 1f, 1f);
-            accessibility.setPlayerColour(playerIndex, newColour);
-            World.updateAllPlayerColors(accessibility.linear_player_colours);
-            colourBox.setColour(newColour);
+    Slider slider_contrast =
+        new Slider(
+            gui_root, contrast_slider_width, 0, 2 * MAX_VALUE, (int) (accessibility.contrast_intensity * MAX_VALUE));
+    slider_contrast.setDisabled(!accessibility.high_contrast);
+    label_contrast_intensity.setDisabled(!accessibility.high_contrast);
+    group_contrast.addChild(slider_contrast);
 
-            // Update the pulldown item colour
-            pm_player.getChosenItem().ifPresent(pi -> pi.setLabelColor(newColour));
-            pb_player.setLabelColor(newColour);
+    Label label_contrast_brightness = new Label(AbstractOptionsMenu.i18n("contrast_brightness"), editFont);
+    label_contrast_brightness.setDim(label_area_width, label_contrast_brightness.getHeight());
+    label_contrast_brightness.setDisabled(!accessibility.high_contrast);
+    group_contrast.addChild(label_contrast_brightness);
+
+    Slider slider_brightness =
+        new Slider(
+            gui_root,
+            contrast_slider_width,
+            -MAX_VALUE,
+            MAX_VALUE,
+            (int) (accessibility.contrast_brightness * 3 * MAX_VALUE));
+    slider_brightness.setDisabled(!accessibility.high_contrast);
+    group_contrast.addChild(slider_brightness);
+
+    Label label_contrast_clarity = new Label(AbstractOptionsMenu.i18n("contrast_clarity"), editFont);
+    label_contrast_clarity.setDim(label_area_width, label_contrast_clarity.getHeight());
+    label_contrast_clarity.setDisabled(!accessibility.high_contrast);
+    group_contrast.addChild(label_contrast_clarity);
+
+    Slider slider_clarity =
+        new Slider(gui_root, contrast_slider_width, 0, MAX_VALUE, (int) (accessibility.contrast_clarity * MAX_VALUE));
+    slider_clarity.setDisabled(!accessibility.high_contrast);
+    group_contrast.addChild(slider_clarity);
+
+    cb_high_contrast.addCheckBoxListener(marked -> {
+      accessibility.high_contrast = marked;
+      cb_invert_colors.setDisabled(!marked);
+      slider_contrast.setDisabled(!marked);
+      label_contrast_intensity.setDisabled(!marked);
+      slider_brightness.setDisabled(!marked);
+      label_contrast_brightness.setDisabled(!marked);
+      slider_clarity.setDisabled(!marked);
+      label_contrast_clarity.setDisabled(!marked);
+    });
+
+    cb_invert_colors.addCheckBoxListener(marked -> accessibility.invert_colours = marked);
+
+    slider_contrast.addValueListener(value -> accessibility.contrast_intensity = (float) value / MAX_VALUE);
+
+    slider_brightness.addValueListener(value -> accessibility.contrast_brightness = (float) value / (3 * MAX_VALUE));
+
+    slider_clarity.addValueListener(value -> accessibility.contrast_clarity = (float) value / MAX_VALUE);
+
+    cb_high_contrast.place();
+    cb_invert_colors.place(cb_high_contrast, RIGHT_MID);
+    cb_invert_colors.setPos(
+        GROUP_WIDTH - cb_invert_colors.getWidth() - groupData.group().getRightOffset(), cb_invert_colors.getY());
+
+    label_contrast_intensity.place(cb_high_contrast, BOTTOM_LEFT);
+    slider_contrast.place(label_contrast_intensity, RIGHT_MID);
+
+    label_contrast_brightness.place(label_contrast_intensity, BOTTOM_LEFT);
+    slider_brightness.place(label_contrast_brightness, RIGHT_MID);
+
+    label_contrast_clarity.place(label_contrast_brightness, BOTTOM_LEFT);
+    slider_clarity.place(label_contrast_clarity, RIGHT_MID);
+
+    group_contrast.compileCanvas();
+
+    // CVD
+    TitledBorderGroup group_cvd = new TitledBorderGroup(gui_root, AbstractOptionsMenu.i18n("cvd_header"));
+    group_cvd.setFixedWidth(GROUP_WIDTH);
+    addChild(group_cvd);
+
+    PulldownMenu<CVDMode> pm_cvd = new PulldownMenu<>(gui_root);
+    pm_cvd.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("cvd_standard"), CVDMode.NONE));
+    pm_cvd.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("cvd_protanopia"), CVDMode.PROTANOPIA));
+    pm_cvd.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("cvd_deuteranopia"), CVDMode.DEUTERANOPIA));
+    pm_cvd.addItem(new PulldownItem<>(gui_root, AbstractOptionsMenu.i18n("cvd_tritanopia"), CVDMode.TRITANOPIA));
+
+    Label label_cvd_mode = new Label(AbstractOptionsMenu.i18n("colour_vision"), editFont);
+    label_cvd_mode.setDim(label_area_width, label_cvd_mode.getHeight());
+    group_cvd.addChild(label_cvd_mode);
+
+    Label label_cvd_intensity = new Label(AbstractOptionsMenu.i18n("cvd_intensity"), editFont);
+    label_cvd_intensity.setDim(label_area_width, label_cvd_intensity.getHeight());
+    group_cvd.addChild(label_cvd_intensity);
+
+    // Support up to 2.0 intensity (40 steps)
+    Slider slider_cvd =
+        new Slider(gui_root, contrast_slider_width, 0, 2 * MAX_VALUE, (int) (accessibility.cvd_intensity * MAX_VALUE));
+    group_cvd.addChild(slider_cvd);
+
+    pm_cvd.addItemChosenListener((_, _) -> {
+      CVDMode mode = pm_cvd.getChosenItem().map(PulldownItem::getAttachment).orElse(CVDMode.NONE);
+      accessibility.cvd_mode = mode.getValue();
+      slider_cvd.setDisabled(mode == CVDMode.NONE);
+      label_cvd_intensity.setDisabled(mode == CVDMode.NONE);
+    });
+
+    int initial_cvd_mode = Math.clamp(accessibility.cvd_mode, 0, pm_cvd.getSize() - 1);
+    PulldownButton<CVDMode> pb_cvd = new PulldownButton<>(gui_root, pm_cvd, initial_cvd_mode, contrast_slider_width);
+    group_cvd.addChild(pb_cvd);
+
+    slider_cvd.addValueListener(value -> accessibility.cvd_intensity = (float) value / MAX_VALUE);
+
+    label_cvd_mode.place();
+    pb_cvd.place(label_cvd_mode, RIGHT_MID);
+    label_cvd_intensity.place(label_cvd_mode, BOTTOM_LEFT);
+    slider_cvd.place(label_cvd_intensity, RIGHT_MID);
+    group_cvd.compileCanvas();
+
+    // Team Colours
+    TitledBorderGroup group_player_colours = new TitledBorderGroup(gui_root, AbstractOptionsMenu.i18n("team_header"));
+    group_player_colours.setFixedWidth(GROUP_WIDTH);
+    addChild(group_player_colours);
+
+    PulldownMenu<Integer> pm_player = new PulldownMenu<>(gui_root);
+    for (int i = 0; i < accessibility.player_colours.length; i++) {
+      String player_str = AbstractOptionsMenu.i18n("player", Integer.toString(i + 1));
+      PulldownItem<Integer> item = new PulldownItem<>(gui_root, player_str, i);
+      item.setLabelColor(accessibility.linear_player_colours[i]);
+      pm_player.addItem(item);
+    }
+    PulldownButton<Integer> pb_player = new PulldownButton<>(gui_root, pm_player, 0, 150);
+    group_player_colours.addChild(pb_player);
+
+    // Colour Preview Box
+    class ColourBox extends GUIObject {
+      private Color.Linear colour = Color.Linear.WHITE;
+
+      ColourBox() {
+        setDim(20, 20);
+      }
+
+      @Override
+      protected void renderGeometry(GUIRenderer renderer) {
+        renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), colour);
+      }
+
+      void setColour(Color c) {
+        this.colour = c instanceof Color.Linear linear ? linear : new Color.Linear(c);
+      }
+    }
+    ColourBox colourBox = new ColourBox();
+    group_player_colours.addChild(colourBox);
+
+    // Hue Slider (Colour Ramp)
+    Slider slider_hue = new Slider(gui_root, FULL_SLIDER_WIDTH, 0, 360, 0);
+    group_player_colours.addChild(slider_hue);
+
+    // Reset Button
+    HorizButton button_reset = new HorizButton(gui_root, AbstractOptionsMenu.i18n("reset"), 100);
+    group_player_colours.addChild(button_reset);
+
+    final boolean[] isRefreshing = new boolean[] {false};
+
+    // Update logic
+    Runnable updateColour =
+        () -> {
+          if (isRefreshing[0]) {
+            return;
+          }
+          int playerIndex = pm_player.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+          float hue = slider_hue.getValue();
+          var newColour = Color.Standard.hsbToRgb(hue / 360f, 1f, 1f);
+          accessibility.setPlayerColour(playerIndex, newColour);
+          World.updateAllPlayerColors(accessibility.linear_player_colours);
+          colourBox.setColour(newColour);
+
+          // Update the pulldown item colour
+          pm_player.getChosenItem().ifPresent(pi -> pi.setLabelColor(newColour));
+          pb_player.setLabelColor(newColour);
         };
 
-        Runnable refreshUI = () -> {
-            isRefreshing[0] = true;
-            try {
-                int index = pm_player.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-                var currentColour = accessibility.player_colours[index];
-                float[] hsb = Color.Standard.rgbToHsb(currentColour);
-                slider_hue.setValue((int) (hsb[0] * 360f));
-                colourBox.setColour(currentColour);
-            } finally {
-                isRefreshing[0] = false;
-            }
-        };
-
-        pm_player.addItemChosenListener((_, _) -> refreshUI.run());
-        refreshUI.run();
-
-        slider_hue.addValueListener(_ -> updateColour.run());
-
-        button_reset.addMouseClickListener((_, _, _, _) -> {
+    Runnable refreshUI =
+        () -> {
+          isRefreshing[0] = true;
+          try {
             int index = pm_player.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-            var resetColour = new Color.Standard(
-                    AccessibilitySettings.DEFAULT_PLAYER_COLOURS.get(index));
-            accessibility.setPlayerColour(index, resetColour);
-            World.updateAllPlayerColors(accessibility.linear_player_colours);
-            refreshUI.run();
-            pm_player.getChosenItem().ifPresent(pi -> pi.setLabelColor(accessibility.linear_player_colours[index]));
-            pb_player.setLabelColor(accessibility.linear_player_colours[index]);
-        });
-
-        CheckBox cb_team_stencil = new CheckBox(gui_root, accessibility.team_stencil, AbstractOptionsMenu
-                .i18n("team_stencil"), AbstractOptionsMenu.i18n("team_stencil_tip"));
-        cb_team_stencil.addCheckBoxListener(marked -> accessibility.team_stencil = marked);
-        group_player_colours.addChild(cb_team_stencil);
-
-        pb_player.place();
-        colourBox.place(pb_player, RIGHT_MID);
-        button_reset.place(colourBox, RIGHT_MID);
-        slider_hue.place(pb_player, BOTTOM_LEFT);
-        cb_team_stencil.place(slider_hue, BOTTOM_LEFT);
-
-        group_player_colours.compileCanvas();
-
-        // Placement
-        GUIObject top_spacer = new GUIObject() {
+            var currentColour = accessibility.player_colours[index];
+            float[] hsb = Color.Standard.rgbToHsb(currentColour);
+            slider_hue.setValue((int) (hsb[0] * 360f));
+            colourBox.setColour(currentColour);
+          } finally {
+            isRefreshing[0] = false;
+          }
         };
-        top_spacer.setDim(0, 10);
-        addChild(top_spacer);
 
-        int group_spacing = 25;
-        top_spacer.place();
-        group_contrast.place(top_spacer, BOTTOM_LEFT, 0);
-        group_cvd.place(group_contrast, BOTTOM_LEFT, group_spacing);
-        group_player_colours.place(group_cvd, BOTTOM_LEFT, group_spacing);
+    pm_player.addItemChosenListener((_, _) -> refreshUI.run());
+    refreshUI.run();
 
-        compileCanvas();
-    }
+    slider_hue.addValueListener(_ -> updateColour.run());
+
+    button_reset.addMouseClickListener((_, _, _, _) -> {
+      int index = pm_player.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+      var resetColour = new Color.Standard(AccessibilitySettings.DEFAULT_PLAYER_COLOURS.get(index));
+      accessibility.setPlayerColour(index, resetColour);
+      World.updateAllPlayerColors(accessibility.linear_player_colours);
+      refreshUI.run();
+      pm_player.getChosenItem().ifPresent(pi -> pi.setLabelColor(accessibility.linear_player_colours[index]));
+      pb_player.setLabelColor(accessibility.linear_player_colours[index]);
+    });
+
+    CheckBox cb_team_stencil =
+        new CheckBox(
+            gui_root,
+            accessibility.team_stencil,
+            AbstractOptionsMenu.i18n("team_stencil"),
+            AbstractOptionsMenu.i18n("team_stencil_tip"));
+    cb_team_stencil.addCheckBoxListener(marked -> accessibility.team_stencil = marked);
+    group_player_colours.addChild(cb_team_stencil);
+
+    pb_player.place();
+    colourBox.place(pb_player, RIGHT_MID);
+    button_reset.place(colourBox, RIGHT_MID);
+    slider_hue.place(pb_player, BOTTOM_LEFT);
+    cb_team_stencil.place(slider_hue, BOTTOM_LEFT);
+
+    group_player_colours.compileCanvas();
+
+    // Placement
+    GUIObject top_spacer = new GUIObject() {};
+    top_spacer.setDim(0, 10);
+    addChild(top_spacer);
+
+    int group_spacing = 25;
+    top_spacer.place();
+    group_contrast.place(top_spacer, BOTTOM_LEFT, 0);
+    group_cvd.place(group_contrast, BOTTOM_LEFT, group_spacing);
+    group_player_colours.place(group_cvd, BOTTOM_LEFT, group_spacing);
+
+    compileCanvas();
+  }
 }

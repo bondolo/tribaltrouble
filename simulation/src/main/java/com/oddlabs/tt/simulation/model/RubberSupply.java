@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.World;
@@ -10,228 +9,222 @@ import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.TargetTrackerAlgorithm;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 
-/**
- * Represents a rubber resource, visually represented as a chicken.
- */
+/// Represents a rubber resource, visually represented as a chicken.
 public final class RubberSupply extends SupplyModel implements Animated, Movable {
-    private static final float MIN_TREE_FALL_HEIGHT = 4f;
-    private static final float MAX_TREE_FALL_HEIGHT = 8f;
-    private static final float METERS_PER_SECOND = 8f;
+  private static final float MIN_TREE_FALL_HEIGHT = 4f;
+  private static final float MAX_TREE_FALL_HEIGHT = 8f;
+  private static final float METERS_PER_SECOND = 8f;
 
-    private static final int INITIAL_SUPPLIES = 1;
-    private static final int MAX_MOVE_GRIDS = 5;
+  private static final int INITIAL_SUPPLIES = 1;
+  private static final int MAX_MOVE_GRIDS = 5;
 
-    public enum Animation {
-        IDLING(1f / (50f / 25f)),
-        PECKING(1f / (120f / 50f)),
-        DYING(1f / (150f / 50f)),
-        RUNNING(METERS_PER_SECOND),
-        FLYING(METERS_PER_SECOND);
+  public enum Animation {
+    IDLING(1f / (50f / 25f)),
+    PECKING(1f / (120f / 50f)),
+    DYING(1f / (150f / 50f)),
+    RUNNING(METERS_PER_SECOND),
+    FLYING(METERS_PER_SECOND);
 
-        private final float speed;
+    private final float speed;
 
-        Animation(float speed) {
-            this.speed = speed;
-        }
-
-        public float getSpeed() {
-            return speed;
-        }
+    Animation(float speed) {
+      this.speed = speed;
     }
 
-    private final PathTracker path_tracker;
-    private final int start_grid_x;
-    private final int start_grid_y;
+    public float getSpeed() {
+      return speed;
+    }
+  }
 
-    private final RubberGroup group;
+  private final PathTracker path_tracker;
+  private final int start_grid_x;
+  private final int start_grid_y;
 
-    private float anim_time = 0;
-    private Animation animation = Animation.IDLING;
-    private boolean is_hit = false;
-    private boolean spawning;
-    private float spawn_time;
+  private final RubberGroup group;
 
-    public RubberSupply(World world, int grid_x, int grid_y,
-            float x, float y, RubberGroup group, float spawn_x, float spawn_y) {
-        super(world, grid_x, grid_y, x, y, INITIAL_SUPPLIES, false,
-                world.getLandscapeResources().getChickenBounds());
-        this.path_tracker = new PathTracker(world.getUnitGrid(), this);
-        this.group = group;
-        start_grid_x = grid_x;
-        start_grid_y = grid_y;
+  private float anim_time = 0;
+  private Animation animation = Animation.IDLING;
+  private boolean is_hit = false;
+  private boolean spawning;
+  private float spawn_time;
 
-        float dx = x - spawn_x;
-        float dy = y - spawn_y;
-        float inv_len = 1f / (float) Math.hypot(dx, dy);
-        setDirection(dx * inv_len, dy * inv_len);
-        if (AppConfig.LEGACY_DETERMINISTIC) {
-            world.getRandom().nextFloat();
-            spawning = true;
-        }
-        capturePreviousTransform();
+  public RubberSupply(
+      World world, int grid_x, int grid_y, float x, float y, RubberGroup group, float spawn_x, float spawn_y) {
+    super(world, grid_x, grid_y, x, y, INITIAL_SUPPLIES, false, world.getLandscapeResources().getChickenBounds());
+    this.path_tracker = new PathTracker(world.getUnitGrid(), this);
+    this.group = group;
+    start_grid_x = grid_x;
+    start_grid_y = grid_y;
+
+    float dx = x - spawn_x;
+    float dy = y - spawn_y;
+    float inv_len = 1f / (float) Math.hypot(dx, dy);
+    setDirection(dx * inv_len, dy * inv_len);
+    if (AppConfig.LEGACY_DETERMINISTIC) {
+      world.getRandom().nextFloat();
+      spawning = true;
+    }
+    capturePreviousTransform();
+    setNewAnimation(Animation.IDLING);
+  }
+
+  @Override
+  public Supply respawn() {
+    throw new UnsupportedOperationException("RubberSupply cannot respawn");
+  }
+
+  @Override
+  public PathTracker getTracker() {
+    return path_tracker;
+  }
+
+  @Override
+  public boolean isMoving() {
+    return false;
+  }
+
+  @Override
+  public void free() {
+    getWorld().getUnitGrid().freeGrid(getGridX(), getGridY(), this);
+  }
+
+  @Override
+  public void occupy() {
+    getWorld().getUnitGrid().occupyGrid(getGridX(), getGridY(), this);
+  }
+
+  @Override
+  public void setGridPosition(int grid_x, int grid_y) {
+    Region current_region = getWorld().getUnitGrid().getRegion(getGridX(), getGridY());
+    Region new_region = getWorld().getUnitGrid().getRegion(grid_x, grid_y);
+    if (current_region != new_region) {
+      current_region.unregisterSupply(this);
+      new_region.registerSupply(this);
+    }
+    super.setGridPosition(grid_x, grid_y);
+  }
+
+  @Override
+  public void markBlocking() {}
+
+  public boolean isHit() {
+    return is_hit;
+  }
+
+  @Override
+  public void animate(float dt) {
+    capturePreviousTransform();
+    if (spawning) {
+      spawn_time += dt;
+      if (spawn_time >= 2f) {
+        spawning = false;
+      }
+      return;
+    }
+    anim_time += animation.getSpeed() * dt;
+    if (animation == Animation.FLYING || animation == Animation.RUNNING) {
+      fly(dt);
+    } else if (!is_hit && anim_time >= 1f) {
+      float random = getWorld().getRandom().nextFloat();
+      if (random < .75) {
         setNewAnimation(Animation.IDLING);
-    }
-
-    @Override
-    public Supply respawn() {
-        throw new UnsupportedOperationException("RubberSupply cannot respawn");
-    }
-
-    @Override
-    public PathTracker getTracker() {
-        return path_tracker;
-    }
-
-    @Override
-    public boolean isMoving() {
-        return false;
-    }
-
-    @Override
-    public void free() {
-        getWorld().getUnitGrid().freeGrid(getGridX(), getGridY(), this);
-    }
-
-    @Override
-    public void occupy() {
-        getWorld().getUnitGrid().occupyGrid(getGridX(), getGridY(), this);
-    }
-
-    @Override
-    public void setGridPosition(int grid_x, int grid_y) {
-        Region current_region = getWorld().getUnitGrid().getRegion(getGridX(), getGridY());
-        Region new_region = getWorld().getUnitGrid().getRegion(grid_x, grid_y);
-        if (current_region != new_region) {
-            current_region.unregisterSupply(this);
-            new_region.registerSupply(this);
+        if (random < .05) {
+          if (AppConfig.LEGACY_DETERMINISTIC) {
+            getWorld().getRandom().nextInt(4);
+          }
+          getWorld().getNotificationListener().onChickenCluck(this);
         }
-        super.setGridPosition(grid_x, grid_y);
-    }
-
-    @Override
-    public void markBlocking() {
-    }
-
-    public boolean isHit() {
-        return is_hit;
-    }
-
-    @Override
-    public void animate(float dt) {
-        capturePreviousTransform();
-        if (spawning) {
-            spawn_time += dt;
-            if (spawn_time >= 2f) {
-                spawning = false;
-            }
-            return;
+      } else if (random < .85) {
+        // move
+        int new_grid_x;
+        int new_grid_y;
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+          new_grid_x = start_grid_x + (int) ((getWorld().getRandom().nextFloat() * 2 - 1) * MAX_MOVE_GRIDS);
+          new_grid_y = start_grid_y + (int) ((getWorld().getRandom().nextFloat() * 2 - 1) * MAX_MOVE_GRIDS);
+        } else {
+          int max_grids = (int) MAX_MOVE_GRIDS;
+          new_grid_x = start_grid_x + getWorld().getRandom().nextInt(-max_grids, max_grids + 1);
+          new_grid_y = start_grid_y + getWorld().getRandom().nextInt(-max_grids, max_grids + 1);
         }
-        anim_time += animation.getSpeed() * dt;
-        if (animation == Animation.FLYING || animation == Animation.RUNNING) {
-            fly(dt);
-        } else if (!is_hit && anim_time >= 1f) {
-            float random = getWorld().getRandom().nextFloat();
-            if (random < .75) {
-                setNewAnimation(Animation.IDLING);
-                if (random < .05) {
-                    if (AppConfig.LEGACY_DETERMINISTIC) {
-                        getWorld().getRandom().nextInt(4);
-                    }
-                    getWorld().getNotificationListener().onChickenCluck(this);
-                }
-            } else if (random < .85) {
-                // move
-                int new_grid_x;
-                int new_grid_y;
-                if (AppConfig.LEGACY_DETERMINISTIC) {
-                    new_grid_x = start_grid_x + (int) ((getWorld().getRandom().nextFloat() * 2 - 1) * MAX_MOVE_GRIDS);
-                    new_grid_y = start_grid_y + (int) ((getWorld().getRandom().nextFloat() * 2 - 1) * MAX_MOVE_GRIDS);
-                } else {
-                    int max_grids = (int) MAX_MOVE_GRIDS;
-                    new_grid_x = start_grid_x + getWorld().getRandom().nextInt(-max_grids, max_grids + 1);
-                    new_grid_y = start_grid_y + getWorld().getRandom().nextInt(-max_grids, max_grids + 1);
-                }
-                UnitGrid grid = getWorld().getUnitGrid();
-                if (new_grid_x >= 0 && new_grid_y >= 0 && new_grid_x < grid.getGridSize() && new_grid_y < grid
-                        .getGridSize()) {
-                    Target target = grid.findGridTarget(new_grid_x, new_grid_y, false);
-                    if (target != null) {
-                        path_tracker.setTarget(new TargetTrackerAlgorithm(grid, 0f, target));
-                        float move_random = getWorld().getRandom().nextFloat();
-                        if (move_random < .25f) {
-                            setNewAnimation(Animation.FLYING);
-                            getWorld().getNotificationListener().onChickenPeck(this);
-                        } else {
-                            setNewAnimation(Animation.RUNNING);
-                        }
-                    }
-                }
+        UnitGrid grid = getWorld().getUnitGrid();
+        if (new_grid_x >= 0 && new_grid_y >= 0 && new_grid_x < grid.getGridSize() && new_grid_y < grid.getGridSize()) {
+          Target target = grid.findGridTarget(new_grid_x, new_grid_y, false);
+          if (target != null) {
+            path_tracker.setTarget(new TargetTrackerAlgorithm(grid, 0f, target));
+            float move_random = getWorld().getRandom().nextFloat();
+            if (move_random < .25f) {
+              setNewAnimation(Animation.FLYING);
+              getWorld().getNotificationListener().onChickenPeck(this);
             } else {
-                setNewAnimation(Animation.PECKING);
-                if (random > .98f) {
-                    getWorld().getNotificationListener().onChickenPeck(this);
-                }
+              setNewAnimation(Animation.RUNNING);
             }
+          }
         }
-    }
-
-    private void fly(float t) {
-        PathTracker.State state = path_tracker.animate(METERS_PER_SECOND * t);
-        switch (state) {
-            case OK, OK_INTERRUPTIBLE -> {
-            }
-            case DONE, BLOCKED, SOFTBLOCKED -> setNewAnimation(Animation.IDLING);
-            default -> throw new IllegalStateException("Invalid tracker state: " + state);
+      } else {
+        setNewAnimation(Animation.PECKING);
+        if (random > .98f) {
+          getWorld().getNotificationListener().onChickenPeck(this);
         }
+      }
     }
+  }
 
-    private void setNewAnimation(Animation animation) {
-        anim_time = 0;
-        this.animation = animation;
+  private void fly(float t) {
+    PathTracker.State state = path_tracker.animate(METERS_PER_SECOND * t);
+    switch (state) {
+      case OK, OK_INTERRUPTIBLE -> {}
+      case DONE, BLOCKED, SOFTBLOCKED -> setNewAnimation(Animation.IDLING);
+      default -> throw new IllegalStateException("Invalid tracker state: " + state);
     }
+  }
 
-    @Override
-    public int getAnimation() {
-        // This method is called during super constructor before field is initialized.
-        //noinspection ConstantValue
-        return null != animation ? animation.ordinal() : 0;
-    }
+  private void setNewAnimation(Animation animation) {
+    anim_time = 0;
+    this.animation = animation;
+  }
 
-    @Override
-    public float getAnimationTicks() {
-        return anim_time;
-    }
+  @Override
+  public int getAnimation() {
+    // This method is called during super constructor before field is initialized.
+    //noinspection ConstantValue
+    return null != animation ? animation.ordinal() : 0;
+  }
 
-    @Override
-    public boolean hit() {
-        if (!is_hit) {
-            is_hit = true;
-            setNewAnimation(Animation.DYING);
-            getWorld().getNotificationListener().onChickenDeath(this);
-            group.remove(this);
-        }
-        return super.hit();
-    }
+  @Override
+  public float getAnimationTicks() {
+    return anim_time;
+  }
 
-    @Override
-    public SupplyType getSupplyType() {
-        return SupplyType.RUBBER;
+  @Override
+  public boolean hit() {
+    if (!is_hit) {
+      is_hit = true;
+      setNewAnimation(Animation.DYING);
+      getWorld().getNotificationListener().onChickenDeath(this);
+      group.remove(this);
     }
+    return super.hit();
+  }
 
-    @Override
-    protected float getZError() {
-        return getLandscapeError();
-    }
+  @Override
+  public SupplyType getSupplyType() {
+    return SupplyType.RUBBER;
+  }
 
-    @Override
-    public void register() {
-        super.register();
-        getWorld().getAnimationManagerGameTime().registerAnimation(this);
-    }
+  @Override
+  protected float getZError() {
+    return getLandscapeError();
+  }
 
-    @Override
-    public void remove() {
-        getWorld().getAnimationManagerGameTime().removeAnimation(this);
-        super.remove();
-    }
+  @Override
+  public void register() {
+    super.register();
+    getWorld().getAnimationManagerGameTime().registerAnimation(this);
+  }
+
+  @Override
+  public void remove() {
+    getWorld().getAnimationManagerGameTime().removeAnimation(this);
+    super.remove();
+  }
 }

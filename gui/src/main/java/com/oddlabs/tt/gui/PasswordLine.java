@@ -3,61 +3,58 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.util.CryptUtils;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Masked single-line text input field substituting characters with asterisks.
- */
+/// Masked single-line text input field substituting characters with asterisks.
 public final class PasswordLine extends EditLine {
-    private @Nullable String password_digest;
+  private @Nullable String password_digest;
 
-    public PasswordLine(GUIRoot guiRoot, int width, int max_codepoints) {
-        super(guiRoot, width, max_codepoints);
+  public PasswordLine(GUIRoot guiRoot, int width, int max_codepoints) {
+    super(guiRoot, width, max_codepoints);
+  }
+
+  /**
+   * Password display text has three options. If the field is empty, then the empty string is displayed. When the field
+   * is inactive, it is filled with stars. When the field is active, a string of stars the same length as the password
+   * cleartext is returned.
+   *
+   * @return The blank text or stars to display
+   */
+  @Override
+  protected CharSequence getDisplayText() {
+    if (getText().isEmpty()) {
+      return "";
     }
-
-    /**
-     * Password display text has three options. If the field is empty, then the empty string is displayed. When the
-     * field is inactive, it is filled with stars. When the field is active, a string of stars the same length as the
-     * password cleartext is returned.
-     *
-     * @return The blank text or stars to display
-     */
-    @Override
-    protected CharSequence getDisplayText() {
-        if (getText().isEmpty()) {
-            return "";
-        }
-        if (isActive()) {
-            return "*".repeat(getText().codePointCount(0, getText().length()));
-        } else {
-            int asteriskWidth = getRenderedWidth("*");
-            if (asteriskWidth == 0) return "";
-            int numAsterisks = max_text_width / asteriskWidth;
-            return "*".repeat(numAsterisks);
-        }
+    if (isActive()) {
+      return "*".repeat(getText().codePointCount(0, getText().length()));
+    } else {
+      int asteriskWidth = getRenderedWidth("*");
+      if (asteriskWidth == 0) return "";
+      int numAsterisks = max_text_width / asteriskWidth;
+      return "*".repeat(numAsterisks);
     }
+  }
 
-    @Override
-    protected final boolean insert(int index, int codepoint) {
-        boolean result = super.insert(index, codepoint);
-        updatePassword();
-        return result;
+  @Override
+  protected final boolean insert(int index, int codepoint) {
+    boolean result = super.insert(index, codepoint);
+    updatePassword();
+    return result;
+  }
 
-    }
+  @Override
+  protected final void delete(int index) {
+    super.delete(index);
+    updatePassword();
+  }
 
-    @Override
-    protected final void delete(int index) {
-        super.delete(index);
-        updatePassword();
-    }
+  private void updatePassword() {
+    password_digest = CryptUtils.digest(getText().toString());
+  }
 
-    private void updatePassword() {
-        password_digest = CryptUtils.digest(getText().toString());
-    }
+  public final @Nullable String getPasswordDigest() {
+    return password_digest;
+  }
 
-    public final @Nullable String getPasswordDigest() {
-        return password_digest;
-    }
-
-    public final void setPasswordDigest(@Nullable String password_digest) {
-        this.password_digest = password_digest;
-    }
+  public final void setPasswordDigest(@Nullable String password_digest) {
+    this.password_digest = password_digest;
+  }
 }

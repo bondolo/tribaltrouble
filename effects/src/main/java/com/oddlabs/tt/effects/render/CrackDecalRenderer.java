@@ -1,55 +1,51 @@
 package com.oddlabs.tt.effects.render;
 
-
 import com.oddlabs.tt.engine.render.DebugFlags;
-import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.ShadowListRenderer;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.render.VisualPattern;
+import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.simulation.model.Shadowable;
-
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.function.Supplier;
+import org.joml.Matrix4fc;
 
-/**
- * Renders ground-crack decals for supply impact events using the decal instancing pipeline.
- * Crack texture and per-instance colour are driven by the owning {@link com.oddlabs.tt.simulation.model.SupplyModel}.
- */
+/// Renders ground-crack decals for supply impact events using the decal instancing pipeline. Crack texture and
+/// per-instance colour are driven by the owning {@link com.oddlabs.tt.simulation.model.SupplyModel}.
 public final class CrackDecalRenderer extends ShadowListRenderer {
-    private final Texture crackTexture;
-    private final Deque<Shadowable> crack_list = new ArrayDeque<>();
+  private final Texture crackTexture;
+  private final Deque<Shadowable> crack_list = new ArrayDeque<>();
 
-    public CrackDecalRenderer(Supplier<Texture[]> desc) {
-        crackTexture = Resources.findResource(desc)[0];
-        setRadial(false);
+  public CrackDecalRenderer(Supplier<Texture[]> desc) {
+    crackTexture = Resources.findResource(desc)[0];
+    setRadial(false);
+  }
+
+  public void addToCrackList(Shadowable shadowable) {
+    if (DebugFlags.process_shadows) {
+      crack_list.add(shadowable);
+    }
+  }
+
+  @Override
+  public void renderShadows(
+      RenderContext context, RenderQueues queues, float worldSize, Texture heightTexture, Matrix4fc modelView) {
+    if (crack_list.isEmpty()) {
+      return;
     }
 
-    public void addToCrackList(Shadowable shadowable) {
-        if (DebugFlags.process_shadows) {
-            crack_list.add(shadowable);
-        }
+    try (var _ = setupShadows(context, queues, worldSize, heightTexture, modelView)) {
+      setPattern(VisualPattern.NONE);
+      bindShadowTexture(crackTexture);
+      while (!crack_list.isEmpty()) {
+        var model = crack_list.pop();
+        setShadowColor(model.getShadowColor());
+        setPatternVal(model.getShadowPattern());
+        renderShadow(context, model);
+      }
     }
-
-    @Override
-    public void renderShadows(RenderContext context, RenderQueues queues,
-            float worldSize, Texture heightTexture, Matrix4fc modelView) {
-        if (crack_list.isEmpty()) {
-            return;
-        }
-
-        try (var _ = setupShadows(context, queues, worldSize, heightTexture, modelView)) {
-            setPattern(VisualPattern.NONE);
-            bindShadowTexture(crackTexture);
-            while (!crack_list.isEmpty()) {
-                var model = crack_list.pop();
-                setShadowColor(model.getShadowColor());
-                setPatternVal(model.getShadowPattern());
-                renderShadow(context, model);
-            }
-        }
-    }
+  }
 }

@@ -1,18 +1,18 @@
 package com.oddlabs.tt.gui;
 
-/** Interface for scrollable controls and viewports controlled by a scrollbar. */
+/// Interface for scrollable controls and viewports controlled by a scrollbar.
 public interface Scrollable {
-    void setOffsetY(int new_offset);
+  void setOffsetY(int new_offset);
 
-    int getOffsetY();
+  int getOffsetY();
 
-    int getStepHeight();
+  int getStepHeight();
 
-    void jumpPage(boolean up);
+  void jumpPage(boolean up);
 
-    float getScrollBarRatio();
+  float getScrollBarRatio();
 
-    float getScrollBarOffset();
+  float getScrollBarOffset();
 
-    void setScrollBarOffset(float offset);
+  void setScrollBarOffset(float offset);
 }

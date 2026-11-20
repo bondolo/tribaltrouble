@@ -1,6 +1,4 @@
-/**
- * Pure procedural image and texture synthesis.
- */
+/** Pure procedural image and texture synthesis. */
 @NullMarked
 package com.oddlabs.tt.procedural.image;
 

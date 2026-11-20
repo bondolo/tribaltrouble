@@ -1,51 +1,49 @@
 package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.router.SessionID;
-
+import com.oddlabs.tt.ai.AI;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.client.delegate.SelectionDelegate;
 import com.oddlabs.tt.client.gui.ActionButtonPanel;
 import com.oddlabs.tt.client.gui.GUIIcons;
+import com.oddlabs.tt.client.landscape.LandscapeBaker;
 import com.oddlabs.tt.client.render.FullSceneRenderer;
 import com.oddlabs.tt.client.render.Picker;
-import com.oddlabs.tt.client.resource.RacesAssetsLoader;
-import com.oddlabs.tt.client.Peer;
-import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.EmojiType;
-import com.oddlabs.tt.engine.settings.AccessibilitySettings;
-import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.client.landscape.LandscapeBaker;
-import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.client.resource.LandscapeAssetsLoader;
+import com.oddlabs.tt.client.resource.RacesAssetsLoader;
+import com.oddlabs.tt.client.screen.ScreenManager;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.engine.resource.WorldInfo;
+import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
-import com.oddlabs.util.Color;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMethod;
 import com.oddlabs.tt.net.ChatSender;
 import com.oddlabs.tt.net.InGameChatHistory;
 import com.oddlabs.tt.net.PeerHub;
+import com.oddlabs.tt.scenery.LandscapeRenderer;
+import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.ai.AI;
 import com.oddlabs.tt.simulation.player.DelegatingPlayerInterface;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerConfig;
@@ -54,330 +52,380 @@ import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.SlotType;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-
+import com.oddlabs.util.Color;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-/**
- * Orchestrates the primary in-game experience, managing the world state, player interactions,
- * rendering, and the user interface for a single player.
- * Coordinates camera state and audio listener updates for the game world.
- */
+/// Orchestrates the primary in-game experience, managing the world state, player interactions, rendering, and the user
+/// interface for a single player. Coordinates camera state and audio listener updates for the game world.
 public final class WorldViewer implements Animated, AutoCloseable {
 
-    private static final Color.Linear PRIVATE_MESSAGE_COLOR = new Color.Standard(0xFF_33_66_FF).linear();
-    private static final Color.Linear TEAM_MESSAGE_COLOR = new Color.Standard(0xFF_4C_7F_FF).linear();
+  private static final Color.Linear PRIVATE_MESSAGE_COLOR = new Color.Standard(0xFF_33_66_FF).linear();
+  private static final Color.Linear TEAM_MESSAGE_COLOR = new Color.Standard(0xFF_4C_7F_FF).linear();
 
-    private final Peer peer;
-    private final ScreenManager screenManager;
-    private final GameCamera camera;
-    private final GUIIcons icons;
-    private final ActionButtonPanel panel;
-    private final SelectionDelegate delegate;
-    private final PeerHub peerhub;
-    private final GUIRoot gui_root;
-    private final NotificationManager notification_manager;
-    private final InGameInfo ingame_info;
-    private final Selection selection;
-    private final World world;
-    private final Picker picker;
-    private final FullSceneRenderer renderer;
-    private final LandscapeRenderer landscape_renderer;
-    private final Player local_player;
-    private final WorldParameters world_params;
-    private final AnimationManager animation_manager_local;
-    private final Cheat cheat;
-    private final ChatListener chat_listener;
-    private final ChatSender chat_sender;
-    private final InGameChatHistory in_game_chat_history;
-    private final Map<Player, AI> ai_bots = new LinkedHashMap<>();
+  private final Peer peer;
+  private final ScreenManager screenManager;
+  private final GameCamera camera;
+  private final GUIIcons icons;
+  private final ActionButtonPanel panel;
+  private final SelectionDelegate delegate;
+  private final PeerHub peerhub;
+  private final GUIRoot gui_root;
+  private final NotificationManager notification_manager;
+  private final InGameInfo ingame_info;
+  private final Selection selection;
+  private final World world;
+  private final Picker picker;
+  private final FullSceneRenderer renderer;
+  private final LandscapeRenderer landscape_renderer;
+  private final Player local_player;
+  private final WorldParameters world_params;
+  private final AnimationManager animation_manager_local;
+  private final Cheat cheat;
+  private final ChatListener chat_listener;
+  private final ChatSender chat_sender;
+  private final InGameChatHistory in_game_chat_history;
+  private final Map<Player, AI> ai_bots = new LinkedHashMap<>();
 
-    public WorldViewer(final GUIRoot gui_root,
-            Peer peer,
-            WorldParameters world_params, InGameInfo ingame_info, WorldGenerator<Landscape> generator,
-            List<PlayerSlot> player_slots, List<UnitInfo> unit_infos, short player_slot,
-            SessionID session_id, ScreenManager screenManager) {
-        this.peer = peer;
-        this.screenManager = screenManager;
-        this.world_params = world_params;
-        this.ingame_info = ingame_info;
-        var network = peer.getNetwork().getSelector();
-        this.cheat = new Cheat(!ingame_info.isMultiplayer());
-        var audioManager = peer.getAudioManager();
-        this.animation_manager_local = new AnimationManager();
-        this.icons = new GUIIcons();
-        final CameraState camera_state = new CameraState();
-        this.notification_manager = new NotificationManager(gui_root, audioManager, icons.getNotifyArrow(),
-                icons.getNotifyArrowHeadX(), icons.getNotifyArrowHeadY());
-        RenderQueues render_queues = new RenderQueues();
-        ProgressListener.subTask(0.15f,
-                () -> new LandscapeAssetsLoader(render_queues));
-        ProgressListener.subTask(0.35f,
-                () -> {
-                    RacesAssetsLoader.load(render_queues);
-                    return null;
+  public WorldViewer(
+      final GUIRoot gui_root,
+      Peer peer,
+      WorldParameters world_params,
+      InGameInfo ingame_info,
+      WorldGenerator<Landscape> generator,
+      List<PlayerSlot> player_slots,
+      List<UnitInfo> unit_infos,
+      short player_slot,
+      SessionID session_id,
+      ScreenManager screenManager) {
+    this.peer = peer;
+    this.screenManager = screenManager;
+    this.world_params = world_params;
+    this.ingame_info = ingame_info;
+    var network = peer.getNetwork().getSelector();
+    this.cheat = new Cheat(!ingame_info.isMultiplayer());
+    var audioManager = peer.getAudioManager();
+    this.animation_manager_local = new AnimationManager();
+    this.icons = new GUIIcons();
+    final CameraState camera_state = new CameraState();
+    this.notification_manager =
+        new NotificationManager(
+            gui_root, audioManager, icons.getNotifyArrow(), icons.getNotifyArrowHeadX(), icons.getNotifyArrowHeadY());
+    RenderQueues render_queues = new RenderQueues();
+    ProgressListener.subTask(0.15f, () -> new LandscapeAssetsLoader(render_queues));
+    ProgressListener.subTask(
+        0.35f,
+        () -> {
+          RacesAssetsLoader.load(render_queues);
+          return null;
+        });
+    registerHarvestEmojis(render_queues, icons);
+    var player_infos = player_slots.stream().map(PlayerSlot::getInfo).toList();
+    Landscape landscape =
+        ProgressListener.subTask(
+            0.25f,
+            () ->
+                generator.generate(
+                    player_infos.size(), world_params.initialUnitCount(), ingame_info.getRandomStartPosition()));
+    WorldInfo<Texture> world_info = ProgressListener.subTask(0.15f, () -> LandscapeBaker.bakeWorld(landscape));
+    camera_state.setFog(world_info.fog_info());
+    final PeerHub[] peerhubRef = new PeerHub[1];
+    Color.Linear[] playerColours = AccessibilitySettings.from(peer.getSettings()).linear_player_colours;
+    ResourceBundle bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
+    List<PlayerConfig> playerConfigs = new java.util.ArrayList<>(player_infos.size());
+    for (int i = 0; i < player_infos.size(); i++) {
+      PlayerInterface iface =
+          (i == player_slot && player_slots.get(i).isNetworkPeer())
+              ? new DelegatingPlayerInterface(() -> peerhubRef[0].getPlayerInterface())
+              : null;
+      PlayerSlot slot = player_slots.get(i);
+      UnitInfo unitInfo = unit_infos.get(i);
+      String chieftainName = null;
+      if (slot.getType() != SlotType.AI && unitInfo.hasChieftain()) {
+        chieftainName =
+            Utils.getBundleString(
+                bundle,
+                switch (player_infos.get(i).race()) {
+                  case VIKINGS -> "chieftain_name";
+                  case NATIVES -> "native_chieftain_name";
                 });
-        registerHarvestEmojis(render_queues, icons);
-        var player_infos = player_slots.stream().map(PlayerSlot::getInfo).toList();
-        Landscape landscape = ProgressListener.subTask(0.25f,
-                () -> generator.generate(
-                        player_infos.size(), world_params.initialUnitCount(), ingame_info.getRandomStartPosition()));
-        WorldInfo<Texture> world_info = ProgressListener.subTask(0.15f,
-                () -> LandscapeBaker.bakeWorld(landscape));
-        camera_state.setFog(world_info.fog_info());
-        final PeerHub[] peerhubRef = new PeerHub[1];
-        Color.Linear[] playerColours = AccessibilitySettings.from(peer.getSettings()).linear_player_colours;
-        ResourceBundle bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
-        List<PlayerConfig> playerConfigs = new java.util.ArrayList<>(player_infos.size());
-        for (int i = 0; i < player_infos.size(); i++) {
-            PlayerInterface iface = (i == player_slot && player_slots.get(i).isNetworkPeer())
-                    ? new DelegatingPlayerInterface(() -> peerhubRef[0].getPlayerInterface())
-                    : null;
-            PlayerSlot slot = player_slots.get(i);
-            UnitInfo unitInfo = unit_infos.get(i);
-            String chieftainName = null;
-            if (slot.getType() != SlotType.AI && unitInfo.hasChieftain()) {
-                chieftainName = Utils.getBundleString(bundle, switch (player_infos.get(i).race()) {
-                    case VIKINGS -> "chieftain_name";
-                    case NATIVES -> "native_chieftain_name";
-                });
-            }
-            playerConfigs.add(new PlayerConfig(player_infos.get(i), playerColours[i % playerColours.length], iface,
-                    PlayerControllerType.fromSlot(slot), unitInfo, chieftainName));
-        }
-        this.world = new World(world_params, world_info.landscape(), playerConfigs, ingame_info.getInitialGameSpeed());
-        ProgressListener.progress(0.10f);
-        this.local_player = world.getPlayers().get(player_slot);
-        this.selection = new Selection(local_player);
-        peer.setPathfindCountSupplier(world.getUnitGrid()::getAndResetPathfindCount);
-        landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
-        this.picker = new Picker(animation_manager_local, local_player, gui_root, render_queues, landscape_renderer,
-                selection, audioManager, icons);
-        this.renderer = new FullSceneRenderer(cheat, local_player, render_queues,
-                world_info, landscape_renderer, picker,
-                selection, audioManager, peer.getSettings(),
-                gui_root.getWidth(), gui_root.getHeight());
-        WorldNotificationHandler notificationHandler = new WorldNotificationHandler(
-                this, peer, gui_root, notification_manager, animation_manager_local,
-                audioManager, ingame_info.isMultiplayer(), renderer, landscape_renderer);
-        world.setNotificationListener(notificationHandler);
-        world.getDistributableTable().getDistributables().stream()
-                .filter(Model.class::isInstance)
-                .map(Model.class::cast)
-                .forEach(landscape_renderer::onStaticModelAdded);
-        this.gui_root = gui_root;
-        this.gui_root.setCheatIndicator(icons.getCheatIcon(), cheat::isEnabled);
-        this.chat_listener = message -> {
-            var infoPrinter = gui_root.getInfoPrinter();
-            switch (message.type()) {
-                case NORMAL -> infoPrinter.print(message.formatShort());
-                case TEAM -> infoPrinter.print(message.formatShort(), TEAM_MESSAGE_COLOR);
-                case PRIVATE -> infoPrinter.print(message.formatShort(), PRIVATE_MESSAGE_COLOR);
-                default -> {
-                }
-            }
+      }
+      playerConfigs.add(
+          new PlayerConfig(
+              player_infos.get(i),
+              playerColours[i % playerColours.length],
+              iface,
+              PlayerControllerType.fromSlot(slot),
+              unitInfo,
+              chieftainName));
+    }
+    this.world = new World(world_params, world_info.landscape(), playerConfigs, ingame_info.getInitialGameSpeed());
+    ProgressListener.progress(0.10f);
+    this.local_player = world.getPlayers().get(player_slot);
+    this.selection = new Selection(local_player);
+    peer.setPathfindCountSupplier(world.getUnitGrid()::getAndResetPathfindCount);
+    landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
+    this.picker =
+        new Picker(
+            animation_manager_local,
+            local_player,
+            gui_root,
+            render_queues,
+            landscape_renderer,
+            selection,
+            audioManager,
+            icons);
+    this.renderer =
+        new FullSceneRenderer(
+            cheat,
+            local_player,
+            render_queues,
+            world_info,
+            landscape_renderer,
+            picker,
+            selection,
+            audioManager,
+            peer.getSettings(),
+            gui_root.getWidth(),
+            gui_root.getHeight());
+    WorldNotificationHandler notificationHandler =
+        new WorldNotificationHandler(
+            this,
+            peer,
+            gui_root,
+            notification_manager,
+            animation_manager_local,
+            audioManager,
+            ingame_info.isMultiplayer(),
+            renderer,
+            landscape_renderer);
+    world.setNotificationListener(notificationHandler);
+    world.getDistributableTable().getDistributables().stream()
+        .filter(Model.class::isInstance)
+        .map(Model.class::cast)
+        .forEach(landscape_renderer::onStaticModelAdded);
+    this.gui_root = gui_root;
+    this.gui_root.setCheatIndicator(icons.getCheatIcon(), cheat::isEnabled);
+    this.chat_listener =
+        message -> {
+          var infoPrinter = gui_root.getInfoPrinter();
+          switch (message.type()) {
+            case NORMAL -> infoPrinter.print(message.formatShort());
+            case TEAM -> infoPrinter.print(message.formatShort(), TEAM_MESSAGE_COLOR);
+            case PRIVATE -> infoPrinter.print(message.formatShort(), PRIVATE_MESSAGE_COLOR);
+            default -> {}
+          }
         };
-        peer.getNetwork().getChatHub().addListener(chat_listener);
-        this.peerhub = new PeerHub(animation_manager_local, ingame_info.isMultiplayer(), ingame_info.isRated(),
-                local_player, player_slots, network, notification_manager,
-                peer.getNetwork().getMatchmakingClient(), peer.getNetwork().getChatHub(),
-                world.getDistributableTable(), session_id,
-                new ViewerStallHandler(this));
-        peerhubRef[0] = this.peerhub;
-        this.peerhub.setIgnoreFilter(ChatCommand::isIgnoring);
-        this.in_game_chat_history = new InGameChatHistory();
-        peer.getNetwork().getChatHub().addListener(in_game_chat_history);
-        var matchmakingClient = peer.getNetwork().getMatchmakingClient();
-        Map<String, ChatMethod> commands = Map.of("iamacheater", (_, _, _) -> cheat.enable());
-        this.chat_sender = new InGameChatSender(gui_root.getInfoPrinter(), matchmakingClient, commands, peerhub);
-        this.camera = new GameCamera(this, camera_state);
-        this.panel = new ActionButtonPanel(this, camera);
-        this.delegate = new SelectionDelegate(this, camera);
-        camera.reset(getLocalPlayer().getStartX(), getLocalPlayer().getStartY());
-        setupAIBots(player_slots, world.getPlayers());
-        gui_root.getAnimationManager().registerAnimation(this);
+    peer.getNetwork().getChatHub().addListener(chat_listener);
+    this.peerhub =
+        new PeerHub(
+            animation_manager_local,
+            ingame_info.isMultiplayer(),
+            ingame_info.isRated(),
+            local_player,
+            player_slots,
+            network,
+            notification_manager,
+            peer.getNetwork().getMatchmakingClient(),
+            peer.getNetwork().getChatHub(),
+            world.getDistributableTable(),
+            session_id,
+            new ViewerStallHandler(this));
+    peerhubRef[0] = this.peerhub;
+    this.peerhub.setIgnoreFilter(ChatCommand::isIgnoring);
+    this.in_game_chat_history = new InGameChatHistory();
+    peer.getNetwork().getChatHub().addListener(in_game_chat_history);
+    var matchmakingClient = peer.getNetwork().getMatchmakingClient();
+    Map<String, ChatMethod> commands = Map.of("iamacheater", (_, _, _) -> cheat.enable());
+    this.chat_sender = new InGameChatSender(gui_root.getInfoPrinter(), matchmakingClient, commands, peerhub);
+    this.camera = new GameCamera(this, camera_state);
+    this.panel = new ActionButtonPanel(this, camera);
+    this.delegate = new SelectionDelegate(this, camera);
+    camera.reset(getLocalPlayer().getStartX(), getLocalPlayer().getStartY());
+    setupAIBots(player_slots, world.getPlayers());
+    gui_root.getAnimationManager().registerAnimation(this);
+  }
+
+  public ChatSender getChatSender() {
+    return chat_sender;
+  }
+
+  public InGameChatHistory getInGameChatHistory() {
+    return in_game_chat_history;
+  }
+
+  public Peer getPeer() {
+    return peer;
+  }
+
+  public ScreenManager getScreenManager() {
+    return screenManager;
+  }
+
+  public GUIIcons getIcons() {
+    return icons;
+  }
+
+  public AudioManager getAudioManager() {
+    return peer.getAudioManager();
+  }
+
+  public AnimationManager getAnimationManagerLocal() {
+    return animation_manager_local;
+  }
+
+  @Override
+  public void animate(float dt) {
+    ScopedValue.where(PeerHub.CURRENT, peerhub).run(() -> animation_manager_local.runAnimations(dt));
+  }
+
+  @Override
+  public void close() {
+    world.setNotificationListener(NotificationListener.EMPTY);
+    peer.setPathfindCountSupplier(null);
+    peer.getNetwork().getChatHub().removeListener(in_game_chat_history);
+    peer.getNetwork().getChatHub().removeListener(chat_listener);
+    gui_root.getAnimationManager().removeAnimation(this);
+    peerhub.close();
+    ingame_info.close(this);
+    renderer.close();
+  }
+
+  public WorldParameters getParameters() {
+    return world_params;
+  }
+
+  public Cheat getCheat() {
+    return cheat;
+  }
+
+  private boolean paused;
+
+  public void setPaused(boolean paused) {
+    if (this.paused != paused) {
+      this.paused = paused;
+      peerhub.setPaused(paused);
     }
+  }
 
-    public ChatSender getChatSender() {
-        return chat_sender;
-    }
+  public boolean isPaused() {
+    return peerhub.isPaused();
+  }
 
-    public InGameChatHistory getInGameChatHistory() {
-        return in_game_chat_history;
-    }
+  public Player getLocalPlayer() {
+    return local_player;
+  }
 
-    public Peer getPeer() {
-        return peer;
-    }
+  public Optional<AI> getAI(Player player) {
+    return Optional.ofNullable(ai_bots.get(player));
+  }
 
-    public ScreenManager getScreenManager() {
-        return screenManager;
-    }
-
-    public GUIIcons getIcons() {
-        return icons;
-    }
-
-    public AudioManager getAudioManager() {
-        return peer.getAudioManager();
-    }
-
-    public AnimationManager getAnimationManagerLocal() {
-        return animation_manager_local;
-    }
-
-    @Override
-    public void animate(float dt) {
-        ScopedValue.where(PeerHub.CURRENT, peerhub).run(() -> animation_manager_local.runAnimations(dt));
-    }
-
-    @Override
-    public void close() {
-        world.setNotificationListener(NotificationListener.EMPTY);
-        peer.setPathfindCountSupplier(null);
-        peer.getNetwork().getChatHub().removeListener(in_game_chat_history);
-        peer.getNetwork().getChatHub().removeListener(chat_listener);
-        gui_root.getAnimationManager().removeAnimation(this);
-        peerhub.close();
-        ingame_info.close(this);
-        renderer.close();
-    }
-
-    public WorldParameters getParameters() {
-        return world_params;
-    }
-
-    public Cheat getCheat() {
-        return cheat;
-    }
-
-    private boolean paused;
-
-    public void setPaused(boolean paused) {
-        if (this.paused != paused) {
-            this.paused = paused;
-            peerhub.setPaused(paused);
+  private void setupAIBots(List<PlayerSlot> slots, List<Player> players) {
+    for (int i = 0; i < slots.size(); i++) {
+      PlayerSlot slot = slots.get(i);
+      Player player = players.get(i);
+      if (slot.getType() == SlotType.AI && (!slot.isNetworkPeer() || player == local_player)) {
+        AI ai = AI.create(player, slot.getAIDifficulty());
+        if (ai != null) {
+          ai_bots.put(player, ai);
+          world.addTickListener(ai::tick);
         }
+      }
     }
+  }
 
-    public boolean isPaused() {
-        return peerhub.isPaused();
-    }
+  private LandscapeRenderer getLandscapeRenderer() {
+    return landscape_renderer;
+  }
 
-    public Player getLocalPlayer() {
-        return local_player;
-    }
+  public Picker getPicker() {
+    return picker;
+  }
 
-    public Optional<AI> getAI(Player player) {
-        return Optional.ofNullable(ai_bots.get(player));
-    }
+  public FullSceneRenderer getRenderer() {
+    return renderer;
+  }
 
-    private void setupAIBots(List<PlayerSlot> slots, List<Player> players) {
-        for (int i = 0; i < slots.size(); i++) {
-            PlayerSlot slot = slots.get(i);
-            Player player = players.get(i);
-            if (slot.getType() == SlotType.AI && (!slot.isNetworkPeer() || player == local_player)) {
-                AI ai = AI.create(player, slot.getAIDifficulty());
-                if (ai != null) {
-                    ai_bots.put(player, ai);
-                    world.addTickListener(ai::tick);
-                }
-            }
-        }
-    }
+  public World getWorld() {
+    return world;
+  }
 
-    private LandscapeRenderer getLandscapeRenderer() {
-        return landscape_renderer;
-    }
+  public Selection getSelection() {
+    return selection;
+  }
 
-    public Picker getPicker() {
-        return picker;
-    }
+  public NotificationManager getNotificationManager() {
+    return notification_manager;
+  }
 
-    public FullSceneRenderer getRenderer() {
-        return renderer;
-    }
+  public GUIRoot getGUIRoot() {
+    return gui_root;
+  }
 
-    public World getWorld() {
-        return world;
-    }
+  public boolean isMultiplayer() {
+    return ingame_info.isMultiplayer();
+  }
 
-    public Selection getSelection() {
-        return selection;
-    }
+  public InGameInfo getInGameInfo() {
+    return ingame_info;
+  }
 
-    public NotificationManager getNotificationManager() {
-        return notification_manager;
-    }
+  public void abort() {
+    ingame_info.abort(this);
+  }
 
-    public GUIRoot getGUIRoot() {
-        return gui_root;
-    }
+  public void addGameOverGUI(GameStatsDelegate delegate, int header_y, Group buttons) {
+    ingame_info.addGameOverGUI(this, delegate, header_y, buttons);
+  }
 
-    public boolean isMultiplayer() {
-        return ingame_info.isMultiplayer();
-    }
+  public GameCamera getCamera() {
+    return camera;
+  }
 
-    public InGameInfo getInGameInfo() {
-        return ingame_info;
-    }
+  public PeerHub getPeerHub() {
+    return peerhub;
+  }
 
-    public void abort() {
-        ingame_info.abort(this);
-    }
+  public ActionButtonPanel getPanel() {
+    return panel;
+  }
 
-    public void addGameOverGUI(GameStatsDelegate delegate, int header_y, Group buttons) {
-        ingame_info.addGameOverGUI(this, delegate, header_y, buttons);
-    }
+  public SelectionDelegate getDelegate() {
+    return delegate;
+  }
 
-    public GameCamera getCamera() {
-        return camera;
-    }
+  public InputManager getInputManager() {
+    return gui_root.getInputManager();
+  }
 
-    public PeerHub getPeerHub() {
-        return peerhub;
-    }
+  public LocalEventQueue getEventQueue() {
+    return gui_root.getEventQueue();
+  }
 
-    public ActionButtonPanel getPanel() {
-        return panel;
-    }
+  public AnimationManager getAnimationManager() {
+    return gui_root.getAnimationManager();
+  }
 
-    public SelectionDelegate getDelegate() {
-        return delegate;
-    }
+  public AnimationManager getAnimationManagerHighPrecision() {
+    return gui_root.getEventQueue().getHighPrecisionManager();
+  }
 
-    public InputManager getInputManager() {
-        return gui_root.getInputManager();
-    }
+  public float getTime() {
+    return gui_root.getTime();
+  }
 
-    public LocalEventQueue getEventQueue() {
-        return gui_root.getEventQueue();
-    }
+  private static void registerHarvestEmojis(RenderQueues queues, GUIIcons icons) {
+    AssetRegistry ar = AssetRegistry.getInstance();
+    ar.registerEmoji(EmojiType.HARVEST_WOOD, registerIconSprite(queues, icons.getTreeStatusIcon()));
+    ar.registerEmoji(EmojiType.HARVEST_ROCK, registerIconSprite(queues, icons.getRockStatusIcon()));
+    ar.registerEmoji(EmojiType.HARVEST_IRON, registerIconSprite(queues, icons.getIronStatusIcon()));
+    ar.registerEmoji(EmojiType.HARVEST_RUBBER, registerIconSprite(queues, icons.getRubberStatusIcon()));
+  }
 
-    public AnimationManager getAnimationManager() {
-        return gui_root.getAnimationManager();
-    }
-
-    public AnimationManager getAnimationManagerHighPrecision() {
-        return gui_root.getEventQueue().getHighPrecisionManager();
-    }
-
-    public float getTime() {
-        return gui_root.getTime();
-    }
-
-    private static void registerHarvestEmojis(RenderQueues queues, GUIIcons icons) {
-        AssetRegistry ar = AssetRegistry.getInstance();
-        ar.registerEmoji(EmojiType.HARVEST_WOOD, registerIconSprite(queues, icons.getTreeStatusIcon()));
-        ar.registerEmoji(EmojiType.HARVEST_ROCK, registerIconSprite(queues, icons.getRockStatusIcon()));
-        ar.registerEmoji(EmojiType.HARVEST_IRON, registerIconSprite(queues, icons.getIronStatusIcon()));
-        ar.registerEmoji(EmojiType.HARVEST_RUBBER, registerIconSprite(queues, icons.getRubberStatusIcon()));
-    }
-
-    private static SpriteKey registerIconSprite(RenderQueues queues, IconQuad icon) {
-        return queues.registerQuadSprite(icon.getU1(), icon.getV1(), icon.getU2(), icon.getV2(), icon.getTexture());
-    }
+  private static SpriteKey registerIconSprite(RenderQueues queues, IconQuad icon) {
+    return queues.registerQuadSprite(icon.getU1(), icon.getV1(), icon.getU2(), icon.getV2(), icon.getTexture());
+  }
 }

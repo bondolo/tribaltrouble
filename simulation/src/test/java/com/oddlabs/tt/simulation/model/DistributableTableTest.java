@@ -1,85 +1,83 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Unit tests for {@link DistributableTable}.
- */
+import org.junit.jupiter.api.Test;
+
+/// Unit tests for {@link DistributableTable}.
 class DistributableTableTest {
 
-    private static final class TestDistributable implements Distributable {
-        private int id = Distributable.NO_ID;
+  private static final class TestDistributable implements Distributable {
+    private int id = Distributable.NO_ID;
 
-        @Override
-        public int getId() {
-            return id;
-        }
-
-        @Override
-        public void setId(int id) {
-            this.id = id;
-        }
+    @Override
+    public int getId() {
+      return id;
     }
 
-    @Test
-    void testRegisterAndLookup() {
-        DistributableTable table = new DistributableTable();
-        TestDistributable d1 = new TestDistributable();
-        TestDistributable d2 = new TestDistributable();
-
-        int id1 = table.register(d1);
-        int id2 = table.register(d2);
-
-        assertEquals(1, id1);
-        assertEquals(2, id2);
-
-        assertEquals(id1, d1.getId());
-        assertEquals(id2, d2.getId());
-
-        assertEquals(id1, table.getName(d1));
-        assertEquals(id2, table.getName(d2));
-
-        assertEquals(d1, table.getDistributable(id1));
-        assertEquals(d2, table.getDistributable(id2));
+    @Override
+    public void setId(int id) {
+      this.id = id;
     }
+  }
 
-    @Test
-    void testUnregister() {
-        DistributableTable table = new DistributableTable();
-        TestDistributable d1 = new TestDistributable();
+  @Test
+  void testRegisterAndLookup() {
+    DistributableTable table = new DistributableTable();
+    TestDistributable d1 = new TestDistributable();
+    TestDistributable d2 = new TestDistributable();
 
-        int id1 = table.register(d1);
-        assertEquals(id1, d1.getId());
-        assertEquals(d1, table.getDistributable(id1));
+    int id1 = table.register(d1);
+    int id2 = table.register(d2);
 
-        table.unregister(d1);
-        assertEquals(Distributable.NO_ID, d1.getId());
-        assertNull(table.getDistributable(id1));
-    }
+    assertEquals(1, id1);
+    assertEquals(2, id2);
 
-    @Test
-    void testUnregisteredGetDistributableReturnsNull() {
-        DistributableTable table = new DistributableTable();
-        assertNull(table.getDistributable(999));
-    }
+    assertEquals(id1, d1.getId());
+    assertEquals(id2, d2.getId());
 
-    @Test
-    void testFindName() {
-        DistributableTable table = new DistributableTable();
-        TestDistributable d1 = new TestDistributable();
+    assertEquals(id1, table.getName(d1));
+    assertEquals(id2, table.getName(d2));
 
-        assertFalse(table.findName(d1).isPresent(), "Unregistered object should have empty findName");
+    assertEquals(d1, table.getDistributable(id1));
+    assertEquals(d2, table.getDistributable(id2));
+  }
 
-        int id = table.register(d1);
-        assertTrue(table.findName(d1).isPresent());
-        assertEquals(id, table.findName(d1).getAsInt());
+  @Test
+  void testUnregister() {
+    DistributableTable table = new DistributableTable();
+    TestDistributable d1 = new TestDistributable();
 
-        table.unregister(d1);
-        assertFalse(table.findName(d1).isPresent(), "Unregistered object should have empty findName after removal");
-    }
+    int id1 = table.register(d1);
+    assertEquals(id1, d1.getId());
+    assertEquals(d1, table.getDistributable(id1));
+
+    table.unregister(d1);
+    assertEquals(Distributable.NO_ID, d1.getId());
+    assertNull(table.getDistributable(id1));
+  }
+
+  @Test
+  void testUnregisteredGetDistributableReturnsNull() {
+    DistributableTable table = new DistributableTable();
+    assertNull(table.getDistributable(999));
+  }
+
+  @Test
+  void testFindName() {
+    DistributableTable table = new DistributableTable();
+    TestDistributable d1 = new TestDistributable();
+
+    assertFalse(table.findName(d1).isPresent(), "Unregistered object should have empty findName");
+
+    int id = table.register(d1);
+    assertTrue(table.findName(d1).isPresent());
+    assertEquals(id, table.findName(d1).getAsInt());
+
+    table.unregister(d1);
+    assertFalse(table.findName(d1).isPresent(), "Unregistered object should have empty findName after removal");
+  }
 }

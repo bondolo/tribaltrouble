@@ -1,33 +1,29 @@
 package com.oddlabs.tt.content.tutorial.trigger;
 
 import com.oddlabs.tt.content.tutorial.Tutorial;
-
 import com.oddlabs.tt.content.tutorial.TutorialForm;
 import com.oddlabs.tt.simulation.player.Player;
-
 import java.util.List;
 
-/**
- * Triggers the completion of the current tutorial battle step when
- * all of the target player's units (and potentially buildings) are destroyed.
- */
+/// Triggers the completion of the current tutorial battle step when all of the target player's units (and potentially
+/// buildings) are destroyed.
 public final class TutorialOverTrigger extends TutorialTrigger {
 
-    public TutorialOverTrigger() {
-        super(1f, 0f, "tutorial_over");
-    }
+  public TutorialOverTrigger() {
+    super(1f, 0f, "tutorial_over");
+  }
 
-    @Override
-    public void run(Tutorial tutorial) {
-        List<Player> players = tutorial.getViewer().getWorld().getPlayers();
-        Player local_player = tutorial.getViewer().getLocalPlayer();
+  @Override
+  public void run(Tutorial tutorial) {
+    List<Player> players = tutorial.getViewer().getWorld().getPlayers();
+    Player local_player = tutorial.getViewer().getLocalPlayer();
 
-        for (Player current : players) {
-            int units = current.getUnitCountContainer().getNumSupplies();
-            int buildings = current.getBuildingCountContainer().getNumSupplies();
-            if (units == 0 && (current == local_player || buildings == 0)) {
-                tutorial.done(TutorialForm.TUTORIAL_BATTLE);
-            }
-        }
+    for (Player current : players) {
+      int units = current.getUnitCountContainer().getNumSupplies();
+      int buildings = current.getBuildingCountContainer().getNumSupplies();
+      if (units == 0 && (current == local_player || buildings == 0)) {
+        tutorial.done(TutorialForm.TUTORIAL_BATTLE);
+      }
     }
+  }
 }

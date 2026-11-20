@@ -5,17 +5,17 @@ import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 
 public sealed interface Supply extends Occupant, ModelToolTip permits TreeSupply, SupplyModel {
-    int HITS_PER_HARVEST = 10;
+  int HITS_PER_HARVEST = 10;
 
-    SupplyType getSupplyType();
+  SupplyType getSupplyType();
 
-    boolean isEmpty();
+  boolean isEmpty();
 
-    /** {@return true if the supply was harvested} */
-    boolean hit();
+  /// {@return true if the supply was harvested}
+  boolean hit();
 
-    /** Create a new supply at the same location */
-    Supply respawn();
+  /// Create a new supply at the same location
+  Supply respawn();
 
-    World getWorld();
+  World getWorld();
 }

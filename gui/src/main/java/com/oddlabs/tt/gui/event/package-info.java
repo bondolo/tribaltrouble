@@ -1,6 +1,4 @@
-/**
- * This package contains event listeners for the GUI.
- */
+/** This package contains event listeners for the GUI. */
 @NullMarked
 package com.oddlabs.tt.gui.event;
 

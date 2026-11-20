@@ -65,9 +65,8 @@ subprojects {
     configure<SpotlessExtension> {
         java {
             ratchetFrom("origin/master")
-            target("src/**/*.java")
-            eclipse().configFile(rootProject.file("intellij-java-style.xml"))
-            removeUnusedImports("cleanthat-javaparser-unnecessaryimport")
+            googleJavaFormat(rootProject.libs.versions.googleJavaFormat.get().toString()).maxLineLength(120)
+            formatAnnotations()
             trimTrailingWhitespace()
             endWithNewline()
         }

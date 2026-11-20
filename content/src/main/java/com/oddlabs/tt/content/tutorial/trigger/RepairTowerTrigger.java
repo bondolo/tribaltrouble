@@ -1,23 +1,22 @@
 package com.oddlabs.tt.content.tutorial.trigger;
 
 import com.oddlabs.tt.content.tutorial.Tutorial;
-
 import com.oddlabs.tt.simulation.model.Building;
 
-/** Tutorial trigger waiting for a damaged tower to be repaired. */
+/// Tutorial trigger waiting for a damaged tower to be repaired.
 final class RepairTowerTrigger extends TutorialTrigger {
-    private final Building tower;
+  private final Building tower;
 
-    RepairTowerTrigger(Building tower) {
-        super(.1f, 0f, "repair");
-        this.tower = tower;
-        tower.getOwner().enableRepairing(true);
-    }
+  RepairTowerTrigger(Building tower) {
+    super(.1f, 0f, "repair");
+    this.tower = tower;
+    tower.getOwner().enableRepairing(true);
+  }
 
-    @Override
-    public void run(Tutorial tutorial) {
-        if (!tower.isDamaged()) {
-            tutorial.next(new EmptyTowerTrigger(tower));
-        }
+  @Override
+  public void run(Tutorial tutorial) {
+    if (!tower.isDamaged()) {
+      tutorial.next(new EmptyTowerTrigger(tower));
     }
+  }
 }

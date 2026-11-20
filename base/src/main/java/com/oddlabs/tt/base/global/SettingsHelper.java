@@ -1,137 +1,124 @@
 package com.oddlabs.tt.base.global;
 
-
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-/**
- * Utility helper methods for serializing and deserializing typed values in {@link Properties}.
- */
+/// Utility helper methods for serializing and deserializing typed values in {@link Properties}.
 public final class SettingsHelper {
-    private static final Logger logger = Logger.getLogger(SettingsHelper.class.getName());
+  private static final Logger logger = Logger.getLogger(SettingsHelper.class.getName());
 
-    private SettingsHelper() {
-    }
+  private SettingsHelper() {}
 
-    /**
-     * Stores a string property if different from default value, or removes it if equal.
-     */
-    public static void setProperty(Properties props, String key, String value,
-            String defaultValue) {
-        if (!value.equals(defaultValue)) {
-            props.setProperty(key, value);
-        } else {
-            props.remove(key);
-        }
+  /// Stores a string property if different from default value, or removes it if equal.
+  public static void setProperty(Properties props, String key, String value, String defaultValue) {
+    if (!value.equals(defaultValue)) {
+      props.setProperty(key, value);
+    } else {
+      props.remove(key);
     }
+  }
 
-    /**
-     * Stores an integer property if different from default value, or removes it if equal.
-     */
-    public static void setProperty(Properties props, String key, int value, int defaultValue) {
-        if (value != defaultValue) {
-            props.setProperty(key, String.valueOf(value));
-        } else {
-            props.remove(key);
-        }
+  /// Stores an integer property if different from default value, or removes it if equal.
+  public static void setProperty(Properties props, String key, int value, int defaultValue) {
+    if (value != defaultValue) {
+      props.setProperty(key, String.valueOf(value));
+    } else {
+      props.remove(key);
     }
+  }
 
-    /**
-     * Stores a float property if different from default value, or removes it if equal.
-     */
-    public static void setProperty(Properties props, String key, float value, float defaultValue) {
-        if (value != defaultValue) {
-            props.setProperty(key, String.valueOf(value));
-        } else {
-            props.remove(key);
-        }
+  /// Stores a float property if different from default value, or removes it if equal.
+  public static void setProperty(Properties props, String key, float value, float defaultValue) {
+    if (value != defaultValue) {
+      props.setProperty(key, String.valueOf(value));
+    } else {
+      props.remove(key);
     }
+  }
 
-    /**
-     * Stores a boolean property if different from default value, or removes it if equal.
-     */
-    public static void setProperty(Properties props, String key, boolean value,
-            boolean defaultValue) {
-        if (value != defaultValue) {
-            props.setProperty(key, String.valueOf(value));
-        } else {
-            props.remove(key);
-        }
+  /// Stores a boolean property if different from default value, or removes it if equal.
+  public static void setProperty(Properties props, String key, boolean value, boolean defaultValue) {
+    if (value != defaultValue) {
+      props.setProperty(key, String.valueOf(value));
+    } else {
+      props.remove(key);
     }
+  }
 
-    /**
-     * Stores a path property if different from default value, or removes it if equal.
-     */
-    public static void setProperty(Properties props, String key, Path value,
-            Path defaultValue) {
-        if (!value.equals(defaultValue)) {
-            props.setProperty(key, value.toString());
-        } else {
-            props.remove(key);
-        }
+  /// Stores a path property if different from default value, or removes it if equal.
+  public static void setProperty(Properties props, String key, Path value, Path defaultValue) {
+    if (!value.equals(defaultValue)) {
+      props.setProperty(key, value.toString());
+    } else {
+      props.remove(key);
     }
+  }
 
-    /**
-     * Reads a boolean property with fallback default.
-     */
-    public static boolean getBoolean(Properties props, String key, boolean defaultValue) {
-        String value = props.getProperty(key);
-        if (value == null) {
-            return defaultValue;
-        }
-        return Boolean.parseBoolean(value);
+  /// Reads a boolean property with fallback default.
+  public static boolean getBoolean(Properties props, String key, boolean defaultValue) {
+    String value = props.getProperty(key);
+    if (value == null) {
+      return defaultValue;
     }
+    return Boolean.parseBoolean(value);
+  }
 
-    /**
-     * Reads an integer property with fallback default.
-     */
-    public static int getInt(Properties props, String key, int defaultValue) {
-        String value = props.getProperty(key);
-        if (value == null) {
-            return defaultValue;
-        }
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException _) {
-            logger.warning("WARNING: Invalid value for setting '" + key + "': '" + value + "'. Using default value '"
-                    + defaultValue + "'.");
-            return defaultValue;
-        }
+  /// Reads an integer property with fallback default.
+  public static int getInt(Properties props, String key, int defaultValue) {
+    String value = props.getProperty(key);
+    if (value == null) {
+      return defaultValue;
     }
+    try {
+      return Integer.parseInt(value);
+    } catch (NumberFormatException _) {
+      logger.warning(
+          "WARNING: Invalid value for setting '"
+              + key
+              + "': '"
+              + value
+              + "'. Using default value '"
+              + defaultValue
+              + "'.");
+      return defaultValue;
+    }
+  }
 
-    /**
-     * Reads a float property with fallback default.
-     */
-    public static float getFloat(Properties props, String key, float defaultValue) {
-        String value = props.getProperty(key);
-        if (value == null) {
-            return defaultValue;
-        }
-        try {
-            return Float.parseFloat(value);
-        } catch (NumberFormatException _) {
-            logger.warning("WARNING: Invalid value for setting '" + key + "': '" + value + "'. Using default value '"
-                    + defaultValue + "'.");
-            return defaultValue;
-        }
+  /// Reads a float property with fallback default.
+  public static float getFloat(Properties props, String key, float defaultValue) {
+    String value = props.getProperty(key);
+    if (value == null) {
+      return defaultValue;
     }
+    try {
+      return Float.parseFloat(value);
+    } catch (NumberFormatException _) {
+      logger.warning(
+          "WARNING: Invalid value for setting '"
+              + key
+              + "': '"
+              + value
+              + "'. Using default value '"
+              + defaultValue
+              + "'.");
+      return defaultValue;
+    }
+  }
 
-    /**
-     * Reads a path property with fallback default.
-     */
-    public static Path getPath(Properties props, String key, Path defaultValue) {
-        String value = props.getProperty(key);
-        if (value == null || value.isEmpty()) {
-            return defaultValue;
-        }
-        try {
-            return Path.of(value);
-        } catch (InvalidPathException _) {
-            logger.warning("Invalid path for setting '" + key + "': '" + value + "'. Using default value '"
-                    + defaultValue + "'.");
-            return defaultValue;
-        }
+  /// Reads a path property with fallback default.
+  public static Path getPath(Properties props, String key, Path defaultValue) {
+    String value = props.getProperty(key);
+    if (value == null || value.isEmpty()) {
+      return defaultValue;
     }
+    try {
+      return Path.of(value);
+    } catch (InvalidPathException _) {
+      logger.warning(
+          "Invalid path for setting '" + key + "': '" + value + "'. Using default value '" + defaultValue + "'.");
+      return defaultValue;
+    }
+  }
 }

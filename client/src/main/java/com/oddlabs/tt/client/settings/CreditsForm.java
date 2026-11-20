@@ -1,5 +1,7 @@
 package com.oddlabs.tt.client.settings;
 
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -10,127 +12,124 @@ import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Panel;
 import com.oddlabs.tt.gui.PanelGroup;
 import com.oddlabs.tt.gui.TextBox;
-
 import java.util.ResourceBundle;
 
-import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
-
-/**
- * Modal dialog displaying game credits and acknowledgments.
- */
+/// Modal dialog displaying game credits and acknowledgments.
 public final class CreditsForm extends Form {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(CreditsForm.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(CreditsForm.class.getName());
 
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
-    }
+  private static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
 
-    public CreditsForm(GUIRoot guiRoot, int last_revision) {
-        super(guiRoot, "");
-        Label head_label = new Label(i18n("about"), skin.getHeadlineFont());
-        addChild(head_label);
-        head_label.place();
+  public CreditsForm(GUIRoot guiRoot, int last_revision) {
+    super(guiRoot, "");
+    Label head_label = new Label(i18n("about"), skin.getHeadlineFont());
+    addChild(head_label);
+    head_label.place();
 
-        PanelGroup panel_group = new PanelGroup(guiRoot,
-                createAboutPanel(guiRoot, bundle, last_revision),
-                createCreditsPanel(guiRoot, bundle),
-                createThanksPanel(guiRoot, bundle));
-        addChild(panel_group);
-        panel_group.place(head_label, BOTTOM_LEFT);
+    PanelGroup panel_group =
+        new PanelGroup(
+            guiRoot,
+            createAboutPanel(guiRoot, bundle, last_revision),
+            createCreditsPanel(guiRoot, bundle),
+            createThanksPanel(guiRoot, bundle));
+    addChild(panel_group);
+    panel_group.place(head_label, BOTTOM_LEFT);
 
-        HorizButton ok_button = new OKButton(guiRoot, 100);
-        addChild(ok_button);
-        ok_button.addMouseClickListener((_, _, _, _) -> this.cancel());
-        ok_button.place(Origin.AT_END);
-        compileCanvas();
-        centerPos();
-    }
+    HorizButton ok_button = new OKButton(guiRoot, 100);
+    addChild(ok_button);
+    ok_button.addMouseClickListener((_, _, _, _) -> this.cancel());
+    ok_button.place(Origin.AT_END);
+    compileCanvas();
+    centerPos();
+  }
 
-    private static Panel createAboutPanel(GUIRoot guiRoot, ResourceBundle bundle, int last_revision) {
-        Panel about = new Panel(guiRoot, i18n("about"));
-        TextBox about_box = new TextBox(guiRoot, 400, 300, guiRoot.getSkin().getEditFont(), 100000);
-        about.addChild(about_box);
-        String about_text = i18n("about_text", Integer.toString(last_revision));
-        about_box.append(about_text);
+  private static Panel createAboutPanel(GUIRoot guiRoot, ResourceBundle bundle, int last_revision) {
+    Panel about = new Panel(guiRoot, i18n("about"));
+    TextBox about_box = new TextBox(guiRoot, 400, 300, guiRoot.getSkin().getEditFont(), 100000);
+    about.addChild(about_box);
+    String about_text = i18n("about_text", Integer.toString(last_revision));
+    about_box.append(about_text);
 
-        about_box.place();
-        about.compileCanvas();
-        return about;
-    }
+    about_box.place();
+    about.compileCanvas();
+    return about;
+  }
 
-    private static Panel createCreditsPanel(GUIRoot guiRoot, ResourceBundle bundle) {
-        Panel credits = new Panel(guiRoot, i18n("credits"));
-        TextBox credits_box = new TextBox(guiRoot, 400, 300, guiRoot.getSkin().getEditFont(), 100000);
-        credits.addChild(credits_box);
-        credits_box.append(i18n("game_design_and_programming") + "\n");
-        credits_box.append("Elias Naur\n");
-        credits_box.append("Mikkel Jensen\n");
-        credits_box.append("Sune Nielsen\n");
-        credits_box.append("Jacob Olsen\n");
-        credits_box.append("\n");
-        credits_box.append(i18n("3d_artwork_and_animation") + "\n");
-        credits_box.append("Chaz Willets\n");
-        credits_box.append("\n");
-        credits_box.append(i18n("audio") + "\n");
-        credits_box.append("Michael Huang\n");
-        credits_box.append("Nicklas Schmidt\n");
-        credits_box.append("Herman Witkam");
-        credits_box.place();
-        credits.compileCanvas();
-        return credits;
-    }
+  private static Panel createCreditsPanel(GUIRoot guiRoot, ResourceBundle bundle) {
+    Panel credits = new Panel(guiRoot, i18n("credits"));
+    TextBox credits_box = new TextBox(guiRoot, 400, 300, guiRoot.getSkin().getEditFont(), 100000);
+    credits.addChild(credits_box);
+    credits_box.append(i18n("game_design_and_programming") + "\n");
+    credits_box.append("Elias Naur\n");
+    credits_box.append("Mikkel Jensen\n");
+    credits_box.append("Sune Nielsen\n");
+    credits_box.append("Jacob Olsen\n");
+    credits_box.append("\n");
+    credits_box.append(i18n("3d_artwork_and_animation") + "\n");
+    credits_box.append("Chaz Willets\n");
+    credits_box.append("\n");
+    credits_box.append(i18n("audio") + "\n");
+    credits_box.append("Michael Huang\n");
+    credits_box.append("Nicklas Schmidt\n");
+    credits_box.append("Herman Witkam");
+    credits_box.place();
+    credits.compileCanvas();
+    return credits;
+  }
 
-    private static Panel createThanksPanel(GUIRoot guiRoot, ResourceBundle bundle) {
-        Panel thanks = new Panel(guiRoot, i18n("thanks_to"));
-        TextBox thanks_box = new TextBox(guiRoot, 400, 300, guiRoot.getSkin().getEditFont(), 100000);
-        thanks.addChild(thanks_box);
-        thanks_box.append(i18n("thanks") + "\n");
-        thanks_box.append(i18n("oddlabs_thanks") + "\n");
-        thanks_box.append("\n");
-        thanks_box.append("Caspian Rychlik-Prince\n");
-        thanks_box.append("Brian Matzon\n");
-        thanks_box.append("The LWJGL team\n");
-        thanks_box.append("Johannes Sebastian Jørgen Erik Møgelvang\n");
-        thanks_box.append("Martin B. K. Nielsen\n");
-        thanks_box.append("Martin Vestergaard Madsen\n");
-        thanks_box.append("Christian Mosbæk\n");
-        thanks_box.append("Camilla Dahle\n");
-        thanks_box.append("\n");
-        thanks_box.append(i18n("beta_thank") + "\n");
-        thanks_box.append("\n");
-        thanks_box.append("Patric Schenke\n");
-        thanks_box.append("Oliver Hutt\n");
-        thanks_box.append("Mathew Foscarini\n");
-        thanks_box.append("Scott Call\n");
-        thanks_box.append("Gheorghe Costin\n");
-        thanks_box.append("Eric Spierings\n");
-        thanks_box.append("Tomasz Malecki\n");
-        thanks_box.append("Benjamin Dirks\n");
-        thanks_box.append("Paulo Augusto\n");
-        thanks_box.append("Carlos Rayon\n");
-        thanks_box.append("Robert Speelpenning\n");
-        thanks_box.append("Matt Chelen\n");
-        thanks_box.append("Paul van Schayck\n");
-        thanks_box.append("Binks\n");
-        thanks_box.append("Søren Vesti Lassen\n");
-        thanks_box.append("Martyn Lewis\n");
-        thanks_box.append("Benjamin Dirks\n");
-        thanks_box.append("Tonny L. Rasmussen\n");
-        thanks_box.append("Bjørn Andersen\n");
-        thanks_box.append("\n");
-        thanks_box.append(i18n("additional_thanks") + "\n");
-        thanks_box.append("\n");
-        thanks_box.append(i18n("special_thanks") + "\n");
-        thanks_box.append(i18n("special_thanks_text") + "\n");
-        thanks_box.append("\n");
-        thanks_box.append("Niels Haulrich AKA \"DJ Fnillerz\"\n");
-        thanks_box.append("Morten M. Hansen AKA \"blue\"\n");
-        thanks_box.append("Søren Garbøl AKA \"Mythor\"\n");
-        thanks_box.append("Andreas Beier AKA \"AB\"\n");
-        thanks_box.append("Jesper S. Pedersen AKA \"fronk\"\n");
-        thanks_box.append("Kxre Schou Gjaldbxk AKA \"hardkxre\"");
-        thanks_box.place();
-        thanks.compileCanvas();
-        return thanks;
-    }
+  private static Panel createThanksPanel(GUIRoot guiRoot, ResourceBundle bundle) {
+    Panel thanks = new Panel(guiRoot, i18n("thanks_to"));
+    TextBox thanks_box = new TextBox(guiRoot, 400, 300, guiRoot.getSkin().getEditFont(), 100000);
+    thanks.addChild(thanks_box);
+    thanks_box.append(i18n("thanks") + "\n");
+    thanks_box.append(i18n("oddlabs_thanks") + "\n");
+    thanks_box.append("\n");
+    thanks_box.append("Caspian Rychlik-Prince\n");
+    thanks_box.append("Brian Matzon\n");
+    thanks_box.append("The LWJGL team\n");
+    thanks_box.append("Johannes Sebastian Jørgen Erik Møgelvang\n");
+    thanks_box.append("Martin B. K. Nielsen\n");
+    thanks_box.append("Martin Vestergaard Madsen\n");
+    thanks_box.append("Christian Mosbæk\n");
+    thanks_box.append("Camilla Dahle\n");
+    thanks_box.append("\n");
+    thanks_box.append(i18n("beta_thank") + "\n");
+    thanks_box.append("\n");
+    thanks_box.append("Patric Schenke\n");
+    thanks_box.append("Oliver Hutt\n");
+    thanks_box.append("Mathew Foscarini\n");
+    thanks_box.append("Scott Call\n");
+    thanks_box.append("Gheorghe Costin\n");
+    thanks_box.append("Eric Spierings\n");
+    thanks_box.append("Tomasz Malecki\n");
+    thanks_box.append("Benjamin Dirks\n");
+    thanks_box.append("Paulo Augusto\n");
+    thanks_box.append("Carlos Rayon\n");
+    thanks_box.append("Robert Speelpenning\n");
+    thanks_box.append("Matt Chelen\n");
+    thanks_box.append("Paul van Schayck\n");
+    thanks_box.append("Binks\n");
+    thanks_box.append("Søren Vesti Lassen\n");
+    thanks_box.append("Martyn Lewis\n");
+    thanks_box.append("Benjamin Dirks\n");
+    thanks_box.append("Tonny L. Rasmussen\n");
+    thanks_box.append("Bjørn Andersen\n");
+    thanks_box.append("\n");
+    thanks_box.append(i18n("additional_thanks") + "\n");
+    thanks_box.append("\n");
+    thanks_box.append(i18n("special_thanks") + "\n");
+    thanks_box.append(i18n("special_thanks_text") + "\n");
+    thanks_box.append("\n");
+    thanks_box.append("Niels Haulrich AKA \"DJ Fnillerz\"\n");
+    thanks_box.append("Morten M. Hansen AKA \"blue\"\n");
+    thanks_box.append("Søren Garbøl AKA \"Mythor\"\n");
+    thanks_box.append("Andreas Beier AKA \"AB\"\n");
+    thanks_box.append("Jesper S. Pedersen AKA \"fronk\"\n");
+    thanks_box.append("Kxre Schou Gjaldbxk AKA \"hardkxre\"");
+    thanks_box.place();
+    thanks.compileCanvas();
+    return thanks;
+  }
 }

@@ -1,6 +1,7 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.Model;
@@ -8,204 +9,207 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.base.event.StateChecksum;
 
-/**
- * Base {@link Model} class for all projectile weapons that are thrown through the world.
- */
-public abstract sealed class ThrowingWeapon extends Model implements Animated permits RotatingThrowingWeapon,
-        DirectedThrowingWeapon {
-    private final boolean hit;
-    private final Unit src;
+/// Base {@link Model} class for all projectile weapons that are thrown through the world.
+public abstract sealed class ThrowingWeapon extends Model implements Animated
+    permits RotatingThrowingWeapon, DirectedThrowingWeapon {
+  private final boolean hit;
+  private final Unit src;
 
-    /** the target of the weapon. Mutable because rubber weapons bounce and change targets **/
-    private Selectable<?> target;
-    private float start_x;
-    private float start_y;
-    private final float start_z;
-    private float end_x;
-    private float end_y;
-    private float dest_z;
-    private float dir_x;
-    private float dir_y;
-    private float time_limit;
-    private float time;
+  /// the target of the weapon. Mutable because rubber weapons bounce and change targets *
+  private Selectable<?> target;
 
-    public ThrowingWeapon(boolean hit, Unit src, Selectable<?> target, float offsetX, float offsetY, float offsetZ) {
-        super(src.getOwner().getWorld());
-        this.src = src;
-        this.hit = hit;
+  private float start_x;
+  private float start_y;
+  private final float start_z;
+  private float end_x;
+  private float end_y;
+  private float dest_z;
+  private float dir_x;
+  private float dir_y;
+  private float time_limit;
+  private float time;
 
-        float x;
-        float y;
-        if (AppConfig.LEGACY_DETERMINISTIC) {
-            float legacyOffsetX = 1.316f;
-            float legacyOffsetY = -.347f;
-            float legacyOffsetZ = 1.382f;
-            x = src.getPositionX() + legacyOffsetX * src.getDirectionX() - legacyOffsetY * src.getDirectionY();
-            y = src.getPositionY() + legacyOffsetX * src.getDirectionY() - legacyOffsetY * src.getDirectionX();
-            start_z = src.getPositionZ() + legacyOffsetZ + src.getMountOffset();
-        } else {
-            x = src.getPositionX() + offsetX * src.getDirectionX() - offsetY * src.getDirectionY();
-            y = src.getPositionY() + offsetX * src.getDirectionY() + offsetY * src.getDirectionX();
-            start_z = src.getPositionZ() + offsetZ;
-        }
+  public ThrowingWeapon(boolean hit, Unit src, Selectable<?> target, float offsetX, float offsetY, float offsetZ) {
+    super(src.getOwner().getWorld());
+    this.src = src;
+    this.hit = hit;
 
-        setPosition(x, y, start_z);
-        capturePreviousTransform();
-
-        setTarget(target);
-
-        register();
-
-        getWorld().getAnimationManagerGameTime().registerAnimation(this);
-
-        if (AppConfig.LEGACY_DETERMINISTIC) {
-            getWorld().getRandom().nextFloat();
-        }
-
-        // stats
-        src.getOwner().weaponThrown();
+    float x;
+    float y;
+    if (AppConfig.LEGACY_DETERMINISTIC) {
+      float legacyOffsetX = 1.316f;
+      float legacyOffsetY = -.347f;
+      float legacyOffsetZ = 1.382f;
+      x = src.getPositionX() + legacyOffsetX * src.getDirectionX() - legacyOffsetY * src.getDirectionY();
+      y = src.getPositionY() + legacyOffsetX * src.getDirectionY() - legacyOffsetY * src.getDirectionX();
+      start_z = src.getPositionZ() + legacyOffsetZ + src.getMountOffset();
+    } else {
+      x = src.getPositionX() + offsetX * src.getDirectionX() - offsetY * src.getDirectionY();
+      y = src.getPositionY() + offsetX * src.getDirectionY() + offsetY * src.getDirectionX();
+      start_z = src.getPositionZ() + offsetZ;
     }
 
-    public final Unit getSrc() {
-        return src;
+    setPosition(x, y, start_z);
+    capturePreviousTransform();
+
+    setTarget(target);
+
+    register();
+
+    getWorld().getAnimationManagerGameTime().registerAnimation(this);
+
+    if (AppConfig.LEGACY_DETERMINISTIC) {
+      getWorld().getRandom().nextFloat();
     }
 
-    private static final BoundingBox[] BOUNDS = new BoundingBox[]{
-            new BoundingBox(-2.5f, 2.5f, -2.5f, 2.5f, -2.5f, 15f)
-    };
+    // stats
+    src.getOwner().weaponThrown();
+  }
 
-    public abstract WeaponTier getWeaponTier();
+  public final Unit getSrc() {
+    return src;
+  }
 
-    @Override
-    protected BoundingBox[] getLocalBounds() {
-        return BOUNDS;
+  private static final BoundingBox[] BOUNDS = new BoundingBox[] {new BoundingBox(-2.5f, 2.5f, -2.5f, 2.5f, -2.5f, 15f)};
+
+  public abstract WeaponTier getWeaponTier();
+
+  @Override
+  protected BoundingBox[] getLocalBounds() {
+    return BOUNDS;
+  }
+
+  @Override
+  public String toString() {
+    return "ThrowingWeapon: start_x = "
+        + start_x
+        + " | start_y = "
+        + start_y
+        + " | end_x = "
+        + end_x
+        + " | end_y = "
+        + end_y
+        + " | target = "
+        + target
+        + "  "
+        + super.toString();
+  }
+
+  protected final void setTarget(Selectable<?> target) {
+    this.target = target;
+    updateDirection();
+    calcNumUpdates();
+  }
+
+  private void calcNumUpdates() {
+    start_x = getPositionX();
+    start_y = getPositionY();
+    updateTarget();
+    float dx = end_x - start_x;
+    float dy = end_y - start_y;
+    float len = AppConfig.LEGACY_DETERMINISTIC ? (float) Math.sqrt(dx * dx + dy * dy) : (float) Math.hypot(dx, dy);
+    time_limit = len / getMetersPerSecond();
+    time = 0;
+  }
+
+  public abstract float getMetersPerSecond();
+
+  private void updateTarget() {
+    end_x = target.getPositionX();
+    end_y = target.getPositionY();
+    dest_z = getWorld().getHeightMap().getNearestHeight(end_x, end_y) + target.getHitOffsetZ();
+  }
+
+  private void updateDirection() {
+    float dx = target.getPositionX() - getPositionX();
+    float dy = target.getPositionY() - getPositionY();
+    float len;
+    if (AppConfig.LEGACY_DETERMINISTIC) {
+      len = (float) Math.sqrt(dx * dx + dy * dy);
+      if (len < .01f) {
+        len = .01f;
+      }
+    } else {
+      len = (float) Math.max(Math.hypot(dx, dy), .01);
+    }
+    float len_inv = 1f / len;
+    dir_x = dx * len_inv;
+    dir_y = dy * len_inv;
+    setDirection(dir_x, dir_y);
+  }
+
+  @Override
+  public final void updateChecksum(StateChecksum checksum) {
+    checksum.update(time);
+  }
+
+  @Override
+  public void animate(float dt) {
+    capturePreviousTransform();
+    if (time >= time_limit) {
+      hitTarget(hit, getSrc().getOwner(), target);
+      return;
     }
 
-    @Override
-    public String toString() {
-        return "ThrowingWeapon: start_x = " + start_x + " | start_y = " + start_y + " | end_x = " + end_x
-                + " | end_y = " + end_y + " | target = " + target + "  " + super.toString();
+    if (hit) {
+      updateTarget();
+    }
+    time += dt;
+    float progress = time / time_limit;
+
+    float x;
+    float y;
+    if (progress < 1f) {
+      x = start_x + (end_x - start_x) * progress;
+      y = start_y + (end_y - start_y) * progress;
+    } else {
+      x = end_x;
+      y = end_y;
     }
 
-    protected final void setTarget(Selectable<?> target) {
-        this.target = target;
-        updateDirection();
-        calcNumUpdates();
+    float z = start_z + (dest_z - start_z) * Math.min(progress, 1f);
+    setPosition(x, y, z);
+  }
+
+  @Override
+  public void remove() {
+    super.remove();
+    getWorld().getAnimationManagerGameTime().removeAnimation(this);
+    getWorld().getNotificationListener().onModelRemoved(this);
+  }
+
+  protected void hitTarget(boolean hit, Player owner, Selectable<?> target) {
+    remove();
+    if (hit) damageTarget(target);
+  }
+
+  protected final void damageTarget(Selectable<?> target) {
+    if (target instanceof Unit unitTarget) {
+      if (AppConfig.LEGACY_DETERMINISTIC) {
+        getSrc().getWorld().getRandom().nextInt(5);
+        getSrc().getWorld().getRandom().nextFloat();
+      }
+      getSrc().getWorld().getNotificationListener().onUnitAttack(getSrc(), unitTarget);
     }
+    target.hit(getDamage(), dir_x, dir_y, getSrc().getOwner());
+  }
 
-    private void calcNumUpdates() {
-        start_x = getPositionX();
-        start_y = getPositionY();
-        updateTarget();
-        float dx = end_x - start_x;
-        float dy = end_y - start_y;
-        float len = AppConfig.LEGACY_DETERMINISTIC
-                ? (float) Math.sqrt(dx * dx + dy * dy)
-                : (float) Math.hypot(dx, dy);
-        time_limit = len / getMetersPerSecond();
-        time = 0;
-    }
+  protected abstract int getDamage();
 
-    public abstract float getMetersPerSecond();
+  public final float getStartZ() {
+    return start_z;
+  }
 
-    private void updateTarget() {
-        end_x = target.getPositionX();
-        end_y = target.getPositionY();
-        dest_z = getWorld().getHeightMap().getNearestHeight(end_x, end_y) + target.getHitOffsetZ();
-    }
+  public final float getDestZ() {
+    return dest_z;
+  }
 
-    private void updateDirection() {
-        float dx = target.getPositionX() - getPositionX();
-        float dy = target.getPositionY() - getPositionY();
-        float len;
-        if (AppConfig.LEGACY_DETERMINISTIC) {
-            len = (float) Math.sqrt(dx * dx + dy * dy);
-            if (len < .01f) {
-                len = .01f;
-            }
-        } else {
-            len = (float) Math.max(Math.hypot(dx, dy), .01);
-        }
-        float len_inv = 1f / len;
-        dir_x = dx * len_inv;
-        dir_y = dy * len_inv;
-        setDirection(dir_x, dir_y);
-    }
+  public final float getTime() {
+    return time;
+  }
 
-    @Override
-    public final void updateChecksum(StateChecksum checksum) {
-        checksum.update(time);
-    }
-
-    @Override
-    public void animate(float dt) {
-        capturePreviousTransform();
-        if (time >= time_limit) {
-            hitTarget(hit, getSrc().getOwner(), target);
-            return;
-        }
-
-        if (hit) {
-            updateTarget();
-        }
-        time += dt;
-        float progress = time / time_limit;
-
-        float x;
-        float y;
-        if (progress < 1f) {
-            x = start_x + (end_x - start_x) * progress;
-            y = start_y + (end_y - start_y) * progress;
-        } else {
-            x = end_x;
-            y = end_y;
-        }
-
-        float z = start_z + (dest_z - start_z) * Math.min(progress, 1f);
-        setPosition(x, y, z);
-    }
-
-    @Override
-    public void remove() {
-        super.remove();
-        getWorld().getAnimationManagerGameTime().removeAnimation(this);
-        getWorld().getNotificationListener().onModelRemoved(this);
-    }
-
-    protected void hitTarget(boolean hit, Player owner, Selectable<?> target) {
-        remove();
-        if (hit)
-            damageTarget(target);
-    }
-
-    protected final void damageTarget(Selectable<?> target) {
-        if (target instanceof Unit unitTarget) {
-            if (AppConfig.LEGACY_DETERMINISTIC) {
-                getSrc().getWorld().getRandom().nextInt(5);
-                getSrc().getWorld().getRandom().nextFloat();
-            }
-            getSrc().getWorld().getNotificationListener().onUnitAttack(getSrc(), unitTarget);
-        }
-        target.hit(getDamage(), dir_x, dir_y, getSrc().getOwner());
-    }
-
-    protected abstract int getDamage();
-
-    public final float getStartZ() {
-        return start_z;
-    }
-
-    public final float getDestZ() {
-        return dest_z;
-    }
-
-    public final float getTime() {
-        return time;
-    }
-
-    public final float getTimeLimit() {
-        return time_limit;
-    }
+  public final float getTimeLimit() {
+    return time_limit;
+  }
 }

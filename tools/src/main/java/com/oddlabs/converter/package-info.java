@@ -1,6 +1,4 @@
-/**
- * Provides utilities and converters for geometry XML files and binary asset compilation.
- */
+/** Provides utilities and converters for geometry XML files and binary asset compilation. */
 @NullMarked
 package com.oddlabs.converter;
 

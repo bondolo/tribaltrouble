@@ -1,323 +1,329 @@
 package com.oddlabs.tt.content.campaign;
 
+import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
-import com.oddlabs.tt.content.menu.Menu;
-import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.screen.ScreenManager;
+import com.oddlabs.tt.content.menu.Menu;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.GUIIcon;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.engine.render.GUIRenderer;
-import com.oddlabs.tt.base.animation.Animated;
-import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.util.Color;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-/**
- * Presents the campaign map UI, allowing the player to select available islands,
- * view progress, and navigate the campaign story.
- */
+/// Presents the campaign map UI, allowing the player to select available islands, view progress, and navigate the
+/// campaign story.
 public final class CampaignMapForm extends CameraDelegate<StaticCamera> implements Animated {
-    private static final float BASE_WIDTH = 800f;
-    private static final float BASE_HEIGHT = 600f;
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(CampaignMapForm.class.getName());
+  private static final float BASE_WIDTH = 800f;
+  private static final float BASE_HEIGHT = 600f;
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(CampaignMapForm.class.getName());
 
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  private final float scale_x;
+  private final float scale_y;
+
+  private final Campaign campaign;
+  private final List<MapIslandButton> islandButtons = new ArrayList<>();
+  private boolean initialFocusSet = false;
+
+  private float flicker_time;
+  private Color.Linear mapColor = Color.Linear.WHITE;
+
+  public CampaignMapForm(GUIRoot gui_root, Campaign campaign) {
+    super(gui_root, new StaticCamera(new CameraState()));
+    this.campaign = campaign;
+
+    this.scale_x = gui_root.getWidth() / BASE_WIDTH;
+    this.scale_y = gui_root.getHeight() / BASE_HEIGHT;
+
+    switch (campaign.getState().getRace()) {
+      case Race.VIKINGS -> {
+        if (campaign.getState().getIslandState(10) != CampaignState.ISLAND_HIDDEN) {
+          addChild(campaign.getIcons().getHiddenRoutes()[0]);
+          addChild(campaign.getIcons().getHiddenRoutes()[1]);
+        }
+
+        if (campaign.getState().getCurrentIsland() == 14) {
+          final Runnable runnable_next =
+              () -> {
+                CampaignDialogForm dialog =
+                    new CampaignDialogForm(
+                        gui_root,
+                        i18n("native_campaign_opened_header"),
+                        i18n("native_campaign_opened"),
+                        null,
+                        Origin.AT_START,
+                        () -> closeCampaign(campaign.getPeer(), campaign.getScreenManager()));
+                gui_root.addModalForm(dialog);
+              };
+          CampaignDialogForm dialog =
+              new CampaignDialogForm(
+                  gui_root,
+                  i18n("viking_header"),
+                  i18n("viking_campaign_completed"),
+                  campaign.getIcons().getFaces()[0],
+                  Origin.AT_START,
+                  runnable_next);
+          gui_root.addModalForm(dialog);
+          var settings = gui_root.getGUI().getSettings();
+          settings.setHasNativeCampaign(true);
+          settings.save();
+        }
+      }
+
+      case Race.NATIVES -> {
+        if (campaign.getState().getIslandState(7) != CampaignState.ISLAND_HIDDEN) {
+          addChild(campaign.getIcons().getHiddenRoutes()[0]);
+        }
+
+        if (campaign.getState().getCurrentIsland() == 7) {
+          CampaignDialogForm dialog =
+              new CampaignDialogForm(
+                  gui_root,
+                  i18n("native_header"),
+                  i18n("native_campaign_completed"),
+                  campaign.getIcons().getFaces()[0],
+                  Origin.AT_START,
+                  () -> closeCampaign(campaign.getPeer(), campaign.getScreenManager()));
+          gui_root.addModalForm(dialog);
+        }
+      }
     }
 
-    private final float scale_x;
-    private final float scale_y;
-
-    private final Campaign campaign;
-    private final List<MapIslandButton> islandButtons = new ArrayList<>();
-    private boolean initialFocusSet = false;
-
-    private float flicker_time;
-    private Color.Linear mapColor = Color.Linear.WHITE;
-
-    public CampaignMapForm(GUIRoot gui_root, Campaign campaign) {
-        super(gui_root, new StaticCamera(new CameraState()));
-        this.campaign = campaign;
-
-        this.scale_x = gui_root.getWidth() / BASE_WIDTH;
-        this.scale_y = gui_root.getHeight() / BASE_HEIGHT;
-
-        switch (campaign.getState().getRace()) {
-            case Race.VIKINGS -> {
-                if (campaign.getState().getIslandState(10) != CampaignState.ISLAND_HIDDEN) {
-                    addChild(campaign.getIcons().getHiddenRoutes()[0]);
-                    addChild(campaign.getIcons().getHiddenRoutes()[1]);
-                }
-
-                if (campaign.getState().getCurrentIsland() == 14) {
-                    final Runnable runnable_next = () -> {
-                        CampaignDialogForm dialog = new CampaignDialogForm(gui_root, i18n(
-                                "native_campaign_opened_header"),
-                                i18n("native_campaign_opened"),
-                                null,
-                                Origin.AT_START,
-                                () -> closeCampaign(campaign.getPeer(), campaign.getScreenManager()));
-                        gui_root.addModalForm(dialog);
-                    };
-                    CampaignDialogForm dialog = new CampaignDialogForm(gui_root, i18n("viking_header"),
-                            i18n("viking_campaign_completed"),
-                            campaign.getIcons().getFaces()[0],
-                            Origin.AT_START,
-                            runnable_next);
-                    gui_root.addModalForm(dialog);
-                    var settings = gui_root.getGUI().getSettings();
-                    settings.setHasNativeCampaign(true);
-                    settings.save();
-                }
+    // Islands
+    for (int i = 0; i < campaign.getIcons().getNumIslands(); i++) {
+      MapIslandData data = campaign.getIcons().getMapIslandData(i);
+      int state = campaign.getState().getIslandState(i);
+      GUIObject island =
+          switch (state) {
+            case CampaignState.ISLAND_AVAILABLE -> {
+              final int index = i;
+              MapIslandButton button = new MapIslandButton(getGUIRoot(), data.button(), index);
+              button.addMouseClickListener((_, _, _, _) -> campaign.islandChosen(getGUIRoot(), index));
+              addChild(button);
+              islandButtons.add(button);
+              if (campaign.getState().getCurrentIsland() == i) {
+                button.setFocus();
+              }
+              yield button;
             }
-
-            case Race.NATIVES -> {
-                if (campaign.getState().getIslandState(7) != CampaignState.ISLAND_HIDDEN) {
-                    addChild(campaign.getIcons().getHiddenRoutes()[0]);
-                }
-
-                if (campaign.getState().getCurrentIsland() == 7) {
-                    CampaignDialogForm dialog = new CampaignDialogForm(gui_root, i18n("native_header"),
-                            i18n("native_campaign_completed"),
-                            campaign.getIcons().getFaces()[0],
-                            Origin.AT_START,
-                            () -> closeCampaign(campaign.getPeer(), campaign.getScreenManager()));
-                    gui_root.addModalForm(dialog);
-                }
+            case CampaignState.ISLAND_SEMI_AVAILABLE, CampaignState.ISLAND_UNAVAILABLE -> {
+              GUIObject icon = new GUIIcon(data.button().quad(ModeIconQuads.Mode.DISABLED));
+              addChild(icon);
+              yield icon;
             }
-        }
-
-        // Islands
-        for (int i = 0; i < campaign.getIcons().getNumIslands(); i++) {
-            MapIslandData data = campaign.getIcons().getMapIslandData(i);
-            int state = campaign.getState().getIslandState(i);
-            GUIObject island = switch (state) {
-                case CampaignState.ISLAND_AVAILABLE -> {
-                    final int index = i;
-                    MapIslandButton button = new MapIslandButton(getGUIRoot(), data.button(), index);
-                    button.addMouseClickListener((_, _, _, _) -> campaign.islandChosen(getGUIRoot(), index));
-                    addChild(button);
-                    islandButtons.add(button);
-                    if (campaign.getState().getCurrentIsland() == i) {
-                        button.setFocus();
-                    }
-                    yield button;
-                }
-                case CampaignState.ISLAND_SEMI_AVAILABLE, CampaignState.ISLAND_UNAVAILABLE -> {
-                    GUIObject icon = new GUIIcon(data.button().quad(ModeIconQuads.Mode.DISABLED));
-                    addChild(icon);
-                    yield icon;
-                }
-                case CampaignState.ISLAND_COMPLETED -> {
-                    GUIObject icon = new GUIIcon(data.button().quad(ModeIconQuads.Mode.NORMAL));
-                    addChild(icon);
-                    if (campaign.getState().getCurrentIsland() != i) {
-                        GUIIcon flag = new GUIIcon(data.flag());
-                        flag.setPos(data.pinX(), data.pinY());
-                        addChild(flag);
-                    } else {
-                        GUIIcon boat = new GUIIcon(data.boat());
-                        boat.setPos(data.pinX(), data.pinY());
-                        addChild(boat);
-                    }
-                    yield icon;
-                }
-                case CampaignState.ISLAND_HIDDEN -> null;
-                default -> throw new IllegalArgumentException("Unexpected island state: " + state);
-            };
-            if (island != null)
-                island.setPos(data.x(), data.y());
-        }
-
-        setFocus();
-    }
-
-    @Override
-    public void setFocus(FocusDirection direction) {
-        if (direction == FocusDirection.BACKWARD) {
-            super.setFocus(direction);
-        } else {
-            setFocus();
-        }
-    }
-
-    @Override
-    public void setFocus() {
-        if (islandButtons.isEmpty()) {
-            super.setFocus();
-            return;
-        }
-
-        // If we already have a focused button among our islands, keep it.
-        if (getFocusedChild() instanceof MapIslandButton) {
-            return;
-        }
-
-        MapIslandButton toFocus = null;
-        if (!initialFocusSet) {
-            int currentIsland = campaign.getState().getCurrentIsland();
-            for (MapIslandButton button : islandButtons) {
-                if (button.getIslandIndex() == currentIsland) {
-                    toFocus = button;
-                    break;
-                }
+            case CampaignState.ISLAND_COMPLETED -> {
+              GUIObject icon = new GUIIcon(data.button().quad(ModeIconQuads.Mode.NORMAL));
+              addChild(icon);
+              if (campaign.getState().getCurrentIsland() != i) {
+                GUIIcon flag = new GUIIcon(data.flag());
+                flag.setPos(data.pinX(), data.pinY());
+                addChild(flag);
+              } else {
+                GUIIcon boat = new GUIIcon(data.boat());
+                boat.setPos(data.pinX(), data.pinY());
+                addChild(boat);
+              }
+              yield icon;
             }
-            initialFocusSet = true;
+            case CampaignState.ISLAND_HIDDEN -> null;
+            default -> throw new IllegalArgumentException("Unexpected island state: " + state);
+          };
+      if (island != null) island.setPos(data.x(), data.y());
+    }
+
+    setFocus();
+  }
+
+  @Override
+  public void setFocus(FocusDirection direction) {
+    if (direction == FocusDirection.BACKWARD) {
+      super.setFocus(direction);
+    } else {
+      setFocus();
+    }
+  }
+
+  @Override
+  public void setFocus() {
+    if (islandButtons.isEmpty()) {
+      super.setFocus();
+      return;
+    }
+
+    // If we already have a focused button among our islands, keep it.
+    if (getFocusedChild() instanceof MapIslandButton) {
+      return;
+    }
+
+    MapIslandButton toFocus = null;
+    if (!initialFocusSet) {
+      int currentIsland = campaign.getState().getCurrentIsland();
+      for (MapIslandButton button : islandButtons) {
+        if (button.getIslandIndex() == currentIsland) {
+          toFocus = button;
+          break;
         }
+      }
+      initialFocusSet = true;
+    }
 
-        if (toFocus == null) {
-            toFocus = islandButtons.getLast();
+    if (toFocus == null) {
+      toFocus = islandButtons.getLast();
+    }
+
+    toFocus.setFocus();
+  }
+
+  @Override
+  public void handleInput(InputEvent event) {
+    if (!event.isConsumed() && event.getPhase() == InputPhase.PRESSED) {
+      int dx = 0;
+      int dy = 0;
+      if (event.consumeAction(GameAction.UI_NAV_UP)) dy = -1;
+      else if (event.consumeAction(GameAction.UI_NAV_DOWN)) dy = 1;
+      else if (event.consumeAction(GameAction.UI_NAV_LEFT)) dx = -1;
+      else if (event.consumeAction(GameAction.UI_NAV_RIGHT)) dx = 1;
+      else if (event.consumeAction(GameAction.UI_FOCUS_NEXT)) {
+        focusNext();
+        event.consume();
+        return;
+      } else if (event.consumeAction(GameAction.UI_FOCUS_PREV)) {
+        focusPrior();
+        event.consume();
+        return;
+      } else if (event.consumeAction(GameAction.UI_ACTIVATE)) {
+        if (getFocusedChild() instanceof MapIslandButton button) {
+          campaign.islandChosen(getGUIRoot(), button.getIslandIndex());
+          event.consume();
+          return;
         }
+      }
 
-        toFocus.setFocus();
+      if (dx != 0 || dy != 0) {
+        navigate(dx, dy);
+        event.consume();
+        return;
+      }
     }
 
-    @Override
-    public void handleInput(InputEvent event) {
-        if (!event.isConsumed() && event.getPhase() == InputPhase.PRESSED) {
-            int dx = 0;
-            int dy = 0;
-            if (event.consumeAction(GameAction.UI_NAV_UP)) dy = -1;
-            else if (event.consumeAction(GameAction.UI_NAV_DOWN)) dy = 1;
-            else if (event.consumeAction(GameAction.UI_NAV_LEFT)) dx = -1;
-            else if (event.consumeAction(GameAction.UI_NAV_RIGHT)) dx = 1;
-            else if (event.consumeAction(GameAction.UI_FOCUS_NEXT)) {
-                focusNext();
-                event.consume();
-                return;
-            } else if (event.consumeAction(GameAction.UI_FOCUS_PREV)) {
-                focusPrior();
-                event.consume();
-                return;
-            } else if (event.consumeAction(GameAction.UI_ACTIVATE)) {
-                if (getFocusedChild() instanceof MapIslandButton button) {
-                    campaign.islandChosen(getGUIRoot(), button.getIslandIndex());
-                    event.consume();
-                    return;
-                }
-            }
+    if (event.getPhase() == InputPhase.PRESSED) {
+      if (event.consumeAction(GameAction.GLOBAL_MENU) || event.consumeAction(GameAction.UI_CANCEL)) {
+        getGUIRoot().addModalForm(new CampaignMapMenu(getGUIRoot(), campaign));
+        event.consume();
+        return;
+      }
+    }
+    super.handleInput(event);
+  }
 
-            if (dx != 0 || dy != 0) {
-                navigate(dx, dy);
-                event.consume();
-                return;
-            }
+  private void navigate(int dx, int dy) {
+    if (islandButtons.isEmpty()) return;
+
+    MapIslandButton current = null;
+    if (getFocusedChild() instanceof MapIslandButton b && islandButtons.contains(b)) {
+      current = b;
+    }
+
+    if (current == null) {
+      islandButtons.getLast().setFocus();
+      return;
+    }
+
+    MapIslandButton best = null;
+    float bestScore = Float.MAX_VALUE;
+
+    for (MapIslandButton candidate : islandButtons) {
+      if (candidate == current) continue;
+
+      float cdx = candidate.getX() - current.getX();
+      float cdy = candidate.getY() - current.getY();
+
+      boolean inDir = false;
+      if (dy < 0) inDir = cdy < -1 && Math.abs(cdx) < Math.abs(cdy) * 2;
+      else if (dy > 0) inDir = cdy > 1 && Math.abs(cdx) < Math.abs(cdy) * 2;
+      else if (dx < 0) inDir = cdx < -1 && Math.abs(cdy) < Math.abs(cdx) * 2;
+      else if (dx > 0) inDir = cdx > 1 && Math.abs(cdy) < Math.abs(cdx) * 2;
+
+      if (inDir) {
+        float distSq = cdx * cdx + cdy * cdy;
+        if (distSq < bestScore) {
+          bestScore = distSq;
+          best = candidate;
         }
-
-        if (event.getPhase() == InputPhase.PRESSED) {
-            if (event.consumeAction(GameAction.GLOBAL_MENU) || event.consumeAction(GameAction.UI_CANCEL)) {
-                getGUIRoot().addModalForm(new CampaignMapMenu(getGUIRoot(), campaign));
-                event.consume();
-                return;
-            }
-        }
-        super.handleInput(event);
+      }
     }
 
-    private void navigate(int dx, int dy) {
-        if (islandButtons.isEmpty()) return;
-
-        MapIslandButton current = null;
-        if (getFocusedChild() instanceof MapIslandButton b && islandButtons.contains(b)) {
-            current = b;
-        }
-
-        if (current == null) {
-            islandButtons.getLast().setFocus();
-            return;
-        }
-
-        MapIslandButton best = null;
-        float bestScore = Float.MAX_VALUE;
-
-        for (MapIslandButton candidate : islandButtons) {
-            if (candidate == current) continue;
-
-            float cdx = candidate.getX() - current.getX();
-            float cdy = candidate.getY() - current.getY();
-
-            boolean inDir = false;
-            if (dy < 0) inDir = cdy < -1 && Math.abs(cdx) < Math.abs(cdy) * 2;
-            else if (dy > 0) inDir = cdy > 1 && Math.abs(cdx) < Math.abs(cdy) * 2;
-            else if (dx < 0) inDir = cdx < -1 && Math.abs(cdy) < Math.abs(cdx) * 2;
-            else if (dx > 0) inDir = cdx > 1 && Math.abs(cdy) < Math.abs(cdx) * 2;
-
-            if (inDir) {
-                float distSq = cdx * cdx + cdy * cdy;
-                if (distSq < bestScore) {
-                    bestScore = distSq;
-                    best = candidate;
-                }
-            }
-        }
-
-        if (best != null) {
-            best.setFocus();
-        }
+    if (best != null) {
+      best.setFocus();
     }
+  }
 
-    public static void closeCampaign(Peer peer, ScreenManager screenManager) {
-        Menu.startMenu(peer, screenManager);
+  public static void closeCampaign(Peer peer, ScreenManager screenManager) {
+    Menu.startMenu(peer, screenManager);
+  }
+
+  @Override
+  protected void renderGeometry(GUIRenderer renderer) {
+    renderer.drawIcon(campaign.getIcons().getMap(), 0f, 0f, Color.Linear.WHITE);
+  }
+
+  @Override
+  protected void doAdd() {
+    super.doAdd();
+    getGUIRoot().getGUI().getAnimationManager().registerAnimation(this);
+  }
+
+  @Override
+  protected void doRemove() {
+    super.doRemove();
+    getGUIRoot().getGUI().getAnimationManager().removeAnimation(this);
+  }
+
+  @Override
+  public void animate(float dt) {
+    flicker_time += dt;
+
+    // Multi-frequency wave for organic flickering (simulating an oil lamp).
+    float n1 = (float) Math.sin(flicker_time * 1.8);
+    float n2 = (float) Math.sin(flicker_time * 4.7);
+    float n3 = (float) Math.sin(flicker_time * 9.3);
+
+    float noise = n1 * 0.4f + n2 * 0.4f + n3 * 0.2f;
+
+    // Base linear factor 0.9 (approx 0.95 sRGB) with +/- 10% swing.
+    // This avoids blowing out the bright map center while maintaining a visible flicker.
+    float factor = 0.9f + noise * 0.10f;
+    mapColor = new Color.Linear(factor, factor, factor, 1f);
+  }
+
+  @Override
+  protected void render(GUIRenderer renderer, float clip_left, float clip_right, float clip_bottom, float clip_top) {
+    try (var _ = renderer.withTransform();
+        var _ = renderer.withModulation(mapColor)) {
+      renderer.scale(scale_x, scale_y);
+      super.render(renderer, clip_left, clip_right, clip_bottom, clip_top);
     }
+  }
 
-    @Override
-    protected void renderGeometry(GUIRenderer renderer) {
-        renderer.drawIcon(campaign.getIcons().getMap(), 0f, 0f, Color.Linear.WHITE);
-    }
-
-    @Override
-    protected void doAdd() {
-        super.doAdd();
-        getGUIRoot().getGUI().getAnimationManager().registerAnimation(this);
-    }
-
-    @Override
-    protected void doRemove() {
-        super.doRemove();
-        getGUIRoot().getGUI().getAnimationManager().removeAnimation(this);
-    }
-
-    @Override
-    public void animate(float dt) {
-        flicker_time += dt;
-
-        // Multi-frequency wave for organic flickering (simulating an oil lamp).
-        float n1 = (float) Math.sin(flicker_time * 1.8);
-        float n2 = (float) Math.sin(flicker_time * 4.7);
-        float n3 = (float) Math.sin(flicker_time * 9.3);
-
-        float noise = n1 * 0.4f + n2 * 0.4f + n3 * 0.2f;
-
-        // Base linear factor 0.9 (approx 0.95 sRGB) with +/- 10% swing.
-        // This avoids blowing out the bright map center while maintaining a visible flicker.
-        float factor = 0.9f + noise * 0.10f;
-        mapColor = new Color.Linear(factor, factor, factor, 1f);
-    }
-
-    @Override
-    protected void render(GUIRenderer renderer, float clip_left, float clip_right, float clip_bottom,
-            float clip_top) {
-        try (var _ = renderer.withTransform(); var _ = renderer.withModulation(mapColor)) {
-            renderer.scale(scale_x, scale_y);
-            super.render(renderer, clip_left, clip_right, clip_bottom, clip_top);
-        }
-    }
-
-    @Override
-    protected GUIObject pick(float x, float y) {
-        return super.pick(x / scale_x, y / scale_y);
-    }
+  @Override
+  protected GUIObject pick(float x, float y) {
+    return super.pick(x / scale_x, y / scale_y);
+  }
 }

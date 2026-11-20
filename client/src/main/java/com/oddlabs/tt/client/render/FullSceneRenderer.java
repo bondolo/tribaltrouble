@@ -1,7 +1,9 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioManager;
+import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.client.delegate.Delegate;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.viewer.AmbientAudio;
 import com.oddlabs.tt.client.viewer.Cheat;
 import com.oddlabs.tt.client.viewer.Selection;
@@ -10,9 +12,9 @@ import com.oddlabs.tt.effects.render.LightningRenderer;
 import com.oddlabs.tt.effects.render.SonicBlastRenderer;
 import com.oddlabs.tt.engine.render.BoundingMode;
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.render.PostProcessor;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.GpuPass;
+import com.oddlabs.tt.engine.render.PostProcessor;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.SpriteRenderer;
@@ -23,18 +25,16 @@ import com.oddlabs.tt.engine.render.state.GlobalUniforms;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.render.state.SceneLighting;
 import com.oddlabs.tt.engine.render.state.ScenePassContext;
+import com.oddlabs.tt.engine.resource.WorldInfo;
+import com.oddlabs.tt.engine.settings.AccessibilitySettings;
+import com.oddlabs.tt.engine.util.DebugRender;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.ToolTip;
 import com.oddlabs.tt.scenery.ConcentricRingMesh;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.scenery.SeaBottom;
 import com.oddlabs.tt.scenery.Sky;
 import com.oddlabs.tt.scenery.Water;
-import com.oddlabs.tt.client.resource.AssetRegistry;
-import com.oddlabs.tt.engine.resource.WorldInfo;
-import com.oddlabs.tt.engine.settings.AccessibilitySettings;
-import com.oddlabs.tt.base.global.Settings;
-import com.oddlabs.tt.engine.util.DebugRender;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.ToolTip;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Building;
@@ -47,417 +47,445 @@ import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
-/**
- * Primary world renderer coordinating the rendering of landscape, units, buildings, and transient effects.
- */
+/// Primary world renderer coordinating the rendering of landscape, units, buildings, and transient effects.
 public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverProvider {
-    private static final float HORIZON_RADIUS = 6000f;
-    private static final int RING_MESH_SUBDIV_AXIS = 64;
-    private static final int SKY_SUBDIV_AXIS = 32;
-    private static final int SKY_SUBDIV_HEIGHT = 32;
+  private static final float HORIZON_RADIUS = 6000f;
+  private static final int RING_MESH_SUBDIV_AXIS = 64;
+  private static final int SKY_SUBDIV_AXIS = 32;
+  private static final int SKY_SUBDIV_HEIGHT = 32;
 
-    private final Picker picker;
-    private final ConcentricRingMesh ringMesh;
-    private final Water water;
-    private final Sky sky;
-    private final SeaBottom seaBottom;
-    private final LandscapeRenderer landscape_renderer;
-    private final World world;
-    private final ElementRenderer<?> element_renderer;
-    private final TreeRenderer tree_renderer;
-    private final RenderQueues render_queues;
-    private final Selection selection;
-    private final LightningRenderer lightningRenderer;
-    private final SonicBlastRenderer sonicBlastRenderer;
-    private final EmitterRenderer emitterRenderer;
-    private final PostProcessor postProcessor;
-    private final @Nullable Cheat cheat;
-    private final AmbientAudio ambient;
+  private final Picker picker;
+  private final ConcentricRingMesh ringMesh;
+  private final Water water;
+  private final Sky sky;
+  private final SeaBottom seaBottom;
+  private final LandscapeRenderer landscape_renderer;
+  private final World world;
+  private final ElementRenderer<?> element_renderer;
+  private final TreeRenderer tree_renderer;
+  private final RenderQueues render_queues;
+  private final Selection selection;
+  private final LightningRenderer lightningRenderer;
+  private final SonicBlastRenderer sonicBlastRenderer;
+  private final EmitterRenderer emitterRenderer;
+  private final PostProcessor postProcessor;
+  private final @Nullable Cheat cheat;
+  private final AmbientAudio ambient;
 
-    private final GlobalUniforms globalUniforms = new GlobalUniforms();
+  private final GlobalUniforms globalUniforms = new GlobalUniforms();
 
-    private final Matrix4f rallyPointMatrix = new Matrix4f();
+  private final Matrix4f rallyPointMatrix = new Matrix4f();
 
-    private @Nullable Building selected_building;
-    private long lastPrepLandscapeNanos;
-    private long lastTreeVisitNanos;
-    private long lastPrepTreesNanos;
+  private @Nullable Building selected_building;
+  private long lastPrepLandscapeNanos;
+  private long lastTreeVisitNanos;
+  private long lastPrepTreesNanos;
 
-    public FullSceneRenderer(@Nullable Cheat cheat, Player local_player,
-            RenderQueues render_queues,
-            WorldInfo<Texture> world_info, LandscapeRenderer landscape_renderer,
-            Picker picker,
-            Selection selection,
-            AudioManager audioManager, Settings settings, int width, int height) {
-        this.world = local_player.getWorld();
-        this.cheat = cheat;
-        this.ambient = new AmbientAudio(audioManager);
-        this.render_queues = render_queues;
-        this.picker = picker;
-        this.selection = selection;
-        this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false,
-                selection, audioManager);
-        this.tree_renderer = new TreeRenderer(cheat, picker.getRespondManager(), render_queues.getInstancedRenderer(),
-                picker.getAnimationManager(), landscape_renderer);
-        this.tree_renderer.initTreeBounds(world.getTreeRoot());
-        this.landscape_renderer = landscape_renderer;
-        this.ringMesh = new ConcentricRingMesh(world.getHeightMap(), HORIZON_RADIUS, RING_MESH_SUBDIV_AXIS);
-        this.sky = new Sky(world.getHeightMap(), world_info.landscape().terrain(), HORIZON_RADIUS, SKY_SUBDIV_AXIS,
-                SKY_SUBDIV_HEIGHT);
-        this.seaBottom = new SeaBottom(world_info.landscape().terrain(),
-                world_info.detail(), world_info.detailNormal(), ringMesh);
-        this.water = new Water(landscape_renderer.getHeightMapVisual(), world.getHeightMap(), world_info.landscape()
-                .terrain(), sky, ringMesh);
-        this.landscape_renderer.setOceanMask(this.water.getOceanMaskTexture());
-        this.lightningRenderer = new LightningRenderer();
-        this.sonicBlastRenderer = new SonicBlastRenderer();
-        this.emitterRenderer = new EmitterRenderer();
-        this.postProcessor = new PostProcessor(AccessibilitySettings.from(settings), width, height,
-                WindowSettings.from(settings).view_samples);
-        DebugRender.setShaderRenderer(new DebugShaderRenderer());
+  public FullSceneRenderer(
+      @Nullable Cheat cheat,
+      Player local_player,
+      RenderQueues render_queues,
+      WorldInfo<Texture> world_info,
+      LandscapeRenderer landscape_renderer,
+      Picker picker,
+      Selection selection,
+      AudioManager audioManager,
+      Settings settings,
+      int width,
+      int height) {
+    this.world = local_player.getWorld();
+    this.cheat = cheat;
+    this.ambient = new AmbientAudio(audioManager);
+    this.render_queues = render_queues;
+    this.picker = picker;
+    this.selection = selection;
+    this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false, selection, audioManager);
+    this.tree_renderer =
+        new TreeRenderer(
+            cheat,
+            picker.getRespondManager(),
+            render_queues.getInstancedRenderer(),
+            picker.getAnimationManager(),
+            landscape_renderer);
+    this.tree_renderer.initTreeBounds(world.getTreeRoot());
+    this.landscape_renderer = landscape_renderer;
+    this.ringMesh = new ConcentricRingMesh(world.getHeightMap(), HORIZON_RADIUS, RING_MESH_SUBDIV_AXIS);
+    this.sky =
+        new Sky(
+            world.getHeightMap(), world_info.landscape().terrain(), HORIZON_RADIUS, SKY_SUBDIV_AXIS, SKY_SUBDIV_HEIGHT);
+    this.seaBottom =
+        new SeaBottom(world_info.landscape().terrain(), world_info.detail(), world_info.detailNormal(), ringMesh);
+    this.water =
+        new Water(
+            landscape_renderer.getHeightMapVisual(),
+            world.getHeightMap(),
+            world_info.landscape().terrain(),
+            sky,
+            ringMesh);
+    this.landscape_renderer.setOceanMask(this.water.getOceanMaskTexture());
+    this.lightningRenderer = new LightningRenderer();
+    this.sonicBlastRenderer = new SonicBlastRenderer();
+    this.emitterRenderer = new EmitterRenderer();
+    this.postProcessor =
+        new PostProcessor(
+            AccessibilitySettings.from(settings), width, height, WindowSettings.from(settings).view_samples);
+    DebugRender.setShaderRenderer(new DebugShaderRenderer());
+  }
+
+  private void drawAxes() {
+    float center = world.getHeightMap().getMetersPerWorld() / 2f;
+    float z = world.getHeightMap().getNearestHeight(center, center);
+    DebugRender.drawAxes(center, z);
+  }
+
+  public RenderState getRenderState() {
+    return element_renderer.getRenderState();
+  }
+
+  public void setSelectedBuilding(@Nullable Building building) {
+    this.selected_building = building;
+  }
+
+  private void renderRallyPoint(RenderContext context, CameraState camera_state) {
+    if (selected_building != null && !selected_building.isDead() && selected_building.hasRallyPoint())
+      doRenderRallyPoint(
+          context,
+          camera_state,
+          selected_building.getRallyPoint(),
+          AssetRegistry.getInstance().getRallyPoint(selected_building.getOwner().getRaceInfo().getRaceType()),
+          SelectableVisitor.getTeamColor(selected_building));
+  }
+
+  private void doRenderRallyPoint(
+      RenderContext context,
+      CameraState camera_state,
+      Target rally_point,
+      SpriteKey rally_sprite,
+      Color.Linear teamColor) {
+
+    SpriteRenderer rally_point_renderer = render_queues.getRenderer(rally_sprite);
+
+    float x = rally_point.getPositionX();
+    float y = rally_point.getPositionY();
+    float z = world.getHeightMap().getNearestHeight(rally_point.getPositionX(), rally_point.getPositionY());
+    if (rally_point instanceof Building rally_building) {
+      var rally = rally_building.getTemplate().getRally();
+      x += rally.x();
+      y += rally.y();
+      z += rally.z();
     }
 
-    private void drawAxes() {
-        float center = world.getHeightMap().getMetersPerWorld() / 2f;
-        float z = world.getHeightMap().getNearestHeight(center, center);
-        DebugRender.drawAxes(center, z);
+    float dx = camera_state.getCurrentX() - x;
+    float dy = camera_state.getCurrentY() - y;
+    if (dx * dx + dy * dy > 0.01f) {
+      float angle = (float) Math.atan2(dy, dx);
+      rallyPointMatrix.translation(x, y, z).rotate(angle, 0f, 0f, 1f);
+    } else {
+      rallyPointMatrix.translation(x, y, z);
     }
 
-    public RenderState getRenderState() {
-        return element_renderer.getRenderState();
+    rally_point_renderer.addInstance(
+        0, // animation
+        0f, // animTicks
+        false, // respond
+        true, // blend
+        true, // depthWrite
+        true, // depthTest
+        rallyPointMatrix,
+        Color.Linear.WHITE,
+        teamColor);
+  }
+
+  @Override
+  public void pickHover(boolean can_hover_behind, CameraState camera, int x, int y) {
+    if (can_hover_behind) {
+      picker.pickHoverPhysical(camera, x, y);
+    } else {
+      picker.resetCurrentHovered();
+    }
+  }
+
+  @Override
+  public @Nullable ToolTip getToolTip() {
+    return picker.getCurrentToolTip();
+  }
+
+  public void onTreeFelled(TreeSupply tree) {
+    tree_renderer.onTreeFelled(tree);
+  }
+
+  public void onTreeSpawned(TreeSupply tree) {
+    tree_renderer.onTreeSpawned(tree);
+  }
+
+  private void renderDebugElements(CameraState frustum_state) {
+    if (DebugFlags.draw_axes) drawAxes();
+    landscape_renderer.debugRender(frustum_state);
+    emitterRenderer.debugRender(element_renderer.getRenderState().getEmitterQueue());
+
+    if (DebugFlags.isBoundsEnabled(BoundingMode.REGIONS))
+      PathfinderDebugRenderer.renderRegions(
+          world.getUnitGrid(), frustum_state.getCurrentX(), frustum_state.getCurrentY());
+    if (DebugFlags.isBoundsEnabled(BoundingMode.OCCUPATION)) picker.debugRender();
+    if (DebugFlags.isBoundsEnabled(BoundingMode.UNIT_GRID)) {
+      PathfinderDebugRenderer.renderUnitGrid(
+          world.getUnitGrid(), frustum_state.getCurrentX(), frustum_state.getCurrentY());
+      for (Object obj : selection.getCurrentSelection().getSet()) {
+        if (obj instanceof Unit unit) PathfinderDebugRenderer.renderPathTracker(unit.getPathTracker());
+      }
+    }
+    DebugRender.flush(frustum_state.getModelView());
+  }
+
+  @Override
+  public void render(RenderContext context, CameraState frustum_state, GUIRoot gui_root) {
+    var gpu = context.gpuTimer();
+    render_queues.getInstancedRenderer().clear();
+
+    try (var _ = postProcessor.withScene(frustum_state.getWidth(), frustum_state.getHeight())) {
+      context.setDrawBuffers(true); // Ensure both Color and Mask are cleared
+      context.setColorMask(true, true, true, true);
+      context.setDepthMask(true);
+      context.setDepthTest(true);
+      context.setDepthFunc(GL11.GL_LEQUAL);
+      context.clear(true, true);
+
+      context.setViewport(0, 0, frustum_state.getWidth(), frustum_state.getHeight());
+
+      float currentTime = gui_root.getTime();
+      var pass = new ScenePassContext(context, frustum_state, frustum_state.getModelView(), currentTime);
+      globalUniforms.update(
+          context,
+          frustum_state,
+          currentTime,
+          world.getHeightMap().getSeaLevelMeters(),
+          water,
+          SceneLighting.CANONICAL);
+
+      ambient.updateSoundListener(frustum_state, world.getHeightMap());
+
+      if (DebugFlags.line_mode || (cheat != null && cheat.line_mode)) {
+        GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+      }
+
+      renderTerrain(pass);
+      prepareCPU(frustum_state, currentTime);
+      renderOpaqueGeometry(pass, gui_root);
+      renderWater(pass);
+      renderSky(pass);
+      renderTransparents(context, frustum_state);
+      renderOverlays(context, frustum_state);
     }
 
-    public void setSelectedBuilding(@Nullable Building building) {
-        this.selected_building = building;
+    gpu.begin(GpuPass.COMPOSITE);
+    postProcessor.renderComposite(context, frustum_state.inNoDetailMode());
+    gpu.end();
+  }
+
+  private void prepareCPU(CameraState frustum_state, float currentTime) {
+    if (DebugFlags.process_trees) {
+      long treeStart = System.nanoTime();
+      tree_renderer.setup(frustum_state);
+      tree_renderer.visit(world.getTreeRoot());
+      lastTreeVisitNanos = System.nanoTime() - treeStart;
+    } else {
+      lastTreeVisitNanos = 0L;
+    }
+    if (DebugFlags.process_misc) {
+      element_renderer.setup(frustum_state, currentTime);
+      element_renderer.visit(world.getElementRoot());
     }
 
-    private void renderRallyPoint(RenderContext context, CameraState camera_state) {
-        if (selected_building != null && !selected_building.isDead() && selected_building.hasRallyPoint())
-            doRenderRallyPoint(context, camera_state,
-                    selected_building.getRallyPoint(), AssetRegistry.getInstance().getRallyPoint(selected_building
-                            .getOwner().getRaceInfo().getRaceType()),
-                    SelectableVisitor.getTeamColor(selected_building));
+    if (DebugFlags.process_misc) {
+      var renderState = element_renderer.getRenderState();
+      emitterRenderer.prepare(
+          render_queues, renderState.getEmitterQueue(), frustum_state, frustum_state.getModelView());
+      lightningRenderer.prepare(renderState.getLightningQueue());
+      sonicBlastRenderer.prepare(renderState.getSonicBlastQueue());
     }
+  }
 
-    private void doRenderRallyPoint(RenderContext context, CameraState camera_state,
-            Target rally_point, SpriteKey rally_sprite, Color.Linear teamColor) {
-
-        SpriteRenderer rally_point_renderer = render_queues.getRenderer(rally_sprite);
-
-        float x = rally_point.getPositionX();
-        float y = rally_point.getPositionY();
-        float z = world.getHeightMap().getNearestHeight(rally_point.getPositionX(), rally_point.getPositionY());
-        if (rally_point instanceof Building rally_building) {
-            var rally = rally_building.getTemplate().getRally();
-            x += rally.x();
-            y += rally.y();
-            z += rally.z();
-        }
-
-        float dx = camera_state.getCurrentX() - x;
-        float dy = camera_state.getCurrentY() - y;
-        if (dx * dx + dy * dy > 0.01f) {
-            float angle = (float) Math.atan2(dy, dx);
-            rallyPointMatrix.translation(x, y, z).rotate(angle, 0f, 0f, 1f);
-        } else {
-            rallyPointMatrix.translation(x, y, z);
-        }
-
-        rally_point_renderer.addInstance(
-                0, // animation
-                0f, // animTicks
-                false, // respond
-                true,  // blend
-                true,  // depthWrite
-                true,  // depthTest
-                rallyPointMatrix,
-                Color.Linear.WHITE,
-                teamColor
-        );
-    }
-
-    @Override
-    public void pickHover(boolean can_hover_behind, CameraState camera, int x, int y) {
-        if (can_hover_behind) {
-            picker.pickHoverPhysical(camera, x, y);
-        } else {
-            picker.resetCurrentHovered();
-        }
-    }
-
-    @Override
-    public @Nullable ToolTip getToolTip() {
-        return picker.getCurrentToolTip();
-    }
-
-    public void onTreeFelled(TreeSupply tree) {
-        tree_renderer.onTreeFelled(tree);
-    }
-
-    public void onTreeSpawned(TreeSupply tree) {
-        tree_renderer.onTreeSpawned(tree);
-    }
-
-    private void renderDebugElements(CameraState frustum_state) {
-        if (DebugFlags.draw_axes) drawAxes();
-        landscape_renderer.debugRender(frustum_state);
-        emitterRenderer.debugRender(element_renderer.getRenderState().getEmitterQueue());
-
-        if (DebugFlags.isBoundsEnabled(BoundingMode.REGIONS))
-            PathfinderDebugRenderer.renderRegions(world.getUnitGrid(), frustum_state.getCurrentX(), frustum_state
-                    .getCurrentY());
-        if (DebugFlags.isBoundsEnabled(BoundingMode.OCCUPATION)) picker.debugRender();
-        if (DebugFlags.isBoundsEnabled(BoundingMode.UNIT_GRID)) {
-            PathfinderDebugRenderer.renderUnitGrid(world.getUnitGrid(), frustum_state.getCurrentX(), frustum_state
-                    .getCurrentY());
-            for (Object obj : selection.getCurrentSelection().getSet()) {
-                if (obj instanceof Unit unit) PathfinderDebugRenderer.renderPathTracker(unit.getPathTracker());
-            }
-        }
-        DebugRender.flush(frustum_state.getModelView());
-    }
-
-    @Override
-    public void render(RenderContext context, CameraState frustum_state, GUIRoot gui_root) {
+  private void renderTerrain(ScenePassContext pass) {
+    RenderContext context = pass.renderContext();
+    try (var _ = context.withDrawBuffers(false)) {
+      if (DebugFlags.process_landscape) {
         var gpu = context.gpuTimer();
-        render_queues.getInstancedRenderer().clear();
-
-        try (var _ = postProcessor.withScene(frustum_state.getWidth(), frustum_state.getHeight())) {
-            context.setDrawBuffers(true); // Ensure both Color and Mask are cleared
-            context.setColorMask(true, true, true, true);
-            context.setDepthMask(true);
-            context.setDepthTest(true);
-            context.setDepthFunc(GL11.GL_LEQUAL);
-            context.clear(true, true);
-
-            context.setViewport(0, 0, frustum_state.getWidth(), frustum_state.getHeight());
-
-            float currentTime = gui_root.getTime();
-            var pass = new ScenePassContext(context, frustum_state, frustum_state.getModelView(), currentTime);
-            globalUniforms.update(context, frustum_state, currentTime,
-                    world.getHeightMap().getSeaLevelMeters(), water, SceneLighting.CANONICAL);
-
-            ambient.updateSoundListener(frustum_state, world.getHeightMap());
-
-            if (DebugFlags.line_mode || (cheat != null && cheat.line_mode)) {
-                GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-            }
-
-            renderTerrain(pass);
-            prepareCPU(frustum_state, currentTime);
-            renderOpaqueGeometry(pass, gui_root);
-            renderWater(pass);
-            renderSky(pass);
-            renderTransparents(context, frustum_state);
-            renderOverlays(context, frustum_state);
-        }
-
-        gpu.begin(GpuPass.COMPOSITE);
-        postProcessor.renderComposite(context, frustum_state.inNoDetailMode());
-        gpu.end();
-    }
-
-    private void prepareCPU(CameraState frustum_state, float currentTime) {
-        if (DebugFlags.process_trees) {
-            long treeStart = System.nanoTime();
-            tree_renderer.setup(frustum_state);
-            tree_renderer.visit(world.getTreeRoot());
-            lastTreeVisitNanos = System.nanoTime() - treeStart;
-        } else {
-            lastTreeVisitNanos = 0L;
-        }
-        if (DebugFlags.process_misc) {
-            element_renderer.setup(frustum_state, currentTime);
-            element_renderer.visit(world.getElementRoot());
-        }
-
-        if (DebugFlags.process_misc) {
-            var renderState = element_renderer.getRenderState();
-            emitterRenderer.prepare(render_queues, renderState.getEmitterQueue(), frustum_state, frustum_state
-                    .getModelView());
-            lightningRenderer.prepare(renderState.getLightningQueue());
-            sonicBlastRenderer.prepare(renderState.getSonicBlastQueue());
-        }
-    }
-
-    private void renderTerrain(ScenePassContext pass) {
-        RenderContext context = pass.renderContext();
-        try (var _ = context.withDrawBuffers(false)) {
-            if (DebugFlags.process_landscape) {
-                var gpu = context.gpuTimer();
-                gpu.begin(GpuPass.LANDSCAPE);
-                long prepStart = System.nanoTime();
-                landscape_renderer.prepareAll(pass.camera(), false);
-                lastPrepLandscapeNanos = System.nanoTime() - prepStart;
-                landscape_renderer.render(pass);
-                if (DebugFlags.draw_sky) {
-                    seaBottom.render(pass);
-                }
-                gpu.end();
-            } else {
-                lastPrepLandscapeNanos = 0L;
-                if (DebugFlags.draw_sky) {
-                    var gpu = context.gpuTimer();
-                    gpu.begin(GpuPass.LANDSCAPE);
-                    seaBottom.render(pass);
-                    gpu.end();
-                }
-            }
-        }
-    }
-
-    private void renderSky(ScenePassContext pass) {
+        gpu.begin(GpuPass.LANDSCAPE);
+        long prepStart = System.nanoTime();
+        landscape_renderer.prepareAll(pass.camera(), false);
+        lastPrepLandscapeNanos = System.nanoTime() - prepStart;
+        landscape_renderer.render(pass);
         if (DebugFlags.draw_sky) {
-            RenderContext context = pass.renderContext();
-            try (var _ = context.withDrawBuffers(false)) {
-                var gpu = context.gpuTimer();
-                gpu.begin(GpuPass.SKY);
-                sky.render(pass);
-                gpu.end();
-            }
-        }
-    }
-
-    private void renderOpaqueGeometry(ScenePassContext pass, GUIRoot gui_root) {
-        RenderContext context = pass.renderContext();
-        CameraState frustum_state = pass.camera();
-        float currentTime = pass.time();
-        var gpu = context.gpuTimer();
-        if (DebugFlags.process_shadows && (cheat == null || cheat.draw_shadows)) {
-            gpu.begin(GpuPass.SHADOWS);
-            if (DebugFlags.process_trees) {
-                tree_renderer.renderShadows(element_renderer.getRenderState().getDefaultShadowRenderer(), currentTime);
-            }
-            render_queues.renderShadows(context, (float) world.getHeightMap().getMetersPerWorld(),
-                    landscape_renderer.getHeightMapVisual().getHeightTexture(), frustum_state.getModelView());
-            gpu.end();
-        }
-
-        long treeRenderNanos = 0L;
-        if (DebugFlags.process_trees) {
-            long treeRenderStart = System.nanoTime();
-            tree_renderer.render(pass);
-            treeRenderNanos = System.nanoTime() - treeRenderStart;
-        }
-        lastPrepTreesNanos = lastTreeVisitNanos + treeRenderNanos;
-        if (DebugFlags.process_misc || DebugFlags.process_trees) {
-            gpu.begin(GpuPass.SPRITES);
-            render_queues.renderAll(context, frustum_state);
-            gpu.end();
-        }
-        if (DebugFlags.process_misc) {
-            gpu.begin(GpuPass.PLANTS);
-            render_queues.renderPlants(context, frustum_state);
-            gpu.end();
-        }
-
-        if (gui_root.getDelegate() instanceof Delegate delegate) {
-            delegate.render3D(context, landscape_renderer, render_queues, frustum_state, frustum_state.getModelView());
-        }
-    }
-
-    private void renderWater(ScenePassContext pass) {
-        if (DebugFlags.draw_water) {
-            var gpu = pass.renderContext().gpuTimer();
-            gpu.begin(GpuPass.WATER);
-            water.setVisiblePatches(landscape_renderer.getVisiblePatches());
-            water.render(pass);
-            gpu.end();
-        }
-    }
-
-    private void renderTransparents(RenderContext context, CameraState frustum_state) {
-        if (!DebugFlags.process_misc && !DebugFlags.draw_particles) {
-            return;
-        }
-
-        var gpu = context.gpuTimer();
-        gpu.begin(GpuPass.EFFECTS);
-        if (DebugFlags.process_misc) {
-            render_queues.renderBlends(context, frustum_state);
-        }
-
-        try (var _ = context.withDrawBuffers(false)) {
-            if (emitterRenderer.hasVisibleParticles()) {
-                postProcessor.copyDepthBuffer();
-            }
-
-            if (DebugFlags.debugRenderingEnabled()) {
-                lightningRenderer.debugRender();
-            }
-            lightningRenderer.render(context, render_queues, frustum_state, frustum_state.getModelView());
-            emitterRenderer.render(context, render_queues, frustum_state, frustum_state.getModelView(), postProcessor
-                    .getDepthCopyTexture());
-            sonicBlastRenderer.render(context, render_queues, frustum_state, frustum_state.getModelView());
+          seaBottom.render(pass);
         }
         gpu.end();
-    }
-
-    private void renderOverlays(RenderContext context, CameraState frustum_state) {
-        renderRallyPoint(context, frustum_state);
-        if (DebugFlags.process_misc) {
-            render_queues.renderNoDetail();
+      } else {
+        lastPrepLandscapeNanos = 0L;
+        if (DebugFlags.draw_sky) {
+          var gpu = context.gpuTimer();
+          gpu.begin(GpuPass.LANDSCAPE);
+          seaBottom.render(pass);
+          gpu.end();
         }
-        render_queues.getInstancedRenderer().renderAll(context, frustum_state);
+      }
+    }
+  }
 
-        if (DebugFlags.debugRenderingEnabled()) {
-            renderDebugElements(frustum_state);
-        }
+  private void renderSky(ScenePassContext pass) {
+    if (DebugFlags.draw_sky) {
+      RenderContext context = pass.renderContext();
+      try (var _ = context.withDrawBuffers(false)) {
+        var gpu = context.gpuTimer();
+        gpu.begin(GpuPass.SKY);
+        sky.render(pass);
+        gpu.end();
+      }
+    }
+  }
 
-        assert ShaderProgram.activeShader() == null : "Shader still active=" + ShaderProgram.activeShader();
-
-        if (DebugFlags.line_mode || (cheat != null && cheat.line_mode)) {
-            GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-        }
-
-        if (DebugFlags.debugRenderingEnabled()) {
-            context.validate();
-        }
+  private void renderOpaqueGeometry(ScenePassContext pass, GUIRoot gui_root) {
+    RenderContext context = pass.renderContext();
+    CameraState frustum_state = pass.camera();
+    float currentTime = pass.time();
+    var gpu = context.gpuTimer();
+    if (DebugFlags.process_shadows && (cheat == null || cheat.draw_shadows)) {
+      gpu.begin(GpuPass.SHADOWS);
+      if (DebugFlags.process_trees) {
+        tree_renderer.renderShadows(element_renderer.getRenderState().getDefaultShadowRenderer(), currentTime);
+      }
+      render_queues.renderShadows(
+          context,
+          (float) world.getHeightMap().getMetersPerWorld(),
+          landscape_renderer.getHeightMapVisual().getHeightTexture(),
+          frustum_state.getModelView());
+      gpu.end();
     }
 
-    private boolean closed = false;
-
-    @Override
-    public boolean isClosed() {
-        return closed;
+    long treeRenderNanos = 0L;
+    if (DebugFlags.process_trees) {
+      long treeRenderStart = System.nanoTime();
+      tree_renderer.render(pass);
+      treeRenderNanos = System.nanoTime() - treeRenderStart;
+    }
+    lastPrepTreesNanos = lastTreeVisitNanos + treeRenderNanos;
+    if (DebugFlags.process_misc || DebugFlags.process_trees) {
+      gpu.begin(GpuPass.SPRITES);
+      render_queues.renderAll(context, frustum_state);
+      gpu.end();
+    }
+    if (DebugFlags.process_misc) {
+      gpu.begin(GpuPass.PLANTS);
+      render_queues.renderPlants(context, frustum_state);
+      gpu.end();
     }
 
-    @Override
-    public int getVisiblePatchCount() {
-        return landscape_renderer.getVisiblePatchCount();
+    if (gui_root.getDelegate() instanceof Delegate delegate) {
+      delegate.render3D(context, landscape_renderer, render_queues, frustum_state, frustum_state.getModelView());
+    }
+  }
+
+  private void renderWater(ScenePassContext pass) {
+    if (DebugFlags.draw_water) {
+      var gpu = pass.renderContext().gpuTimer();
+      gpu.begin(GpuPass.WATER);
+      water.setVisiblePatches(landscape_renderer.getVisiblePatches());
+      water.render(pass);
+      gpu.end();
+    }
+  }
+
+  private void renderTransparents(RenderContext context, CameraState frustum_state) {
+    if (!DebugFlags.process_misc && !DebugFlags.draw_particles) {
+      return;
     }
 
-    @Override
-    public int getRenderedTreeCount() {
-        return tree_renderer.getLastRenderedTreeCount();
+    var gpu = context.gpuTimer();
+    gpu.begin(GpuPass.EFFECTS);
+    if (DebugFlags.process_misc) {
+      render_queues.renderBlends(context, frustum_state);
     }
 
-    @Override
-    public long getLandscapePrepNanos() {
-        return lastPrepLandscapeNanos;
+    try (var _ = context.withDrawBuffers(false)) {
+      if (emitterRenderer.hasVisibleParticles()) {
+        postProcessor.copyDepthBuffer();
+      }
+
+      if (DebugFlags.debugRenderingEnabled()) {
+        lightningRenderer.debugRender();
+      }
+      lightningRenderer.render(context, render_queues, frustum_state, frustum_state.getModelView());
+      emitterRenderer.render(
+          context, render_queues, frustum_state, frustum_state.getModelView(), postProcessor.getDepthCopyTexture());
+      sonicBlastRenderer.render(context, render_queues, frustum_state, frustum_state.getModelView());
+    }
+    gpu.end();
+  }
+
+  private void renderOverlays(RenderContext context, CameraState frustum_state) {
+    renderRallyPoint(context, frustum_state);
+    if (DebugFlags.process_misc) {
+      render_queues.renderNoDetail();
+    }
+    render_queues.getInstancedRenderer().renderAll(context, frustum_state);
+
+    if (DebugFlags.debugRenderingEnabled()) {
+      renderDebugElements(frustum_state);
     }
 
-    @Override
-    public long getTreePrepNanos() {
-        return lastPrepTreesNanos;
+    assert ShaderProgram.activeShader() == null : "Shader still active=" + ShaderProgram.activeShader();
+
+    if (DebugFlags.line_mode || (cheat != null && cheat.line_mode)) {
+      GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
     }
 
-    @Override
-    public void close() {
-        if (!closed) {
-            closed = true;
-            ambient.close();
-            element_renderer.close();
-            lightningRenderer.close();
-            sonicBlastRenderer.close();
-            emitterRenderer.close();
-            sky.close();
-            seaBottom.close();
-            water.close();
-            ringMesh.close();
-            tree_renderer.close();
-            landscape_renderer.close();
-            postProcessor.close();
-        }
+    if (DebugFlags.debugRenderingEnabled()) {
+      context.validate();
     }
+  }
+
+  private boolean closed = false;
+
+  @Override
+  public boolean isClosed() {
+    return closed;
+  }
+
+  @Override
+  public int getVisiblePatchCount() {
+    return landscape_renderer.getVisiblePatchCount();
+  }
+
+  @Override
+  public int getRenderedTreeCount() {
+    return tree_renderer.getLastRenderedTreeCount();
+  }
+
+  @Override
+  public long getLandscapePrepNanos() {
+    return lastPrepLandscapeNanos;
+  }
+
+  @Override
+  public long getTreePrepNanos() {
+    return lastPrepTreesNanos;
+  }
+
+  @Override
+  public void close() {
+    if (!closed) {
+      closed = true;
+      ambient.close();
+      element_renderer.close();
+      lightningRenderer.close();
+      sonicBlastRenderer.close();
+      emitterRenderer.close();
+      sky.close();
+      seaBottom.close();
+      water.close();
+      ringMesh.close();
+      tree_renderer.close();
+      landscape_renderer.close();
+      postProcessor.close();
+    }
+  }
 }

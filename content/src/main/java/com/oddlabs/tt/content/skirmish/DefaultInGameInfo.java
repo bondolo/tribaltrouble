@@ -1,191 +1,174 @@
 package com.oddlabs.tt.content.skirmish;
 
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
+
+import com.oddlabs.matchmaking.Game;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.content.menu.InGameMainMenu;
+import com.oddlabs.tt.content.menu.InGameMenuHook;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
-import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
-
 import java.util.List;
 import java.util.ResourceBundle;
 
-import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.gui.Placement.LEFT_MID;
-import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
-
-import com.oddlabs.matchmaking.Game;
-import com.oddlabs.tt.content.menu.InGameMenuHook;
-
-/**
- * Displays in-game information overlay including player names, colors, races,
- * and current team designations for skirmish/single-player.
- */
+/// Displays in-game information overlay including player names, colors, races, and current team designations for
+/// skirmish/single-player.
 public class DefaultInGameInfo implements InGameInfo, InGameMenuHook {
-    private static final ResourceBundle terrain_menu_bundle = ResourceBundle.getBundle(TerrainMenu.class.getName());
-    private final int initialGameSpeed;
-    private boolean replay_island_flag;
+  private static final ResourceBundle terrain_menu_bundle = ResourceBundle.getBundle(TerrainMenu.class.getName());
+  private final int initialGameSpeed;
+  private boolean replay_island_flag;
 
-    public DefaultInGameInfo() {
-        this(Game.GAMESPEED_NORMAL);
+  public DefaultInGameInfo() {
+    this(Game.GAMESPEED_NORMAL);
+  }
+
+  public DefaultInGameInfo(int initialGameSpeed) {
+    this.initialGameSpeed = initialGameSpeed;
+  }
+
+  @Override
+  public int getInitialGameSpeed() {
+    return initialGameSpeed;
+  }
+
+  @Override
+  public void openInGameMenu(WorldViewer viewer, Camera camera) {
+    viewer.getGUIRoot().pushDelegate(new InGameMainMenu(viewer, new StaticCamera(camera.getState())));
+  }
+
+  private void addAbortButton(InGameMainMenu menu) {
+    String abort_text = Menu.i18n("end_game");
+    menu.addAbortButton(abort_text);
+  }
+
+  @Override
+  public float getRandomStartPosition() {
+    return 0f;
+  }
+
+  @Override
+  public boolean isRated() {
+    return false;
+  }
+
+  @Override
+  public void addGameOverGUI(WorldViewer viewer, GameStatsDelegate delegate, int header_y, Group group) {
+    addGameOverGUI(viewer, delegate, header_y, group, true);
+  }
+
+  protected final void addGameOverGUI(
+      final WorldViewer viewer, final GameStatsDelegate delegate, int header_y, Group group, boolean replay) {
+    var guiRoot = viewer.getGUIRoot();
+    String map_code_str = GameStatsDelegate.i18n("map_code", viewer.getParameters().mapCode());
+    Label map_code = new Label(map_code_str, guiRoot.getSkin().getEditFont());
+    delegate.addChild(map_code);
+    map_code.setPos((delegate.getWidth() - map_code.getWidth()) / 2, header_y - map_code.getHeight());
+
+    HorizButton button_replay = new HorizButton(guiRoot, GameStatsDelegate.i18n("replay_island"), 150);
+    button_replay.addMouseClickListener((_, _, _, _) -> {
+      replay_island_flag = true;
+      delegate.startMenu();
+    });
+    HorizButton button_observer = new HorizButton(guiRoot, GameStatsDelegate.i18n("observer_mode"), 150);
+    button_observer.addMouseClickListener((_, _, _, _) -> {
+      delegate.getViewer().getDelegate().setObserverMode();
+      delegate.pop();
+    });
+
+    HorizButton button_end = new HorizButton(guiRoot, GameStatsDelegate.i18n("main_menu"), 150);
+    button_end.addMouseClickListener((_, _, _, _) -> delegate.startMenu());
+
+    if (replay) group.addChild(button_replay);
+    group.addChild(button_observer);
+    group.addChild(button_end);
+
+    button_end.place();
+    button_observer.place(button_end, LEFT_MID);
+    if (replay) button_replay.place(button_observer, LEFT_MID);
+  }
+
+  private void addGameInfos(WorldViewer viewer, Menu menu, Group game_infos) {
+    List<Player> players = viewer.getWorld().getPlayers();
+    Group names = new Group(viewer.getGUIRoot());
+    GUIObject last_name = null;
+    Group races = new Group(viewer.getGUIRoot());
+    GUIObject last_race = null;
+    Group teams = new Group(viewer.getGUIRoot());
+    GUIObject last_team = null;
+    for (Player player : players) {
+      PlayerInfo player_info = player.getPlayerInfo();
+      var player_color = player.getColor();
+      var display_color =
+          viewer.getPeerHub().isAlive(player) ? player_color : player_color.desaturate(0.3f).alpha(0.8f);
+      var headlineFont = viewer.getGUIRoot().getSkin().getHeadlineFont();
+      Label name = new Label(player_info.name(), headlineFont).setColor(display_color);
+      String race_str = RaceData.getRaceName(player_info.race());
+      Label race = new Label(race_str, headlineFont).setColor(display_color);
+      String team_str = Utils.getBundleString(terrain_menu_bundle, "team", Integer.toString(player_info.team() + 1));
+      Label team = new Label(team_str, headlineFont).setColor(display_color);
+      names.addChild(name);
+      if (last_name != null) name.place(last_name, BOTTOM_LEFT);
+      else name.place();
+      last_name = name;
+      races.addChild(race);
+      if (last_race != null) race.place(last_race, BOTTOM_LEFT);
+      else race.place();
+      last_race = race;
+      teams.addChild(team);
+      if (last_team != null) team.place(last_team, BOTTOM_LEFT);
+      else team.place();
+      last_team = team;
     }
+    names.compileCanvas();
+    races.compileCanvas();
+    teams.compileCanvas();
+    game_infos.addChild(names);
+    game_infos.addChild(races);
+    game_infos.addChild(teams);
+    names.place();
+    races.place(names, RIGHT_TOP);
+    teams.place(races, RIGHT_TOP);
+    game_infos.compileCanvas();
+  }
 
-    public DefaultInGameInfo(int initialGameSpeed) {
-        this.initialGameSpeed = initialGameSpeed;
-    }
+  @Override
+  public void addGUI(WorldViewer viewer, InGameMainMenu menu, Group game_infos) {
+    addAbortButton(menu);
+    addGameInfos(viewer, menu, game_infos);
+  }
 
-    @Override
-    public int getInitialGameSpeed() {
-        return initialGameSpeed;
-    }
+  @Override
+  public final void close(WorldViewer viewer) {
+    if (replay_island_flag) {
+      TerrainMenu menu =
+          new TerrainMenu(viewer.getGUIRoot(), viewer.getPeer(), viewer.getScreenManager(), null, false, null);
+      menu.parseMapcode(viewer.getParameters().mapCode());
+      menu.startGame();
+    } else Menu.startMenu(viewer.getPeer(), viewer.getScreenManager());
+  }
 
-    @Override
-    public void openInGameMenu(WorldViewer viewer, Camera camera) {
-        viewer.getGUIRoot().pushDelegate(new InGameMainMenu(viewer, new StaticCamera(camera.getState())));
-    }
+  @Override
+  public final void abort(WorldViewer viewer) {
+    viewer
+        .getGUIRoot()
+        .pushDelegate(new GameStatsDelegate(viewer, viewer.getDelegate().getCamera(), Menu.i18n("game_aborted")));
+  }
 
-    private void addAbortButton(InGameMainMenu menu) {
-        String abort_text = Menu.i18n("end_game");
-        menu.addAbortButton(abort_text);
-    }
-
-    @Override
-    public float getRandomStartPosition() {
-        return 0f;
-    }
-
-    @Override
-    public boolean isRated() {
-        return false;
-    }
-
-    @Override
-    public void addGameOverGUI(WorldViewer viewer, GameStatsDelegate delegate, int header_y,
-            Group group) {
-        addGameOverGUI(viewer, delegate, header_y, group, true);
-    }
-
-    protected final void addGameOverGUI(final WorldViewer viewer, final GameStatsDelegate delegate,
-            int header_y, Group group, boolean replay) {
-        var guiRoot = viewer.getGUIRoot();
-        String map_code_str = GameStatsDelegate.i18n("map_code", viewer.getParameters().mapCode());
-        Label map_code = new Label(map_code_str, guiRoot.getSkin().getEditFont());
-        delegate.addChild(map_code);
-        map_code.setPos((delegate.getWidth() - map_code.getWidth()) / 2, header_y - map_code.getHeight());
-
-        HorizButton button_replay = new HorizButton(guiRoot, GameStatsDelegate.i18n("replay_island"), 150);
-        button_replay.addMouseClickListener((_, _, _, _) -> {
-            replay_island_flag = true;
-            delegate.startMenu();
-        });
-        HorizButton button_observer = new HorizButton(guiRoot, GameStatsDelegate.i18n("observer_mode"), 150);
-        button_observer.addMouseClickListener((_, _, _, _) -> {
-            delegate.getViewer().getDelegate().setObserverMode();
-            delegate.pop();
-        });
-
-        HorizButton button_end = new HorizButton(guiRoot, GameStatsDelegate.i18n("main_menu"), 150);
-        button_end.addMouseClickListener((_, _, _, _) -> delegate.startMenu());
-
-        if (replay)
-            group.addChild(button_replay);
-        group.addChild(button_observer);
-        group.addChild(button_end);
-
-        button_end.place();
-        button_observer.place(button_end, LEFT_MID);
-        if (replay)
-            button_replay.place(button_observer, LEFT_MID);
-    }
-
-    private void addGameInfos(WorldViewer viewer, Menu menu, Group game_infos) {
-        List<Player> players = viewer.getWorld().getPlayers();
-        Group names = new Group(viewer.getGUIRoot());
-        GUIObject last_name = null;
-        Group races = new Group(viewer.getGUIRoot());
-        GUIObject last_race = null;
-        Group teams = new Group(viewer.getGUIRoot());
-        GUIObject last_team = null;
-        for (Player player : players) {
-            PlayerInfo player_info = player.getPlayerInfo();
-            var player_color = player.getColor();
-            var display_color = viewer.getPeerHub().isAlive(player) ? player_color : player_color.desaturate(0.3f)
-                    .alpha(0.8f);
-            var headlineFont = viewer.getGUIRoot().getSkin().getHeadlineFont();
-            Label name = new Label(player_info.name(), headlineFont)
-                    .setColor(display_color);
-            String race_str = RaceData.getRaceName(player_info.race());
-            Label race = new Label(race_str, headlineFont)
-                    .setColor(display_color);
-            String team_str = Utils.getBundleString(terrain_menu_bundle, "team", Integer.toString(player_info.team()
-                    + 1));
-            Label team = new Label(team_str, headlineFont)
-                    .setColor(display_color);
-            names.addChild(name);
-            if (last_name != null)
-                name.place(last_name, BOTTOM_LEFT);
-            else
-                name.place();
-            last_name = name;
-            races.addChild(race);
-            if (last_race != null)
-                race.place(last_race, BOTTOM_LEFT);
-            else
-                race.place();
-            last_race = race;
-            teams.addChild(team);
-            if (last_team != null)
-                team.place(last_team, BOTTOM_LEFT);
-            else
-                team.place();
-            last_team = team;
-        }
-        names.compileCanvas();
-        races.compileCanvas();
-        teams.compileCanvas();
-        game_infos.addChild(names);
-        game_infos.addChild(races);
-        game_infos.addChild(teams);
-        names.place();
-        races.place(names, RIGHT_TOP);
-        teams.place(races, RIGHT_TOP);
-        game_infos.compileCanvas();
-    }
-
-    @Override
-    public void addGUI(WorldViewer viewer, InGameMainMenu menu, Group game_infos) {
-        addAbortButton(menu);
-        addGameInfos(viewer, menu, game_infos);
-    }
-
-    @Override
-    public final void close(WorldViewer viewer) {
-        if (replay_island_flag) {
-            TerrainMenu menu = new TerrainMenu(viewer.getGUIRoot(), viewer.getPeer(), viewer.getScreenManager(),
-                    null, false, null);
-            menu.parseMapcode(viewer.getParameters().mapCode());
-            menu.startGame();
-        } else
-            Menu.startMenu(viewer.getPeer(), viewer.getScreenManager());
-    }
-
-    @Override
-    public final void abort(WorldViewer viewer) {
-        viewer.getGUIRoot().pushDelegate(new GameStatsDelegate(viewer, viewer.getDelegate().getCamera(),
-                Menu.i18n("game_aborted")));
-    }
-
-    @Override
-    public boolean isMultiplayer() {
-        return false;
-    }
+  @Override
+  public boolean isMultiplayer() {
+    return false;
+  }
 }

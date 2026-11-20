@@ -8,6 +8,5 @@ import org.jspecify.annotations.Nullable;
  * @param <P> the self-referential path node type
  */
 public interface PathNode<P extends PathNode<P>> {
-    @Nullable
-    PathNode<P> parent();
+  @Nullable PathNode<P> parent();
 }

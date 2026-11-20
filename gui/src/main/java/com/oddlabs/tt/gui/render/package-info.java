@@ -1,6 +1,4 @@
-/**
- * Rendering support and text rasterization interfaces for the GUI subsystem.
- */
+/** Rendering support and text rasterization interfaces for the GUI subsystem. */
 @NullMarked
 package com.oddlabs.tt.gui.render;
 

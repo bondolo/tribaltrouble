@@ -1,6 +1,4 @@
-/**
- * Game content definitions, missions, campaigns, and campaign descriptors.
- */
+/** Game content definitions, missions, campaigns, and campaign descriptors. */
 @NullMarked
 package com.oddlabs.tt.content;
 

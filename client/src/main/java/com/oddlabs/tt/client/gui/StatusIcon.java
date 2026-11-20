@@ -10,53 +10,51 @@ import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.TextField;
 import com.oddlabs.tt.gui.ToolTipBox;
 import com.oddlabs.tt.simulation.model.SupplyCounter;
+import java.util.ResourceBundle;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ResourceBundle;
-
-/**
- * Status icon displaying a numeric supply count alongside an icon.
- */
+/// Status icon displaying a numeric supply count alongside an icon.
 public class StatusIcon extends GUIObject {
-    private final IconQuad icon;
-    private final TextField label;
-    private final String tooltip;
+  private final IconQuad icon;
+  private final TextField label;
+  private final String tooltip;
 
-    private @Nullable SupplyCounter counter;
-    private int text_count = -1;
+  private @Nullable SupplyCounter counter;
+  private int text_count = -1;
 
-    public StatusIcon(Font font, int label_width, IconQuad icon, String tooltip) {
-        this.tooltip = tooltip;
-        setDim(icon.getWidth() + label_width, icon.getHeight());
-        setCanFocus(true); //only to enable tool tips. focus is given to delegate
-        this.icon = icon;
-        label = new Label("", font, label_width, Origin.AT_END);
-        addChild(label);
-        label.setPos(0, (getHeight() - label.getFont().getHeight()) / 2);
+  public StatusIcon(Font font, int label_width, IconQuad icon, String tooltip) {
+    this.tooltip = tooltip;
+    setDim(icon.getWidth() + label_width, icon.getHeight());
+    setCanFocus(true); // only to enable tool tips. focus is given to delegate
+    this.icon = icon;
+    label = new Label("", font, label_width, Origin.AT_END);
+    addChild(label);
+    label.setPos(0, (getHeight() - label.getFont().getHeight()) / 2);
+  }
+
+  public final void setCounter(SupplyCounter counter) {
+    this.counter = counter;
+  }
+
+  public final void doUpdate() {
+    int count = counter.getNumSupplies();
+    if (count != text_count) {
+      text_count = count;
+      label.clear();
+      label.append(count);
     }
+  }
 
-    public final void setCounter(SupplyCounter counter) {
-        this.counter = counter;
-    }
+  @Override
+  public final void appendToolTip(ToolTipBox tool_tip_box) {
+    String tooltip_str =
+        Utils.getBundleString(
+            ResourceBundle.getBundle(StatusIcon.class.getName()), "max", tooltip, counter.getMaxSupplies());
+    tool_tip_box.append(tooltip_str);
+  }
 
-    public final void doUpdate() {
-        int count = counter.getNumSupplies();
-        if (count != text_count) {
-            text_count = count;
-            label.clear();
-            label.append(count);
-        }
-    }
-
-    @Override
-    public final void appendToolTip(ToolTipBox tool_tip_box) {
-        String tooltip_str = Utils.getBundleString(ResourceBundle.getBundle(StatusIcon.class.getName()), "max", tooltip,
-                counter.getMaxSupplies());
-        tool_tip_box.append(tooltip_str);
-    }
-
-    @Override
-    protected void renderGeometry(GUIRenderer renderer) {
-        renderer.drawIcon(icon, getWidth() - icon.getWidth(), (getHeight() - icon.getHeight()) / 2f);
-    }
+  @Override
+  protected void renderGeometry(GUIRenderer renderer) {
+    renderer.drawIcon(icon, getWidth() - icon.getWidth(), (getHeight() - icon.getHeight()) / 2f);
+  }
 }

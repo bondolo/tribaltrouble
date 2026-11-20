@@ -10,288 +10,290 @@ import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.input.Key;
 import com.oddlabs.tt.input.KeyboardEvent;
 import com.oddlabs.tt.input.Modifier;
-import org.jspecify.annotations.Nullable;
-
 import java.util.EnumSet;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Manages the current state of user input events and their delivery to UI components.
- */
+/// Manages the current state of user input events and their delivery to UI components.
 public final class InputState {
-    private static final float MOUSE_REPEAT_DELAY = .5f;
-    private static final float MOUSE_REPEAT_RATE = .05f;
+  private static final float MOUSE_REPEAT_DELAY = .5f;
+  private static final float MOUSE_REPEAT_RATE = .05f;
 
-    private static final float DOUBLE_CLICK_TIMEOUT = .4f;
-    private static final int DOUBLE_CLICK_THRESHOLD = 2;
+  private static final float DOUBLE_CLICK_TIMEOUT = .4f;
+  private static final int DOUBLE_CLICK_THRESHOLD = 2;
 
-    private final TimerAnimation double_click_timer;
-    private final TimerAnimation double_key_timer;
-    private final GUIRoot gui_root;
-    private final InputManager inputManager;
-    private TimerAnimation mouse_timer;
+  private final TimerAnimation double_click_timer;
+  private final TimerAnimation double_key_timer;
+  private final GUIRoot gui_root;
+  private final InputManager inputManager;
+  private TimerAnimation mouse_timer;
 
-    private int drag_x;
-    private int drag_y;
-    private int absolute_drag_x;
-    private int absolute_drag_y;
-    private @Nullable GUIObject drag_obj;
-    private MouseButton drag_button;
-    private GUIObject press_obj;
-    private @Nullable GUIObject clicked_obj;
-    private int click_counter = 0;
-    private int clicked_x;
-    private int clicked_y;
-    private @Nullable KeyboardEvent key_event;
-    private int key_counter = 0;
+  private int drag_x;
+  private int drag_y;
+  private int absolute_drag_x;
+  private int absolute_drag_y;
+  private @Nullable GUIObject drag_obj;
+  private MouseButton drag_button;
+  private GUIObject press_obj;
+  private @Nullable GUIObject clicked_obj;
+  private int click_counter = 0;
+  private int clicked_x;
+  private int clicked_y;
+  private @Nullable KeyboardEvent key_event;
+  private int key_counter = 0;
 
-    // Keyboard handling
-    private KeyboardEvent held_event;
+  // Keyboard handling
+  private KeyboardEvent held_event;
 
-    public InputState(GUIRoot gui_root) {
-        this.gui_root = gui_root;
-        this.inputManager = gui_root.getInputManager();
-        double_click_timer = new TimerAnimation(gui_root.getAnimationManager(), new DoubleClickTimer(), 0);
-        double_key_timer = new TimerAnimation(gui_root.getAnimationManager(), new DoubleKeyTimer(), 0);
-        press_obj = gui_root;
+  public InputState(GUIRoot gui_root) {
+    this.gui_root = gui_root;
+    this.inputManager = gui_root.getInputManager();
+    double_click_timer = new TimerAnimation(gui_root.getAnimationManager(), new DoubleClickTimer(), 0);
+    double_key_timer = new TimerAnimation(gui_root.getAnimationManager(), new DoubleKeyTimer(), 0);
+    press_obj = gui_root;
+  }
+
+  private GUIObject pick() {
+    gui_root.mousePick();
+    return gui_root.getCurrentGUIObject();
+  }
+
+  public void mouseMoved(short x, short y) {
+    GUIObject gui_hit = pick();
+    float scale = gui_root.getGlobalScale();
+    gui_hit.mouseMovedAll((short) Math.round(x / scale), (short) Math.round(y / scale));
+  }
+
+  private void resetKeyTimer() {
+    gui_root.resetCaretBlinking();
+  }
+
+  public void mouseScrolled(int dz) {
+    GUIObject gui_hit = pick();
+    int scroll_amount = Math.round(dz * GUIConfig.WHEEL_SCALE);
+    gui_hit.setFocus();
+    gui_hit.mouseScrolledAll(scroll_amount);
+  }
+
+  public void mouseScrolledHorizontally(int dx) {
+    GUIObject gui_hit = pick();
+    int scroll_amount = Math.round(dx * GUIConfig.WHEEL_SCALE);
+    gui_hit.setFocus();
+    gui_hit.mouseScrolledHorizontallyAll(scroll_amount);
+  }
+
+  public void mousePressed(MouseButton button) {
+    GUIObject gui_hit = pick();
+    var localInput = gui_root.getLocalInput();
+    float scale = gui_root.getGlobalScale();
+    int scaledX = Math.round(localInput.getMouseX() / scale);
+    int scaledY = Math.round(localInput.getMouseY() / scale);
+
+    int local_x = gui_hit.translateXToLocal(scaledX);
+    int local_y = gui_hit.translateYToLocal(scaledY);
+    gui_root.resetCaretBlinking();
+    drag_x = scaledX;
+    drag_y = scaledY;
+    absolute_drag_x = drag_x;
+    absolute_drag_y = drag_y;
+    if (drag_obj == null) {
+      drag_obj = gui_hit;
+      drag_button = button;
     }
-
-    private GUIObject pick() {
-        gui_root.mousePick();
-        return gui_root.getCurrentGUIObject();
-    }
-
-    public void mouseMoved(short x, short y) {
-        GUIObject gui_hit = pick();
-        float scale = gui_root.getGlobalScale();
-        gui_hit.mouseMovedAll((short) Math.round(x / scale), (short) Math.round(y / scale));
-    }
-
-    private void resetKeyTimer() {
-        gui_root.resetCaretBlinking();
-    }
-
-    public void mouseScrolled(int dz) {
-        GUIObject gui_hit = pick();
-        int scroll_amount = Math.round(dz * GUIConfig.WHEEL_SCALE);
-        gui_hit.setFocus();
-        gui_hit.mouseScrolledAll(scroll_amount);
-    }
-
-    public void mouseScrolledHorizontally(int dx) {
-        GUIObject gui_hit = pick();
-        int scroll_amount = Math.round(dx * GUIConfig.WHEEL_SCALE);
-        gui_hit.setFocus();
-        gui_hit.mouseScrolledHorizontallyAll(scroll_amount);
-    }
-
-    public void mousePressed(MouseButton button) {
-        GUIObject gui_hit = pick();
-        var localInput = gui_root.getLocalInput();
-        float scale = gui_root.getGlobalScale();
-        int scaledX = Math.round(localInput.getMouseX() / scale);
-        int scaledY = Math.round(localInput.getMouseY() / scale);
-
-        int local_x = gui_hit.translateXToLocal(scaledX);
-        int local_y = gui_hit.translateYToLocal(scaledY);
-        gui_root.resetCaretBlinking();
-        drag_x = scaledX;
-        drag_y = scaledY;
-        absolute_drag_x = drag_x;
-        absolute_drag_y = drag_y;
-        if (drag_obj == null) {
-            drag_obj = gui_hit;
-            drag_button = button;
-        }
-        gui_hit.setFocus();
-        press_obj = gui_hit;
-        press_obj.mousePressedAll(button, local_x, local_y);
-        if (mouse_timer != null)
-            mouse_timer.stop();
-        mouse_timer = new TimerAnimation(gui_root.getAnimationManager(), timer -> {
-            timer.setTimerInterval(MOUSE_REPEAT_RATE);
-            timer.resetTime();
-            if (press_obj == gui_root.getCurrentGUIObject()) {
+    gui_hit.setFocus();
+    press_obj = gui_hit;
+    press_obj.mousePressedAll(button, local_x, local_y);
+    if (mouse_timer != null) mouse_timer.stop();
+    mouse_timer =
+        new TimerAnimation(
+            gui_root.getAnimationManager(),
+            timer -> {
+              timer.setTimerInterval(MOUSE_REPEAT_RATE);
+              timer.resetTime();
+              if (press_obj == gui_root.getCurrentGUIObject()) {
                 int local_x1 = press_obj.translateXToLocal(Math.round(localInput.getMouseX() / scale));
                 int local_y1 = press_obj.translateYToLocal(Math.round(localInput.getMouseY() / scale));
                 press_obj.mouseHeldAll(button, local_x1, local_y1);
-            }
-        }, MOUSE_REPEAT_DELAY);
+              }
+            },
+            MOUSE_REPEAT_DELAY);
 
-        mouse_timer.start();
-    }
+    mouse_timer.start();
+  }
 
-    public void mouseReleased(MouseButton button) {
-        GUIObject gui_hit = pick();
-        var localInput = gui_root.getLocalInput();
-        float scale = gui_root.getGlobalScale();
-        int scaledX = Math.round(localInput.getMouseX() / scale);
-        int scaledY = Math.round(localInput.getMouseY() / scale);
+  public void mouseReleased(MouseButton button) {
+    GUIObject gui_hit = pick();
+    var localInput = gui_root.getLocalInput();
+    float scale = gui_root.getGlobalScale();
+    int scaledX = Math.round(localInput.getMouseX() / scale);
+    int scaledY = Math.round(localInput.getMouseY() / scale);
 
-        gui_root.resetCaretBlinking();
-        if (button == drag_button)
-            drag_obj = null;
-        if (press_obj == null)
-            return;
+    gui_root.resetCaretBlinking();
+    if (button == drag_button) drag_obj = null;
+    if (press_obj == null) return;
 
-        int local_x = press_obj.translateXToLocal(scaledX);
-        int local_y = press_obj.translateYToLocal(scaledY);
+    int local_x = press_obj.translateXToLocal(scaledX);
+    int local_y = press_obj.translateYToLocal(scaledY);
 
-        if (gui_hit == press_obj) {
-            if (gui_hit != clicked_obj || !clickedSameArea()) {
-                if (double_click_timer.isRunning()) {
-                    stopDoubleClickTimer();
-                }
-                double_click_timer.setTimerInterval(DOUBLE_CLICK_TIMEOUT);
-                double_click_timer.start();
-            }
-            click_counter++;
-            clicked_obj = gui_hit;
-            clicked_x = localInput.getMouseX(); // Keep raw for consistent threshold check? Or scale? Raw is fine for distance check.
-            clicked_y = localInput.getMouseY();
-            press_obj.mouseClickedAll(button, local_x, local_y, click_counter);
+    if (gui_hit == press_obj) {
+      if (gui_hit != clicked_obj || !clickedSameArea()) {
+        if (double_click_timer.isRunning()) {
+          stopDoubleClickTimer();
         }
-        press_obj.mouseReleasedAll(button, local_x, local_y);
-        if (mouse_timer != null)
-            mouse_timer.stop();
+        double_click_timer.setTimerInterval(DOUBLE_CLICK_TIMEOUT);
+        double_click_timer.start();
+      }
+      click_counter++;
+      clicked_obj = gui_hit;
+      clicked_x =
+          localInput.getMouseX(); // Keep raw for consistent threshold check? Or scale? Raw is fine for distance check.
+      clicked_y = localInput.getMouseY();
+      press_obj.mouseClickedAll(button, local_x, local_y, click_counter);
     }
+    press_obj.mouseReleasedAll(button, local_x, local_y);
+    if (mouse_timer != null) mouse_timer.stop();
+  }
 
-    public void mouseDragged(MouseButton button, short x, short y) {
-        float scale = gui_root.getGlobalScale();
-        int scaledX = Math.round(x / scale);
-        int scaledY = Math.round(y / scale);
+  public void mouseDragged(MouseButton button, short x, short y) {
+    float scale = gui_root.getGlobalScale();
+    int scaledX = Math.round(x / scale);
+    int scaledY = Math.round(y / scale);
 
-        if (drag_obj != null)
-            drag_obj.mouseDraggedAll(button, scaledX, scaledY, scaledX - drag_x, scaledY - drag_y, scaledX
-                    - absolute_drag_x, scaledY - absolute_drag_y);
-        drag_x = scaledX;
-        drag_y = scaledY;
+    if (drag_obj != null)
+      drag_obj.mouseDraggedAll(
+          button,
+          scaledX,
+          scaledY,
+          scaledX - drag_x,
+          scaledY - drag_y,
+          scaledX - absolute_drag_x,
+          scaledY - absolute_drag_y);
+    drag_x = scaledX;
+    drag_y = scaledY;
+  }
+
+  void reanchorDrag(int newVirtualX, int newVirtualY) {
+    this.drag_x = newVirtualX;
+    this.drag_y = newVirtualY;
+    this.absolute_drag_x = newVirtualX;
+    this.absolute_drag_y = newVirtualY;
+  }
+
+  private boolean clickedSameArea() {
+    var localInput = gui_root.getLocalInput();
+    return Math.abs(localInput.getMouseX() - clicked_x) < DOUBLE_CLICK_THRESHOLD
+        && Math.abs(localInput.getMouseY() - clicked_y) < DOUBLE_CLICK_THRESHOLD;
+  }
+
+  private void stopDoubleClickTimer() {
+    double_click_timer.stop();
+    double_click_timer.resetTime();
+    clicked_obj = null;
+    click_counter = 0;
+  }
+
+  private void stopDoubleKeyTimer() {
+    double_key_timer.stop();
+    double_key_timer.resetTime();
+    key_event = null;
+    key_counter = 0;
+  }
+
+  public void keyTyped(int key_code, int key_codepoint) {
+    var key = Key.fromSdlCode(key_code);
+    if (Key.KEY_UNKNOWN != key || key_codepoint != 0) {
+      GUIObject focused = gui_root.getGlobalFocus();
+      KeyboardEvent keyEvent = new KeyboardEvent(key, key_codepoint, EnumSet.noneOf(Modifier.class), 1);
+      Set<GameAction> actions = inputManager.getActions(keyEvent);
+      InputEvent event = new InputEvent(keyEvent, actions, InputPhase.REPEAT);
+      focused.handleInputAll(event);
     }
+  }
 
-    void reanchorDrag(int newVirtualX, int newVirtualY) {
-        this.drag_x = newVirtualX;
-        this.drag_y = newVirtualY;
-        this.absolute_drag_x = newVirtualX;
-        this.absolute_drag_y = newVirtualY;
+  public void keyPressed(Key key, int key_codepoint, Set<Modifier> modifiers, boolean repeat) {
+    GUIObject focused = gui_root.getGlobalFocus();
+    resetKeyTimer();
+    if (!repeat
+        && (key_event == null
+            || key_event.keyCode() != key
+            || key_event.keyCodepoint() != key_codepoint
+            || !key_event.modifiers().equals(modifiers))) {
+      if (double_key_timer.isRunning()) {
+        stopDoubleKeyTimer();
+      }
+      double_key_timer.setTimerInterval(DOUBLE_CLICK_TIMEOUT);
+      double_key_timer.start();
     }
+    if (!repeat) key_counter++;
+    KeyboardEvent keyEvent = new KeyboardEvent(key, key_codepoint, modifiers, key_counter);
+    key_event = keyEvent;
 
-    private boolean clickedSameArea() {
-        var localInput = gui_root.getLocalInput();
-        return Math.abs(localInput.getMouseX() - clicked_x) < DOUBLE_CLICK_THRESHOLD && Math.abs(localInput.getMouseY()
-                - clicked_y) < DOUBLE_CLICK_THRESHOLD;
+    Set<GameAction> actions = inputManager.getActions(keyEvent);
+    inputManager.updateState(keyEvent, true); // Update polling state
+
+    if (!repeat) {
+      InputEvent event = new InputEvent(keyEvent, actions, InputPhase.PRESSED);
+      if (gui_root.handleGlobalInput(event)) {
+        return;
+      }
+      focused.handleInputAll(event);
+    } else {
+      // Repeat phase
+      InputEvent repeatEvent = new InputEvent(keyEvent, actions, InputPhase.REPEAT);
+      focused.handleInputAll(repeatEvent);
     }
+  }
 
-    private void stopDoubleClickTimer() {
-        double_click_timer.stop();
-        double_click_timer.resetTime();
-        clicked_obj = null;
-        click_counter = 0;
+  public void keyReleased(Key key, int key_codepoint, Set<Modifier> modifiers) {
+    GUIObject focused = gui_root.getGlobalFocus();
+    resetKeyTimer();
+    KeyboardEvent keyEvent = new KeyboardEvent(key, key_codepoint, modifiers, 0);
+
+    Set<GameAction> actions = inputManager.getActions(keyEvent);
+    inputManager.updateState(keyEvent, false); // Update polling state
+
+    InputEvent event = new InputEvent(keyEvent, actions, InputPhase.RELEASED);
+    focused.handleInputAll(event);
+  }
+
+  public void extendedMousePressed(ExtendedMouseButton button) {
+    Set<Modifier> modifiers = inputManager.getActiveModifiers();
+    Set<GameAction> actions = inputManager.getActions(button, modifiers);
+    inputManager.updateMouseState(button, true);
+
+    if (!actions.isEmpty()) {
+      InputEvent event = new InputEvent(actions, modifiers, InputPhase.PRESSED);
+      if (gui_root.handleGlobalInput(event)) {
+        return;
+      }
+      GUIObject focused = gui_root.getGlobalFocus();
+      focused.handleInputAll(event);
     }
+  }
 
-    private void stopDoubleKeyTimer() {
-        double_key_timer.stop();
-        double_key_timer.resetTime();
-        key_event = null;
-        key_counter = 0;
+  public void extendedMouseReleased(ExtendedMouseButton button) {
+    Set<Modifier> modifiers = inputManager.getActiveModifiers();
+    Set<GameAction> actions = inputManager.getActions(button, modifiers);
+    inputManager.updateMouseState(button, false);
+
+    if (!actions.isEmpty()) {
+      InputEvent event = new InputEvent(actions, modifiers, InputPhase.RELEASED);
+      GUIObject focused = gui_root.getGlobalFocus();
+      focused.handleInputAll(event);
     }
+  }
 
-    public void keyTyped(int key_code, int key_codepoint) {
-        var key = Key.fromSdlCode(key_code);
-        if (Key.KEY_UNKNOWN != key || key_codepoint != 0) {
-            GUIObject focused = gui_root.getGlobalFocus();
-            KeyboardEvent keyEvent = new KeyboardEvent(key, key_codepoint, EnumSet.noneOf(Modifier.class), 1);
-            Set<GameAction> actions = inputManager.getActions(keyEvent);
-            InputEvent event = new InputEvent(keyEvent, actions, InputPhase.REPEAT);
-            focused.handleInputAll(event);
-        }
+  private final class DoubleClickTimer implements Updatable<TimerAnimation> {
+    @Override
+    public void update(TimerAnimation anim) {
+      stopDoubleClickTimer();
     }
+  }
 
-    public void keyPressed(Key key, int key_codepoint, Set<Modifier> modifiers,
-            boolean repeat) {
-        GUIObject focused = gui_root.getGlobalFocus();
-        resetKeyTimer();
-        if (!repeat && (key_event == null
-                || key_event.keyCode() != key
-                || key_event.keyCodepoint() != key_codepoint
-                || !key_event.modifiers().equals(modifiers))) {
-            if (double_key_timer.isRunning()) {
-                stopDoubleKeyTimer();
-            }
-            double_key_timer.setTimerInterval(DOUBLE_CLICK_TIMEOUT);
-            double_key_timer.start();
-        }
-        if (!repeat)
-            key_counter++;
-        KeyboardEvent keyEvent = new KeyboardEvent(key, key_codepoint, modifiers, key_counter);
-        key_event = keyEvent;
-
-        Set<GameAction> actions = inputManager.getActions(keyEvent);
-        inputManager.updateState(keyEvent, true); // Update polling state
-
-        if (!repeat) {
-            InputEvent event = new InputEvent(keyEvent, actions, InputPhase.PRESSED);
-            if (gui_root.handleGlobalInput(event)) {
-                return;
-            }
-            focused.handleInputAll(event);
-        } else {
-            // Repeat phase
-            InputEvent repeatEvent = new InputEvent(keyEvent, actions, InputPhase.REPEAT);
-            focused.handleInputAll(repeatEvent);
-        }
+  private final class DoubleKeyTimer implements Updatable<TimerAnimation> {
+    @Override
+    public void update(TimerAnimation anim) {
+      stopDoubleKeyTimer();
     }
-
-    public void keyReleased(Key key, int key_codepoint, Set<Modifier> modifiers) {
-        GUIObject focused = gui_root.getGlobalFocus();
-        resetKeyTimer();
-        KeyboardEvent keyEvent = new KeyboardEvent(key, key_codepoint, modifiers, 0);
-
-        Set<GameAction> actions = inputManager.getActions(keyEvent);
-        inputManager.updateState(keyEvent, false); // Update polling state
-
-        InputEvent event = new InputEvent(keyEvent, actions, InputPhase.RELEASED);
-        focused.handleInputAll(event);
-    }
-
-    public void extendedMousePressed(ExtendedMouseButton button) {
-        Set<Modifier> modifiers = inputManager.getActiveModifiers();
-        Set<GameAction> actions = inputManager.getActions(button, modifiers);
-        inputManager.updateMouseState(button, true);
-
-        if (!actions.isEmpty()) {
-            InputEvent event = new InputEvent(actions, modifiers, InputPhase.PRESSED);
-            if (gui_root.handleGlobalInput(event)) {
-                return;
-            }
-            GUIObject focused = gui_root.getGlobalFocus();
-            focused.handleInputAll(event);
-        }
-    }
-
-    public void extendedMouseReleased(ExtendedMouseButton button) {
-        Set<Modifier> modifiers = inputManager.getActiveModifiers();
-        Set<GameAction> actions = inputManager.getActions(button, modifiers);
-        inputManager.updateMouseState(button, false);
-
-        if (!actions.isEmpty()) {
-            InputEvent event = new InputEvent(actions, modifiers, InputPhase.RELEASED);
-            GUIObject focused = gui_root.getGlobalFocus();
-            focused.handleInputAll(event);
-        }
-    }
-
-    private final class DoubleClickTimer implements Updatable<TimerAnimation> {
-        @Override
-        public void update(TimerAnimation anim) {
-            stopDoubleClickTimer();
-        }
-    }
-
-    private final class DoubleKeyTimer implements Updatable<TimerAnimation> {
-        @Override
-        public void update(TimerAnimation anim) {
-            stopDoubleKeyTimer();
-        }
-    }
-
+  }
 }

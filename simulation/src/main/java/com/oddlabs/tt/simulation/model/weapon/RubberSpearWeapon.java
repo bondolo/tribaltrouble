@@ -6,42 +6,38 @@ import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.WeaponTier;
 import com.oddlabs.tt.simulation.player.Player;
 
-/**
- * A throwing spear weapon made of rubber.
- */
+/// A throwing spear weapon made of rubber.
 public final class RubberSpearWeapon extends DirectedThrowingWeapon {
-    private static final float METERS_PER_SECOND = 30; //multiplied by meters/second (in 2D)
-    private static final int MAX_BOUNDS_LENGTH = 3;
+  private static final float METERS_PER_SECOND = 30; // multiplied by meters/second (in 2D)
+  private static final int MAX_BOUNDS_LENGTH = 3;
 
-    public RubberSpearWeapon(boolean hit, Unit src, Selectable<?> target) {
-        super(hit, src, target);
-    }
+  public RubberSpearWeapon(boolean hit, Unit src, Selectable<?> target) {
+    super(hit, src, target);
+  }
 
-    @Override
-    protected void hitTarget(boolean hit, Player owner, Selectable<?> target) {
-        if (hit)
-            damageTarget(target);
-        AttackScanFilter filter = new AttackScanFilter(owner, MAX_BOUNDS_LENGTH);
-        owner.getWorld().getUnitGrid().scan(filter, target.getGridX(), target.getGridY());
-        Selectable<?> s = filter.removeTarget();
-        if (s != null && owner.getWorld().getRandom().nextFloat() > .5f) {
-            setTarget(s);
-        } else
-            super.hitTarget(hit, owner, target);
-    }
+  @Override
+  protected void hitTarget(boolean hit, Player owner, Selectable<?> target) {
+    if (hit) damageTarget(target);
+    AttackScanFilter filter = new AttackScanFilter(owner, MAX_BOUNDS_LENGTH);
+    owner.getWorld().getUnitGrid().scan(filter, target.getGridX(), target.getGridY());
+    Selectable<?> s = filter.removeTarget();
+    if (s != null && owner.getWorld().getRandom().nextFloat() > .5f) {
+      setTarget(s);
+    } else super.hitTarget(hit, owner, target);
+  }
 
-    @Override
-    public WeaponTier getWeaponTier() {
-        return WeaponTier.RUBBER;
-    }
+  @Override
+  public WeaponTier getWeaponTier() {
+    return WeaponTier.RUBBER;
+  }
 
-    @Override
-    public float getMetersPerSecond() {
-        return METERS_PER_SECOND;
-    }
+  @Override
+  public float getMetersPerSecond() {
+    return METERS_PER_SECOND;
+  }
 
-    @Override
-    protected int getDamage() {
-        return 2;
-    }
+  @Override
+  protected int getDamage() {
+    return 2;
+  }
 }

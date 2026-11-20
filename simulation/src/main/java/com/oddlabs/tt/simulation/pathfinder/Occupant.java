@@ -3,7 +3,7 @@ package com.oddlabs.tt.simulation.pathfinder;
 import com.oddlabs.tt.simulation.model.Target;
 
 public interface Occupant extends Target {
-    int STATIC = 10;
+  int STATIC = 10;
 
-    int getPenalty();
+  int getPenalty();
 }

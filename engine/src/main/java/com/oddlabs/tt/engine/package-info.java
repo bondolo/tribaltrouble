@@ -1,6 +1,4 @@
-/**
- * Core rendering engine and graphics runtime.
- */
+/** Core rendering engine and graphics runtime. */
 @NullMarked
 package com.oddlabs.tt.engine;
 

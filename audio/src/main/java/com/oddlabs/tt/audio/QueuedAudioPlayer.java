@@ -1,155 +1,146 @@
 package com.oddlabs.tt.audio;
 
-import org.jspecify.annotations.Nullable;
-import org.lwjgl.BufferUtils;
-
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ShortBuffer;
-import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jspecify.annotations.Nullable;
+import org.lwjgl.BufferUtils;
 
-/**
- * An audio player that streams audio data from an OGG stream into multiple queued buffers.
- */
+/// An audio player that streams audio data from an OGG stream into multiple queued buffers.
 public abstract class QueuedAudioPlayer<AM extends AbstractAudioManager<AM, AS>, AS extends AudioSource>
-        extends AbstractAudioPlayer<AM, AS> {
-    private static final Logger logger = Logger.getLogger(QueuedAudioPlayer.class.getSimpleName());
-    protected static final int PCM_SAMPLES = 16384;
+    extends AbstractAudioPlayer<AM, AS> {
+  private static final Logger logger = Logger.getLogger(QueuedAudioPlayer.class.getSimpleName());
+  protected static final int PCM_SAMPLES = 16384;
 
-    protected final ShortBuffer pcmBuffer = BufferUtils.createShortBuffer(PCM_SAMPLES);
+  protected final ShortBuffer pcmBuffer = BufferUtils.createShortBuffer(PCM_SAMPLES);
 
-    /**
-     * The audio data that is currently being played.
-     * We can't use audioParams.sound() because we handle buffering ourselves (for now).
-     */
-    protected volatile @Nullable Audio audio;
-    private final @Nullable Thread refillerThread;
+  /// The audio data that is currently being played. We can't use audioParams.sound() because we handle buffering
+  /// ourselves (for now).
+  protected volatile @Nullable Audio audio;
 
-    protected QueuedAudioPlayer(AM manager, @Nullable AS source, float x, float y, float z,
-            AudioParameters params) {
-        super(manager, source, x, y, z, params);
-        if (!isPlaying() || this.source == null) {
-            this.refillerThread = null;
-            return;
+  private final @Nullable Thread refillerThread;
+
+  protected QueuedAudioPlayer(AM manager, @Nullable AS source, float x, float y, float z, AudioParameters params) {
+    super(manager, source, x, y, z, params);
+    if (!isPlaying() || this.source == null) {
+      this.refillerThread = null;
+      return;
+    }
+
+    // Queued audio does not loop via source setting, it loops internally during buffer refill
+    source.setLooping(false);
+
+    this.refillerThread = Thread.startVirtualThread(() -> refiller(params.audio().getURL()));
+  }
+
+  private void refiller(URL source) {
+    initThread();
+    try (OGGStream stream = new OGGStream(source)) {
+      this.audio = initAsync(stream);
+      if (this.audio == null) {
+        return;
+      }
+
+      if (manager.startPlaying()) {
+        this.source.play();
+      }
+
+      int channels = stream.getChannels();
+      int rate = stream.getRate();
+
+      // Calculate the sleep interval based on total queued time across all buffers.
+      // We wake up when approximately a quarter of the total buffers are empty to avoid starvation.
+      long totalSamplesPerChannel = (long) PCM_SAMPLES * getBufferCount() / channels;
+      long sleepInterval = Math.max(10, (TimeUnit.SECONDS.toMillis(1) * totalSamplesPerChannel / rate) / 4);
+
+      synchronized (this) {
+        while (isPlaying()) {
+          try {
+            long start = System.currentTimeMillis();
+            refill(stream);
+            var sleep = sleepInterval - (System.currentTimeMillis() - start);
+            if (sleep > 0) {
+              QueuedAudioPlayer.this.wait(sleep);
+            }
+          } catch (InterruptedException | IOException e) {
+            break;
+          }
         }
+      }
+    } catch (IOException ioe) {
+      logger.log(Level.SEVERE, "Failed to read OGG stream " + source, ioe);
+    } catch (Exception _) {
+      // Failed to load, init, or read. Exit silently.
+    } finally {
+      try {
+        cleanupAsync();
+      } catch (Exception e) {
+        logger.log(Level.WARNING, "Failure during cleanup", e);
+      }
+    }
+  }
 
-        // Queued audio does not loop via source setting, it loops internally during buffer refill
-        source.setLooping(false);
+  /// Run by the Refiller thread
+  protected abstract @Nullable Audio initAsync(OGGStream stream) throws Exception;
 
-        this.refillerThread = Thread.startVirtualThread(() -> refiller(params.audio().getURL()));
+  /// Run by the Refiller thread to initialize thread-local context/capabilities.
+  protected void initThread() {}
+
+  /// Run by the Refiller thread
+  protected abstract void refill(OGGStream stream) throws IOException;
+
+  /// Run by the Refiller thread
+  protected abstract void cleanupAsync() throws Exception;
+
+  protected static int readPCM(OGGStream stream, ShortBuffer pcmBuffer, boolean looping) {
+    pcmBuffer.clear(); // Position 0, Limit PCM_SAMPLES
+
+    int shortsRead = stream.read(pcmBuffer);
+
+    if (shortsRead <= 0 && looping) {
+      // End of ogg stream reached, but we are looping.
+      stream.seek(0);
+      shortsRead = stream.read(pcmBuffer);
+    } else if (shortsRead > 0 && looping && pcmBuffer.hasRemaining()) {
+      // Reached end of stream with partial buffer; wrap to beginning to fill remainder
+      stream.seek(0);
+      int more = stream.read(pcmBuffer);
+      if (more > 0) {
+        shortsRead += more;
+      }
     }
 
-    private void refiller(URL source) {
-        initThread();
-        try (OGGStream stream = new OGGStream(source)) {
-            this.audio = initAsync(stream);
-            if (this.audio == null) {
-                return;
-            }
+    // Explicitly set the buffer's position and limit for OpenAL.
+    // Some native wrappers might not update the buffer position automatically.
+    pcmBuffer.position(0);
+    pcmBuffer.limit(shortsRead);
 
-            if (manager.startPlaying()) {
-                this.source.play();
-            }
+    return shortsRead;
+  }
 
-            int channels = stream.getChannels();
-            int rate = stream.getRate();
-
-            // Calculate the sleep interval based on total queued time across all buffers.
-            // We wake up when approximately a quarter of the total buffers are empty to avoid starvation.
-            long totalSamplesPerChannel = (long) PCM_SAMPLES * getBufferCount() / channels;
-            long sleepInterval = Math.max(10, (TimeUnit.SECONDS.toMillis(1) * totalSamplesPerChannel / rate) / 4);
-
-            synchronized (this) {
-                while (isPlaying()) {
-                    try {
-                        long start = System.currentTimeMillis();
-                        refill(stream);
-                        var sleep = sleepInterval - (System.currentTimeMillis() - start);
-                        if (sleep > 0) {
-                            QueuedAudioPlayer.this.wait(sleep);
-                        }
-                    } catch (InterruptedException | IOException e) {
-                        break;
-                    }
-                }
-            }
-        } catch (IOException ioe) {
-            logger.log(Level.SEVERE, "Failed to read OGG stream " + source, ioe);
-        } catch (Exception _) {
-            // Failed to load, init, or read. Exit silently.
-        } finally {
-            try {
-                cleanupAsync();
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "Failure during cleanup", e);
-            }
-        }
+  @Override
+  public QueuedAudioPlayer<AM, AS> stop() {
+    manager.removeQueuedPlayer(this);
+    super.stop(); // Sets playing = false and stops the source.
+    synchronized (this) {
+      notifyAll(); // Wake up refiller thread immediately so it can clean up
     }
+    awaitCompletion();
 
-    /** Run by the Refiller thread */
-    protected abstract @Nullable Audio initAsync(OGGStream stream) throws Exception;
+    return this;
+  }
 
-    /** Run by the Refiller thread to initialize thread-local context/capabilities. */
-    protected void initThread() {
+  /// Waits for the background refiller thread to finish and run its cleanup, if it is still running.
+  private void awaitCompletion() {
+    if (refillerThread != null && Thread.currentThread() != refillerThread) {
+      try {
+        refillerThread.join(TimeUnit.SECONDS.toMillis(1));
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
     }
-
-    /** Run by the Refiller thread */
-    protected abstract void refill(OGGStream stream) throws IOException;
-
-    /** Run by the Refiller thread */
-    protected abstract void cleanupAsync() throws Exception;
-
-    protected static int readPCM(OGGStream stream, ShortBuffer pcmBuffer, boolean looping) {
-        pcmBuffer.clear(); // Position 0, Limit PCM_SAMPLES
-
-        int shortsRead = stream.read(pcmBuffer);
-
-        if (shortsRead <= 0 && looping) {
-            // End of ogg stream reached, but we are looping.
-            stream.seek(0);
-            shortsRead = stream.read(pcmBuffer);
-        } else if (shortsRead > 0 && looping && pcmBuffer.hasRemaining()) {
-            // Reached end of stream with partial buffer; wrap to beginning to fill remainder
-            stream.seek(0);
-            int more = stream.read(pcmBuffer);
-            if (more > 0) {
-                shortsRead += more;
-            }
-        }
-
-        // Explicitly set the buffer's position and limit for OpenAL.
-        // Some native wrappers might not update the buffer position automatically.
-        pcmBuffer.position(0);
-        pcmBuffer.limit(shortsRead);
-
-        return shortsRead;
-    }
-
-    @Override
-    public QueuedAudioPlayer<AM, AS> stop() {
-        manager.removeQueuedPlayer(this);
-        super.stop(); // Sets playing = false and stops the source.
-        synchronized (this) {
-            notifyAll(); // Wake up refiller thread immediately so it can clean up
-        }
-        awaitCompletion();
-
-        return this;
-    }
-
-    /**
-     * Waits for the background refiller thread to finish and run its cleanup, if it is still running.
-     */
-    private void awaitCompletion() {
-        if (refillerThread != null && Thread.currentThread() != refillerThread) {
-            try {
-                refillerThread.join(TimeUnit.SECONDS.toMillis(1));
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
+  }
 }

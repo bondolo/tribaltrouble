@@ -1,8 +1,8 @@
 package com.oddlabs.tt.simulation.landscape;
 
-/** Grid coordinate placement in the landscape. */
+/// Grid coordinate placement in the landscape.
 public interface Placement {
-    int x();
+  int x();
 
-    int y();
+  int y();
 }

@@ -1,168 +1,173 @@
 package com.oddlabs.tt.content.menu;
 
-import com.oddlabs.matchmaking.Profile;
-import com.oddlabs.tt.gui.MessageForm;
-import com.oddlabs.tt.gui.ColumnInfo;
-import com.oddlabs.tt.gui.FocusDirection;
-import com.oddlabs.tt.gui.Form;
-import com.oddlabs.tt.gui.QuestionForm;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.HorizButton;
-import com.oddlabs.tt.gui.IntegerLabel;
-import com.oddlabs.tt.gui.Label;
-import com.oddlabs.tt.gui.MouseButton;
-import com.oddlabs.tt.gui.MultiColumnComboBox;
-import com.oddlabs.tt.gui.Row;
-import java.util.List;
-import com.oddlabs.tt.gui.event.MouseClickListener;
-import com.oddlabs.tt.gui.event.RowListener;
-import com.oddlabs.tt.base.util.Utils;
-
-import java.util.ResourceBundle;
-
 import static com.oddlabs.tt.gui.Origin.AT_END;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 
-/** Form displaying the list of available player profiles and management actions. */
+import com.oddlabs.matchmaking.Profile;
+import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.gui.ColumnInfo;
+import com.oddlabs.tt.gui.FocusDirection;
+import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.HorizButton;
+import com.oddlabs.tt.gui.IntegerLabel;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MessageForm;
+import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.gui.MultiColumnComboBox;
+import com.oddlabs.tt.gui.QuestionForm;
+import com.oddlabs.tt.gui.Row;
+import com.oddlabs.tt.gui.event.MouseClickListener;
+import com.oddlabs.tt.gui.event.RowListener;
+import java.util.List;
+import java.util.ResourceBundle;
+
+/// Form displaying the list of available player profiles and management actions.
 public final class ProfilesForm extends Form {
-    private static final int NICK_SIZE = 200;
+  private static final int NICK_SIZE = 200;
 
-    private final Menu main_menu;
-    private final SelectGameMenu game_menu;
-    private final MultiColumnComboBox<String> profile_list_box;
-    private final HorizButton join_button;
-    private final GUIRoot gui_root;
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(ProfilesForm.class.getName());
+  private final Menu main_menu;
+  private final SelectGameMenu game_menu;
+  private final MultiColumnComboBox<String> profile_list_box;
+  private final HorizButton join_button;
+  private final GUIRoot gui_root;
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(ProfilesForm.class.getName());
 
-    private String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  // to be removed if connection lost
+  private NewProfileForm new_profile_form;
+  private QuestionForm confirm_delete_form;
+
+  public ProfilesForm(SelectGameMenu game_menu) {
+    super(game_menu.getGUIRoot());
+    this.game_menu = game_menu;
+    this.main_menu = game_menu.getMainMenu();
+    this.gui_root = game_menu.getGUIRoot();
+    Label label_headline = new Label(i18n("profiles_caption"), getSkin().getHeadlineFont());
+    addChild(label_headline);
+
+    profile_list_box =
+        new MultiColumnComboBox<>(
+            gui_root,
+            200,
+            new ColumnInfo(i18n("nick"), NICK_SIZE),
+            new ColumnInfo(i18n("rating"), 120),
+            new ColumnInfo(i18n("wins"), 100),
+            new ColumnInfo(i18n("losses"), 100),
+            new ColumnInfo(i18n("invalid"), 100));
+    profile_list_box.addRowListener(
+        new RowListener<>() {
+          @Override
+          public void rowDoubleClicked(String nick) {
+            join(nick);
+          }
+        });
+    addChild(profile_list_box);
+
+    HorizButton create_profile_button = new HorizButton(gui_root, i18n("create_new_profile"), 150);
+    create_profile_button.addMouseClickListener((_, _, _, _) -> {
+      new_profile_form = new NewProfileForm(main_menu, ProfilesForm.this);
+      main_menu.setMenu(new_profile_form);
+    });
+    addChild(create_profile_button);
+
+    HorizButton delete_profile_button = new HorizButton(gui_root, i18n("delete_profile"), 150);
+    delete_profile_button.addMouseClickListener(new DeleteProfileListener());
+    addChild(delete_profile_button);
+
+    join_button = new HorizButton(gui_root, i18n("join"), 100);
+    join_button.addMouseClickListener((_, _, _, _) -> {
+      String nick = profile_list_box.getSelected();
+      if (nick == null) {
+        gui_root.addModalForm(new MessageForm(gui_root, i18n("no_profiles")));
+      } else {
+        join(nick);
+      }
+    });
+    addChild(join_button);
+
+    HorizButton logout_button = new HorizButton(gui_root, i18n("logout"), 100);
+    logout_button.addMouseClickListener((MouseButton _, int _, int _, int _) -> this.cancel());
+    addChild(logout_button);
+
+    label_headline.place();
+    profile_list_box.place(label_headline, BOTTOM_LEFT);
+    logout_button.place(AT_END);
+    join_button.place(logout_button, LEFT_MID);
+    delete_profile_button.place(join_button, LEFT_MID);
+    create_profile_button.place(delete_profile_button, LEFT_MID);
+
+    compileCanvas();
+  }
+
+  @Override
+  public void setFocus(FocusDirection direction) {
+    if (direction == FocusDirection.BACKWARD) {
+      super.setFocus(direction);
+    } else {
+      join_button.setFocus(direction);
     }
+  }
 
-    // to be removed if connection lost
-    private NewProfileForm new_profile_form;
-    private QuestionForm confirm_delete_form;
+  @Override
+  protected void doCancel() {
+    main_menu.getPeer().getNetwork().getMatchmakingClient().close();
+  }
 
-    public ProfilesForm(SelectGameMenu game_menu) {
-        super(game_menu.getGUIRoot());
-        this.game_menu = game_menu;
-        this.main_menu = game_menu.getMainMenu();
-        this.gui_root = game_menu.getGUIRoot();
-        Label label_headline = new Label(i18n("profiles_caption"), getSkin().getHeadlineFont());
-        addChild(label_headline);
+  public void receivedProfiles(Profile[] profiles, String last_nick) {
+    profile_list_box.clear();
+    Row<String, Label> selected_row = null;
+    var font = getSkin().getMultiColumnComboBoxData().font();
+    for (Profile p : profiles) {
+      Row<String, Label> row =
+          new Row<>(
+              gui_root,
+              List.of(
+                  new Label(p.getNick(), font, NICK_SIZE),
+                  new IntegerLabel(p.getRating(), font),
+                  new IntegerLabel(p.getWins(), font),
+                  new IntegerLabel(p.getLosses(), font),
+                  new IntegerLabel(p.getInvalid(), font)),
+              p.getNick());
+      profile_list_box.addRow(row);
+      if (p.getNick().equalsIgnoreCase(last_nick)) selected_row = row;
+    }
+    if (selected_row != null) profile_list_box.selectRow(selected_row);
+  }
 
-        profile_list_box = new MultiColumnComboBox<>(
+  private void join(String nick) {
+    main_menu.getPeer().getNetwork().getMatchmakingClient().setProfile(nick);
+    main_menu.setMenuCentered(game_menu);
+  }
+
+  private final class DeleteProfileListener implements MouseClickListener {
+    @Override
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {
+      String nick = profile_list_box.getSelected();
+      if (nick == null) {
+        gui_root.addModalForm(new MessageForm(gui_root, i18n("no_profiles")));
+      } else {
+        String confirm_str = i18n("confirm_delete", nick);
+        confirm_delete_form =
+            new QuestionForm(
                 gui_root,
-                200,
-                new ColumnInfo(i18n("nick"), NICK_SIZE),
-                new ColumnInfo(i18n("rating"), 120),
-                new ColumnInfo(i18n("wins"), 100),
-                new ColumnInfo(i18n("losses"), 100),
-                new ColumnInfo(i18n("invalid"), 100));
-        profile_list_box.addRowListener(new RowListener<>() {
-            @Override
-            public void rowDoubleClicked(String nick) {
-                join(nick);
-            }
-        });
-        addChild(profile_list_box);
-
-        HorizButton create_profile_button = new HorizButton(gui_root, i18n("create_new_profile"), 150);
-        create_profile_button.addMouseClickListener((_, _, _, _) -> {
-            new_profile_form = new NewProfileForm(main_menu, ProfilesForm.this);
-            main_menu.setMenu(new_profile_form);
-        });
-        addChild(create_profile_button);
-
-        HorizButton delete_profile_button = new HorizButton(gui_root, i18n("delete_profile"), 150);
-        delete_profile_button.addMouseClickListener(new DeleteProfileListener());
-        addChild(delete_profile_button);
-
-        join_button = new HorizButton(gui_root, i18n("join"), 100);
-        join_button.addMouseClickListener((_, _, _, _) -> {
-            String nick = profile_list_box.getSelected();
-            if (nick == null) {
-                gui_root.addModalForm(new MessageForm(gui_root, i18n("no_profiles")));
-            } else {
-                join(nick);
-            }
-        });
-        addChild(join_button);
-
-        HorizButton logout_button = new HorizButton(gui_root, i18n("logout"), 100);
-        logout_button.addMouseClickListener((MouseButton _, int _, int _, int _) -> this.cancel());
-        addChild(logout_button);
-
-        label_headline.place();
-        profile_list_box.place(label_headline, BOTTOM_LEFT);
-        logout_button.place(AT_END);
-        join_button.place(logout_button, LEFT_MID);
-        delete_profile_button.place(join_button, LEFT_MID);
-        create_profile_button.place(delete_profile_button, LEFT_MID);
-
-        compileCanvas();
-    }
-
-    @Override
-    public void setFocus(FocusDirection direction) {
-        if (direction == FocusDirection.BACKWARD) {
-            super.setFocus(direction);
-        } else {
-            join_button.setFocus(direction);
-        }
-    }
-
-    @Override
-    protected void doCancel() {
-        main_menu.getPeer().getNetwork().getMatchmakingClient().close();
-    }
-
-    public void receivedProfiles(Profile[] profiles, String last_nick) {
-        profile_list_box.clear();
-        Row<String, Label> selected_row = null;
-        var font = getSkin().getMultiColumnComboBoxData().font();
-        for (Profile p : profiles) {
-            Row<String, Label> row = new Row<>(gui_root, List.of(
-                    new Label(p.getNick(), font, NICK_SIZE),
-                    new IntegerLabel(p.getRating(), font),
-                    new IntegerLabel(p.getWins(), font),
-                    new IntegerLabel(p.getLosses(), font),
-                    new IntegerLabel(p.getInvalid(), font)), p.getNick());
-            profile_list_box.addRow(row);
-            if (p.getNick().equalsIgnoreCase(last_nick))
-                selected_row = row;
-        }
-        if (selected_row != null)
-            profile_list_box.selectRow(selected_row);
-    }
-
-    private void join(String nick) {
-        main_menu.getPeer().getNetwork().getMatchmakingClient().setProfile(nick);
-        main_menu.setMenuCentered(game_menu);
-    }
-
-    private final class DeleteProfileListener implements MouseClickListener {
-        @Override
-        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            String nick = profile_list_box.getSelected();
-            if (nick == null) {
-                gui_root.addModalForm(new MessageForm(gui_root, i18n("no_profiles")));
-            } else {
-                String confirm_str = i18n("confirm_delete", nick);
-                confirm_delete_form = new QuestionForm(gui_root, confirm_str, (_, _, _, _) -> {
-                    main_menu.getPeer().getNetwork().getMatchmakingClient().deleteProfile(nick);
-                    main_menu.getPeer().getNetwork().getMatchmakingClient().requestProfiles();
+                confirm_str,
+                (_, _, _, _) -> {
+                  main_menu.getPeer().getNetwork().getMatchmakingClient().deleteProfile(nick);
+                  main_menu.getPeer().getNetwork().getMatchmakingClient().requestProfiles();
                 });
-                gui_root.addModalForm(confirm_delete_form);
-            }
-        }
+        gui_root.addModalForm(confirm_delete_form);
+      }
     }
+  }
 
-    public void connectionLost() {
-        if (new_profile_form != null)
-            new_profile_form.connectionLost();
-        if (confirm_delete_form != null)
-            confirm_delete_form.connectionLost();
-        remove();
-    }
+  public void connectionLost() {
+    if (new_profile_form != null) new_profile_form.connectionLost();
+    if (confirm_delete_form != null) confirm_delete_form.connectionLost();
+    remove();
+  }
 }

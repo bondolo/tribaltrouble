@@ -1,8 +1,7 @@
 package com.oddlabs.procedural;
 
-import org.jspecify.annotations.NullMarked;
-
 import java.util.List;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Procedural island configuration and player slot parameters encoded in a map code.
@@ -19,27 +18,26 @@ import java.util.List;
  */
 @NullMarked
 public record MapParameters(
-                            int seed,
-                            int hills,
-                            int vegetation,
-                            int supplies,
-                            int terrainType,
-                            int size,
-                            int player0Race,
-                            int player0Team,
-                            List<SlotSetting> otherSlots) {
+    int seed,
+    int hills,
+    int vegetation,
+    int supplies,
+    int terrainType,
+    int size,
+    int player0Race,
+    int player0Team,
+    List<SlotSetting> otherSlots) {
 
-    public MapParameters {
-        otherSlots = List.copyOf(otherSlots);
-    }
+  public MapParameters {
+    otherSlots = List.copyOf(otherSlots);
+  }
 
-    /**
-     * Configuration setting for an additional player slot (slots 1 to 5).
-     *
-     * @param difficulty difficulty tier index (0: closed, 1: easy, 2: normal, 3: hard)
-     * @param race race ordinal (0: Viking, 1: Native)
-     * @param team team identifier (0 to 5)
-     */
-    public record SlotSetting(int difficulty, int race, int team) {
-    }
+  /**
+   * Configuration setting for an additional player slot (slots 1 to 5).
+   *
+   * @param difficulty difficulty tier index (0: closed, 1: easy, 2: normal, 3: hard)
+   * @param race race ordinal (0: Viking, 1: Native)
+   * @param team team identifier (0 to 5)
+   */
+  public record SlotSetting(int difficulty, int race, int team) {}
 }

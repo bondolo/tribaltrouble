@@ -5,71 +5,72 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.util.Color;
 
-
-/**
- * Text-based interactive menu button with sinusoidal hover animation.
- */
+/// Text-based interactive menu button with sinusoidal hover animation.
 public final class MenuButton extends ButtonObject {
-    private static final float SECONDS_PER_HOVER_CYCLE = 1.5f;
-    private static final float HOVER_SCALE_FACTOR = 0.06f;
+  private static final float SECONDS_PER_HOVER_CYCLE = 1.5f;
+  private static final float HOVER_SCALE_FACTOR = 0.06f;
 
-    private final CharSequence text;
-    private final Color.Linear color_normal;
-    private final Color.Linear color_active;
+  private final CharSequence text;
+  private final Color.Linear color_normal;
+  private final Color.Linear color_active;
 
-    private float start_hover_time;
+  private float start_hover_time;
 
-    public MenuButton(GUIRoot guiRoot, String caption, Color color_normal, Color color_active) {
-        this(caption, guiRoot.getSkin().getHeadlineFont(), color_normal, color_active);
+  public MenuButton(GUIRoot guiRoot, String caption, Color color_normal, Color color_active) {
+    this(caption, guiRoot.getSkin().getHeadlineFont(), color_normal, color_active);
+  }
+
+  public MenuButton(Font font, String caption, Color color_normal, Color color_active) {
+    this(caption, font, color_normal, color_active);
+  }
+
+  private MenuButton(CharSequence text, Font font, Color color_normal, Color color_active) {
+    super(font);
+    setDim(font.getWidth(text), font.getHeight());
+    this.text = text;
+    this.color_normal = color_normal instanceof Color.Linear linear ? linear : new Color.Linear(color_normal);
+    this.color_active = color_active instanceof Color.Linear linear ? linear : new Color.Linear(color_active);
+  }
+
+  private float getTime() {
+    var root = getParentGUIRoot();
+    return root != null ? root.getTime() : 0f;
+  }
+
+  private void scaleHovered(GUIRenderer renderer) {
+    float time = (getTime() - start_hover_time) % SECONDS_PER_HOVER_CYCLE;
+    float cycle_position = time / SECONDS_PER_HOVER_CYCLE;
+    float scale = 1f + HOVER_SCALE_FACTOR * (float) Math.sin(cycle_position * 2 * Math.PI);
+    renderer.scale(scale, scale);
+  }
+
+  @Override
+  protected void renderGeometry(GUIRenderer renderer) {
+    try (var _ = renderer.withTransform()) {
+      renderer.translate(getWidth() / 2f, getHeight() / 2f);
+      Color c;
+      if (isActive()) {
+        c = color_active;
+        scaleHovered(renderer);
+      } else c = isDisabled() ? color_normal.desaturate(0.3f).mul(0.5f).alpha(color_normal.a() * 0.8f) : color_normal;
+
+      TextLineRenderer.render(
+          renderer,
+          getFont(),
+          text,
+          -getWidth() / 2f,
+          -getHeight() / 2f,
+          Float.NEGATIVE_INFINITY,
+          Float.POSITIVE_INFINITY,
+          c);
     }
+  }
 
-    public MenuButton(Font font, String caption, Color color_normal, Color color_active) {
-        this(caption, font, color_normal, color_active);
+  @Override
+  protected void mouseEntered() {
+    if (!isActive()) {
+      start_hover_time = getTime() % SECONDS_PER_HOVER_CYCLE;
+      setFocus();
     }
-
-    private MenuButton(CharSequence text, Font font, Color color_normal,
-            Color color_active) {
-        super(font);
-        setDim(font.getWidth(text), font.getHeight());
-        this.text = text;
-        this.color_normal = color_normal instanceof Color.Linear linear ? linear : new Color.Linear(color_normal);
-        this.color_active = color_active instanceof Color.Linear linear ? linear : new Color.Linear(color_active);
-    }
-
-    private float getTime() {
-        var root = getParentGUIRoot();
-        return root != null ? root.getTime() : 0f;
-    }
-
-    private void scaleHovered(GUIRenderer renderer) {
-        float time = (getTime() - start_hover_time) % SECONDS_PER_HOVER_CYCLE;
-        float cycle_position = time / SECONDS_PER_HOVER_CYCLE;
-        float scale = 1f + HOVER_SCALE_FACTOR * (float) Math.sin(cycle_position * 2 * Math.PI);
-        renderer.scale(scale, scale);
-    }
-
-    @Override
-    protected void renderGeometry(GUIRenderer renderer) {
-        try (var _ = renderer.withTransform()) {
-            renderer.translate(getWidth() / 2f, getHeight() / 2f);
-            Color c;
-            if (isActive()) {
-                c = color_active;
-                scaleHovered(renderer);
-            } else c = isDisabled()
-                    ? color_normal.desaturate(0.3f).mul(0.5f).alpha(color_normal.a() * 0.8f)
-                    : color_normal;
-
-            TextLineRenderer.render(renderer, getFont(), text, -getWidth() / 2f, -getHeight() / 2f,
-                    Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, c);
-        }
-    }
-
-    @Override
-    protected void mouseEntered() {
-        if (!isActive()) {
-            start_hover_time = getTime() % SECONDS_PER_HOVER_CYCLE;
-            setFocus();
-        }
-    }
+  }
 }

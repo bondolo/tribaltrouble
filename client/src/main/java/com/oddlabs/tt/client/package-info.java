@@ -1,6 +1,4 @@
-/**
- * Client-side gameplay logic, delegates, viewer, and interaction settings.
- */
+/** Client-side gameplay logic, delegates, viewer, and interaction settings. */
 @NullMarked
 package com.oddlabs.tt.client;
 

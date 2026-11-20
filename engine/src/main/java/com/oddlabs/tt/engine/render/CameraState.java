@@ -1,295 +1,290 @@
 package com.oddlabs.tt.engine.render;
 
-import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.tt.base.event.StateChecksum;
+import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.util.Color;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
-/**
- * Maintains the internal state of a camera, including its position, orientation,
- * matrices, and frustum for culling and rendering.
- */
+/// Maintains the internal state of a camera, including its position, orientation, matrices, and frustum for culling and
+/// rendering.
 public final class CameraState {
-    public static final float MIN_ANGLE = -(float) Math.PI / 2f;//+ 0.01f;
-    //  private static final float MAX_ANGLE = (float)Math.PI/2f;// - 0.0001f;
-    public static final float MAX_ANGLE = -0.0001f;
+  public static final float MIN_ANGLE = -(float) Math.PI / 2f; // + 0.01f;
+  //  private static final float MAX_ANGLE = (float)Math.PI/2f;// - 0.0001f;
+  public static final float MAX_ANGLE = -0.0001f;
 
-    private final Matrix4f modl = new Matrix4f();
-    private final Matrix4f proj = new Matrix4f();
-    private final Matrix4f proj_modl = new Matrix4f();
-    private final FrustumIntersection frustum = new FrustumIntersection();
-    private final Vector3f f = new Vector3f();
-    private final Vector3f s = new Vector3f();
-    private final Vector3f u = new Vector3f();
+  private final Matrix4f modl = new Matrix4f();
+  private final Matrix4f proj = new Matrix4f();
+  private final Matrix4f proj_modl = new Matrix4f();
+  private final FrustumIntersection frustum = new FrustumIntersection();
+  private final Vector3f f = new Vector3f();
+  private final Vector3f s = new Vector3f();
+  private final Vector3f u = new Vector3f();
 
-    private float target_camera_x;
-    private float target_camera_y;
-    private float target_camera_z;
+  private float target_camera_x;
+  private float target_camera_y;
+  private float target_camera_z;
 
-    private float camera_x;
-    private float camera_y;
-    private float camera_z;
+  private float camera_x;
+  private float camera_y;
+  private float camera_z;
 
-    private float target_vert_angle;
-    private float target_horiz_angle;
+  private float target_vert_angle;
+  private float target_horiz_angle;
 
-    private float vert_angle;
-    private float horiz_angle;
+  private float vert_angle;
+  private float horiz_angle;
 
-    private FogInfo fog;
-    private boolean no_detail_mode;
-    private int width;
-    private int height;
+  private FogInfo fog;
+  private boolean no_detail_mode;
+  private int width;
+  private int height;
 
-    public CameraState() {
-        this(new FogInfo(FogInfo.Mode.NONE, Color.Standard.BLACK, 0f));
-    }
+  public CameraState() {
+    this(new FogInfo(FogInfo.Mode.NONE, Color.Standard.BLACK, 0f));
+  }
 
-    public CameraState(FogInfo fog) {
-        this.fog = fog;
-    }
+  public CameraState(FogInfo fog) {
+    this.fog = fog;
+  }
 
-    public void setFog(FogInfo fog) {
-        this.fog = fog;
-    }
+  public void setFog(FogInfo fog) {
+    this.fog = fog;
+  }
 
-    public void updateChecksum(StateChecksum checksum) {
-        //System.out.println("camera_x = " + camera_x + " | camera_y = " + camera_y + " | camera_z = " + camera_z + " | dir_x = " + dir_x + " | dir_y = " + dir_y + " | dir_z = " + dir_z);
-        checksum.update(camera_x);
-        checksum.update(camera_y);
-        checksum.update(camera_z);
-        checksum.update(vert_angle);
-        checksum.update(horiz_angle);
-    }
+  public void updateChecksum(StateChecksum checksum) {
+    // System.out.println("camera_x = " + camera_x + " | camera_y = " + camera_y + " | camera_z = " + camera_z + " |
+    // dir_x = " + dir_x + " | dir_y = " + dir_y + " | dir_z = " + dir_z);
+    checksum.update(camera_x);
+    checksum.update(camera_y);
+    checksum.update(camera_z);
+    checksum.update(vert_angle);
+    checksum.update(horiz_angle);
+  }
 
-    public float getTargetX() {
-        return target_camera_x;
-    }
+  public float getTargetX() {
+    return target_camera_x;
+  }
 
-    public float getCurrentX() {
-        return camera_x;
-    }
+  public float getCurrentX() {
+    return camera_x;
+  }
 
-    public void setTargetX(float x) {
-        target_camera_x = x;
-    }
+  public void setTargetX(float x) {
+    target_camera_x = x;
+  }
 
-    public void setCurrentX(float x) {
-        camera_x = target_camera_x = x;
-    }
+  public void setCurrentX(float x) {
+    camera_x = target_camera_x = x;
+  }
 
-    public float getTargetY() {
-        return target_camera_y;
-    }
+  public float getTargetY() {
+    return target_camera_y;
+  }
 
-    public float getCurrentY() {
-        return camera_y;
-    }
+  public float getCurrentY() {
+    return camera_y;
+  }
 
-    public void setTargetY(float y) {
-        target_camera_y = y;
-    }
+  public void setTargetY(float y) {
+    target_camera_y = y;
+  }
 
-    public void setCurrentY(float y) {
-        camera_y = target_camera_y = y;
-    }
+  public void setCurrentY(float y) {
+    camera_y = target_camera_y = y;
+  }
 
-    public float getTargetZ() {
-        return target_camera_z;
-    }
+  public float getTargetZ() {
+    return target_camera_z;
+  }
 
-    public float getCurrentZ() {
-        return camera_z;
-    }
+  public float getCurrentZ() {
+    return camera_z;
+  }
 
-    public Vector3fc getTargetPosition() {
-        return new Vector3f(target_camera_x, target_camera_y, target_camera_z);
-    }
+  public Vector3fc getTargetPosition() {
+    return new Vector3f(target_camera_x, target_camera_y, target_camera_z);
+  }
 
-    public Vector3fc getCurrentPosition() {
-        return new Vector3f(camera_x, camera_y, camera_z);
-    }
+  public Vector3fc getCurrentPosition() {
+    return new Vector3f(camera_x, camera_y, camera_z);
+  }
 
-    public FogInfo getFog() {
-        return fog;
-    }
+  public FogInfo getFog() {
+    return fog;
+  }
 
-    public void animate(float dt, float smoothness_factor) {
-        camera_x = animateValue(dt, camera_x, target_camera_x, smoothness_factor);
-        camera_y = animateValue(dt, camera_y, target_camera_y, smoothness_factor);
-        camera_z = animateValue(dt, camera_z, target_camera_z, smoothness_factor);
-        vert_angle = animateValue(dt, vert_angle, target_vert_angle, smoothness_factor);
-        horiz_angle = animateValue(dt, horiz_angle, target_horiz_angle, smoothness_factor);
-    }
+  public void animate(float dt, float smoothness_factor) {
+    camera_x = animateValue(dt, camera_x, target_camera_x, smoothness_factor);
+    camera_y = animateValue(dt, camera_y, target_camera_y, smoothness_factor);
+    camera_z = animateValue(dt, camera_z, target_camera_z, smoothness_factor);
+    vert_angle = animateValue(dt, vert_angle, target_vert_angle, smoothness_factor);
+    horiz_angle = animateValue(dt, horiz_angle, target_horiz_angle, smoothness_factor);
+  }
 
-    private float animateValue(float dt, float current, float target, float smoothness_factor) {
-        return current + (target - current) * Math.min(dt * smoothness_factor, 1f);
-    }
+  private float animateValue(float dt, float current, float target, float smoothness_factor) {
+    return current + (target - current) * Math.min(dt * smoothness_factor, 1f);
+  }
 
-    public void setTargetZ(float z) {
-        target_camera_z = z;
-    }
+  public void setTargetZ(float z) {
+    target_camera_z = z;
+  }
 
-    public void setCurrentZ(float z) {
-        camera_z = target_camera_z = z;
-    }
+  public void setCurrentZ(float z) {
+    camera_z = target_camera_z = z;
+  }
 
-    public void setTargetVertAngle(float angle) {
-        target_vert_angle = capVertAngle(angle);
-    }
+  public void setTargetVertAngle(float angle) {
+    target_vert_angle = capVertAngle(angle);
+  }
 
-    public boolean inNoDetailMode() {
-        return no_detail_mode;
-    }
+  public boolean inNoDetailMode() {
+    return no_detail_mode;
+  }
 
-    public void setNoDetailMode(boolean s) {
-        no_detail_mode = s;
-    }
+  public void setNoDetailMode(boolean s) {
+    no_detail_mode = s;
+  }
 
-    public void set(CameraState camera) {
-        target_camera_x = camera.target_camera_x;
-        target_camera_y = camera.target_camera_y;
-        target_camera_z = camera.target_camera_z;
-        camera_x = camera.camera_x;
-        camera_y = camera.camera_y;
-        camera_z = camera.camera_z;
+  public void set(CameraState camera) {
+    target_camera_x = camera.target_camera_x;
+    target_camera_y = camera.target_camera_y;
+    target_camera_z = camera.target_camera_z;
+    camera_x = camera.camera_x;
+    camera_y = camera.camera_y;
+    camera_z = camera.camera_z;
 
-        setTargetVertAngle(camera.getTargetVertAngle());
-        setTargetHorizAngle(camera.getTargetHorizAngle());
-        setNoDetailMode(camera.inNoDetailMode());
-        setFog(camera.getFog());
-        vert_angle = camera.vert_angle;
-        horiz_angle = camera.horiz_angle;
-        modl.set(camera.modl);
-        proj.set(camera.proj);
-        proj_modl.set(camera.proj_modl);
-        frustum.set(camera.proj_modl);
-        f.set(camera.f);
-        s.set(camera.s);
-        u.set(camera.u);
-        width = camera.width;
-        height = camera.height;
-    }
+    setTargetVertAngle(camera.getTargetVertAngle());
+    setTargetHorizAngle(camera.getTargetHorizAngle());
+    setNoDetailMode(camera.inNoDetailMode());
+    setFog(camera.getFog());
+    vert_angle = camera.vert_angle;
+    horiz_angle = camera.horiz_angle;
+    modl.set(camera.modl);
+    proj.set(camera.proj);
+    proj_modl.set(camera.proj_modl);
+    frustum.set(camera.proj_modl);
+    f.set(camera.f);
+    s.set(camera.s);
+    u.set(camera.u);
+    width = camera.width;
+    height = camera.height;
+  }
 
-    public void setCurrentVertAngle(float angle) {
-        vert_angle = target_vert_angle = capVertAngle(angle);
-    }
+  public void setCurrentVertAngle(float angle) {
+    vert_angle = target_vert_angle = capVertAngle(angle);
+  }
 
-    private float capVertAngle(float angle) {
-        if (angle < MIN_ANGLE)
-            return MIN_ANGLE;
-        else return Math.min(angle, MAX_ANGLE);
-    }
+  private float capVertAngle(float angle) {
+    if (angle < MIN_ANGLE) return MIN_ANGLE;
+    else return Math.min(angle, MAX_ANGLE);
+  }
 
-    public float getTargetVertAngle() {
-        return target_vert_angle;
-    }
+  public float getTargetVertAngle() {
+    return target_vert_angle;
+  }
 
-    public float getCurrentVertAngle() {
-        return vert_angle;
-    }
+  public float getCurrentVertAngle() {
+    return vert_angle;
+  }
 
-    public void setTargetHorizAngle(float angle) {
-        target_horiz_angle = angle;
-    }
+  public void setTargetHorizAngle(float angle) {
+    target_horiz_angle = angle;
+  }
 
-    public void setCurrentHorizAngle(float angle) {
-        horiz_angle = target_horiz_angle = angle;
-    }
+  public void setCurrentHorizAngle(float angle) {
+    horiz_angle = target_horiz_angle = angle;
+  }
 
-    public float getTargetHorizAngle() {
-        return target_horiz_angle;
-    }
+  public float getTargetHorizAngle() {
+    return target_horiz_angle;
+  }
 
-    public float getHorizAngle() {
-        return horiz_angle;
-    }
+  public float getHorizAngle() {
+    return horiz_angle;
+  }
 
-    public void setCamera(float x, float y, float z, float va, float ha) {
-        setCurrentX(x);
-        setCurrentY(y);
-        setCurrentZ(z);
-        setCurrentVertAngle(va);
-        setCurrentHorizAngle(ha);
-    }
+  public void setCamera(float x, float y, float z, float va, float ha) {
+    setCurrentX(x);
+    setCurrentY(y);
+    setCurrentZ(z);
+    setCurrentVertAngle(va);
+    setCurrentHorizAngle(ha);
+  }
 
-    public void updateDirectionAndNormal(Vector3f f, Vector3f u, Vector3f s) {
-        updateDirectionAndNormal(horiz_angle, vert_angle, f, u, s);
-    }
+  public void updateDirectionAndNormal(Vector3f f, Vector3f u, Vector3f s) {
+    updateDirectionAndNormal(horiz_angle, vert_angle, f, u, s);
+  }
 
-    private static final Vector3f tmp = new Vector3f();
-    private static final Vector3f tmp2 = new Vector3f();
+  private static final Vector3f tmp = new Vector3f();
+  private static final Vector3f tmp2 = new Vector3f();
 
-    private static void updateDirectionAndNormal(float hangle, float vangle, Vector3f f, Vector3f u,
-            Vector3f s) {
-        float radius = (float) Math.cos(vangle);
-        float dir_x = (float) Math.cos(hangle);
-        float dir_y = (float) Math.sin(hangle);
-        float dir_z = (float) Math.sin(vangle);
-        f.set(dir_x * radius, dir_y * radius, dir_z);
-        tmp.set(-dir_y, dir_x, 0);
-        f.cross(tmp, tmp2);
-        f.cross(tmp2, s);
-        s.normalize();
-        s.cross(f, u);
-        u.normalize();
-    }
+  private static void updateDirectionAndNormal(float hangle, float vangle, Vector3f f, Vector3f u, Vector3f s) {
+    float radius = (float) Math.cos(vangle);
+    float dir_x = (float) Math.cos(hangle);
+    float dir_y = (float) Math.sin(hangle);
+    float dir_z = (float) Math.sin(vangle);
+    f.set(dir_x * radius, dir_y * radius, dir_z);
+    tmp.set(-dir_y, dir_x, 0);
+    f.cross(tmp, tmp2);
+    f.cross(tmp2, s);
+    s.normalize();
+    s.cross(f, u);
+    u.normalize();
+  }
 
-    public void setTargetView(Matrix4f proj) {
-        doSetView(target_camera_x, target_camera_y, target_camera_z, target_horiz_angle, target_vert_angle, proj);
-    }
+  public void setTargetView(Matrix4f proj) {
+    doSetView(target_camera_x, target_camera_y, target_camera_z, target_horiz_angle, target_vert_angle, proj);
+  }
 
-    public void setView(int width, int height) {
-        this.width = width;
-        this.height = height;
-        proj.identity();
-        doSetView(camera_x, camera_y, camera_z, horiz_angle, vert_angle, proj);
-    }
+  public void setView(int width, int height) {
+    this.width = width;
+    this.height = height;
+    proj.identity();
+    doSetView(camera_x, camera_y, camera_z, horiz_angle, vert_angle, proj);
+  }
 
-    public void setView(Matrix4f proj, int width, int height) {
-        this.width = width;
-        this.height = height;
-        doSetView(camera_x, camera_y, camera_z, horiz_angle, vert_angle, proj);
-    }
+  public void setView(Matrix4f proj, int width, int height) {
+    this.width = width;
+    this.height = height;
+    doSetView(camera_x, camera_y, camera_z, horiz_angle, vert_angle, proj);
+  }
 
-    public Matrix4f getModelView() {
-        return modl;
-    }
+  public Matrix4f getModelView() {
+    return modl;
+  }
 
-    public Matrix4f getProjectionMatrix() {
-        return proj;
-    }
+  public Matrix4f getProjectionMatrix() {
+    return proj;
+  }
 
-    public Matrix4f getProjectionModelView() {
-        return proj_modl;
-    }
+  public Matrix4f getProjectionModelView() {
+    return proj_modl;
+  }
 
-    public FrustumIntersection getFrustum() {
-        return frustum;
-    }
+  public FrustumIntersection getFrustum() {
+    return frustum;
+  }
 
-    private void doSetView(float cx, float cy, float cz, float hangle, float vangle, Matrix4f proj) {
-        updateDirectionAndNormal(hangle, vangle, f, u, s);
-        // Eye position: (cx, cy, cz)
-        // Center position: (cx + f.x, cy + f.y, cz + f.z) - looking along the forward vector
-        // Up vector: (u.x, u.y, u.z) - the calculated up direction
-        modl.identity().lookAt(cx, cy, cz,
-                cx + f.x, cy + f.y, cz + f.z,
-                u.x, u.y, u.z);
+  private void doSetView(float cx, float cy, float cz, float hangle, float vangle, Matrix4f proj) {
+    updateDirectionAndNormal(hangle, vangle, f, u, s);
+    // Eye position: (cx, cy, cz)
+    // Center position: (cx + f.x, cy + f.y, cz + f.z) - looking along the forward vector
+    // Up vector: (u.x, u.y, u.z) - the calculated up direction
+    modl.identity().lookAt(cx, cy, cz, cx + f.x, cy + f.y, cz + f.z, u.x, u.y, u.z);
 
-        this.proj.set(proj);
-        proj.mul(modl, proj_modl);
-        frustum.set(proj_modl);
-    }
+    this.proj.set(proj);
+    proj.mul(modl, proj_modl);
+    frustum.set(proj_modl);
+  }
 
-    public int getWidth() {
-        return width;
-    }
+  public int getWidth() {
+    return width;
+  }
 
-    public int getHeight() {
-        return height;
-    }
+  public int getHeight() {
+    return height;
+  }
 }

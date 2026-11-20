@@ -3,62 +3,61 @@ package com.oddlabs.tt.input;
 import org.jspecify.annotations.Nullable;
 
 public interface InputProvider<C> extends AutoCloseable {
-    // Keyboard
-    void pollKeyboard();
+  // Keyboard
+  void pollKeyboard();
 
-    boolean nextKeyboardEvent();
+  boolean nextKeyboardEvent();
 
-    int getEventKey();
+  int getEventKey();
 
-    /**
-     * {@return true if there is a key event and the key is down}
-     */
-    boolean getEventKeyState();
+  /// {@return true if there is a key event and the key is down}
+  boolean getEventKeyState();
 
-    int getEventKeyMods();
+  int getEventKeyMods();
 
-    int getEventCodepoint();
+  int getEventCodepoint();
 
-    boolean isRepeatEvent();
+  boolean isRepeatEvent();
 
-    boolean isKeyDown(int keyCode);
+  boolean isKeyDown(int keyCode);
 
-    // Mouse
-    void pollMouse();
+  // Mouse
+  void pollMouse();
 
-    boolean nextMouseEvent();
+  boolean nextMouseEvent();
 
-    int getEventButton();
+  int getEventButton();
 
-    boolean getEventButtonState();
+  boolean getEventButtonState();
 
-    int getEventDWheel();
+  int getEventDWheel();
 
-    int getEventDWheelX();
+  int getEventDWheelX();
 
-    int getEventX();
+  int getEventX();
 
-    int getEventY(); // Note: Coordinate system (Bottom-Left vs Top-Left) depends on implementation.
-    // The engine currently expects Bottom-Left.
+  int getEventY(); // Note: Coordinate system (Bottom-Left vs Top-Left) depends on implementation.
 
-    // Mouse State
-    int getMouseX();
+  // The engine currently expects Bottom-Left.
 
-    int getMouseY();
+  // Mouse State
+  int getMouseX();
 
-    boolean isButtonDown(int button);
+  int getMouseY();
 
-    void setCursorPosition(int x, int y);
+  boolean isButtonDown(int button);
 
-    void setGrabbed(boolean grabbed);
+  void setCursorPosition(int x, int y);
 
-    boolean isGrabbed();
+  void setGrabbed(boolean grabbed);
 
-    // Cursor
-    void setNativeCursor(@Nullable C cursor);
+  boolean isGrabbed();
 
-    void setCursorVisible(boolean visible);
+  // Cursor
+  void setNativeCursor(@Nullable C cursor);
 
-    @Override
-    void close();
+  void setCursorVisible(boolean visible);
+
+  @Override
+  void close();
 }

@@ -4,43 +4,41 @@ import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Filter that collects open landscape coordinates for target discovery.
- */
+/// Filter that collects open landscape coordinates for target discovery.
 final class FindTargetsFilter implements ScanFilter {
 
-    private final int max_radius;
-    private final @Nullable Target[] result;
-    private final boolean grid_targets_only;
-    private int index;
+  private final int max_radius;
+  private final @Nullable Target[] result;
+  private final boolean grid_targets_only;
+  private int index;
 
-    FindTargetsFilter(int num_targets, int max_radius, boolean grid_targets_only) {
-        result = new Target[num_targets];
-        this.max_radius = max_radius;
-        this.grid_targets_only = grid_targets_only;
-        index = 0;
-    }
+  FindTargetsFilter(int num_targets, int max_radius, boolean grid_targets_only) {
+    result = new Target[num_targets];
+    this.max_radius = max_radius;
+    this.grid_targets_only = grid_targets_only;
+    index = 0;
+  }
 
-    @Override
-    public int getMinRadius() {
-        return 0;
-    }
+  @Override
+  public int getMinRadius() {
+    return 0;
+  }
 
-    @Override
-    public int getMaxRadius() {
-        return max_radius;
-    }
+  @Override
+  public int getMaxRadius() {
+    return max_radius;
+  }
 
-    @Override
-    public boolean filter(int grid_x, int grid_y, @Nullable Occupant occupant) {
-        if ((!grid_targets_only || ((grid_x + grid_y) & 1) == 0) && occupant == null) {
-            result[index] = new LandscapeTarget(grid_x, grid_y);
-            index++;
-        }
-        return index == result.length;
+  @Override
+  public boolean filter(int grid_x, int grid_y, @Nullable Occupant occupant) {
+    if ((!grid_targets_only || ((grid_x + grid_y) & 1) == 0) && occupant == null) {
+      result[index] = new LandscapeTarget(grid_x, grid_y);
+      index++;
     }
+    return index == result.length;
+  }
 
-    public @Nullable Target[] getTargets() {
-        return result;
-    }
+  public @Nullable Target[] getTargets() {
+    return result;
+  }
 }

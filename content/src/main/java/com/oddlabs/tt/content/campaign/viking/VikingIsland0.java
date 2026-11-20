@@ -1,24 +1,24 @@
 package com.oddlabs.tt.content.campaign.viking;
 
+import com.oddlabs.tt.ai.AI;
+import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.content.campaign.Campaign;
 import com.oddlabs.tt.content.campaign.CampaignDialogForm;
 import com.oddlabs.tt.content.campaign.CampaignState;
 import com.oddlabs.tt.content.campaign.InGameCampaignDialogForm;
 import com.oddlabs.tt.content.campaign.Island;
-import com.oddlabs.tt.simulation.model.Race;
-
-import com.oddlabs.tt.simulation.model.Difficulty;
-
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.DeployType;
+import com.oddlabs.tt.simulation.model.Difficulty;
+import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.WeaponTier;
-import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.AIDifficulty;
-import com.oddlabs.tt.ai.AI;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.SlotType;
@@ -26,146 +26,152 @@ import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.PlayerEleminatedTrigger;
 import com.oddlabs.tt.simulation.trigger.SupplyGatheredTrigger;
-import com.oddlabs.tt.client.trigger.VictoryTrigger;
-import com.oddlabs.tt.base.util.Utils;
-
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
-/** Campaign level setup for Viking Island 0. */
+/// Campaign level setup for Viking Island 0.
 final class VikingIsland0 extends Island {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland0.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland0.class.getName());
 
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
-    }
+  private static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
 
-    VikingIsland0(Campaign campaign) {
-        super(campaign);
-    }
+  VikingIsland0(Campaign campaign) {
+    super(campaign);
+  }
 
-    @Override
-    public void init(GUIRoot gui_root) {
-        String[] ai_names = IntStream.range(0, 6)
-                .mapToObj(i -> i18n("name" + i))
-                .toArray(String[]::new);
-        // gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
-        GameNetwork game_network = startNewGame(gui_root, 256, Terrain.NATIVE, .5f, 1f, .1f,
-                45363, 0, VikingCampaign.MAX_UNITS, ai_names);
-        game_network.getClient().getServerInterface().setPlayerSlot(0,
-                SlotType.HUMAN,
-                Race.VIKINGS,
+  @Override
+  public void init(GUIRoot gui_root) {
+    String[] ai_names = IntStream.range(0, 6).mapToObj(i -> i18n("name" + i)).toArray(String[]::new);
+    // gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
+    GameNetwork game_network =
+        startNewGame(gui_root, 256, Terrain.NATIVE, .5f, 1f, .1f, 45363, 0, VikingCampaign.MAX_UNITS, ai_names);
+    game_network
+        .getClient()
+        .getServerInterface()
+        .setPlayerSlot(0, SlotType.HUMAN, Race.VIKINGS, 0, true, AIDifficulty.NONE);
+    game_network
+        .getClient()
+        .setUnitInfo(
+            0,
+            new UnitInfo(
+                false,
+                false,
                 0,
-                true,
-                AIDifficulty.NONE);
-        game_network.getClient().setUnitInfo(0,
-                new UnitInfo(false, false, 0, false,
-                        getCampaign().getState().getNumPeons(),
-                        getCampaign().getState().getNumRockWarriors(),
-                        getCampaign().getState().getNumIronWarriors(),
-                        getCampaign().getState().getNumRubberWarriors()));
-        game_network.getClient().getServerInterface().setPlayerSlot(1,
-                SlotType.AI,
-                Race.VIKINGS,
-                PlayerInfo.TEAM_NEUTRAL,
-                true,
-                AIDifficulty.NEUTRAL_CAMPAIGN);
-        game_network.getClient().setUnitInfo(1,
-                new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
-        game_network.getClient().getServerInterface().setPlayerSlot(2,
-                SlotType.AI,
-                Race.NATIVES,
-                1,
-                true,
-                AIDifficulty.PASSIVE_CAMPAIGN);
-        game_network.getClient().setUnitInfo(2,
-                new UnitInfo(true, true, 0, false, 0, 10, 5, 0));
-        game_network.getClient().getServerInterface().startServer();
-    }
+                false,
+                getCampaign().getState().getNumPeons(),
+                getCampaign().getState().getNumRockWarriors(),
+                getCampaign().getState().getNumIronWarriors(),
+                getCampaign().getState().getNumRubberWarriors()));
+    game_network
+        .getClient()
+        .getServerInterface()
+        .setPlayerSlot(1, SlotType.AI, Race.VIKINGS, PlayerInfo.TEAM_NEUTRAL, true, AIDifficulty.NEUTRAL_CAMPAIGN);
+    game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
+    game_network
+        .getClient()
+        .getServerInterface()
+        .setPlayerSlot(2, SlotType.AI, Race.NATIVES, 1, true, AIDifficulty.PASSIVE_CAMPAIGN);
+    game_network.getClient().setUnitInfo(2, new UnitInfo(true, true, 0, false, 0, 10, 5, 0));
+    game_network.getClient().getServerInterface().startServer();
+  }
 
-    @Override
-    protected void start() {
-        final Player local_player = getViewer().getLocalPlayer();
-        final Player chieftain = getViewer().getWorld().getPlayers().get(1);
-        final Player enemy = getViewer().getWorld().getPlayers().get(2);
+  @Override
+  protected void start() {
+    final Player local_player = getViewer().getLocalPlayer();
+    final Player chieftain = getViewer().getWorld().getPlayers().get(1);
+    final Player enemy = getViewer().getWorld().getPlayers().get(2);
 
-        // Introduction
-        new GameStartedTrigger(getViewer().getWorld(),
-                () -> {
-                    CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header0"),
-                            i18n("dialog0"),
-                            getCampaign().getIcons().getFaces()[1],
-                            Origin.AT_START);
-                    addModalForm(dialog);
+    // Introduction
+    new GameStartedTrigger(
+        getViewer().getWorld(),
+        () -> {
+          CampaignDialogForm dialog =
+              new InGameCampaignDialogForm(
+                  getViewer(),
+                  i18n("header0"),
+                  i18n("dialog0"),
+                  getCampaign().getIcons().getFaces()[1],
+                  Origin.AT_START);
+          addModalForm(dialog);
+        });
+
+    // Disable Chieftain
+    getViewer().getLocalPlayer().enableChieftains(false);
+
+    // Winning condition
+    new VictoryTrigger(
+        getViewer(),
+        () -> {
+          CampaignDialogForm dialog =
+              new InGameCampaignDialogForm(
+                  getViewer(),
+                  i18n("header1"),
+                  i18n("dialog1"),
+                  getCampaign().getIcons().getFaces()[0],
+                  Origin.AT_START,
+                  () -> {
+                    // Winner prize
+                    getCampaign().getState().setIslandState(0, CampaignState.ISLAND_COMPLETED);
+                    getCampaign().getState().setIslandState(1, CampaignState.ISLAND_AVAILABLE);
+                    getCampaign().getState().setIslandState(3, CampaignState.ISLAND_AVAILABLE);
+                    getCampaign().victory(getViewer());
+                  });
+          addModalForm(dialog);
+        });
+
+    // Place prisoners
+    placePrisoners(chieftain, enemy, 0, 0, 0, 0, true);
+
+    // Fill native armory with units and weapons
+    final int num_units = 10;
+    Building enemyArmory = enemy.getArmory().orElseThrow();
+    if (enemyArmory.getWeaponSupplyCount(WeaponTier.IRON) < num_units * 3)
+      enemyArmory.getWeaponContainer(WeaponTier.IRON).orElseThrow().increaseSupply(num_units * 3);
+    if (enemyArmory.getUnitContainer().orElseThrow().getNumSupplies() < num_units * 3)
+      enemyArmory.getUnitContainer().orElseThrow().increaseSupply(num_units * 3);
+
+    // Deploy and attack mid-game
+    Runnable runnable =
+        () -> {
+          Building armory = local_player.getArmory().orElse(null);
+          if (armory != null && !armory.isDead()) {
+            enemy
+                .getArmory()
+                .filter(a -> !a.isDead())
+                .ifPresent(a -> {
+                  enemy.deployUnits(a, DeployType.IRON_WARRIOR, num_units);
+                  AI.attackLandscape(enemy, armory, num_units);
                 });
-
-        // Disable Chieftain
-        getViewer().getLocalPlayer().enableChieftains(false);
-
-        // Winning condition
-        new VictoryTrigger(getViewer(),
-                () -> {
-                    CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header1"),
-                            i18n("dialog1"),
-                            getCampaign().getIcons().getFaces()[0],
-                            Origin.AT_START,
-                            () -> {
-                                // Winner prize
-                                getCampaign().getState().setIslandState(0, CampaignState.ISLAND_COMPLETED);
-                                getCampaign().getState().setIslandState(1, CampaignState.ISLAND_AVAILABLE);
-                                getCampaign().getState().setIslandState(3, CampaignState.ISLAND_AVAILABLE);
-                                getCampaign().victory(getViewer());
-                            });
-                    addModalForm(dialog);
-                });
-
-        // Place prisoners
-        placePrisoners(chieftain, enemy, 0, 0, 0, 0, true);
-
-        // Fill native armory with units and weapons
-        final int num_units = 10;
-        Building enemyArmory = enemy.getArmory().orElseThrow();
-        if (enemyArmory.getWeaponSupplyCount(WeaponTier.IRON) < num_units * 3)
-            enemyArmory.getWeaponContainer(WeaponTier.IRON).orElseThrow().increaseSupply(num_units * 3);
-        if (enemyArmory.getUnitContainer().orElseThrow().getNumSupplies() < num_units * 3)
-            enemyArmory.getUnitContainer().orElseThrow().increaseSupply(num_units * 3);
-
-        // Deploy and attack mid-game
-        Runnable runnable = () -> {
-            Building armory = local_player.getArmory().orElse(null);
-            if (armory != null && !armory.isDead()) {
-                enemy.getArmory().filter(a -> !a.isDead()).ifPresent(a -> {
-                    enemy.deployUnits(a, DeployType.IRON_WARRIOR, num_units);
-                    AI.attackLandscape(enemy, armory, num_units);
-                });
-            }
+          }
         };
-        if (getCampaign().getState().getDifficulty() == Difficulty.NORMAL) {
-            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.WOOD, 30);
-            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.ROCK, 30);
-            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.IRON, 30);
-        } else if (getCampaign().getState().getDifficulty() == Difficulty.HARD) {
-            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.WOOD, 20);
-            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.ROCK, 15);
-            new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.IRON, 15);
-        }
-
-        // Defeat if neutrals eliminated
-        new PlayerEleminatedTrigger(() -> getCampaign().defeated(getViewer(), i18n("game_over")), chieftain);
+    if (getCampaign().getState().getDifficulty() == Difficulty.NORMAL) {
+      new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.WOOD, 30);
+      new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.ROCK, 30);
+      new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.IRON, 30);
+    } else if (getCampaign().getState().getDifficulty() == Difficulty.HARD) {
+      new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.WOOD, 20);
+      new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.ROCK, 15);
+      new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, SupplyType.IRON, 15);
     }
 
-    @Override
-    public CharSequence getHeader() {
-        return i18n("header");
-    }
+    // Defeat if neutrals eliminated
+    new PlayerEleminatedTrigger(() -> getCampaign().defeated(getViewer(), i18n("game_over")), chieftain);
+  }
 
-    @Override
-    public CharSequence getDescription() {
-        return i18n("description");
-    }
+  @Override
+  public CharSequence getHeader() {
+    return i18n("header");
+  }
 
-    @Override
-    public CharSequence getCurrentObjective() {
-        return i18n("objective");
-    }
+  @Override
+  public CharSequence getDescription() {
+    return i18n("description");
+  }
+
+  @Override
+  public CharSequence getCurrentObjective() {
+    return i18n("objective");
+  }
 }

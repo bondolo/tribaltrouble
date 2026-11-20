@@ -1,14 +1,9 @@
 package com.oddlabs.tt.client.render;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
-import java.util.Queue;
-import java.util.SequencedCollection;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.viewer.Selection;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.Lightning;
@@ -19,19 +14,18 @@ import com.oddlabs.tt.engine.procedural.GeneratorRing;
 import com.oddlabs.tt.engine.render.Accessory;
 import com.oddlabs.tt.engine.render.AttachedRenderState;
 import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.DecalRenderer;
 import com.oddlabs.tt.engine.render.ElementSceneContext;
 import com.oddlabs.tt.engine.render.ModelVisitor;
-import com.oddlabs.tt.engine.render.WaveAnimation;
-import com.oddlabs.tt.engine.render.WhiteModelVisitor;
-import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.RenderTools;
 import com.oddlabs.tt.engine.render.SceneContext;
 import com.oddlabs.tt.engine.render.ShadowListKey;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.StaticAccessory;
-import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.engine.render.WaveAnimation;
+import com.oddlabs.tt.engine.render.WhiteModelVisitor;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.simulation.model.Element;
 import com.oddlabs.tt.simulation.model.Model;
@@ -47,639 +41,663 @@ import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.util.Color;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.Queue;
+import java.util.SequencedCollection;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Manages the rendering state and visit logic for world entities and their accessories.
- */
+/// Manages the rendering state and visit logic for world entities and their accessories.
 public final class RenderState implements SceneContext {
-    private final Queue<Emitter<?>> emitter_queue = new ArrayDeque<>();
-    private final Queue<Lightning> lightning_queue = new ArrayDeque<>();
-    private final Queue<SonicBlastEffect> sonic_blast_queue = new ArrayDeque<>();
-    private final RenderStateCache<ElementSceneContext<Model>> render_state_cache;
-    private final RenderStateCache<AttachedRenderState> attached_state_cache;
-    private final RenderQueues render_queues;
-    private final TargetRespondRenderer target_respond_renderer;
-    private final SelectableShadowRenderer default_shadow_renderer;
-    private final CrackDecalRenderer crack_shadow_renderer;
-    private final Picker picker;
-    private final @Nullable Selection selection;
-    private final Player local_player;
-    private final Matrix4f emitterTransform = new Matrix4f();
-    private final AudioImplementation audio;
-    private final List<VisualModel> activeVisualModels = new ArrayList<>();
-    private final Deque<VisualModel> detachedVisualModels = new ArrayDeque<>();
+  private final Queue<Emitter<?>> emitter_queue = new ArrayDeque<>();
+  private final Queue<Lightning> lightning_queue = new ArrayDeque<>();
+  private final Queue<SonicBlastEffect> sonic_blast_queue = new ArrayDeque<>();
+  private final RenderStateCache<ElementSceneContext<Model>> render_state_cache;
+  private final RenderStateCache<AttachedRenderState> attached_state_cache;
+  private final RenderQueues render_queues;
+  private final TargetRespondRenderer target_respond_renderer;
+  private final SelectableShadowRenderer default_shadow_renderer;
+  private final CrackDecalRenderer crack_shadow_renderer;
+  private final Picker picker;
+  private final @Nullable Selection selection;
+  private final Player local_player;
+  private final Matrix4f emitterTransform = new Matrix4f();
+  private final AudioImplementation audio;
+  private final List<VisualModel> activeVisualModels = new ArrayList<>();
+  private final Deque<VisualModel> detachedVisualModels = new ArrayDeque<>();
 
-    private boolean picking;
-    private boolean visible_override;
-    private @Nullable CameraState camera;
+  private boolean picking;
+  private boolean visible_override;
+  private @Nullable CameraState camera;
 
-    public RenderState(Player local_player,
-            RenderQueues render_queues, Picker picker, @Nullable Selection selection,
-            AudioImplementation audio) {
-        this.local_player = local_player;
-        this.selection = selection;
-        this.picker = picker;
-        this.render_queues = render_queues;
-        this.audio = audio;
-        var respondDesc = new GeneratorRing(DecalRenderer.HALO_LUT_RESOLUTION,
-                new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
-        var respondKey = render_queues.registerShadowRenderer(respondDesc, new TargetRespondRenderer(respondDesc));
-        this.target_respond_renderer = (TargetRespondRenderer) render_queues.getShadowRenderer(respondKey);
+  public RenderState(
+      Player local_player,
+      RenderQueues render_queues,
+      Picker picker,
+      @Nullable Selection selection,
+      AudioImplementation audio) {
+    this.local_player = local_player;
+    this.selection = selection;
+    this.picker = picker;
+    this.render_queues = render_queues;
+    this.audio = audio;
+    var respondDesc =
+        new GeneratorRing(
+            DecalRenderer.HALO_LUT_RESOLUTION, new float[][] {{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
+    var respondKey = render_queues.registerShadowRenderer(respondDesc, new TargetRespondRenderer(respondDesc));
+    this.target_respond_renderer = (TargetRespondRenderer) render_queues.getShadowRenderer(respondKey);
 
-        var defaultShadowKey = render_queues.registerShadowRenderer(AssetRegistry.DEFAULT_SHADOW_DESC,
-                new SelectableShadowRenderer(AssetRegistry.DEFAULT_SHADOW_DESC));
-        this.default_shadow_renderer = (SelectableShadowRenderer) render_queues.getShadowRenderer(defaultShadowKey);
+    var defaultShadowKey =
+        render_queues.registerShadowRenderer(
+            AssetRegistry.DEFAULT_SHADOW_DESC, new SelectableShadowRenderer(AssetRegistry.DEFAULT_SHADOW_DESC));
+    this.default_shadow_renderer = (SelectableShadowRenderer) render_queues.getShadowRenderer(defaultShadowKey);
 
-        var crackKey = render_queues.registerShadowRenderer(AssetRegistry.CRACK_DECAL_DESC,
-                new CrackDecalRenderer(AssetRegistry.CRACK_DECAL_DESC));
-        this.crack_shadow_renderer = (CrackDecalRenderer) render_queues.getShadowRenderer(crackKey);
-        this.render_state_cache = new RenderStateCache<>(() -> new ElementSceneContext<>(RenderState.this));
-        this.attached_state_cache = new RenderStateCache<>(AttachedRenderState::new);
+    var crackKey =
+        render_queues.registerShadowRenderer(
+            AssetRegistry.CRACK_DECAL_DESC, new CrackDecalRenderer(AssetRegistry.CRACK_DECAL_DESC));
+    this.crack_shadow_renderer = (CrackDecalRenderer) render_queues.getShadowRenderer(crackKey);
+    this.render_state_cache = new RenderStateCache<>(() -> new ElementSceneContext<>(RenderState.this));
+    this.attached_state_cache = new RenderStateCache<>(AttachedRenderState::new);
+  }
+
+  public void visit(Element<?> element) {
+    if (!element.isRegistered() || element.isFinished()) {
+      if (picking) {
+        return;
+      }
+      element.remove();
+      if (element instanceof Animated animated) {
+        local_player.getWorld().getAnimationManagerGameTime().removeAnimation(animated);
+      }
+      if (element instanceof Model model) {
+        detachOrCloseVisualModel(model);
+      }
+      return;
     }
+    if (element instanceof SceneryModel scenery) {
+      visitScenery(scenery);
+    } else if (element instanceof Model model) {
+      getOrCreateVisualModel(model).visit(this);
+    } else {
+      throw new UnsupportedOperationException("element has no rendering defined " + element);
+    }
+  }
 
-    public void visit(Element<?> element) {
-        if (!element.isRegistered() || element.isFinished()) {
-            if (picking) {
-                return;
+  private void visitScenery(final SceneryModel scenery) {
+    if (scenery instanceof Plants plants) {
+      visitPlants(plants);
+    } else {
+      visitSceneryModel(scenery);
+    }
+  }
+
+  Player getLocalPlayer() {
+    return local_player;
+  }
+
+  public SelectableShadowRenderer getDefaultShadowRenderer() {
+    return default_shadow_renderer;
+  }
+
+  @Override
+  public boolean isResponding(Model target) {
+    return picker.getRespondManager().isResponding(target);
+  }
+
+  @Override
+  public RenderQueues getRenderQueues() {
+    return render_queues;
+  }
+
+  public void setVisibleOverride(boolean override) {
+    this.visible_override = override;
+  }
+
+  private float lastFrameTime = -1f;
+  private final WaveAnimation plantWaveAnimation = new WaveAnimation(PLANT_WAVE_SCALE);
+
+  public void setup(boolean picking, CameraState camera_state) {
+    setup(picking, camera_state, -1f);
+  }
+
+  public void setup(boolean picking, CameraState camera_state, float currentTime) {
+    this.picking = picking;
+    this.camera = camera_state;
+    render_state_cache.clear();
+    attached_state_cache.clear();
+    // Clear queues for new frame
+    emitter_queue.clear();
+    lightning_queue.clear();
+    sonic_blast_queue.clear();
+
+    if (!picking && currentTime >= 0f && lastFrameTime >= 0f) {
+      float dt = Math.clamp(currentTime - lastFrameTime, 0.001f, 0.1f);
+      float gameSpeedFactor = local_player.getWorld().getSecondsPerTick() / AnimationManager.ANIMATION_SECONDS_PER_TICK;
+      float gameDt = dt * gameSpeedFactor;
+      activeVisualModels.forEach(vm -> vm.update(gameDt));
+      detachedVisualModels.forEach(vm -> vm.update(gameDt));
+      detachedVisualModels.removeIf(vm -> {
+        if (vm.isExpired()) {
+          vm.close();
+          return true;
+        }
+        return false;
+      });
+    }
+    if (!picking && currentTime >= 0f) {
+      lastFrameTime = currentTime;
+      plantWaveAnimation.setTime(currentTime);
+    }
+    prepareTargetResponds();
+    prepareEffects();
+    prepareDetachedVisualEffects();
+  }
+
+  private void prepareEffects() {
+    if (picking) return;
+    collectEffects(activeVisualModels);
+    collectEffects(detachedVisualModels);
+  }
+
+  private void collectEffects(Iterable<VisualModel> models) {
+    for (VisualModel vm : models) {
+      switch (vm) {
+        case LightningCloudVisualModel lca -> lightning_queue.addAll(lca.getActiveLightnings());
+        case SonicBlastVisualModel sbv -> {
+          SonicBlastEffect effect = sbv.getEffect();
+          if (effect != null && !effect.isDead()) {
+            sonic_blast_queue.add(effect);
+          }
+        }
+        default -> {}
+      }
+    }
+  }
+
+  private void prepareDetachedVisualEffects() {
+    if (picking) return;
+    for (VisualModel vm : detachedVisualModels) {
+      Model model = vm.getModel();
+      ElementSceneContext<Model> parentState =
+          (ElementSceneContext<Model>) getCachedState(WhiteModelVisitor.getInstance(), model);
+      for (Accessory accessory : vm.getAccessories()) {
+        if (!accessory.isExpired()) {
+          if (accessory.isVisible(model, camera)) {
+            visitAccessory(accessory, parentState);
+          } else if (accessory instanceof EmitterAccessory ea) {
+            ea.addEmitters(emitter_queue);
+          }
+        }
+      }
+    }
+  }
+
+  private void prepareTargetResponds() {
+    if (picking) return;
+    var responds = picker.getTargetResponds();
+    responds.removeIf(LandscapeTargetRespond::isFinished);
+    for (LandscapeTargetRespond respond : responds) {
+      if (visible_override || camera.inNoDetailMode() || respond.getBounds().testFrustum(camera.getFrustum())) {
+        target_respond_renderer.addToTargetList(respond);
+      }
+    }
+  }
+
+  @Override
+  public @Nullable CameraState getCamera() {
+    return camera;
+  }
+
+  boolean overrideVisibility() {
+    return visible_override;
+  }
+
+  boolean isPicking() {
+    return picking;
+  }
+
+  private static final ModelVisitor<Selectable<?>> selectable_visitor = new SelectableVisitor<>();
+
+  private <M extends Model> ElementSceneContext<M> doGetCachedState() {
+    return (ElementSceneContext<M>) render_state_cache.get();
+  }
+
+  <M extends Model> ElementSceneContext<M> getCachedState(ModelVisitor<M> visitor, M model) {
+    ElementSceneContext<M> state = doGetCachedState();
+    state.setup(visitor, model);
+    return state;
+  }
+
+  <M extends Model> ElementSceneContext<M> getCachedState(ModelVisitor<M> visitor, M model, float dist_squared) {
+    ElementSceneContext<M> state = doGetCachedState();
+    state.setup(visitor, model, dist_squared);
+    return state;
+  }
+
+  private static boolean pickingInFrustum(
+      Target target, FrustumIntersection frustum, float z_offset, float selection_radius, float selection_height) {
+    float posX = target.getPositionX();
+    float posY = target.getPositionY();
+    return frustum.testAab(
+        posX - selection_radius,
+        posY - selection_radius,
+        z_offset,
+        posX + selection_radius,
+        posY + selection_radius,
+        z_offset + selection_height);
+  }
+
+  boolean isHovered(Selectable<?> selectable) {
+    return selectable == picker.getCurrentHovered();
+  }
+
+  boolean isSelected(Selectable<?> selectable) {
+    return selection != null && selection.getCurrentSelection().contains(selectable);
+  }
+
+  void visitSelectable(Selectable<?> selectable, float z_offset, float selection_radius, float selection_height) {
+    boolean in_view =
+        !picking
+            || (selectable.isEnabled()
+                && (visible_override
+                    || pickingInFrustum(
+                        selectable, camera.getFrustum(), z_offset, selection_radius, selection_height)));
+    if (in_view) {
+      if (picking) {
+        picker.addPick(selectable);
+        return;
+      }
+      Player owner = selectable.getOwnerNoCheck();
+      boolean isMapPoint =
+          camera != null
+              && camera.inNoDetailMode()
+              && (!local_player.isEnemy(owner)
+                  || (!owner.teamHasBuilding() && PeerHub.getFreeQuitTimeLeft(local_player.getWorld()) < 0f));
+      ElementSceneContext<Selectable<?>> state = getCachedState(selectable_visitor, selectable, z_offset);
+      if (isMapPoint) {
+        state.markDetailPoint();
+      } else {
+        state.addToRenderList();
+        if (selectable.isEnabled()) {
+          ShadowListKey shadowKey = AssetRegistry.getInstance().getSelectableShadow(selectable);
+          if (shadowKey != null) {
+            SelectableShadowRenderer shadow_renderer =
+                (SelectableShadowRenderer) render_queues.getShadowRenderer(shadowKey);
+            if (isHovered(selectable) || isSelected(selectable)) {
+              shadow_renderer.addToSelectionList(state);
+            } else if (selectable instanceof Unit && selectable.getShadowDiameter() > 0f) {
+              shadow_renderer.addToShadowList(state);
             }
-            element.remove();
-            if (element instanceof Animated animated) {
-                local_player.getWorld().getAnimationManagerGameTime().removeAnimation(animated);
-            }
-            if (element instanceof Model model) {
-                detachOrCloseVisualModel(model);
-            }
-            return;
+          }
         }
-        if (element instanceof SceneryModel scenery) {
-            visitScenery(scenery);
-        } else if (element instanceof Model model) {
-            getOrCreateVisualModel(model).visit(this);
-        } else {
-            throw new UnsupportedOperationException("element has no rendering defined " + element);
+        visitAccessories(selectable, state);
+      }
+    }
+  }
+
+  VisualModel getOrCreateVisualModel(Model model) {
+    VisualModel vm = (VisualModel) model.getClientModel();
+    if (vm == null) {
+      vm = VisualModelRegistry.getDefault().createVisualModel(model, audio);
+      model.setClientModel(vm);
+    }
+    if (!picking && !activeVisualModels.contains(vm)) {
+      activeVisualModels.add(vm);
+    }
+    return vm;
+  }
+
+  <M extends Model> void visitAccessories(M model, ElementSceneContext<M> parentState) {
+    VisualModel visualModel = getOrCreateVisualModel(model);
+
+    if (visualModel instanceof UnitVisualModel unitVisualModel) {
+      unitVisualModel.updateStunStars(local_player.getWorld());
+    }
+
+    SequencedCollection<Accessory> accessories = visualModel.getAccessories();
+    for (Accessory accessory : accessories) {
+      if (accessory.isVisible(model, camera)) {
+        visitAccessory(accessory, parentState);
+      }
+    }
+  }
+
+  private <M extends Model> void visitAccessory(Accessory accessory, ElementSceneContext<M> parentState) {
+    if (picking) return;
+
+    switch (accessory) {
+      case EmitterAccessory ea -> {
+        Emitter<?> emitter = ea.getEmitter();
+        if (emitter != null) {
+          updateEmitterWorldPosition(emitter, ea, parentState);
         }
+        ea.addEmitters(emitter_queue);
+      }
+      case StaticAccessory s -> {
+        AttachedRenderState state = attached_state_cache.get();
+        state.setup(parentState, s);
+        state.addToRenderList();
+      }
+      default -> {
+        AttachedRenderState state = attached_state_cache.get();
+        state.setup(parentState, accessory);
+        state.addToRenderList();
+      }
     }
+  }
 
-    private void visitScenery(final SceneryModel scenery) {
-        if (scenery instanceof Plants plants) {
-            visitPlants(plants);
-        } else {
-            visitSceneryModel(scenery);
-        }
+  private <M extends Model> void updateEmitterWorldPosition(
+      Emitter<?> emitter, Accessory accessory, ElementSceneContext<M> parentState) {
+    parentState.getTransform(emitterTransform);
+    float sx =
+        (float)
+            Math.sqrt(
+                emitterTransform.m00() * emitterTransform.m00()
+                    + emitterTransform.m01() * emitterTransform.m01()
+                    + emitterTransform.m02() * emitterTransform.m02());
+    float sy =
+        (float)
+            Math.sqrt(
+                emitterTransform.m10() * emitterTransform.m10()
+                    + emitterTransform.m11() * emitterTransform.m11()
+                    + emitterTransform.m12() * emitterTransform.m12());
+    float sz =
+        (float)
+            Math.sqrt(
+                emitterTransform.m20() * emitterTransform.m20()
+                    + emitterTransform.m21() * emitterTransform.m21()
+                    + emitterTransform.m22() * emitterTransform.m22());
+    if (sx > 0f && sy > 0f && sz > 0f) {
+      emitter.scale(sx, sy, sz);
     }
+    accessory.getRelativeTransform(emitterTransform, parentState.model);
+    emitter.getPosition().set(emitterTransform.m30(), emitterTransform.m31(), emitterTransform.m32());
+  }
 
-    Player getLocalPlayer() {
-        return local_player;
-    }
+  @Override
+  public float getInterpolationAlpha() {
+    return local_player.getWorld().getInterpolationAlpha();
+  }
 
-    public SelectableShadowRenderer getDefaultShadowRenderer() {
-        return default_shadow_renderer;
-    }
+  float getVisuallyCorrectHeight(float x_f, float y_f) {
+    return local_player.getWorld().getHeightMap().computeInterpolatedHeight(0, x_f, y_f);
+  }
 
-    @Override
-    public boolean isResponding(Model target) {
-        return picker.getRespondManager().isResponding(target);
-    }
-
-    @Override
-    public RenderQueues getRenderQueues() {
-        return render_queues;
-    }
-
-
-    public void setVisibleOverride(boolean override) {
-        this.visible_override = override;
-    }
-
-    private float lastFrameTime = -1f;
-    private final WaveAnimation plantWaveAnimation = new WaveAnimation(PLANT_WAVE_SCALE);
-
-    public void setup(boolean picking, CameraState camera_state) {
-        setup(picking, camera_state, -1f);
-    }
-
-    public void setup(boolean picking, CameraState camera_state, float currentTime) {
-        this.picking = picking;
-        this.camera = camera_state;
-        render_state_cache.clear();
-        attached_state_cache.clear();
-        // Clear queues for new frame
-        emitter_queue.clear();
-        lightning_queue.clear();
-        sonic_blast_queue.clear();
-
-        if (!picking && currentTime >= 0f && lastFrameTime >= 0f) {
-            float dt = Math.clamp(currentTime - lastFrameTime, 0.001f, 0.1f);
-            float gameSpeedFactor = local_player.getWorld().getSecondsPerTick()
-                    / AnimationManager.ANIMATION_SECONDS_PER_TICK;
-            float gameDt = dt * gameSpeedFactor;
-            activeVisualModels.forEach(vm -> vm.update(gameDt));
-            detachedVisualModels.forEach(vm -> vm.update(gameDt));
-            detachedVisualModels.removeIf(vm -> {
-                if (vm.isExpired()) {
-                    vm.close();
-                    return true;
-                }
-                return false;
-            });
-        }
-        if (!picking && currentTime >= 0f) {
-            lastFrameTime = currentTime;
-            plantWaveAnimation.setTime(currentTime);
-        }
-        prepareTargetResponds();
-        prepareEffects();
-        prepareDetachedVisualEffects();
-    }
-
-    private void prepareEffects() {
-        if (picking) return;
-        collectEffects(activeVisualModels);
-        collectEffects(detachedVisualModels);
-    }
-
-    private void collectEffects(Iterable<VisualModel> models) {
-        for (VisualModel vm : models) {
-            switch (vm) {
-                case LightningCloudVisualModel lca -> lightning_queue.addAll(lca.getActiveLightnings());
-                case SonicBlastVisualModel sbv -> {
-                    SonicBlastEffect effect = sbv.getEffect();
-                    if (effect != null && !effect.isDead()) {
-                        sonic_blast_queue.add(effect);
-                    }
-                }
-                default -> {
-                }
-            }
-        }
-    }
-
-    private void prepareDetachedVisualEffects() {
-        if (picking) return;
-        for (VisualModel vm : detachedVisualModels) {
-            Model model = vm.getModel();
-            ElementSceneContext<Model> parentState = (ElementSceneContext<Model>) getCachedState(
-                    WhiteModelVisitor.getInstance(), model);
-            for (Accessory accessory : vm.getAccessories()) {
-                if (!accessory.isExpired()) {
-                    if (accessory.isVisible(model, camera)) {
-                        visitAccessory(accessory, parentState);
-                    } else if (accessory instanceof EmitterAccessory ea) {
-                        ea.addEmitters(emitter_queue);
-                    }
-                }
-            }
-        }
-    }
-
-    private void prepareTargetResponds() {
-        if (picking) return;
-        var responds = picker.getTargetResponds();
-        responds.removeIf(LandscapeTargetRespond::isFinished);
-        for (LandscapeTargetRespond respond : responds) {
-            if (visible_override || camera.inNoDetailMode()
-                    || respond.getBounds().testFrustum(camera.getFrustum())) {
-                target_respond_renderer.addToTargetList(respond);
-            }
-        }
-    }
-
-    @Override
-    public @Nullable CameraState getCamera() {
-        return camera;
-    }
-
-    boolean overrideVisibility() {
-        return visible_override;
-    }
-
-    boolean isPicking() {
-        return picking;
-    }
-
-    private static final ModelVisitor<Selectable<?>> selectable_visitor = new SelectableVisitor<>();
-
-    private <M extends Model> ElementSceneContext<M> doGetCachedState() {
-        return (ElementSceneContext<M>) render_state_cache.get();
-    }
-
-    <M extends Model> ElementSceneContext<M> getCachedState(ModelVisitor<M> visitor,
-            M model) {
-        ElementSceneContext<M> state = doGetCachedState();
-        state.setup(visitor, model);
-        return state;
-    }
-
-    <M extends Model> ElementSceneContext<M> getCachedState(ModelVisitor<M> visitor, M model,
-            float dist_squared) {
-        ElementSceneContext<M> state = doGetCachedState();
-        state.setup(visitor, model, dist_squared);
-        return state;
-    }
-
-    private static boolean pickingInFrustum(Target target, FrustumIntersection frustum, float z_offset,
-            float selection_radius, float selection_height) {
-        float posX = target.getPositionX();
-        float posY = target.getPositionY();
-        return frustum.testAab(
-                posX - selection_radius, posY - selection_radius, z_offset,
-                posX + selection_radius, posY + selection_radius, z_offset + selection_height
-        );
-    }
-
-    boolean isHovered(Selectable<?> selectable) {
-        return selectable == picker.getCurrentHovered();
-    }
-
-    boolean isSelected(Selectable<?> selectable) {
-        return selection != null && selection.getCurrentSelection().contains(selectable);
-    }
-
-    void visitSelectable(Selectable<?> selectable, float z_offset, float selection_radius, float selection_height) {
-        boolean in_view = !picking || (selectable.isEnabled() && (visible_override || pickingInFrustum(selectable,
-                camera.getFrustum(), z_offset, selection_radius, selection_height)));
-        if (in_view) {
-            if (picking) {
-                picker.addPick(selectable);
-                return;
-            }
-            Player owner = selectable.getOwnerNoCheck();
-            boolean isMapPoint = camera != null && camera.inNoDetailMode() && (!local_player.isEnemy(owner) || (!owner
-                    .teamHasBuilding() && PeerHub
-                            .getFreeQuitTimeLeft(local_player.getWorld()) < 0f));
-            ElementSceneContext<Selectable<?>> state = getCachedState(selectable_visitor, selectable, z_offset);
-            if (isMapPoint) {
-                state.markDetailPoint();
-            } else {
-                state.addToRenderList();
-                if (selectable.isEnabled()) {
-                    ShadowListKey shadowKey = AssetRegistry.getInstance().getSelectableShadow(selectable);
-                    if (shadowKey != null) {
-                        SelectableShadowRenderer shadow_renderer = (SelectableShadowRenderer) render_queues
-                                .getShadowRenderer(shadowKey);
-                        if (isHovered(selectable) || isSelected(selectable)) {
-                            shadow_renderer.addToSelectionList(state);
-                        } else if (selectable instanceof Unit && selectable.getShadowDiameter() > 0f) {
-                            shadow_renderer.addToShadowList(state);
-                        }
-                    }
-                }
-                visitAccessories(selectable, state);
-            }
-        }
-    }
-
-    VisualModel getOrCreateVisualModel(Model model) {
-        VisualModel vm = (VisualModel) model.getClientModel();
-        if (vm == null) {
-            vm = VisualModelRegistry.getDefault().createVisualModel(model, audio);
-            model.setClientModel(vm);
-        }
-        if (!picking && !activeVisualModels.contains(vm)) {
-            activeVisualModels.add(vm);
-        }
-        return vm;
-    }
-
-    <M extends Model> void visitAccessories(M model, ElementSceneContext<M> parentState) {
-        VisualModel visualModel = getOrCreateVisualModel(model);
-
-        if (visualModel instanceof UnitVisualModel unitVisualModel) {
-            unitVisualModel.updateStunStars(local_player.getWorld());
-        }
-
-        SequencedCollection<Accessory> accessories = visualModel.getAccessories();
-        for (Accessory accessory : accessories) {
-            if (accessory.isVisible(model, camera)) {
-                visitAccessory(accessory, parentState);
-            }
-        }
-    }
-
-    private <M extends Model> void visitAccessory(Accessory accessory,
-            ElementSceneContext<M> parentState) {
-        if (picking) return;
-
-        switch (accessory) {
-            case EmitterAccessory ea -> {
-                Emitter<?> emitter = ea.getEmitter();
-                if (emitter != null) {
-                    updateEmitterWorldPosition(emitter, ea, parentState);
-                }
-                ea.addEmitters(emitter_queue);
-            }
-            case StaticAccessory s -> {
-                AttachedRenderState state = attached_state_cache.get();
-                state.setup(parentState, s);
-                state.addToRenderList();
-            }
-            default -> {
-                AttachedRenderState state = attached_state_cache.get();
-                state.setup(parentState, accessory);
-                state.addToRenderList();
-            }
-        }
-    }
-
-    private <M extends Model> void updateEmitterWorldPosition(Emitter<?> emitter,
-            Accessory accessory, ElementSceneContext<M> parentState) {
-        parentState.getTransform(emitterTransform);
-        float sx = (float) Math.sqrt(emitterTransform.m00() * emitterTransform.m00()
-                + emitterTransform.m01() * emitterTransform.m01()
-                + emitterTransform.m02() * emitterTransform.m02());
-        float sy = (float) Math.sqrt(emitterTransform.m10() * emitterTransform.m10()
-                + emitterTransform.m11() * emitterTransform.m11()
-                + emitterTransform.m12() * emitterTransform.m12());
-        float sz = (float) Math.sqrt(emitterTransform.m20() * emitterTransform.m20()
-                + emitterTransform.m21() * emitterTransform.m21()
-                + emitterTransform.m22() * emitterTransform.m22());
-        if (sx > 0f && sy > 0f && sz > 0f) {
-            emitter.scale(sx, sy, sz);
-        }
-        accessory.getRelativeTransform(emitterTransform, parentState.model);
-        emitter.getPosition().set(emitterTransform.m30(), emitterTransform.m31(), emitterTransform.m32());
-    }
-
-    @Override
-    public float getInterpolationAlpha() {
-        return local_player.getWorld().getInterpolationAlpha();
-    }
-
-    float getVisuallyCorrectHeight(float x_f, float y_f) {
-        return local_player.getWorld().getHeightMap().computeInterpolatedHeight(0, x_f, y_f);
-    }
-
-    private final ModelVisitor<SupplyModel> supply_model_visitor = new WhiteModelVisitor<>() {
+  private final ModelVisitor<SupplyModel> supply_model_visitor =
+      new WhiteModelVisitor<>() {
         @Override
         public @Nullable SpriteKey getSpriteKey(ElementSceneContext<SupplyModel> render_state) {
-            SupplyModel model = render_state.getModel();
-            if (getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
-                return svm.getSpriteKey();
-            }
-            return AssetRegistry.getInstance().getSupplySprite(model);
+          SupplyModel model = render_state.getModel();
+          if (getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
+            return svm.getSpriteKey();
+          }
+          return AssetRegistry.getInstance().getSupplySprite(model);
         }
 
         @Override
         public void getTransform(ElementSceneContext<SupplyModel> render_state, Matrix4f dest) {
-            SupplyModel model = render_state.getModel();
-            if (getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
-                float offsetZ = svm.getOffsetZ();
-                dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ() + offsetZ)
-                        .rotate(svm.getRotation(), 0f, 0f, 1f);
+          SupplyModel model = render_state.getModel();
+          if (getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
+            float offsetZ = svm.getOffsetZ();
+            dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ() + offsetZ)
+                .rotate(svm.getRotation(), 0f, 0f, 1f);
 
-                Color.Linear tint = svm.getSpawnColorTint();
-                if (tint != null) {
-                    render_state.setColor(tint);
-                }
-            } else {
-                dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ());
+            Color.Linear tint = svm.getSpawnColorTint();
+            if (tint != null) {
+              render_state.setColor(tint);
             }
+          } else {
+            dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ());
+          }
         }
-    };
+      };
 
-    void visitSupplyModel(final SupplyModel model) {
-        float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY());
-        if (picking) {
-            if (pickingInFrustum(model, camera.getFrustum(), z_offset, Math.max(1.0f, model.getSize()), 2.0f)) {
-                picker.addPick(model);
-            }
-            return;
-        }
-        ElementSceneContext<SupplyModel> state = (ElementSceneContext<SupplyModel>) getCachedState(
-                supply_model_visitor, model);
-        state.addToRenderList();
-        if (getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
-            var decal = svm.getDecalProperties();
-            if (decal.opacity() > 0.0f) {
-                crack_shadow_renderer.addToCrackList(new Shadowable() {
-                    @Override
-                    public float getPositionX() {
-                        return model.getPositionX();
-                    }
-
-                    @Override
-                    public float getPositionY() {
-                        return model.getPositionY();
-                    }
-
-                    @Override
-                    public float getShadowDiameter() {
-                        return decal.diameter();
-                    }
-
-                    @Override
-                    public float getShadowOpacity() {
-                        return decal.opacity();
-                    }
-
-                    @Override
-                    public Color.Linear getShadowColor() {
-                        Color.Linear color = decal.color();
-                        return color != null ? color : Color.Linear.BLACK;
-                    }
-
-                    @Override
-                    public float getShadowPattern() {
-                        return decal.pattern();
-                    }
-                });
-            }
-        }
-        visitAccessories(model, state);
+  void visitSupplyModel(final SupplyModel model) {
+    float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY());
+    if (picking) {
+      if (pickingInFrustum(model, camera.getFrustum(), z_offset, Math.max(1.0f, model.getSize()), 2.0f)) {
+        picker.addPick(model);
+      }
+      return;
     }
+    ElementSceneContext<SupplyModel> state =
+        (ElementSceneContext<SupplyModel>) getCachedState(supply_model_visitor, model);
+    state.addToRenderList();
+    if (getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
+      var decal = svm.getDecalProperties();
+      if (decal.opacity() > 0.0f) {
+        crack_shadow_renderer.addToCrackList(
+            new Shadowable() {
+              @Override
+              public float getPositionX() {
+                return model.getPositionX();
+              }
 
-    private static final ModelVisitor<RubberSupply> rubber_model_visitor = new WhiteModelVisitor<>() {
+              @Override
+              public float getPositionY() {
+                return model.getPositionY();
+              }
+
+              @Override
+              public float getShadowDiameter() {
+                return decal.diameter();
+              }
+
+              @Override
+              public float getShadowOpacity() {
+                return decal.opacity();
+              }
+
+              @Override
+              public Color.Linear getShadowColor() {
+                Color.Linear color = decal.color();
+                return color != null ? color : Color.Linear.BLACK;
+              }
+
+              @Override
+              public float getShadowPattern() {
+                return decal.pattern();
+              }
+            });
+      }
+    }
+    visitAccessories(model, state);
+  }
+
+  private static final ModelVisitor<RubberSupply> rubber_model_visitor =
+      new WhiteModelVisitor<>() {
         @Override
         public @Nullable SpriteKey getSpriteKey(ElementSceneContext<RubberSupply> render_state) {
-            return AssetRegistry.getInstance().getChickenSprite();
+          return AssetRegistry.getInstance().getChickenSprite();
         }
 
         @Override
         public void getTransform(ElementSceneContext<RubberSupply> render_state, Matrix4f dest) {
-            RubberSupply model = render_state.model;
-            float alpha = render_state.sceneContext.getInterpolationAlpha();
-            float x = model.getInterpolatedPositionX(alpha);
-            float y = model.getInterpolatedPositionY(alpha);
-            float z = render_state.sceneContext instanceof RenderState rs
-                    ? rs.getVisuallyCorrectHeight(x, y) + model.getOffsetZ()
-                    : render_state.f;
-            float angle = model.getInterpolatedAngle(alpha);
-            dest.translation(x, y, z)
-                    .rotate(angle, 0f, 0f, 1f);
+          RubberSupply model = render_state.model;
+          float alpha = render_state.sceneContext.getInterpolationAlpha();
+          float x = model.getInterpolatedPositionX(alpha);
+          float y = model.getInterpolatedPositionY(alpha);
+          float z =
+              render_state.sceneContext instanceof RenderState rs
+                  ? rs.getVisuallyCorrectHeight(x, y) + model.getOffsetZ()
+                  : render_state.f;
+          float angle = model.getInterpolatedAngle(alpha);
+          dest.translation(x, y, z).rotate(angle, 0f, 0f, 1f);
         }
-    };
+      };
 
-    void visitRubberSupply(final RubberSupply model) {
-        float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY()) + model.getOffsetZ();
-        if (picking) {
-            if (pickingInFrustum(model, camera.getFrustum(), z_offset, Math.max(1.0f, model.getSize()), 2.0f)) {
-                picker.addPick(model);
-            }
-            return;
-        }
-        ElementSceneContext<RubberSupply> state = (ElementSceneContext<RubberSupply>) getCachedState(
-                rubber_model_visitor,
-                model, z_offset);
-        state.addToRenderList();
-        if (!model.isHit())
-            default_shadow_renderer.addToShadowList(state);
-        visitAccessories(model, state);
+  void visitRubberSupply(final RubberSupply model) {
+    float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY()) + model.getOffsetZ();
+    if (picking) {
+      if (pickingInFrustum(model, camera.getFrustum(), z_offset, Math.max(1.0f, model.getSize()), 2.0f)) {
+        picker.addPick(model);
+      }
+      return;
     }
+    ElementSceneContext<RubberSupply> state =
+        (ElementSceneContext<RubberSupply>) getCachedState(rubber_model_visitor, model, z_offset);
+    state.addToRenderList();
+    if (!model.isHit()) default_shadow_renderer.addToShadowList(state);
+    visitAccessories(model, state);
+  }
 
-    private static final ModelVisitor<SceneryModel> scenery_model_visitor = new WhiteModelVisitor<>() {
+  private static final ModelVisitor<SceneryModel> scenery_model_visitor =
+      new WhiteModelVisitor<>() {
         @Override
         public SpriteKey getSpriteKey(ElementSceneContext<SceneryModel> render_state) {
-            return AssetRegistry.getInstance().getScenerySprite(render_state.getModel());
+          return AssetRegistry.getInstance().getScenerySprite(render_state.getModel());
         }
-    };
+      };
 
-    private void visitSceneryModel(final SceneryModel model) {
-        if (picking) {
-            if (visible_override || model.testFrustum(camera.getFrustum())) {
-                picker.addPick(model);
-            }
-            return;
-        }
-        ElementSceneContext<SceneryModel> state = getCachedState(scenery_model_visitor, model);
-        state.addToRenderList();
+  private void visitSceneryModel(final SceneryModel model) {
+    if (picking) {
+      if (visible_override || model.testFrustum(camera.getFrustum())) {
+        picker.addPick(model);
+      }
+      return;
     }
+    ElementSceneContext<SceneryModel> state = getCachedState(scenery_model_visitor, model);
+    state.addToRenderList();
+  }
 
-    private static final float START_FADE_DIST = 120f;
-    private static final float PLANTS_CUT_DIST = 350f;
-    private static final float PLANT_WAVE_SCALE = 0.010f;
-    private static final int PLANT_FADE_STEPS = 256;
-    private static final Color.Linear[] PLANT_FADE_COLORS = new Color.Linear[PLANT_FADE_STEPS];
-    static {
-        for (int i = 0; i < PLANT_FADE_STEPS; i++) {
-            PLANT_FADE_COLORS[i] = new Color.Linear(1f, 1f, 1f, i / 255.0f);
-        }
+  private static final float START_FADE_DIST = 120f;
+  private static final float PLANTS_CUT_DIST = 350f;
+  private static final float PLANT_WAVE_SCALE = 0.010f;
+  private static final int PLANT_FADE_STEPS = 256;
+  private static final Color.Linear[] PLANT_FADE_COLORS = new Color.Linear[PLANT_FADE_STEPS];
+
+  static {
+    for (int i = 0; i < PLANT_FADE_STEPS; i++) {
+      PLANT_FADE_COLORS[i] = new Color.Linear(1f, 1f, 1f, i / 255.0f);
     }
+  }
 
-    private final ModelVisitor<Plants> plants_model_visitor = new WhiteModelVisitor<>() {
+  private final ModelVisitor<Plants> plants_model_visitor =
+      new WhiteModelVisitor<>() {
         @Override
         public @Nullable SpriteKey getSpriteKey(ElementSceneContext<Plants> render_state) {
-            Plants plants = render_state.getModel();
-            return AssetRegistry.getInstance().getPlantSprite(plants.getTerrain(), plants.getIndex());
+          Plants plants = render_state.getModel();
+          return AssetRegistry.getInstance().getPlantSprite(plants.getTerrain(), plants.getIndex());
         }
 
         @Override
         public void getTransform(ElementSceneContext<Plants> render_state, Matrix4f dest) {
-            Plants plants = render_state.getModel();
-            float angle = (float) Math.atan2(plants.getDirectionY(), plants.getDirectionX());
-            dest.translation(plants.getPositionX(), plants.getPositionY(), plants.getPositionZ())
-                    .rotate(angle, 0f, 0f, 1f);
-            plantWaveAnimation.mulRotation(dest);
+          Plants plants = render_state.getModel();
+          float angle = (float) Math.atan2(plants.getDirectionY(), plants.getDirectionX());
+          dest.translation(plants.getPositionX(), plants.getPositionY(), plants.getPositionZ())
+              .rotate(angle, 0f, 0f, 1f);
+          plantWaveAnimation.mulRotation(dest);
 
-            float dist_squared = render_state.f;
-            if (dist_squared > START_FADE_DIST * START_FADE_DIST) {
-                float camera_dist = (float) Math.sqrt(dist_squared);
-                float t = Math.clamp((camera_dist - START_FADE_DIST) / (PLANTS_CUT_DIST - START_FADE_DIST), 0f, 1f);
-                float alpha = 1f - (t * t * (3f - 2f * t));
-                int index = Math.clamp(Math.round(alpha * 255f), 0, 255);
-                render_state.setColor(PLANT_FADE_COLORS[index]);
-            }
+          float dist_squared = render_state.f;
+          if (dist_squared > START_FADE_DIST * START_FADE_DIST) {
+            float camera_dist = (float) Math.sqrt(dist_squared);
+            float t = Math.clamp((camera_dist - START_FADE_DIST) / (PLANTS_CUT_DIST - START_FADE_DIST), 0f, 1f);
+            float alpha = 1f - (t * t * (3f - 2f * t));
+            int index = Math.clamp(Math.round(alpha * 255f), 0, 255);
+            render_state.setColor(PLANT_FADE_COLORS[index]);
+          }
         }
-    };
+      };
 
-    private void visitPlants(final Plants plants) {
-        if (!picking && DebugFlags.draw_plants) {
-            float camera_dist_sqr = RenderTools.getEyeDistanceSquared(plants, camera.getCurrentX(), camera
-                    .getCurrentY(), camera.getCurrentZ());
-            if (camera_dist_sqr <= PLANTS_CUT_DIST * PLANTS_CUT_DIST)
-                getCachedState(plants_model_visitor, plants, camera_dist_sqr).addToRenderList();
+  private void visitPlants(final Plants plants) {
+    if (!picking && DebugFlags.draw_plants) {
+      float camera_dist_sqr =
+          RenderTools.getEyeDistanceSquared(plants, camera.getCurrentX(), camera.getCurrentY(), camera.getCurrentZ());
+      if (camera_dist_sqr <= PLANTS_CUT_DIST * PLANTS_CUT_DIST)
+        getCachedState(plants_model_visitor, plants, camera_dist_sqr).addToRenderList();
+    }
+  }
+
+  private static final ModelVisitor<ThrowingWeapon> weapon_model_visitor =
+      new WhiteModelVisitor<>() {
+        @Override
+        public @Nullable SpriteKey getSpriteKey(ElementSceneContext<ThrowingWeapon> render_state) {
+          ThrowingWeapon model = render_state.getModel();
+          Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
+          return AssetRegistry.getInstance().getWeaponSprite(race, model.getWeaponTier());
         }
-    }
 
-    private static final ModelVisitor<ThrowingWeapon> weapon_model_visitor
-            = new WhiteModelVisitor<>() {
-                @Override
-                public @Nullable SpriteKey getSpriteKey(ElementSceneContext<ThrowingWeapon> render_state) {
-                    ThrowingWeapon model = render_state.getModel();
-                    Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
-                    return AssetRegistry.getInstance().getWeaponSprite(race, model.getWeaponTier());
-                }
-
-                @Override
-                public void getTransform(ElementSceneContext<ThrowingWeapon> render_state, Matrix4f dest) {
-                    if (render_state.sceneContext instanceof RenderState rs
-                            && rs.getOrCreateVisualModel(render_state
-                                    .getModel()) instanceof ThrowingWeaponVisualModel<?> vm) {
-                        vm.getTransform(dest, render_state.sceneContext.getInterpolationAlpha());
-                    }
-                }
-
-                @Override
-                public Color getTeamColor(ElementSceneContext<ThrowingWeapon> render_state) {
-                    return render_state.getModel().getSrc().getOwner().getColor();
-                }
-            };
-
-    ModelVisitor<ThrowingWeapon> getWeaponModelVisitor() {
-        return weapon_model_visitor;
-    }
-
-    public Queue<Emitter<?>> getEmitterQueue() {
-        return emitter_queue;
-    }
-
-    public Queue<Lightning> getLightningQueue() {
-        return lightning_queue;
-    }
-
-    public Queue<SonicBlastEffect> getSonicBlastQueue() {
-        return sonic_blast_queue;
-    }
-
-    public void onLightningStrike(Model model, Target target) {
-        if (getOrCreateVisualModel(model) instanceof LightningAccessory la) {
-            la.triggerStrike(target);
+        @Override
+        public void getTransform(ElementSceneContext<ThrowingWeapon> render_state, Matrix4f dest) {
+          if (render_state.sceneContext instanceof RenderState rs
+              && rs.getOrCreateVisualModel(render_state.getModel()) instanceof ThrowingWeaponVisualModel<?> vm) {
+            vm.getTransform(dest, render_state.sceneContext.getInterpolationAlpha());
+          }
         }
-    }
 
-    public void onSonicBlast(Model model) {
-        if (getOrCreateVisualModel(model) instanceof SonicBlastAccessory sba) {
-            sba.triggerBlast();
+        @Override
+        public Color getTeamColor(ElementSceneContext<ThrowingWeapon> render_state) {
+          return render_state.getModel().getSrc().getOwner().getColor();
         }
-    }
+      };
 
-    public void addAccessory(Model model, Accessory accessory) {
-        VisualModel vm = getOrCreateVisualModel(model);
-        vm.addAccessory(accessory);
-    }
+  ModelVisitor<ThrowingWeapon> getWeaponModelVisitor() {
+    return weapon_model_visitor;
+  }
 
-    public void onSupplySpawn(SupplyModel supplyModel) {
-        if (getOrCreateVisualModel(supplyModel) instanceof SupplyVisualModel svm) {
-            new SupplySpawnAnimation(svm);
-        }
-    }
+  public Queue<Emitter<?>> getEmitterQueue() {
+    return emitter_queue;
+  }
 
-    public void onModelRemoved(Model model) {
-        detachOrCloseVisualModel(model);
-    }
+  public Queue<Lightning> getLightningQueue() {
+    return lightning_queue;
+  }
 
-    private void detachOrCloseVisualModel(Model model) {
-        VisualModel vm = (VisualModel) model.getClientModel();
-        if (vm != null) {
-            model.setClientModel(null);
-            activeVisualModels.remove(vm);
-            if (!vm.isExpired()) {
-                detachedVisualModels.add(vm);
-            } else {
-                vm.close();
-            }
-        }
-    }
+  public Queue<SonicBlastEffect> getSonicBlastQueue() {
+    return sonic_blast_queue;
+  }
 
-    public void close() {
-        for (VisualModel vm : activeVisualModels) {
-            vm.getModel().setClientModel(null);
-            vm.close();
-        }
-        activeVisualModels.clear();
-        detachedVisualModels.forEach(VisualModel::close);
-        detachedVisualModels.clear();
+  public void onLightningStrike(Model model, Target target) {
+    if (getOrCreateVisualModel(model) instanceof LightningAccessory la) {
+      la.triggerStrike(target);
     }
+  }
+
+  public void onSonicBlast(Model model) {
+    if (getOrCreateVisualModel(model) instanceof SonicBlastAccessory sba) {
+      sba.triggerBlast();
+    }
+  }
+
+  public void addAccessory(Model model, Accessory accessory) {
+    VisualModel vm = getOrCreateVisualModel(model);
+    vm.addAccessory(accessory);
+  }
+
+  public void onSupplySpawn(SupplyModel supplyModel) {
+    if (getOrCreateVisualModel(supplyModel) instanceof SupplyVisualModel svm) {
+      new SupplySpawnAnimation(svm);
+    }
+  }
+
+  public void onModelRemoved(Model model) {
+    detachOrCloseVisualModel(model);
+  }
+
+  private void detachOrCloseVisualModel(Model model) {
+    VisualModel vm = (VisualModel) model.getClientModel();
+    if (vm != null) {
+      model.setClientModel(null);
+      activeVisualModels.remove(vm);
+      if (!vm.isExpired()) {
+        detachedVisualModels.add(vm);
+      } else {
+        vm.close();
+      }
+    }
+  }
+
+  public void close() {
+    for (VisualModel vm : activeVisualModels) {
+      vm.getModel().setClientModel(null);
+      vm.close();
+    }
+    activeVisualModels.clear();
+    detachedVisualModels.forEach(VisualModel::close);
+    detachedVisualModels.clear();
+  }
 }

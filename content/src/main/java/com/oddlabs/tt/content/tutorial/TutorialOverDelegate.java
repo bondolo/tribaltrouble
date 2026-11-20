@@ -1,100 +1,95 @@
 package com.oddlabs.tt.content.tutorial;
 
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
+
+import com.oddlabs.tt.base.animation.TimerAnimation;
+import com.oddlabs.tt.base.animation.Updatable;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
+import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.event.MouseClickListener;
-import com.oddlabs.tt.engine.render.GUIRenderer;
-import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.base.animation.TimerAnimation;
-import com.oddlabs.tt.base.animation.Updatable;
-import com.oddlabs.tt.base.util.Utils;
-
 import java.util.ResourceBundle;
 
-import static com.oddlabs.tt.gui.Placement.LEFT_MID;
-
 public final class TutorialOverDelegate extends CameraDelegate<StaticCamera> implements Updatable<TimerAnimation> {
-    private static final float DELAY = 1f;
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(TutorialOverDelegate.class.getName());
+  private static final float DELAY = 1f;
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(TutorialOverDelegate.class.getName());
 
-    private String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
-    }
+  private String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
 
-    private final TimerAnimation delay_timer;
-    private final Group group_buttons;
-    private final TutorialInGameInfo tutorial_info;
-    private final WorldViewer viewer;
+  private final TimerAnimation delay_timer;
+  private final Group group_buttons;
+  private final TutorialInGameInfo tutorial_info;
+  private final WorldViewer viewer;
 
-    public TutorialOverDelegate(final WorldViewer viewer, TutorialInGameInfo tutorial_info,
-            Camera old_camera, int tutorial_number) {
-        super(viewer.getGUIRoot(), new StaticCamera(old_camera.getState()));
-        this.viewer = viewer;
-        this.delay_timer = new TimerAnimation(viewer.getAnimationManager(), this, DELAY);
-        this.tutorial_info = tutorial_info;
+  public TutorialOverDelegate(
+      final WorldViewer viewer, TutorialInGameInfo tutorial_info, Camera old_camera, int tutorial_number) {
+    super(viewer.getGUIRoot(), new StaticCamera(old_camera.getState()));
+    this.viewer = viewer;
+    this.delay_timer = new TimerAnimation(viewer.getAnimationManager(), this, DELAY);
+    this.tutorial_info = tutorial_info;
 
-        setDim(getGUIRoot().getWidth(), getGUIRoot().getHeight());
-        String tutorial_completed_str = i18n("tutorial_completed", tutorial_number);
-        Label label = new Label(tutorial_completed_str, getGUIRoot().getSkin().getHeadlineFont());
-        addChild(label);
-        label.setPos((getWidth() - label.getWidth()) / 2, (getHeight() - label.getHeight()) * 2 / 3);
+    setDim(getGUIRoot().getWidth(), getGUIRoot().getHeight());
+    String tutorial_completed_str = i18n("tutorial_completed", tutorial_number);
+    Label label = new Label(tutorial_completed_str, getGUIRoot().getSkin().getHeadlineFont());
+    addChild(label);
+    label.setPos((getWidth() - label.getWidth()) / 2, (getHeight() - label.getHeight()) * 2 / 3);
 
-        group_buttons = new Group(getGUIRoot());
-        HorizButton button_next = new HorizButton(getGUIRoot(), i18n("next_tutorial"), 170);
-        button_next.addMouseClickListener(new StartTutorialListener(tutorial_number + 1));
-        HorizButton button_restart = new HorizButton(getGUIRoot(), i18n("restart_tutorial"), 170);
-        button_restart.addMouseClickListener(new StartTutorialListener(tutorial_number));
-        HorizButton button_end = new HorizButton(getGUIRoot(), i18n("main_menu"), 170);
-        button_end.addMouseClickListener((_, _, _, _) -> {
-            viewer.close();
-            TutorialOverDelegate.this.setDisabled(true);
-        });
+    group_buttons = new Group(getGUIRoot());
+    HorizButton button_next = new HorizButton(getGUIRoot(), i18n("next_tutorial"), 170);
+    button_next.addMouseClickListener(new StartTutorialListener(tutorial_number + 1));
+    HorizButton button_restart = new HorizButton(getGUIRoot(), i18n("restart_tutorial"), 170);
+    button_restart.addMouseClickListener(new StartTutorialListener(tutorial_number));
+    HorizButton button_end = new HorizButton(getGUIRoot(), i18n("main_menu"), 170);
+    button_end.addMouseClickListener((_, _, _, _) -> {
+      viewer.close();
+      TutorialOverDelegate.this.setDisabled(true);
+    });
 
-        if (tutorial_number < TutorialForm.NUM_TUTORIALS)
-            group_buttons.addChild(button_next);
-        group_buttons.addChild(button_end);
-        group_buttons.addChild(button_restart);
+    if (tutorial_number < TutorialForm.NUM_TUTORIALS) group_buttons.addChild(button_next);
+    group_buttons.addChild(button_end);
+    group_buttons.addChild(button_restart);
 
-        button_end.place();
-        button_restart.place(button_end, LEFT_MID);
+    button_end.place();
+    button_restart.place(button_end, LEFT_MID);
 
-        if (tutorial_number < TutorialForm.NUM_TUTORIALS)
-            button_next.place(button_restart, LEFT_MID);
-        group_buttons.compileCanvas();
-        group_buttons.setPos((getWidth() - group_buttons.getWidth()) / 2, (getHeight() - group_buttons.getHeight()) * 1
-                / 3);
+    if (tutorial_number < TutorialForm.NUM_TUTORIALS) button_next.place(button_restart, LEFT_MID);
+    group_buttons.compileCanvas();
+    group_buttons.setPos(
+        (getWidth() - group_buttons.getWidth()) / 2, (getHeight() - group_buttons.getHeight()) * 1 / 3);
 
-        delay_timer.start();
+    delay_timer.start();
+  }
+
+  @Override
+  protected void renderGeometry(GUIRenderer renderer) {
+    renderBackgroundAlpha(renderer);
+  }
+
+  @Override
+  public void update(TimerAnimation anim) {
+    addChild(group_buttons);
+    delay_timer.stop();
+  }
+
+  private final class StartTutorialListener implements MouseClickListener {
+    private final int tutorial_number;
+
+    StartTutorialListener(int tutorial_number) {
+      this.tutorial_number = tutorial_number;
     }
 
     @Override
-    protected void renderGeometry(GUIRenderer renderer) {
-        renderBackgroundAlpha(renderer);
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {
+      if (tutorial_info.setNextTutorial(tutorial_number)) viewer.close();
     }
-
-    @Override
-    public void update(TimerAnimation anim) {
-        addChild(group_buttons);
-        delay_timer.stop();
-    }
-
-    private final class StartTutorialListener implements MouseClickListener {
-        private final int tutorial_number;
-
-        StartTutorialListener(int tutorial_number) {
-            this.tutorial_number = tutorial_number;
-        }
-
-        @Override
-        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            if (tutorial_info.setNextTutorial(tutorial_number))
-                viewer.close();
-        }
-    }
-
+  }
 }

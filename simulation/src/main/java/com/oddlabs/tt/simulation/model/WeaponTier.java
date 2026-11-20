@@ -1,112 +1,96 @@
 package com.oddlabs.tt.simulation.model;
 
+import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Map;
-
-/**
- * Tier of finished weaponry manufactured in armories and equipped by warriors.
- */
+/// Tier of finished weaponry manufactured in armories and equipped by warriors.
 public enum WeaponTier {
-    /** Tier-1 rock weaponry (Rock Axe / Rock Spear). */
-    ROCK(
-            SupplyType.ROCK,
-            DeployType.ROCK_WARRIOR,
-            new Cost(Map.of(
-                    SupplyType.WOOD, 2,
-                    SupplyType.ROCK, 1)),
-            40f,
-            1),
+  /// Tier-1 rock weaponry (Rock Axe / Rock Spear).
+  ROCK(
+      SupplyType.ROCK,
+      DeployType.ROCK_WARRIOR,
+      new Cost(
+          Map.of(
+              SupplyType.WOOD, 2,
+              SupplyType.ROCK, 1)),
+      40f,
+      1),
 
-    /** Tier-2 iron weaponry (Iron Axe / Iron Spear). */
-    IRON(
-            SupplyType.IRON,
-            DeployType.IRON_WARRIOR,
-            new Cost(Map.of(
-                    SupplyType.WOOD, 2,
-                    SupplyType.IRON, 1)),
-            80f,
-            3),
+  /// Tier-2 iron weaponry (Iron Axe / Iron Spear).
+  IRON(
+      SupplyType.IRON,
+      DeployType.IRON_WARRIOR,
+      new Cost(
+          Map.of(
+              SupplyType.WOOD, 2,
+              SupplyType.IRON, 1)),
+      80f,
+      3),
 
-    /** Tier-3 rubber weaponry (Rubber Axe / Rubber Spear). */
-    RUBBER(
-            SupplyType.RUBBER,
-            DeployType.RUBBER_WARRIOR,
-            new Cost(Map.of(
-                    SupplyType.WOOD, 2,
-                    SupplyType.ROCK, 1,
-                    SupplyType.IRON, 1,
-                    SupplyType.RUBBER, 1)),
-            120f,
-            8);
+  /// Tier-3 rubber weaponry (Rubber Axe / Rubber Spear).
+  RUBBER(
+      SupplyType.RUBBER,
+      DeployType.RUBBER_WARRIOR,
+      new Cost(
+          Map.of(
+              SupplyType.WOOD, 2,
+              SupplyType.ROCK, 1,
+              SupplyType.IRON, 1,
+              SupplyType.RUBBER, 1)),
+      120f,
+      8);
 
-    private final SupplyType supplyType;
-    private final DeployType deployType;
-    private final Cost cost;
-    private final float buildTime;
-    private final int statusMultiplier;
+  private final SupplyType supplyType;
+  private final DeployType deployType;
+  private final Cost cost;
+  private final float buildTime;
+  private final int statusMultiplier;
 
-    WeaponTier(
-            SupplyType supplyType,
-            DeployType deployType,
-            Cost cost,
-            float buildTime,
-            int statusMultiplier
-    ) {
-        this.supplyType = supplyType;
-        this.deployType = deployType;
-        this.cost = cost;
-        this.buildTime = buildTime;
-        this.statusMultiplier = statusMultiplier;
-    }
+  WeaponTier(SupplyType supplyType, DeployType deployType, Cost cost, float buildTime, int statusMultiplier) {
+    this.supplyType = supplyType;
+    this.deployType = deployType;
+    this.cost = cost;
+    this.buildTime = buildTime;
+    this.statusMultiplier = statusMultiplier;
+  }
 
-    /**
-     * {@return the required raw resource supplies cost to forge one weapon of this tier}
-     */
-    public Cost getCost() {
-        return cost;
-    }
+  /// {@return the required raw resource supplies cost to forge one weapon of this tier}
+  public Cost getCost() {
+    return cost;
+  }
 
-    /**
-     * {@return the required raw resource supply type used to forge this weapon}
-     */
-    public SupplyType getSupplyType() {
-        return supplyType;
-    }
+  /// {@return the required raw resource supply type used to forge this weapon}
+  public SupplyType getSupplyType() {
+    return supplyType;
+  }
 
-    /**
-     * {@return the corresponding warrior deployment type equipped with this weapon tier}
-     */
-    public DeployType getDeployType() {
-        return deployType;
-    }
+  /// {@return the corresponding warrior deployment type equipped with this weapon tier}
+  public DeployType getDeployType() {
+    return deployType;
+  }
 
-    /**
-     * {@return the base time in seconds required to produce one unit of this weapon tier}
-     */
-    public float getBuildTime() {
-        return buildTime;
-    }
+  /// {@return the base time in seconds required to produce one unit of this weapon tier}
+  public float getBuildTime() {
+    return buildTime;
+  }
 
-    /**
-     * {@return the status value weight multiplier contributed by this weapon tier}
-     */
-    public int getStatusMultiplier() {
-        return statusMultiplier;
-    }
+  /// {@return the status value weight multiplier contributed by this weapon tier}
+  public int getStatusMultiplier() {
+    return statusMultiplier;
+  }
 
-    /**
-     * Maps a warrior deploy type to its corresponding weapon tier.
-     *
-     * @param deployType the warrior deploy type
-     * @return the matching weapon tier, or null if not a warrior deploy type
-     */
-    public static @Nullable WeaponTier fromDeployType(DeployType deployType) {
-        return switch (deployType) {
-            case ROCK_WARRIOR -> ROCK;
-            case IRON_WARRIOR -> IRON;
-            case RUBBER_WARRIOR -> RUBBER;
-            default -> null;
-        };
-    }
+  /**
+   * Maps a warrior deploy type to its corresponding weapon tier.
+   *
+   * @param `deployType` the warrior deploy type
+   * @return the matching weapon tier, or null if not a warrior deploy type
+   */
+  public static @Nullable WeaponTier fromDeployType(DeployType deployType) {
+    return switch (deployType) {
+      case ROCK_WARRIOR -> ROCK;
+      case IRON_WARRIOR -> IRON;
+      case RUBBER_WARRIOR -> RUBBER;
+      default -> null;
+    };
+  }
 }

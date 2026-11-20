@@ -1,53 +1,47 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.DebugFlags;
-import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.ShadowListRenderer;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.render.VisualPattern;
+import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.util.Color;
-
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.function.Supplier;
+import org.joml.Matrix4fc;
 
-/**
- * Renders target click response indicators on the landscape.
- */
+/// Renders target click response indicators on the landscape.
 public final class TargetRespondRenderer extends ShadowListRenderer {
-    private static final float SHADOW_SIZE = 1.6f;
-    private final Texture ring;
+  private static final float SHADOW_SIZE = 1.6f;
+  private final Texture ring;
 
-    private final Deque<LandscapeTargetRespond> target_list = new ArrayDeque<>();
+  private final Deque<LandscapeTargetRespond> target_list = new ArrayDeque<>();
 
-    public TargetRespondRenderer(Supplier<Texture[]> desc) {
-        ring = Resources.findResource(desc)[0];
-        setRadial(true);
+  public TargetRespondRenderer(Supplier<Texture[]> desc) {
+    ring = Resources.findResource(desc)[0];
+    setRadial(true);
+  }
+
+  public void addToTargetList(LandscapeTargetRespond target) {
+    if (DebugFlags.process_shadows) target_list.push(target);
+  }
+
+  @Override
+  public void renderShadows(
+      RenderContext context, RenderQueues queues, float worldSize, Texture heightTexture, Matrix4fc modelView) {
+    if (target_list.isEmpty()) return;
+
+    try (var _ = setupShadows(context, queues, worldSize, heightTexture, modelView)) {
+      setShadowColor(Color.Linear.GREEN);
+      setPattern(VisualPattern.FRIENDLY);
+      bindShadowTexture(ring);
+      while (!target_list.isEmpty()) {
+        var target = target_list.pop();
+        renderShadow(context, target.getPositionX(), target.getPositionY(), SHADOW_SIZE * target.getProgress());
+      }
     }
-
-    public void addToTargetList(LandscapeTargetRespond target) {
-        if (DebugFlags.process_shadows)
-            target_list.push(target);
-    }
-
-    @Override
-    public void renderShadows(RenderContext context, RenderQueues queues,
-            float worldSize, Texture heightTexture, Matrix4fc modelView) {
-        if (target_list.isEmpty()) return;
-
-        try (var _ = setupShadows(context, queues, worldSize, heightTexture, modelView)) {
-            setShadowColor(Color.Linear.GREEN);
-            setPattern(VisualPattern.FRIENDLY);
-            bindShadowTexture(ring);
-            while (!target_list.isEmpty()) {
-                var target = target_list.pop();
-                renderShadow(context, target.getPositionX(), target
-                        .getPositionY(), SHADOW_SIZE * target.getProgress()
-                );
-            }
-        }
-    }
+  }
 }

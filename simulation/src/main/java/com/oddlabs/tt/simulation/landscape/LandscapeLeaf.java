@@ -2,37 +2,39 @@ package com.oddlabs.tt.simulation.landscape;
 
 import org.jspecify.annotations.Nullable;
 
-/**
- * Quadtree leaf node representing a single terrain patch in the world heightmap.
- */
+/// Quadtree leaf node representing a single terrain patch in the world heightmap.
 public final class LandscapeLeaf extends AbstractPatchGroup {
-    private final int patch_x;
-    private final int patch_y;
+  private final int patch_x;
+  private final int patch_y;
 
-    public float getMaxError() {
-        return 0;
-    }
+  public float getMaxError() {
+    return 0;
+  }
 
-    public LandscapeLeaf(World world, int index_x, int index_y, @Nullable AbstractPatchGroup parent) {
-        super(world.getHeightMap(), 1, index_x, index_y, parent);
-        HeightMap heightmap = world.getHeightMap();
-        this.patch_x = index_x;
-        this.patch_y = index_y;
-        setBoundsFromLandscape(heightmap, index_x * heightmap.getGridUnitsPerPatch(), index_y * heightmap
-                .getGridUnitsPerPatch(), heightmap.getGridUnitsPerPatch(), heightmap.getGridUnitsPerPatch());
-        expandBoundsZ(heightmap.getSeaLevelMeters());
-        heightmap.registerLeaf(patch_x, patch_y, this);
-    }
+  public LandscapeLeaf(World world, int index_x, int index_y, @Nullable AbstractPatchGroup parent) {
+    super(world.getHeightMap(), 1, index_x, index_y, parent);
+    HeightMap heightmap = world.getHeightMap();
+    this.patch_x = index_x;
+    this.patch_y = index_y;
+    setBoundsFromLandscape(
+        heightmap,
+        index_x * heightmap.getGridUnitsPerPatch(),
+        index_y * heightmap.getGridUnitsPerPatch(),
+        heightmap.getGridUnitsPerPatch(),
+        heightmap.getGridUnitsPerPatch());
+    expandBoundsZ(heightmap.getSeaLevelMeters());
+    heightmap.registerLeaf(patch_x, patch_y, this);
+  }
 
-    public float[] getErrors() {
-        return new float[0];
-    }
+  public float[] getErrors() {
+    return new float[0];
+  }
 
-    public int getPatchX() {
-        return patch_x;
-    }
+  public int getPatchX() {
+    return patch_x;
+  }
 
-    public int getPatchY() {
-        return patch_y;
-    }
+  public int getPatchY() {
+    return patch_y;
+  }
 }

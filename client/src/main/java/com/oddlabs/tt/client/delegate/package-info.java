@@ -1,6 +1,4 @@
-/**
- * Placing and action delegates for interacting with UI placement of buildings and units.
- */
+/** Placing and action delegates for interacting with UI placement of buildings and units. */
 @NullMarked
 package com.oddlabs.tt.client.delegate;
 

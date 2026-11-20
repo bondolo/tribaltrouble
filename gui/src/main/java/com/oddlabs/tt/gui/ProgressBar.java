@@ -6,89 +6,101 @@ import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.util.Color;
-
 import java.util.ResourceBundle;
 
-/**
- * Progress bar component rendering normalized progress from 0.0 to 1.0.
- */
+/// Progress bar component rendering normalized progress from 0.0 to 1.0.
 public final class ProgressBar extends GUIObject {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(ProgressBar.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(ProgressBar.class.getName());
 
-    private String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  private final Skin skin;
+  private final boolean text_only;
+  private int left_margin;
+  private int right_margin;
+  private float progress;
+
+  public ProgressBar(GUIRoot guiRoot, int width, boolean text_only) {
+    this.skin = guiRoot.getSkin();
+    this.text_only = text_only;
+    if (text_only) {
+      setDim(width, skin.getHeadlineFont().getHeight());
+    } else {
+      ProgressBarData data = skin.getProgressBarData();
+      left_margin = data.leftFill().quad(ModeIconQuads.Mode.NORMAL).getWidth();
+      right_margin = data.rightFill().quad(ModeIconQuads.Mode.NORMAL).getWidth();
+
+      assert width > left_margin + right_margin : "Progress bar too small.";
+      setDim(width, data.progressBar().getHeight());
     }
+    setCanFocus(false);
+  }
 
-    private final Skin skin;
-    private final boolean text_only;
-    private int left_margin;
-    private int right_margin;
-    private float progress;
+  @Override
+  protected Skin getSkin() {
+    return skin;
+  }
 
-    public ProgressBar(GUIRoot guiRoot, int width, boolean text_only) {
-        this.skin = guiRoot.getSkin();
-        this.text_only = text_only;
-        if (text_only) {
-            setDim(width, skin.getHeadlineFont().getHeight());
-        } else {
-            ProgressBarData data = skin.getProgressBarData();
-            left_margin = data.leftFill().quad(ModeIconQuads.Mode.NORMAL).getWidth();
-            right_margin = data.rightFill().quad(ModeIconQuads.Mode.NORMAL).getWidth();
+  public void setProgress(float fraction) {
+    this.progress = Math.clamp(fraction, 0f, 1f);
+  }
 
-            assert width > left_margin + right_margin : "Progress bar too small.";
-            setDim(width, data.progressBar().getHeight());
-        }
-        setCanFocus(false);
+  public float getProgress() {
+    return progress;
+  }
+
+  private void renderText(GUIRenderer renderer) {
+    int percentage = (int) (progress * 100);
+    String string = i18n("loading", percentage);
+    TextLineRenderer.render(
+        renderer,
+        skin.getHeadlineFont(),
+        string,
+        0,
+        0,
+        Float.NEGATIVE_INFINITY,
+        Float.POSITIVE_INFINITY,
+        Color.Linear.WHITE);
+  }
+
+  @Override
+  protected void renderGeometry(GUIRenderer renderer) {
+    if (text_only) {
+      renderText(renderer);
+    } else {
+      skin.getProgressBarData().progressBar().render(renderer, 0, 0, getWidth(), ModeIconQuads.Mode.NORMAL);
+      renderFill(renderer, 0);
     }
+  }
 
-    @Override
-    protected Skin getSkin() {
-        return skin;
+  private void renderFill(GUIRenderer renderer, int y) {
+    ProgressBarData data = skin.getProgressBarData();
+    ModeIconQuads left = data.leftFill();
+    ModeIconQuads center = data.centerFill();
+    ModeIconQuads right = data.rightFill();
+
+    renderer.drawModeIcon(left, ModeIconQuads.Mode.NORMAL, 0, y);
+
+    int available = getWidth() - left_margin - right_margin;
+    int width = (int) (progress * available);
+
+    if (width > 0) {
+      int current_pos = left_margin + width;
+      IconQuad c = center.quad(ModeIconQuads.Mode.NORMAL);
+      renderer.drawTexture(
+          c.getTexture(),
+          left_margin,
+          y,
+          width,
+          c.getHeight(),
+          c.getU1(),
+          c.getV1(),
+          c.getU2(),
+          c.getV2(),
+          Color.Standard.WHITE);
+      renderer.drawModeIcon(right, ModeIconQuads.Mode.NORMAL, current_pos, y);
     }
-
-    public void setProgress(float fraction) {
-        this.progress = Math.clamp(fraction, 0f, 1f);
-    }
-
-    public float getProgress() {
-        return progress;
-    }
-
-    private void renderText(GUIRenderer renderer) {
-        int percentage = (int) (progress * 100);
-        String string = i18n("loading", percentage);
-        TextLineRenderer.render(renderer, skin.getHeadlineFont(), string, 0, 0, Float.NEGATIVE_INFINITY,
-                Float.POSITIVE_INFINITY, Color.Linear.WHITE);
-    }
-
-    @Override
-    protected void renderGeometry(GUIRenderer renderer) {
-        if (text_only) {
-            renderText(renderer);
-        } else {
-            skin.getProgressBarData().progressBar()
-                    .render(renderer, 0, 0, getWidth(), ModeIconQuads.Mode.NORMAL);
-            renderFill(renderer, 0);
-        }
-    }
-
-    private void renderFill(GUIRenderer renderer, int y) {
-        ProgressBarData data = skin.getProgressBarData();
-        ModeIconQuads left = data.leftFill();
-        ModeIconQuads center = data.centerFill();
-        ModeIconQuads right = data.rightFill();
-
-        renderer.drawModeIcon(left, ModeIconQuads.Mode.NORMAL, 0, y);
-
-        int available = getWidth() - left_margin - right_margin;
-        int width = (int) (progress * available);
-
-        if (width > 0) {
-            int current_pos = left_margin + width;
-            IconQuad c = center.quad(ModeIconQuads.Mode.NORMAL);
-            renderer.drawTexture(c.getTexture(), left_margin, y, width, c.getHeight(), c.getU1(), c.getV1(), c.getU2(),
-                    c.getV2(), Color.Standard.WHITE);
-            renderer.drawModeIcon(right, ModeIconQuads.Mode.NORMAL, current_pos, y);
-        }
-    }
+  }
 }

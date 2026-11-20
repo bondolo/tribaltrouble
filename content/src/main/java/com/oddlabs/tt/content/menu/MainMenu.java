@@ -4,59 +4,56 @@ import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.screen.ScreenManager;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.MenuButton;
 import com.oddlabs.tt.content.campaign.CampaignForm;
 import com.oddlabs.tt.content.skirmish.TerrainMenuForm;
 import com.oddlabs.tt.content.tutorial.TutorialForm;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.MenuButton;
 
-/**
- * The game main menu
- */
+/// The game main menu
 public final class MainMenu extends Menu {
-    public MainMenu(GUIRoot gui_root, Camera camera, Peer peer, ScreenManager screenManager) {
-        super(gui_root, camera, peer, screenManager);
-        reload();
-    }
+  public MainMenu(GUIRoot gui_root, Camera camera, Peer peer, ScreenManager screenManager) {
+    super(gui_root, camera, peer, screenManager);
+    reload();
+  }
 
-    private void addGameTypeButtons() {
-        MenuButton tutorial = new MenuButton(getGUIRoot(), Menu.i18n("tutorial"), COLOR_NORMAL, COLOR_ACTIVE);
-        tutorial.addMouseClickListener((_, _, _, _) -> setMenu(new TutorialForm(MainMenu.this)));
-        addChild(tutorial);
+  private void addGameTypeButtons() {
+    MenuButton tutorial = new MenuButton(getGUIRoot(), Menu.i18n("tutorial"), COLOR_NORMAL, COLOR_ACTIVE);
+    tutorial.addMouseClickListener((_, _, _, _) -> setMenu(new TutorialForm(MainMenu.this)));
+    addChild(tutorial);
 
-        MenuButton campaign_menu = new MenuButton(getGUIRoot(), Menu.i18n("campaign"), COLOR_NORMAL, COLOR_ACTIVE);
-        campaign_menu.addMouseClickListener((_, _, _, _) -> setMenu(new CampaignForm(MainMenu.this)));
-        addChild(campaign_menu);
+    MenuButton campaign_menu = new MenuButton(getGUIRoot(), Menu.i18n("campaign"), COLOR_NORMAL, COLOR_ACTIVE);
+    campaign_menu.addMouseClickListener((_, _, _, _) -> setMenu(new CampaignForm(MainMenu.this)));
+    addChild(campaign_menu);
 
-        MenuButton single_player = new MenuButton(getGUIRoot(), Menu.i18n("skirmish"), COLOR_NORMAL, COLOR_ACTIVE);
-        single_player.addMouseClickListener((_, _, _, _) -> setMenu(new TerrainMenuForm(MainMenu.this)));
-        addChild(single_player);
+    MenuButton single_player = new MenuButton(getGUIRoot(), Menu.i18n("skirmish"), COLOR_NORMAL, COLOR_ACTIVE);
+    single_player.addMouseClickListener((_, _, _, _) -> setMenu(new TerrainMenuForm(MainMenu.this)));
+    addChild(single_player);
 
-        if (!AppConfig.HIDE_MULTIPLAYER) {
-            MenuButton multi_player = new MenuButton(getGUIRoot(), Menu.i18n("multiplayer"), COLOR_NORMAL,
-                    COLOR_ACTIVE);
-            multi_player.addMouseClickListener((_, _, _, _) -> {
-                if (peer.getNetwork().getMatchmakingClient().isConnected()) {
-                    new SelectGameMenu(MainMenu.this);
-                } else {
-                    peer.getNetwork().getMatchmakingClient().close();
-                    new LoginForm(MainMenu.this);
-                }
-            });
-            addChild(multi_player);
-        }
-    }
-
-    @Override
-    protected void addButtons() {
-        addGameTypeButtons();
-
-        addDefaultOptionsButton();
-
-        addExitButton();
-
+    if (!AppConfig.HIDE_MULTIPLAYER) {
+      MenuButton multi_player = new MenuButton(getGUIRoot(), Menu.i18n("multiplayer"), COLOR_NORMAL, COLOR_ACTIVE);
+      multi_player.addMouseClickListener((_, _, _, _) -> {
         if (peer.getNetwork().getMatchmakingClient().isConnected()) {
-            new SelectGameMenu(this);
+          new SelectGameMenu(MainMenu.this);
+        } else {
+          peer.getNetwork().getMatchmakingClient().close();
+          new LoginForm(MainMenu.this);
         }
+      });
+      addChild(multi_player);
     }
+  }
+
+  @Override
+  protected void addButtons() {
+    addGameTypeButtons();
+
+    addDefaultOptionsButton();
+
+    addExitButton();
+
+    if (peer.getNetwork().getMatchmakingClient().isConnected()) {
+      new SelectGameMenu(this);
+    }
+  }
 }

@@ -1,5 +1,11 @@
 package com.oddlabs.tt.content.menu;
 
+import static com.oddlabs.tt.gui.Origin.AT_END;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
+
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.gui.ButtonObject;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.EditLine;
@@ -12,109 +18,101 @@ import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
-import com.oddlabs.tt.base.util.Utils;
-
 import java.util.ResourceBundle;
 
-import static com.oddlabs.tt.gui.Origin.AT_END;
-import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.gui.Placement.LEFT_MID;
-import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
-
-/** Form for creating a new player profile. */
+/// Form for creating a new player profile.
 public final class NewProfileForm extends Form {
-    private static final int BUTTON_WIDTH = 100;
-    private static final int BUTTON_WIDTH_LONG = 150;
-    private static final int EDITLINE_WIDTH = 240;
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(NewProfileForm.class.getName());
+  private static final int BUTTON_WIDTH = 100;
+  private static final int BUTTON_WIDTH_LONG = 150;
+  private static final int EDITLINE_WIDTH = 240;
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(NewProfileForm.class.getName());
 
-    private String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  private final Menu main_menu;
+  private final ProfilesForm profiles_form;
+  private final EditLine editline_nick;
+  private final GUIRoot gui_root;
+
+  public NewProfileForm(Menu main_menu, ProfilesForm profiles_form) {
+    super(main_menu.getGUIRoot());
+    this.main_menu = main_menu;
+    this.gui_root = main_menu.getGUIRoot();
+    this.profiles_form = profiles_form;
+
+    // headline
+    Label label_headline = new Label(i18n("create_profile_caption"), getSkin().getHeadlineFont());
+    addChild(label_headline);
+
+    // login
+    Label label_nick = new Label(i18n("nick"), getSkin().getEditFont());
+    editline_nick = new EditLine(gui_root, EDITLINE_WIDTH, 255);
+    editline_nick.addEnterListener(new CreateProfileListener());
+    addChild(label_nick);
+    addChild(editline_nick);
+
+    label_headline.place();
+    label_nick.place(label_headline, BOTTOM_LEFT);
+    editline_nick.place(label_nick, RIGHT_MID);
+
+    Group group_buttons = new Group(gui_root);
+    ButtonObject button_create = new HorizButton(gui_root, i18n("create_profile"), BUTTON_WIDTH_LONG);
+    button_create.addMouseClickListener(new CreateProfileListener());
+    ButtonObject button_cancel = new CancelButton(gui_root, BUTTON_WIDTH);
+    button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
+
+    group_buttons.addChild(button_create);
+    group_buttons.addChild(button_cancel);
+
+    button_cancel.place();
+    button_create.place(button_cancel, LEFT_MID);
+
+    group_buttons.compileCanvas();
+    addChild(group_buttons);
+
+    group_buttons.place(AT_END);
+
+    compileCanvas();
+  }
+
+  @Override
+  public void setFocus(FocusDirection direction) {
+    if (direction == FocusDirection.BACKWARD) {
+      super.setFocus(direction);
+    } else {
+      editline_nick.setFocus(direction);
     }
+  }
 
-    private final Menu main_menu;
-    private final ProfilesForm profiles_form;
-    private final EditLine editline_nick;
-    private final GUIRoot gui_root;
+  @Override
+  public void doCancel() {
+    done();
+  }
 
-    public NewProfileForm(Menu main_menu, ProfilesForm profiles_form) {
-        super(main_menu.getGUIRoot());
-        this.main_menu = main_menu;
-        this.gui_root = main_menu.getGUIRoot();
-        this.profiles_form = profiles_form;
+  private void done() {
+    main_menu.setMenuCentered(profiles_form);
+  }
 
+  private void createProfile() {
+    String nick = editline_nick.getContents();
+    gui_root.addModalForm(new CreatingProfileForm(profiles_form, main_menu, nick));
+  }
 
-        // headline
-        Label label_headline = new Label(i18n("create_profile_caption"), getSkin().getHeadlineFont());
-        addChild(label_headline);
+  public void connectionLost() {
+    remove();
+  }
 
-        // login
-        Label label_nick = new Label(i18n("nick"), getSkin().getEditFont());
-        editline_nick = new EditLine(gui_root, EDITLINE_WIDTH, 255);
-        editline_nick.addEnterListener(new CreateProfileListener());
-        addChild(label_nick);
-        addChild(editline_nick);
-
-        label_headline.place();
-        label_nick.place(label_headline, BOTTOM_LEFT);
-        editline_nick.place(label_nick, RIGHT_MID);
-
-        Group group_buttons = new Group(gui_root);
-        ButtonObject button_create = new HorizButton(gui_root, i18n("create_profile"), BUTTON_WIDTH_LONG);
-        button_create.addMouseClickListener(new CreateProfileListener());
-        ButtonObject button_cancel = new CancelButton(gui_root, BUTTON_WIDTH);
-        button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
-
-        group_buttons.addChild(button_create);
-        group_buttons.addChild(button_cancel);
-
-        button_cancel.place();
-        button_create.place(button_cancel, LEFT_MID);
-
-        group_buttons.compileCanvas();
-        addChild(group_buttons);
-
-        group_buttons.place(AT_END);
-
-        compileCanvas();
+  private final class CreateProfileListener implements MouseClickListener, EnterListener {
+    @Override
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {
+      createProfile();
     }
 
     @Override
-    public void setFocus(FocusDirection direction) {
-        if (direction == FocusDirection.BACKWARD) {
-            super.setFocus(direction);
-        } else {
-            editline_nick.setFocus(direction);
-        }
+    public void enterPressed(CharSequence text) {
+      createProfile();
     }
-
-    @Override
-    public void doCancel() {
-        done();
-    }
-
-    private void done() {
-        main_menu.setMenuCentered(profiles_form);
-    }
-
-    private void createProfile() {
-        String nick = editline_nick.getContents();
-        gui_root.addModalForm(new CreatingProfileForm(profiles_form, main_menu, nick));
-    }
-
-    public void connectionLost() {
-        remove();
-    }
-
-    private final class CreateProfileListener implements MouseClickListener, EnterListener {
-        @Override
-        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            createProfile();
-        }
-
-        @Override
-        public void enterPressed(CharSequence text) {
-            createProfile();
-        }
-    }
+  }
 }

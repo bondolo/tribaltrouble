@@ -6,187 +6,186 @@ import com.oddlabs.tt.engine.render.FramePacer;
 import com.oddlabs.tt.input.InputProvider;
 import com.oddlabs.tt.input.Key;
 import com.oddlabs.tt.input.Modifier;
-import org.jspecify.annotations.Nullable;
-
 import java.util.Set;
 import java.util.logging.Logger;
+import org.jspecify.annotations.Nullable;
 
-/**
- * High-level keyboard input processing, including magic developer keys and modifiers.
- */
+/// High-level keyboard input processing, including magic developer keys and modifiers.
 public final class KeyboardInput {
-    private static final Logger logger = Logger.getLogger(KeyboardInput.class.getName());
-    private static final int LITTLE_WARP = 1000;
-    public static final int MEDIUM_WARP = 10000;
-    public static final int LARGE_WARP = 100000;
-    private static final int GOTO_END_OF_LOG_WARP = Integer.MAX_VALUE / 2;
+  private static final Logger logger = Logger.getLogger(KeyboardInput.class.getName());
+  private static final int LITTLE_WARP = 1000;
+  public static final int MEDIUM_WARP = 10000;
+  public static final int LARGE_WARP = 100000;
+  private static final int GOTO_END_OF_LOG_WARP = Integer.MAX_VALUE / 2;
 
-    private final @Nullable FramePacer framePacer;
+  private final @Nullable FramePacer framePacer;
 
-    private boolean left_shift_down;
-    private boolean right_shift_down;
-    private boolean left_control_down;
-    private boolean right_control_down;
-    private boolean left_alt_down;
-    private boolean right_alt_down;
-    private boolean left_meta_down;
-    private boolean right_meta_down;
+  private boolean left_shift_down;
+  private boolean right_shift_down;
+  private boolean left_control_down;
+  private boolean right_control_down;
+  private boolean left_alt_down;
+  private boolean right_alt_down;
+  private boolean left_meta_down;
+  private boolean right_meta_down;
 
-    public KeyboardInput(@Nullable FramePacer framePacer) {
-        this.framePacer = framePacer;
-    }
+  public KeyboardInput(@Nullable FramePacer framePacer) {
+    this.framePacer = framePacer;
+  }
 
-    public void reset(InputProvider<?> input) {
-        while (input != null && input.nextKeyboardEvent())
-            ;
-        left_shift_down = false;
-        right_shift_down = false;
-        left_control_down = false;
-        right_control_down = false;
-        left_alt_down = false;
-        right_alt_down = false;
-        left_meta_down = false;
-        right_meta_down = false;
-    }
+  public void reset(InputProvider<?> input) {
+    while (input != null && input.nextKeyboardEvent())
+      ;
+    left_shift_down = false;
+    right_shift_down = false;
+    left_control_down = false;
+    right_control_down = false;
+    left_alt_down = false;
+    right_alt_down = false;
+    left_meta_down = false;
+    right_meta_down = false;
+  }
 
-    public boolean isAltDown() {
-        return left_alt_down || right_alt_down;
-    }
+  public boolean isAltDown() {
+    return left_alt_down || right_alt_down;
+  }
 
-    public boolean isMetaDown() {
-        return left_meta_down || right_meta_down;
-    }
+  public boolean isMetaDown() {
+    return left_meta_down || right_meta_down;
+  }
 
-    /**
-     * process playback controls.
-     *
-     * @param event_key_down true if the key is down
-     * @param event_key the key
-     * @param playback if true allow magic keys without developer mode or control-shift modifier
-     * @param repeat not an initial key-press
-     * @return true if the key was handled
-     */
-    private boolean checkMagicKey(boolean event_key_down, Key event_key, boolean inDeveloperMode,
-            boolean playback, boolean repeat, Runnable shutdownAction) {
-        boolean control_down = left_control_down || right_control_down;
-        boolean shift_down = left_shift_down || right_shift_down;
-        boolean keys_enabled = inDeveloperMode && control_down && shift_down && !repeat;
-        if (event_key_down && (keys_enabled || playback)) {
-            // check for special events that shouldn't generate events
-            switch (event_key) {
-                case RIGHT, UP, PAGE_UP -> {
-                    if (framePacer != null) {
-                        var amount = switch(event_key) {
-                            case RIGHT -> LITTLE_WARP;
-                            case UP -> MEDIUM_WARP;
-                            case PAGE_UP -> LARGE_WARP;
-                            default -> 0;
-                        };
-                        framePacer.warpTime(amount);
-                    }
-                    return true;
-                }
-                case Q -> {
-                    shutdownAction.run();
-                    return true;
-                }
-                case SPACE -> {
-                    if (framePacer != null) {
-                        framePacer.toggleTimeStop();
-                    }
-                    return true;
-                }
-                case END -> {
-                    logger.info("WARP UNTIL END OF EVENT LOG");
-                    if (framePacer != null) {
-                        framePacer.warpTime(GOTO_END_OF_LOG_WARP);
-                    }
-                    return true;
-                }
-                default -> {
-                }
-            }
+  /**
+   * process playback controls.
+   *
+   * @param `event_key_down` true if the key is down
+   * @param `event_key` the key
+   * @param `playback` if true allow magic keys without developer mode or control-shift modifier
+   * @param `repeat` not an initial key-press
+   * @return true if the key was handled
+   */
+  private boolean checkMagicKey(
+      boolean event_key_down,
+      Key event_key,
+      boolean inDeveloperMode,
+      boolean playback,
+      boolean repeat,
+      Runnable shutdownAction) {
+    boolean control_down = left_control_down || right_control_down;
+    boolean shift_down = left_shift_down || right_shift_down;
+    boolean keys_enabled = inDeveloperMode && control_down && shift_down && !repeat;
+    if (event_key_down && (keys_enabled || playback)) {
+      // check for special events that shouldn't generate events
+      switch (event_key) {
+        case RIGHT, UP, PAGE_UP -> {
+          if (framePacer != null) {
+            var amount =
+                switch (event_key) {
+                  case RIGHT -> LITTLE_WARP;
+                  case UP -> MEDIUM_WARP;
+                  case PAGE_UP -> LARGE_WARP;
+                  default -> 0;
+                };
+            framePacer.warpTime(amount);
+          }
+          return true;
         }
-        return false;
+        case Q -> {
+          shutdownAction.run();
+          return true;
+        }
+        case SPACE -> {
+          if (framePacer != null) {
+            framePacer.toggleTimeStop();
+          }
+          return true;
+        }
+        case END -> {
+          logger.info("WARP UNTIL END OF EVENT LOG");
+          if (framePacer != null) {
+            framePacer.warpTime(GOTO_END_OF_LOG_WARP);
+          }
+          return true;
+        }
+        default -> {}
+      }
+    }
+    return false;
+  }
+
+  public void checkMagicKeys(InputProvider<?> input, Deterministic deterministic) {
+    if (deterministic.isPlayback()) {
+      // During playback the keyboard is used for playback control
+      input.pollKeyboard();
+      while (input.nextKeyboardEvent()) {
+        int event_key_code = input.getEventKey();
+        var event_key = Key.fromSdlCode(event_key_code);
+        if (Key.KEY_UNKNOWN != event_key) {
+          boolean event_key_state = input.getEventKeyState();
+          checkMagicKey(event_key_state, event_key, true, true, input.isRepeatEvent(), () -> {});
+        }
+      }
+    }
+  }
+
+  public boolean poll(InputProvider<?> input, LocalInput localInput, GUIRoot gui_root) {
+    Deterministic deterministic = localInput.getDeterministic();
+    boolean result = false;
+    input.pollKeyboard();
+    if (!deterministic.isPlayback()) {
+      // Update modifiers from raw state to handle lost events or initial state
+      left_shift_down = input.isKeyDown(Key.LSHIFT.getSdlCode());
+      right_shift_down = input.isKeyDown(Key.RSHIFT.getSdlCode());
+      left_control_down = input.isKeyDown(Key.LCONTROL.getSdlCode());
+      right_control_down = input.isKeyDown(Key.RCONTROL.getSdlCode());
+      left_alt_down = input.isKeyDown(Key.LALT.getSdlCode());
+      right_alt_down = input.isKeyDown(Key.RALT.getSdlCode());
+      left_meta_down = input.isKeyDown(Key.LSUPER.getSdlCode());
+      right_meta_down = input.isKeyDown(Key.RSUPER.getSdlCode());
     }
 
-    public void checkMagicKeys(InputProvider<?> input, Deterministic deterministic) {
-        if (deterministic.isPlayback()) {
-            // During playback the keyboard is used for playback control
-            input.pollKeyboard();
-            while (input.nextKeyboardEvent()) {
-                int event_key_code = input.getEventKey();
-                var event_key = Key.fromSdlCode(event_key_code);
-                if (Key.KEY_UNKNOWN != event_key) {
-                    boolean event_key_state = input.getEventKeyState();
-                    checkMagicKey(event_key_state, event_key, true, true, input.isRepeatEvent(), () -> {
-                    });
-                }
-            }
+    while (deterministic.log(input.nextKeyboardEvent())) {
+      result = true;
+      int event_key_code = deterministic.log(input.getEventKey());
+      int event_key_mods = deterministic.log(input.getEventKeyMods());
+      Key event_key = Key.fromSdlCode(event_key_code);
+      boolean event_key_down = deterministic.log(input.getEventKeyState());
+      int event_codepoint = deterministic.log(input.getEventCodepoint());
+      boolean repeat_event = deterministic.log(input.isRepeatEvent());
+
+      switch (event_key) {
+        case LSHIFT -> left_shift_down = event_key_down;
+        case RSHIFT -> right_shift_down = event_key_down;
+        case LCONTROL -> left_control_down = event_key_down;
+        case RCONTROL -> right_control_down = event_key_down;
+        case LALT -> left_alt_down = event_key_down;
+        case RALT -> right_alt_down = event_key_down;
+        case LSUPER -> left_meta_down = event_key_down;
+        case RSUPER -> right_meta_down = event_key_down;
+        default -> {}
+          // Other keys are not tracked as dedicated boolean flags here.
+          // They are processed into the actions set below.
+      }
+
+      if (checkMagicKey(event_key_down, event_key, AppConfig.DEVELOPER_MODE, false, repeat_event, localInput::shutdown))
+        continue;
+
+      Set<Modifier> modifiers = Modifier.fromMask(event_key_mods);
+
+      // Use passed localInput, not static Renderer
+      if (event_key_code == 0 && modifiers.isEmpty()) {
+        gui_root.getInputState().keyTyped(event_key_code, event_codepoint);
+      } else if (event_key_down) {
+        if (Key.KEY_UNKNOWN != event_key || event_codepoint != 0) {
+          localInput.setKeys(event_key, true, modifiers);
+          gui_root.getInputState().keyPressed(event_key, event_codepoint, modifiers, repeat_event);
         }
+      } else {
+        if (Key.KEY_UNKNOWN != event_key || event_codepoint != 0) {
+          localInput.setKeys(event_key, false, modifiers);
+          gui_root.getInputState().keyReleased(event_key, event_codepoint, modifiers);
+        }
+      }
     }
-
-    public boolean poll(InputProvider<?> input, LocalInput localInput, GUIRoot gui_root) {
-        Deterministic deterministic = localInput.getDeterministic();
-        boolean result = false;
-        input.pollKeyboard();
-        if (!deterministic.isPlayback()) {
-            // Update modifiers from raw state to handle lost events or initial state
-            left_shift_down = input.isKeyDown(Key.LSHIFT.getSdlCode());
-            right_shift_down = input.isKeyDown(Key.RSHIFT.getSdlCode());
-            left_control_down = input.isKeyDown(Key.LCONTROL.getSdlCode());
-            right_control_down = input.isKeyDown(Key.RCONTROL.getSdlCode());
-            left_alt_down = input.isKeyDown(Key.LALT.getSdlCode());
-            right_alt_down = input.isKeyDown(Key.RALT.getSdlCode());
-            left_meta_down = input.isKeyDown(Key.LSUPER.getSdlCode());
-            right_meta_down = input.isKeyDown(Key.RSUPER.getSdlCode());
-        }
-
-        while (deterministic.log(input.nextKeyboardEvent())) {
-            result = true;
-            int event_key_code = deterministic.log(input.getEventKey());
-            int event_key_mods = deterministic.log(input.getEventKeyMods());
-            Key event_key = Key.fromSdlCode(event_key_code);
-            boolean event_key_down = deterministic.log(input.getEventKeyState());
-            int event_codepoint = deterministic.log(input.getEventCodepoint());
-            boolean repeat_event = deterministic.log(input.isRepeatEvent());
-
-            switch (event_key) {
-                case LSHIFT -> left_shift_down = event_key_down;
-                case RSHIFT -> right_shift_down = event_key_down;
-                case LCONTROL -> left_control_down = event_key_down;
-                case RCONTROL -> right_control_down = event_key_down;
-                case LALT -> left_alt_down = event_key_down;
-                case RALT -> right_alt_down = event_key_down;
-                case LSUPER -> left_meta_down = event_key_down;
-                case RSUPER -> right_meta_down = event_key_down;
-                default -> {
-                }
-                // Other keys are not tracked as dedicated boolean flags here.
-                // They are processed into the actions set below.
-            }
-
-            if (checkMagicKey(event_key_down, event_key, AppConfig.DEVELOPER_MODE, false, repeat_event,
-                    localInput::shutdown))
-                continue;
-
-            Set<Modifier> modifiers = Modifier.fromMask(event_key_mods);
-
-            // Use passed localInput, not static Renderer
-            if (event_key_code == 0 && modifiers.isEmpty()) {
-                gui_root.getInputState().keyTyped(event_key_code, event_codepoint);
-            } else if (event_key_down) {
-                if (Key.KEY_UNKNOWN != event_key || event_codepoint != 0) {
-                    localInput.setKeys(event_key, true, modifiers);
-                    gui_root.getInputState().keyPressed(event_key, event_codepoint, modifiers, repeat_event);
-                }
-            } else {
-                if (Key.KEY_UNKNOWN != event_key || event_codepoint != 0) {
-                    localInput.setKeys(event_key, false, modifiers);
-                    gui_root.getInputState().keyReleased(event_key, event_codepoint, modifiers);
-                }
-            }
-        }
-        return result;
-    }
+    return result;
+  }
 }

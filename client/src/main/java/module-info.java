@@ -1,36 +1,36 @@
 module com.oddlabs.tt.client {
-    requires transitive com.oddlabs.common;
-    requires transitive com.oddlabs.tt.base;
-    requires transitive com.oddlabs.tt.simulation;
-    requires transitive com.oddlabs.tt.ai;
-    requires com.oddlabs.tt.procedural;
-    requires transitive com.oddlabs.tt.net;
-    requires transitive com.oddlabs.tt.window;
-    requires transitive com.oddlabs.tt.audio;
-    requires transitive com.oddlabs.tt.engine;
-    requires transitive com.oddlabs.tt.scenery;
-    requires com.oddlabs.tt.effects;
-    requires transitive com.oddlabs.tt.gui;
-    requires static org.jspecify;
-    requires java.desktop;
-    requires java.logging;
-    requires org.lwjgl;
-    requires org.lwjgl.opengl;
+  requires transitive com.oddlabs.common;
+  requires transitive com.oddlabs.tt.base;
+  requires transitive com.oddlabs.tt.simulation;
+  requires transitive com.oddlabs.tt.ai;
+  requires com.oddlabs.tt.procedural;
+  requires transitive com.oddlabs.tt.net;
+  requires transitive com.oddlabs.tt.window;
+  requires transitive com.oddlabs.tt.audio;
+  requires transitive com.oddlabs.tt.engine;
+  requires transitive com.oddlabs.tt.scenery;
+  requires com.oddlabs.tt.effects;
+  requires transitive com.oddlabs.tt.gui;
+  requires static org.jspecify;
+  requires java.desktop;
+  requires java.logging;
+  requires org.lwjgl;
+  requires org.lwjgl.opengl;
 
-    exports com.oddlabs.tt.client;
-    exports com.oddlabs.tt.client.camera;
-    exports com.oddlabs.tt.client.delegate;
-    exports com.oddlabs.tt.client.gui;
-    exports com.oddlabs.tt.client.landscape;
-    exports com.oddlabs.tt.client.match;
-    exports com.oddlabs.tt.client.render;
-    exports com.oddlabs.tt.client.resource;
-    exports com.oddlabs.tt.client.screen;
-    exports com.oddlabs.tt.client.settings;
-    exports com.oddlabs.tt.client.trigger;
-    exports com.oddlabs.tt.client.viewer;
+  exports com.oddlabs.tt.client;
+  exports com.oddlabs.tt.client.camera;
+  exports com.oddlabs.tt.client.delegate;
+  exports com.oddlabs.tt.client.gui;
+  exports com.oddlabs.tt.client.landscape;
+  exports com.oddlabs.tt.client.match;
+  exports com.oddlabs.tt.client.render;
+  exports com.oddlabs.tt.client.resource;
+  exports com.oddlabs.tt.client.screen;
+  exports com.oddlabs.tt.client.settings;
+  exports com.oddlabs.tt.client.trigger;
+  exports com.oddlabs.tt.client.viewer;
 
-    provides com.oddlabs.tt.base.global.PropertiesSerializer with
-            com.oddlabs.tt.client.camera.CameraSettings,
-            com.oddlabs.tt.client.GameplaySettings;
+  provides com.oddlabs.tt.base.global.PropertiesSerializer with
+      com.oddlabs.tt.client.camera.CameraSettings,
+      com.oddlabs.tt.client.GameplaySettings;
 }

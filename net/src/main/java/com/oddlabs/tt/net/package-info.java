@@ -1,6 +1,4 @@
-/**
- * Peer-to-peer multiplayer synchronization, frame clock ticks, and session routing for simulation state.
- */
+/** Peer-to-peer multiplayer synchronization, frame clock ticks, and session routing for simulation state. */
 @NullMarked
 package com.oddlabs.tt.net;
 

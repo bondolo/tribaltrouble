@@ -5,104 +5,100 @@ import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Selectable item in a {@link PulldownMenu}.
- */
+/// Selectable item in a {@link PulldownMenu}.
 public final class PulldownItem<T> extends ButtonObject {
-    private final Skin skin;
-    private final Box itemBox;
-    private final Label label;
-    private final @Nullable T attachment;
-    private @Nullable PulldownMenu<T> menu;
+  private final Skin skin;
+  private final Box itemBox;
+  private final Label label;
+  private final @Nullable T attachment;
+  private @Nullable PulldownMenu<T> menu;
 
-    public PulldownItem(GUIRoot guiRoot, String label_str) {
-        this(guiRoot, label_str, null);
-    }
+  public PulldownItem(GUIRoot guiRoot, String label_str) {
+    this(guiRoot, label_str, null);
+  }
 
-    public PulldownItem(GUIRoot guiRoot, String label_str, @Nullable T attachment) {
-        super(guiRoot.getSkin().getPulldownData().font());
-        this.skin = guiRoot.getSkin();
-        this.itemBox = skin.getPulldownData().pulldownItem();
-        this.attachment = attachment;
-        label = new Label(label_str, getFont(), 0, Origin.AT_START);
-        addChild(label);
-        setDim(0, label.getHeight());
-    }
+  public PulldownItem(GUIRoot guiRoot, String label_str, @Nullable T attachment) {
+    super(guiRoot.getSkin().getPulldownData().font());
+    this.skin = guiRoot.getSkin();
+    this.itemBox = skin.getPulldownData().pulldownItem();
+    this.attachment = attachment;
+    label = new Label(label_str, getFont(), 0, Origin.AT_START);
+    addChild(label);
+    setDim(0, label.getHeight());
+  }
 
-    @Override
-    protected Skin getSkin() {
-        return skin;
-    }
+  @Override
+  protected Skin getSkin() {
+    return skin;
+  }
 
-    public @Nullable T getAttachment() {
-        return attachment;
-    }
+  public @Nullable T getAttachment() {
+    return attachment;
+  }
 
-    public int getTextHeight() {
-        return label.getHeight();
-    }
+  public int getTextHeight() {
+    return label.getHeight();
+  }
 
-    public int getTextWidth() {
-        return label.getTextWidth();
-    }
+  public int getTextWidth() {
+    return label.getTextWidth();
+  }
 
-    @Override
-    public PulldownItem<T> setDim(int width, int height) {
-        super.setDim(width, height);
-        label.setDim(getWidth() - itemBox.getLeftOffset() - itemBox.getRightOffset(), label.getHeight());
-        label.setPos(itemBox.getLeftOffset(), (getHeight() - label.getHeight()) / 2);
-        return this;
-    }
+  @Override
+  public PulldownItem<T> setDim(int width, int height) {
+    super.setDim(width, height);
+    label.setDim(getWidth() - itemBox.getLeftOffset() - itemBox.getRightOffset(), label.getHeight());
+    label.setPos(itemBox.getLeftOffset(), (getHeight() - label.getHeight()) / 2);
+    return this;
+  }
 
-    boolean isChosen() {
-        return menu != null && menu.isItemChosen(this);
-    }
+  boolean isChosen() {
+    return menu != null && menu.isItemChosen(this);
+  }
 
-    boolean isHighlighted() {
-        if (isDisabled()) {
-            return false;
-        }
-        if (menu != null && menu.hasHoveredItem()) {
-            return isHovered();
-        }
-        if (menu != null && menu.hasActiveItem()) {
-            return isActive();
-        }
-        return isChosen();
+  boolean isHighlighted() {
+    if (isDisabled()) {
+      return false;
     }
+    if (menu != null && menu.hasHoveredItem()) {
+      return isHovered();
+    }
+    if (menu != null && menu.hasActiveItem()) {
+      return isActive();
+    }
+    return isChosen();
+  }
 
-    @Override
-    protected void renderGeometry(GUIRenderer renderer) {
-        ModeIconQuads.Mode skinMode = isHighlighted()
-                ? ModeIconQuads.Mode.ACTIVE
-                : ModeIconQuads.Mode.NORMAL;
-        itemBox.render(renderer, 0f, 0f, getWidth(), getHeight(), skinMode);
-    }
+  @Override
+  protected void renderGeometry(GUIRenderer renderer) {
+    ModeIconQuads.Mode skinMode = isHighlighted() ? ModeIconQuads.Mode.ACTIVE : ModeIconQuads.Mode.NORMAL;
+    itemBox.render(renderer, 0f, 0f, getWidth(), getHeight(), skinMode);
+  }
 
-    public void setLabelString(CharSequence label_str) {
-        label.set(label_str);
-    }
+  public void setLabelString(CharSequence label_str) {
+    label.set(label_str);
+  }
 
-    public CharSequence getLabelString() {
-        return label;
-    }
+  public CharSequence getLabelString() {
+    return label;
+  }
 
-    public Color getLabelColor() {
-        return label.getColor();
-    }
+  public Color getLabelColor() {
+    return label.getColor();
+  }
 
-    public void setLabelColor(Color color) {
-        label.setColor(color);
-    }
+  public void setLabelColor(Color color) {
+    label.setColor(color);
+  }
 
-    void setMenu(@Nullable PulldownMenu<T> menu) {
-        this.menu = menu;
-    }
+  void setMenu(@Nullable PulldownMenu<T> menu) {
+    this.menu = menu;
+  }
 
-    @Override
-    protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
-        if (menu != null) {
-            menu.chooseItem(this);
-        }
+  @Override
+  protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
+    if (menu != null) {
+      menu.chooseItem(this);
     }
+  }
 }

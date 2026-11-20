@@ -1,31 +1,28 @@
 package com.oddlabs.tt.content.campaign.natives;
 
-import com.oddlabs.tt.content.campaign.Campaign;
-import com.oddlabs.tt.content.campaign.CampaignDialogForm;
-import com.oddlabs.tt.content.campaign.CampaignState;
-import com.oddlabs.tt.content.campaign.InGameCampaignDialogForm;
-import com.oddlabs.tt.content.campaign.Island;
-import com.oddlabs.tt.simulation.model.Race;
-
-import com.oddlabs.tt.simulation.model.Difficulty;
-
-import com.oddlabs.tt.simulation.model.BuildingType;
-
-import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.simulation.model.UnitType;
-
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.FirstPersonCamera;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.camera.JumpCamera;
 import com.oddlabs.tt.client.camera.MapCamera;
 import com.oddlabs.tt.client.delegate.JumpDelegate;
+import com.oddlabs.tt.client.trigger.VictoryTrigger;
+import com.oddlabs.tt.content.campaign.Campaign;
+import com.oddlabs.tt.content.campaign.CampaignDialogForm;
+import com.oddlabs.tt.content.campaign.CampaignState;
+import com.oddlabs.tt.content.campaign.InGameCampaignDialogForm;
+import com.oddlabs.tt.content.campaign.Island;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.simulation.model.BuildingType;
+import com.oddlabs.tt.simulation.model.Difficulty;
+import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.SceneryModel;
 import com.oddlabs.tt.simulation.model.StatueScenery;
+import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.Unit;
-import java.util.List;
+import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
@@ -33,327 +30,369 @@ import com.oddlabs.tt.simulation.player.SlotType;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.NearArmyTrigger;
-import com.oddlabs.tt.client.trigger.VictoryTrigger;
-import com.oddlabs.tt.base.util.Utils;
-
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
-/**
- * Campaign level logic for Native Island 0, containing objectives and triggers.
- */
+/// Campaign level logic for Native Island 0, containing objectives and triggers.
 final class NativeIsland0 extends Island {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland0.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland0.class.getName());
 
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  private int objective = 0;
+
+  NativeIsland0(Campaign campaign) {
+    super(campaign);
+  }
+
+  @Override
+  public void init(GUIRoot gui_root) {
+    String[] ai_names = IntStream.range(0, 6).mapToObj(i -> i18n("name" + i)).toArray(String[]::new);
+    var game_network =
+        startNewGame(gui_root, 1024, Terrain.NATIVE, .75f, .65f, .85f, 25, 0, NativeCampaign.MAX_UNITS, ai_names);
+    game_network
+        .getClient()
+        .getServerInterface()
+        .setPlayerSlot(0, SlotType.HUMAN, Race.NATIVES, 0, true, AIDifficulty.NONE);
+    game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
+    game_network
+        .getClient()
+        .getServerInterface()
+        .setPlayerSlot(1, SlotType.AI, Race.NATIVES, PlayerInfo.TEAM_NEUTRAL, true, AIDifficulty.NEUTRAL_CAMPAIGN);
+    game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
+    switch (getCampaign().getState().getDifficulty()) {
+      case Difficulty.EASY, Difficulty.NORMAL, Difficulty.HARD -> {}
+      default ->
+          throw new IllegalArgumentException("unexpected difficulty: " + getCampaign().getState().getDifficulty());
     }
+    game_network
+        .getClient()
+        .getServerInterface()
+        .setPlayerSlot(2, SlotType.AI, Race.VIKINGS, 1, true, AIDifficulty.HARD);
+    game_network.getClient().setUnitInfo(2, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
+    game_network
+        .getClient()
+        .getServerInterface()
+        .setPlayerSlot(3, SlotType.AI, Race.NATIVES, 0, true, AIDifficulty.NEUTRAL_CAMPAIGN);
+    game_network.getClient().setUnitInfo(3, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
+    game_network.getClient().getServerInterface().startServer();
+  }
 
-    private int objective = 0;
+  @Override
+  protected void start() {
+    final Player local_player = getViewer().getLocalPlayer();
+    final Player reinforcements = getViewer().getWorld().getPlayers().get(1);
+    final Player enemy = getViewer().getWorld().getPlayers().get(2);
+    final Player natives = getViewer().getWorld().getPlayers().get(3);
 
-    NativeIsland0(Campaign campaign) {
-        super(campaign);
-    }
+    final int chief_start_x = 140 * 2;
+    final int chief_start_y = 117 * 2;
+    final int viking_start_x = 179 * 2; // 236*2;
+    final int viking_start_y = 195 * 2; // 362*2;
 
-    @Override
-    public void init(GUIRoot gui_root) {
-        String[] ai_names = IntStream.range(0, 6)
-                .mapToObj(i -> i18n("name" + i))
-                .toArray(String[]::new);
-        var game_network = startNewGame(gui_root, 1024, Terrain.NATIVE, .75f, .65f, .85f,
-                25, 0, NativeCampaign.MAX_UNITS, ai_names);
-        game_network.getClient().getServerInterface().setPlayerSlot(0,
-                SlotType.HUMAN,
-                Race.NATIVES,
-                0,
-                true,
-                AIDifficulty.NONE);
-        game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
-        game_network.getClient().getServerInterface().setPlayerSlot(1,
-                SlotType.AI,
-                Race.NATIVES,
-                PlayerInfo.TEAM_NEUTRAL,
-                true,
-                AIDifficulty.NEUTRAL_CAMPAIGN);
-        game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
+    // Move start position (for the camera)
+    getViewer().getCamera().reset(viking_start_x, viking_start_y);
+
+    // Introduction
+    final Runnable dialog1 =
+        () -> {
+          CampaignDialogForm dialog =
+              new InGameCampaignDialogForm(
+                  getViewer(),
+                  i18n("header1"),
+                  i18n("dialog1"),
+                  getCampaign().getIcons().getFaces()[0],
+                  Origin.AT_START);
+          addModalForm(dialog);
+        };
+    final Runnable camera_jump0 =
+        () ->
+            getViewer()
+                .getGUIRoot()
+                .pushDelegate(
+                    new JumpDelegate(
+                        getViewer(), getViewer().getCamera(), chief_start_x + 7, chief_start_y + 7, 200f, 3f, dialog1));
+    final Runnable dialog0 =
+        () -> {
+          CampaignDialogForm dialog =
+              new InGameCampaignDialogForm(
+                  getViewer(),
+                  i18n("header0"),
+                  i18n("dialog0"),
+                  getCampaign().getIcons().getFaces()[0],
+                  Origin.AT_START,
+                  camera_jump0);
+          addModalForm(dialog);
+        };
+    new GameStartedTrigger(getViewer().getWorld(), dialog0);
+
+    // Insert initial natives
+    ResourceBundle player_bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
+    local_player.setActiveChieftain(
+        new Unit(
+            local_player,
+            chief_start_x,
+            chief_start_y,
+            null,
+            local_player.getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN),
+            Utils.getBundleString(player_bundle, "native_chieftain_name"),
+            false));
+    //		local_player.getChieftain().increaseMagicEnergy(0, 1000);
+    //		local_player.getChieftain().increaseMagicEnergy(1, 1000);
+
+    natives.buildBuilding(BuildingType.QUARTERS, 135, 128);
+    natives.buildBuilding(BuildingType.ARMORY, 143, 124);
+    new Unit(natives, 145 * 2, 127 * 2, null, natives.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+    new Unit(natives, 149 * 2, 122 * 2, null, natives.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+    new Unit(natives, 145 * 2, 119 * 2, null, natives.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+    new Unit(natives, 150 * 2, 125 * 2, null, natives.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+
+    // Insert reinforcements
+    int num_reinforcements =
         switch (getCampaign().getState().getDifficulty()) {
-            case Difficulty.EASY, Difficulty.NORMAL, Difficulty.HARD -> {
-            }
-            default ->
-                throw new IllegalArgumentException("unexpected difficulty: " + getCampaign().getState()
-                        .getDifficulty());
-        }
-        game_network.getClient().getServerInterface().setPlayerSlot(2,
-                SlotType.AI,
-                Race.VIKINGS,
-                1,
-                true,
-                AIDifficulty.HARD);
-        game_network.getClient().setUnitInfo(2, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
-        game_network.getClient().getServerInterface().setPlayerSlot(3,
-                SlotType.AI,
-                Race.NATIVES,
-                0,
-                true,
-                AIDifficulty.NEUTRAL_CAMPAIGN);
-        game_network.getClient().setUnitInfo(3, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
-        game_network.getClient().getServerInterface().startServer();
+          case Difficulty.EASY -> 15;
+          case Difficulty.NORMAL -> 10;
+          case Difficulty.HARD -> 6;
+          default -> throw new IllegalArgumentException();
+        };
+    final Unit[] reinforcement_peons = new Unit[num_reinforcements];
+
+    reinforcement_peons[0] =
+        new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
+    reinforcement_peons[1] =
+        new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
+    reinforcement_peons[2] =
+        new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
+    reinforcement_peons[3] =
+        new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
+    reinforcement_peons[4] =
+        new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
+    reinforcement_peons[5] =
+        new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
+    if (getCampaign().getState().getDifficulty() == Difficulty.EASY
+        || getCampaign().getState().getDifficulty() == Difficulty.NORMAL) {
+      reinforcement_peons[6] =
+          new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
+      reinforcement_peons[7] =
+          new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
+      reinforcement_peons[8] =
+          new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
+      reinforcement_peons[9] =
+          new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
+    }
+    if (getCampaign().getState().getDifficulty() == Difficulty.EASY) {
+      reinforcement_peons[10] =
+          new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
+      reinforcement_peons[11] =
+          new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
+      reinforcement_peons[12] =
+          new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
+      reinforcement_peons[13] =
+          new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
+      reinforcement_peons[14] =
+          new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo().getUnitTemplate(UnitType.PEON));
     }
 
-    @Override
-    protected void start() {
-        final Player local_player = getViewer().getLocalPlayer();
-        final Player reinforcements = getViewer().getWorld().getPlayers().get(1);
-        final Player enemy = getViewer().getWorld().getPlayers().get(2);
-        final Player natives = getViewer().getWorld().getPlayers().get(3);
+    // Insert viking men
+    enemy.setActiveChieftain(
+        new Unit(
+            enemy,
+            viking_start_x,
+            viking_start_y,
+            null,
+            enemy.getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN),
+            Utils.getBundleString(player_bundle, "chieftain_name"),
+            false));
+    enemy
+        .getChieftain()
+        .ifPresent(chieftain -> chieftain.getOwner().getRaceInfo().getMagics().forEach(chieftain::maxMagicEnergy));
 
-        final int chief_start_x = 140 * 2;
-        final int chief_start_y = 117 * 2;
-        final int viking_start_x = 179 * 2;//236*2;
-        final int viking_start_y = 195 * 2;//362*2;
+    int num_iron = 45;
+    for (int i = 0; i < num_iron; i++) {
+      new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
+    }
+    int num_rubber = 15;
+    for (int i = 0; i < num_rubber; i++) {
+      new Unit(
+          enemy, viking_start_x, viking_start_y, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+    }
+    // Initiate attack
+    natives.getArmory().ifPresent(armory -> attack(enemy, armory, num_iron + num_rubber + 1));
 
-        // Move start position (for the camera)
-        getViewer().getCamera().reset(viking_start_x, viking_start_y);
-
-        // Introduction
-        final Runnable dialog1 = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header1"),
-                    i18n("dialog1"),
-                    getCampaign().getIcons().getFaces()[0],
-                    Origin.AT_START);
-            addModalForm(dialog);
+    // Winning condition
+    final Runnable dialog7 =
+        () -> {
+          CampaignDialogForm dialog =
+              new InGameCampaignDialogForm(
+                  getViewer(),
+                  i18n("header7"),
+                  i18n("dialog7"),
+                  getCampaign().getIcons().getFaces()[6],
+                  Origin.AT_END,
+                  () -> {
+                    // Winner prize
+                    getCampaign().getState().setIslandState(0, CampaignState.ISLAND_COMPLETED);
+                    getCampaign().getState().setIslandState(1, CampaignState.ISLAND_AVAILABLE);
+                    getCampaign().victory(getViewer());
+                  });
+          addModalForm(dialog);
         };
-        final Runnable camera_jump0 = () -> getViewer().getGUIRoot().pushDelegate(new JumpDelegate(getViewer(),
-                getViewer().getCamera(), chief_start_x + 7, chief_start_y + 7, 200f, 3f, dialog1));
-        final Runnable dialog0 = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header0"),
-                    i18n("dialog0"),
-                    getCampaign().getIcons().getFaces()[0],
-                    Origin.AT_START,
-                    camera_jump0);
-            addModalForm(dialog);
+    final Runnable dialog6 =
+        () -> {
+          CampaignDialogForm dialog =
+              new InGameCampaignDialogForm(
+                  getViewer(),
+                  i18n("header6"),
+                  i18n("dialog6"),
+                  getCampaign().getIcons().getFaces()[0],
+                  Origin.AT_START,
+                  dialog7);
+          addModalForm(dialog);
         };
-        new GameStartedTrigger(getViewer().getWorld(), dialog0);
-
-        // Insert initial natives
-        ResourceBundle player_bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
-        local_player.setActiveChieftain(new Unit(local_player, chief_start_x, chief_start_y, null, local_player
-                .getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle,
-                        "native_chieftain_name"), false));
-//		local_player.getChieftain().increaseMagicEnergy(0, 1000);
-//		local_player.getChieftain().increaseMagicEnergy(1, 1000);
-
-        natives.buildBuilding(BuildingType.QUARTERS, 135, 128);
-        natives.buildBuilding(BuildingType.ARMORY, 143, 124);
-        new Unit(natives, 145 * 2, 127 * 2, null, natives.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
-        new Unit(natives, 149 * 2, 122 * 2, null, natives.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
-        new Unit(natives, 145 * 2, 119 * 2, null, natives.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
-        new Unit(natives, 150 * 2, 125 * 2, null, natives.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
-
-        // Insert reinforcements
-        int num_reinforcements = switch (getCampaign().getState().getDifficulty()) {
-            case Difficulty.EASY -> 15;
-            case Difficulty.NORMAL -> 10;
-            case Difficulty.HARD -> 6;
-            default -> throw new IllegalArgumentException();
-        };
-        final Unit[] reinforcement_peons = new Unit[num_reinforcements];
-
-        reinforcement_peons[0] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                .getUnitTemplate(UnitType.PEON));
-        reinforcement_peons[1] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                .getUnitTemplate(UnitType.PEON));
-        reinforcement_peons[2] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                .getUnitTemplate(UnitType.PEON));
-        reinforcement_peons[3] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                .getUnitTemplate(UnitType.PEON));
-        reinforcement_peons[4] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                .getUnitTemplate(UnitType.PEON));
-        reinforcement_peons[5] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                .getUnitTemplate(UnitType.PEON));
-        if (getCampaign().getState().getDifficulty() == Difficulty.EASY || getCampaign().getState()
-                .getDifficulty() == Difficulty.NORMAL) {
-            reinforcement_peons[6] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                    .getUnitTemplate(UnitType.PEON));
-            reinforcement_peons[7] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                    .getUnitTemplate(UnitType.PEON));
-            reinforcement_peons[8] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                    .getUnitTemplate(UnitType.PEON));
-            reinforcement_peons[9] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                    .getUnitTemplate(UnitType.PEON));
-        }
-        if (getCampaign().getState().getDifficulty() == Difficulty.EASY) {
-            reinforcement_peons[10] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                    .getUnitTemplate(UnitType.PEON));
-            reinforcement_peons[11] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                    .getUnitTemplate(UnitType.PEON));
-            reinforcement_peons[12] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                    .getUnitTemplate(UnitType.PEON));
-            reinforcement_peons[13] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                    .getUnitTemplate(UnitType.PEON));
-            reinforcement_peons[14] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
-                    .getUnitTemplate(UnitType.PEON));
-        }
-
-        // Insert viking men
-        enemy.setActiveChieftain(new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRaceInfo()
-                .getUnitTemplate(
-                        UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
-        enemy.getChieftain().ifPresent(chieftain -> chieftain.getOwner().getRaceInfo().getMagics().forEach(
-                chieftain::maxMagicEnergy));
-
-        int num_iron = 45;
-        for (int i = 0; i < num_iron; i++) {
-            new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_IRON));
-        }
-        int num_rubber = 15;
-        for (int i = 0; i < num_rubber; i++) {
-            new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRaceInfo().getUnitTemplate(
-                    UnitType.WARRIOR_RUBBER));
-        }
-        // Initiate attack
-        natives.getArmory().ifPresent(armory -> attack(enemy, armory, num_iron + num_rubber + 1));
-
-        // Winning condition
-        final Runnable dialog7 = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header7"),
-                    i18n("dialog7"),
-                    getCampaign().getIcons().getFaces()[6],
-                    Origin.AT_END,
-                    () -> {
-                        // Winner prize
-                        getCampaign().getState().setIslandState(0, CampaignState.ISLAND_COMPLETED);
-                        getCampaign().getState().setIslandState(1, CampaignState.ISLAND_AVAILABLE);
-                        getCampaign().victory(getViewer());
-                    });
-            addModalForm(dialog);
-        };
-        final Runnable dialog6 = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header6"),
-                    i18n("dialog6"),
-                    getCampaign().getIcons().getFaces()[0],
-                    Origin.AT_START,
-                    dialog7);
-            addModalForm(dialog);
-        };
-        new VictoryTrigger(getViewer(), () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header5"),
-                    i18n("dialog5"),
-                    getCampaign().getIcons().getFaces()[6],
-                    Origin.AT_END,
-                    dialog6);
-            addModalForm(dialog);
+    new VictoryTrigger(
+        getViewer(),
+        () -> {
+          CampaignDialogForm dialog =
+              new InGameCampaignDialogForm(
+                  getViewer(),
+                  i18n("header5"),
+                  i18n("dialog5"),
+                  getCampaign().getIcons().getFaces()[6],
+                  Origin.AT_END,
+                  dialog6);
+          addModalForm(dialog);
         });
 
-        // Insert treasures
-        float dir = (float) Math.sin(Math.PI / 4);
-        final StatueScenery[] scenery_models = placeStatues(i18n("statue"),
-                StatuePlacement.atGrid(163, 126, 0, 1, 0, StatuePlacement.LARGE_SHADOW_DIAMETER),
-                StatuePlacement.atGrid(130, 124, -dir, -dir, 3),
-                StatuePlacement.atGrid(152, 138, dir, dir, 1),
-                StatuePlacement.atGrid(152, 144, 0, 1, 3),
-                StatuePlacement.atGrid(140, 140, 0, 1, 4),
-                StatuePlacement.atGrid(143, 116, 0, -1, 1),
-                StatuePlacement.atGrid(142, 131, dir, -dir, 5),
-                StatuePlacement.atGrid(423, 174, 0, 1, 1),
-                StatuePlacement.atGrid(408, 161, -1, 0, 3),
-                StatuePlacement.atGrid(426, 156, dir, -dir, 5),
-                StatuePlacement.atGrid(418, 165, 0, 1, 1),
-                StatuePlacement.atGrid(430, 165, 1, 0, 3),
-                StatuePlacement.atGrid(419, 170, -dir, dir, 4),
-                StatuePlacement.atGrid(416, 156, 0, -1, 5));
+    // Insert treasures
+    float dir = (float) Math.sin(Math.PI / 4);
+    final StatueScenery[] scenery_models =
+        placeStatues(
+            i18n("statue"),
+            StatuePlacement.atGrid(163, 126, 0, 1, 0, StatuePlacement.LARGE_SHADOW_DIAMETER),
+            StatuePlacement.atGrid(130, 124, -dir, -dir, 3),
+            StatuePlacement.atGrid(152, 138, dir, dir, 1),
+            StatuePlacement.atGrid(152, 144, 0, 1, 3),
+            StatuePlacement.atGrid(140, 140, 0, 1, 4),
+            StatuePlacement.atGrid(143, 116, 0, -1, 1),
+            StatuePlacement.atGrid(142, 131, dir, -dir, 5),
+            StatuePlacement.atGrid(423, 174, 0, 1, 1),
+            StatuePlacement.atGrid(408, 161, -1, 0, 3),
+            StatuePlacement.atGrid(426, 156, dir, -dir, 5),
+            StatuePlacement.atGrid(418, 165, 0, 1, 1),
+            StatuePlacement.atGrid(430, 165, 1, 0, 3),
+            StatuePlacement.atGrid(419, 170, -dir, dir, 4),
+            StatuePlacement.atGrid(416, 156, 0, -1, 5));
 
-        final Runnable dialog4 = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header4"),
-                    i18n("dialog4"),
-                    getCampaign().getIcons().getFaces()[0],
-                    Origin.AT_START);
-            addModalForm(dialog);
-            for (Unit reinforcement_peon : reinforcement_peons) {
-                if (!reinforcement_peon.isDead()) {
-                    changeOwner(reinforcement_peon, local_player);
-                }
+    final Runnable dialog4 =
+        () -> {
+          CampaignDialogForm dialog =
+              new InGameCampaignDialogForm(
+                  getViewer(),
+                  i18n("header4"),
+                  i18n("dialog4"),
+                  getCampaign().getIcons().getFaces()[0],
+                  Origin.AT_START);
+          addModalForm(dialog);
+          for (Unit reinforcement_peon : reinforcement_peons) {
+            if (!reinforcement_peon.isDead()) {
+              changeOwner(reinforcement_peon, local_player);
             }
+          }
         };
-        final Runnable dialog3 = () -> {
-            changeObjective(1);
-            // Remove statues
-            for (SceneryModel scenery_model : scenery_models) {
-                scenery_model.remove();
-            }
-            // Remove Vikings
-            List.copyOf(enemy.getUnits().getSet()).stream()
-                    .filter(s -> s instanceof Unit u && !u.isDead())
-                    .map(Unit.class::cast)
-                    .forEach(Unit::removeNow);
-            // Insert new Vikings
-            int new_viking_start_x = 437 * 2;
-            int new_viking_start_y = 140 * 2;
-            int num_peons = switch (getCampaign().getState().getDifficulty()) {
+    final Runnable dialog3 =
+        () -> {
+          changeObjective(1);
+          // Remove statues
+          for (SceneryModel scenery_model : scenery_models) {
+            scenery_model.remove();
+          }
+          // Remove Vikings
+          List.copyOf(enemy.getUnits().getSet()).stream()
+              .filter(s -> s instanceof Unit u && !u.isDead())
+              .map(Unit.class::cast)
+              .forEach(Unit::removeNow);
+          // Insert new Vikings
+          int new_viking_start_x = 437 * 2;
+          int new_viking_start_y = 140 * 2;
+          int num_peons =
+              switch (getCampaign().getState().getDifficulty()) {
                 case Difficulty.EASY -> 5;
                 case Difficulty.NORMAL -> 10;
                 case Difficulty.HARD -> 15;
-            };
-            var peonTemplate = enemy.getRaceInfo().getUnitTemplate(UnitType.PEON);
-            for (int i = 0; i < num_peons; i++) {
-                new Unit(enemy, new_viking_start_x, new_viking_start_y, null, peonTemplate);
-            }
-            // Remove natives
-            List.copyOf(natives.getUnits().getSet()).stream()
-                    .filter(s -> !s.isDead())
-                    .forEach(s -> s.hit(10000, 0, 1, enemy));
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header3"),
-                    i18n("dialog3"),
-                    getCampaign().getIcons().getFaces()[2],
-                    Origin.AT_END,
-                    dialog4);
-            addModalForm(dialog);
+              };
+          var peonTemplate = enemy.getRaceInfo().getUnitTemplate(UnitType.PEON);
+          for (int i = 0; i < num_peons; i++) {
+            new Unit(enemy, new_viking_start_x, new_viking_start_y, null, peonTemplate);
+          }
+          // Remove natives
+          List.copyOf(natives.getUnits().getSet()).stream()
+              .filter(s -> !s.isDead())
+              .forEach(s -> s.hit(10000, 0, 1, enemy));
+          CampaignDialogForm dialog =
+              new InGameCampaignDialogForm(
+                  getViewer(),
+                  i18n("header3"),
+                  i18n("dialog3"),
+                  getCampaign().getIcons().getFaces()[2],
+                  Origin.AT_END,
+                  dialog4);
+          addModalForm(dialog);
         };
-        final Runnable dialog2 = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header2"),
-                    i18n("dialog2"),
-                    getCampaign().getIcons().getFaces()[0],
-                    Origin.AT_START,
-                    dialog3);
-            addModalForm(dialog);
+    final Runnable dialog2 =
+        () -> {
+          CampaignDialogForm dialog =
+              new InGameCampaignDialogForm(
+                  getViewer(),
+                  i18n("header2"),
+                  i18n("dialog2"),
+                  getCampaign().getIcons().getFaces()[0],
+                  Origin.AT_START,
+                  dialog3);
+          addModalForm(dialog);
         };
-        new NearArmyTrigger(reinforcement_peons, 10f, local_player, () -> {
-            int x = 230 * 2;
-            int y = 108 * 2;
-            Camera camera = getViewer().getDelegate().getCamera();
-            if (camera instanceof GameCamera gameCamera) {
-                getViewer().getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), gameCamera, x, y, 200f, 3f,
-                        dialog2));
-            } else if (camera instanceof MapCamera mapCamera) {
-                mapCamera.mapGoto(x, y, true);
-                dialog2.run();
-            } else if (camera instanceof JumpCamera || camera instanceof FirstPersonCamera) {
-                getViewer().getGUIRoot().removeDelegate(getViewer().getGUIRoot().getDelegate());
-                getViewer().getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), getViewer().getCamera(), x, y, 200f,
-                        3f, dialog2));
-            } else {
-                throw new RuntimeException("Camera = " + camera);
-            }
+    new NearArmyTrigger(
+        reinforcement_peons,
+        10f,
+        local_player,
+        () -> {
+          int x = 230 * 2;
+          int y = 108 * 2;
+          Camera camera = getViewer().getDelegate().getCamera();
+          if (camera instanceof GameCamera gameCamera) {
+            getViewer().getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), gameCamera, x, y, 200f, 3f, dialog2));
+          } else if (camera instanceof MapCamera mapCamera) {
+            mapCamera.mapGoto(x, y, true);
+            dialog2.run();
+          } else if (camera instanceof JumpCamera || camera instanceof FirstPersonCamera) {
+            getViewer().getGUIRoot().removeDelegate(getViewer().getGUIRoot().getDelegate());
+            getViewer()
+                .getGUIRoot()
+                .pushDelegate(new JumpDelegate(getViewer(), getViewer().getCamera(), x, y, 200f, 3f, dialog2));
+          } else {
+            throw new RuntimeException("Camera = " + camera);
+          }
         });
-    }
+  }
 
-    @Override
-    public CharSequence getHeader() {
-        return i18n("header");
-    }
+  @Override
+  public CharSequence getHeader() {
+    return i18n("header");
+  }
 
-    @Override
-    public CharSequence getDescription() {
-        return i18n("description");
-    }
+  @Override
+  public CharSequence getDescription() {
+    return i18n("description");
+  }
 
-    @Override
-    public CharSequence getCurrentObjective() {
-        return i18n("objective" + objective);
-    }
+  @Override
+  public CharSequence getCurrentObjective() {
+    return i18n("objective" + objective);
+  }
 
-    private void changeObjective(int objective) {
-        this.objective = objective;
-    }
+  private void changeObjective(int objective) {
+    this.objective = objective;
+  }
 }

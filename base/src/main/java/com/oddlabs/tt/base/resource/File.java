@@ -1,8 +1,6 @@
 package com.oddlabs.tt.base.resource;
 
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
@@ -13,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Abstract base class for resources loaded from a URI.
@@ -21,50 +20,51 @@ import java.util.function.Supplier;
  */
 public abstract class File<R> implements Supplier<R> {
 
-    private final URI uri;
+  private final URI uri;
 
-    public File(URI uri) {
-        this.uri = uri;
+  public File(URI uri) {
+    this.uri = uri;
+  }
+
+  protected File(String location) {
+    this(Utils.makeURI(location));
+  }
+
+  public final URL getURL() {
+    try {
+      return uri.toURL();
+    } catch (MalformedURLException e) {
+      throw new UncheckedIOException(new IOException("bad location: " + uri, e));
     }
+  }
 
-    protected File(String location) {
-        this(Utils.makeURI(location));
-    }
+  @Override
+  public abstract R get();
 
-    public final URL getURL() {
-        try {
-            return uri.toURL();
-        } catch (MalformedURLException e) {
-            throw new UncheckedIOException(new IOException("bad location: " + uri, e));
-        }
-    }
+  @Override
+  public final int hashCode() {
+    return uri.hashCode();
+  }
 
-    @Override
-    public abstract R get();
+  @Override
+  public boolean equals(@Nullable Object o) {
+    return o instanceof File<?> other && uri.equals(other.uri);
+  }
 
-    @Override
-    public final int hashCode() {
-        return uri.hashCode();
-    }
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{uri=" + uri.toASCIIString() + '}';
+  }
 
-    @Override
-    public boolean equals(@Nullable Object o) {
-        return o instanceof File<?> other && uri.equals(other.uri);
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "{uri=" + uri.toASCIIString() + '}';
-    }
-
-    protected static Optional<URI> locate(String location) {
-        URL url_classpath = Utils.class.getResource(location);
-        if (url_classpath != null) try {
-            return Optional.of(url_classpath.toURI());
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException(e);
-        }
-        Path file = com.oddlabs.tt.base.util.Utils.getInstallDir().resolve(location);
-        return Files.isRegularFile(file) && Files.isReadable(file) ? Optional.of(file.toUri()) : Optional.empty();
-    }
+  protected static Optional<URI> locate(String location) {
+    URL url_classpath = Utils.class.getResource(location);
+    if (url_classpath != null)
+      try {
+        return Optional.of(url_classpath.toURI());
+      } catch (URISyntaxException e) {
+        throw new IllegalArgumentException(e);
+      }
+    Path file = com.oddlabs.tt.base.util.Utils.getInstallDir().resolve(location);
+    return Files.isRegularFile(file) && Files.isReadable(file) ? Optional.of(file.toUri()) : Optional.empty();
+  }
 }

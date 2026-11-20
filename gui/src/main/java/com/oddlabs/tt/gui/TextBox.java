@@ -2,141 +2,144 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.font.TextLayout;
-import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
+import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.util.Color;
 
-/**
- * Multi-line scrollable text display and container.
- */
+/// Multi-line scrollable text display and container.
 public class TextBox extends TextField implements Scrollable, Clipped {
-    final Skin skin;
-    final Box editBox;
-    private TextLayout textLayout;
-    private final ScrollBar scroll_bar;
+  final Skin skin;
+  final Box editBox;
+  private TextLayout textLayout;
+  private final ScrollBar scroll_bar;
 
-    private int offset_y;
+  private int offset_y;
 
-    public TextBox(GUIRoot guiRoot, int width, int height, Font font, int max_codepoints) {
-        super(font, max_codepoints);
-        this.skin = guiRoot.getSkin();
-        this.editBox = skin.getEditBox();
-        setDim(width, height);
-        setCanFocus(true);
-        offset_y = 0;
-        textLayout = new TextLayout(font, getText(), width);
+  public TextBox(GUIRoot guiRoot, int width, int height, Font font, int max_codepoints) {
+    super(font, max_codepoints);
+    this.skin = guiRoot.getSkin();
+    this.editBox = skin.getEditBox();
+    setDim(width, height);
+    setCanFocus(true);
+    offset_y = 0;
+    textLayout = new TextLayout(font, getText(), width);
 
-        scroll_bar = new ScrollBar(guiRoot, height, this);
+    scroll_bar = new ScrollBar(guiRoot, height, this);
 
-        updateLayout();
-        scroll_bar.setPos(width - scroll_bar.getWidth(), 0);
-        addChild(scroll_bar);
+    updateLayout();
+    scroll_bar.setPos(width - scroll_bar.getWidth(), 0);
+    addChild(scroll_bar);
+  }
+
+  @Override
+  protected Skin getSkin() {
+    return skin;
+  }
+
+  private void updateLayout() {
+    int wrapWidth = getWidth() - editBox.getLeftOffset() - editBox.getRightOffset() - scroll_bar.getWidth();
+    textLayout = new TextLayout(getFont(), getText(), wrapWidth);
+    scroll_bar.update();
+  }
+
+  @Override
+  public TextBox setText(CharSequence text) {
+    super.setText(text);
+    updateLayout();
+    return this;
+  }
+
+  @Override
+  public final boolean append(CharSequence str) {
+    var result = super.append(str);
+    if (result) {
+      updateLayout();
     }
+    return result;
+  }
 
-    @Override
-    protected Skin getSkin() {
-        return skin;
+  protected final TextLayout getTextLayout() {
+    return textLayout;
+  }
+
+  protected final void renderBox(GUIRenderer renderer, ModeIconQuads.Mode skinMode) {
+    editBox.render(renderer, 0f, 0f, getWidth() - scroll_bar.getWidth(), getHeight(), skinMode);
+  }
+
+  @Override
+  protected void renderGeometry(GUIRenderer renderer) {
+    renderBox(renderer, ModeIconQuads.Mode.NORMAL);
+    TextLineRenderer.render(
+        renderer,
+        textLayout,
+        editBox.getLeftOffset(),
+        getHeight() - editBox.getBottomOffset() - getFont().getHeight() + offset_y,
+        editBox.getLeftOffset(),
+        getWidth() - editBox.getRightOffset(),
+        Color.Standard.WHITE);
+  }
+
+  @Override
+  protected final void mouseScrolled(int amount) {
+    setOffsetY(offset_y + (amount > 0 ? -3 : 3) * getFont().getHeight());
+  }
+
+  @Override
+  public final void setOffsetY(int new_offset) {
+    offset_y = Math.max(new_offset, 0);
+
+    Box edit_box = skin.getEditBox();
+    int max_offset_y =
+        Math.max(0, textLayout.getTextHeight() - (getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset()));
+    offset_y = Math.min(offset_y, max_offset_y);
+    scroll_bar.update();
+  }
+
+  @Override
+  public final int getOffsetY() {
+    return offset_y;
+  }
+
+  @Override
+  public final int getStepHeight() {
+    return getFont().getHeight();
+  }
+
+  @Override
+  public final void jumpPage(boolean up) {
+    Box edit_box = skin.getEditBox();
+    int inner_height = getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset();
+    setOffsetY(offset_y + (up ? -inner_height : inner_height));
+  }
+
+  @Override
+  public final float getScrollBarRatio() {
+    int text_height = textLayout.getTextHeight();
+    Box edit_box = skin.getEditBox();
+    int inner_height = getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset();
+    if (text_height <= inner_height) {
+      return 1.0f;
     }
+    return (float) inner_height / text_height;
+  }
 
-    private void updateLayout() {
-        int wrapWidth = getWidth() - editBox.getLeftOffset() - editBox.getRightOffset() - scroll_bar.getWidth();
-        textLayout = new TextLayout(getFont(), getText(), wrapWidth);
-        scroll_bar.update();
-    }
+  @Override
+  public final float getScrollBarOffset() {
+    int text_height = textLayout.getTextHeight();
+    Box edit_box = skin.getEditBox();
+    int inner_height = getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset();
+    int max_offset = text_height - inner_height;
+    return max_offset <= 0 ? 0 : (float) offset_y / max_offset;
+  }
 
-    @Override
-    public TextBox setText(CharSequence text) {
-        super.setText(text);
-        updateLayout();
-        return this;
-    }
-
-    @Override
-    public final boolean append(CharSequence str) {
-        var result = super.append(str);
-        if (result) {
-            updateLayout();
-        }
-        return result;
-    }
-
-    protected final TextLayout getTextLayout() {
-        return textLayout;
-    }
-
-    protected final void renderBox(GUIRenderer renderer, ModeIconQuads.Mode skinMode) {
-        editBox.render(renderer, 0f, 0f, getWidth() - scroll_bar.getWidth(), getHeight(), skinMode);
-    }
-
-    @Override
-    protected void renderGeometry(GUIRenderer renderer) {
-        renderBox(renderer, ModeIconQuads.Mode.NORMAL);
-        TextLineRenderer.render(renderer, textLayout, editBox.getLeftOffset(), getHeight() - editBox.getBottomOffset()
-                - getFont().getHeight() + offset_y, editBox.getLeftOffset(), getWidth() - editBox.getRightOffset(),
-                Color.Standard.WHITE);
-    }
-
-    @Override
-    protected final void mouseScrolled(int amount) {
-        setOffsetY(offset_y + (amount > 0 ? -3 : 3) * getFont().getHeight());
-    }
-
-    @Override
-    public final void setOffsetY(int new_offset) {
-        offset_y = Math.max(new_offset, 0);
-
-        Box edit_box = skin.getEditBox();
-        int max_offset_y = Math.max(0, textLayout.getTextHeight() - (getHeight() - edit_box.getBottomOffset() - edit_box
-                .getTopOffset()));
-        offset_y = Math.min(offset_y, max_offset_y);
-        scroll_bar.update();
-    }
-
-    @Override
-    public final int getOffsetY() {
-        return offset_y;
-    }
-
-    @Override
-    public final int getStepHeight() {
-        return getFont().getHeight();
-    }
-
-    @Override
-    public final void jumpPage(boolean up) {
-        Box edit_box = skin.getEditBox();
-        int inner_height = getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset();
-        setOffsetY(offset_y + (up ? -inner_height : inner_height));
-    }
-
-    @Override
-    public final float getScrollBarRatio() {
-        int text_height = textLayout.getTextHeight();
-        Box edit_box = skin.getEditBox();
-        int inner_height = getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset();
-        if (text_height <= inner_height) {
-            return 1.0f;
-        }
-        return (float) inner_height / text_height;
-    }
-
-    @Override
-    public final float getScrollBarOffset() {
-        int text_height = textLayout.getTextHeight();
-        Box edit_box = skin.getEditBox();
-        int inner_height = getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset();
-        int max_offset = text_height - inner_height;
-        return max_offset <= 0 ? 0 : (float) offset_y / max_offset;
-    }
-
-    @Override
-    public final void setScrollBarOffset(float offset) {
-        int text_height = textLayout.getTextHeight();
-        Box edit_box = skin.getEditBox();
-        int inner_height = getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset();
-        int max_offset = text_height - inner_height;
-        if (max_offset <= 0) return;
-        setOffsetY((int) (offset * max_offset));
-    }
+  @Override
+  public final void setScrollBarOffset(float offset) {
+    int text_height = textLayout.getTextHeight();
+    Box edit_box = skin.getEditBox();
+    int inner_height = getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset();
+    int max_offset = text_height - inner_height;
+    if (max_offset <= 0) return;
+    setOffsetY((int) (offset * max_offset));
+  }
 }

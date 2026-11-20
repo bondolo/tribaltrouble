@@ -1,8 +1,12 @@
 package com.oddlabs.tt.content.menu;
 
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_RIGHT;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
+
 import com.oddlabs.matchmaking.Login;
-import com.oddlabs.tt.net.AccountSettings;
-import com.oddlabs.tt.gui.MessageForm;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.gui.ButtonObject;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.CheckBox;
@@ -13,166 +17,159 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.PasswordLine;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
-import com.oddlabs.tt.base.util.Utils;
-
+import com.oddlabs.tt.net.AccountSettings;
 import java.util.ResourceBundle;
 
-import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.gui.Placement.BOTTOM_RIGHT;
-import static com.oddlabs.tt.gui.Placement.LEFT_MID;
-import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
-
-/** Form for authenticating and logging into the matchmaking server. */
+/// Form for authenticating and logging into the matchmaking server.
 public final class LoginForm extends Form {
-    private static final int BUTTON_WIDTH = 100;
-    private static final int BUTTON_WIDTH_LONG = 150;
-    private static final int EDITLINE_WIDTH = 240;
+  private static final int BUTTON_WIDTH = 100;
+  private static final int BUTTON_WIDTH_LONG = 150;
+  private static final int EDITLINE_WIDTH = 240;
 
-    private final Menu main_menu;
-    private final GUIRoot gui_root;
-    private final EditLine editline_username;
-    private final PasswordLine editline_password;
-    private final CheckBox remember_checkbox;
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(LoginForm.class.getName());
+  private final Menu main_menu;
+  private final GUIRoot gui_root;
+  private final EditLine editline_username;
+  private final PasswordLine editline_password;
+  private final CheckBox remember_checkbox;
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(LoginForm.class.getName());
 
-    private String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  public LoginForm(Menu main_menu) {
+    super(main_menu.getGUIRoot());
+    this.main_menu = main_menu;
+    this.gui_root = main_menu.getGUIRoot();
+    var settings = gui_root.getGUI().getSettings();
+    var account = AccountSettings.from(settings);
+    boolean remember = account.remember_login;
+    if (!remember) {
+      account.username = "";
+      account.pw_digest = "";
     }
 
-    public LoginForm(Menu main_menu) {
-        super(main_menu.getGUIRoot());
-        this.main_menu = main_menu;
-        this.gui_root = main_menu.getGUIRoot();
-        var settings = gui_root.getGUI().getSettings();
-        var account = AccountSettings.from(settings);
-        boolean remember = account.remember_login;
-        if (!remember) {
-            account.username = "";
-            account.pw_digest = "";
-        }
+    // headline
+    Label label_headline = new Label(i18n("login_caption"), skin.getHeadlineFont());
+    addChild(label_headline);
 
-        // headline
-        Label label_headline = new Label(i18n("login_caption"), skin.getHeadlineFont());
-        addChild(label_headline);
+    // login
+    LoginListener login_listener = new LoginListener();
+    Group login_group = new Group(gui_root);
+    var font = skin.getEditFont();
+    Label label_username = new Label(i18n("username"), font);
+    editline_username = new EditLine(gui_root, EDITLINE_WIDTH, 255);
+    editline_username.addEnterListener(login_listener);
+    editline_username.append(account.username);
+    Label label_password = new Label(i18n("password"), font);
+    editline_password = new PasswordLine(gui_root, EDITLINE_WIDTH, 255);
+    editline_password.addEnterListener(login_listener);
+    if (remember) {
+      editline_password.append("*************");
+      editline_password.setPasswordDigest(account.pw_digest);
+    }
+    remember_checkbox = new CheckBox(gui_root, remember, i18n("remember_login"));
 
-        // login
-        LoginListener login_listener = new LoginListener();
-        Group login_group = new Group(gui_root);
-        var font = skin.getEditFont();
-        Label label_username = new Label(i18n("username"), font);
-        editline_username = new EditLine(gui_root, EDITLINE_WIDTH, 255);
-        editline_username.addEnterListener(login_listener);
-        editline_username.append(account.username);
-        Label label_password = new Label(i18n("password"), font);
-        editline_password = new PasswordLine(gui_root, EDITLINE_WIDTH, 255);
-        editline_password.addEnterListener(login_listener);
-        if (remember) {
-            editline_password.append("*************");
-            editline_password.setPasswordDigest(account.pw_digest);
-        }
-        remember_checkbox = new CheckBox(gui_root, remember, i18n("remember_login"));
+    login_group.addChild(label_username);
+    login_group.addChild(editline_username);
+    login_group.addChild(label_password);
+    login_group.addChild(editline_password);
+    login_group.addChild(remember_checkbox);
 
-        login_group.addChild(label_username);
-        login_group.addChild(editline_username);
-        login_group.addChild(label_password);
-        login_group.addChild(editline_password);
-        login_group.addChild(remember_checkbox);
+    label_username.place();
+    editline_username.place(label_username, RIGHT_MID);
+    editline_password.place(editline_username, BOTTOM_RIGHT);
+    label_password.place(editline_password, LEFT_MID);
+    remember_checkbox.place(editline_password, BOTTOM_LEFT);
+    login_group.compileCanvas();
 
-        label_username.place();
-        editline_username.place(label_username, RIGHT_MID);
-        editline_password.place(editline_username, BOTTOM_RIGHT);
-        label_password.place(editline_password, LEFT_MID);
-        remember_checkbox.place(editline_password, BOTTOM_LEFT);
-        login_group.compileCanvas();
+    addChild(login_group);
+    // buttons
+    Group group_buttons = new Group(gui_root);
 
-        addChild(login_group);
-        // buttons
-        Group group_buttons = new Group(gui_root);
+    ButtonObject button_newuser = new HorizButton(gui_root, i18n("new_account"), BUTTON_WIDTH);
+    button_newuser.addMouseClickListener(new NewUserListener());
+    ButtonObject button_ok = new HorizButton(gui_root, i18n("login"), BUTTON_WIDTH);
+    button_ok.addMouseClickListener(login_listener);
+    ButtonObject button_cancel = new CancelButton(gui_root, BUTTON_WIDTH);
+    button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
 
-        ButtonObject button_newuser = new HorizButton(gui_root, i18n("new_account"), BUTTON_WIDTH);
-        button_newuser.addMouseClickListener(new NewUserListener());
-        ButtonObject button_ok = new HorizButton(gui_root, i18n("login"), BUTTON_WIDTH);
-        button_ok.addMouseClickListener(login_listener);
-        ButtonObject button_cancel = new CancelButton(gui_root, BUTTON_WIDTH);
-        button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
+    group_buttons.addChild(button_newuser);
+    group_buttons.addChild(button_ok);
+    group_buttons.addChild(button_cancel);
 
-        group_buttons.addChild(button_newuser);
-        group_buttons.addChild(button_ok);
-        group_buttons.addChild(button_cancel);
+    button_cancel.place();
+    button_ok.place(button_cancel, LEFT_MID);
+    button_newuser.place(button_ok, LEFT_MID);
 
-        button_cancel.place();
-        button_ok.place(button_cancel, LEFT_MID);
-        button_newuser.place(button_ok, LEFT_MID);
+    group_buttons.compileCanvas();
+    addChild(group_buttons);
 
-        group_buttons.compileCanvas();
-        addChild(group_buttons);
+    // Place objects
 
-        // Place objects
+    // headline
+    label_headline.place();
+    login_group.place(label_headline, BOTTOM_LEFT);
 
-        // headline
-        label_headline.place();
-        login_group.place(label_headline, BOTTOM_LEFT);
+    group_buttons.place(Origin.AT_END);
 
-        group_buttons.place(Origin.AT_END);
+    compileCanvas();
 
-        compileCanvas();
+    main_menu.setMenu(this);
+  }
 
-        main_menu.setMenu(this);
+  @Override
+  public void setFocus(FocusDirection direction) {
+    if (direction == FocusDirection.BACKWARD) {
+      super.setFocus(direction);
+    } else {
+      editline_username.setFocus(direction);
+    }
+  }
+
+  private void login() {
+    String username = editline_username.getContents();
+    String password = editline_password.getPasswordDigest();
+    Login login = new Login(username, password);
+    if (!login.isValid()) gui_root.addModalForm(new MessageForm(gui_root, i18n("invalid_login")));
+    else doLogin(username, password, login, remember_checkbox.isChecked());
+  }
+
+  private void doLogin(String username, String password, Login login, boolean remember_login) {
+    var settings = gui_root.getGUI().getSettings();
+    var account = AccountSettings.from(settings);
+    if (remember_login) {
+      account.username = username;
+      account.pw_digest = password;
+    }
+    account.remember_login = remember_login;
+    Form connecting_form = new MatchmakingConnectingForm(this, main_menu, login, null);
+    gui_root.addModalForm(connecting_form);
+  }
+
+  private final class NewUserListener implements MouseClickListener {
+    @Override
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {
+      remove();
+      main_menu.setMenu(new NewUserForm(main_menu));
+    }
+  }
+
+  private final class LoginListener implements MouseClickListener, EnterListener {
+    @Override
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {
+      login();
     }
 
     @Override
-    public void setFocus(FocusDirection direction) {
-        if (direction == FocusDirection.BACKWARD) {
-            super.setFocus(direction);
-        } else {
-            editline_username.setFocus(direction);
-        }
+    public void enterPressed(CharSequence text) {
+      login();
     }
-
-    private void login() {
-        String username = editline_username.getContents();
-        String password = editline_password.getPasswordDigest();
-        Login login = new Login(username, password);
-        if (!login.isValid())
-            gui_root.addModalForm(new MessageForm(gui_root, i18n("invalid_login")));
-        else
-            doLogin(username, password, login, remember_checkbox.isChecked());
-    }
-
-    private void doLogin(String username, String password, Login login, boolean remember_login) {
-        var settings = gui_root.getGUI().getSettings();
-        var account = AccountSettings.from(settings);
-        if (remember_login) {
-            account.username = username;
-            account.pw_digest = password;
-        }
-        account.remember_login = remember_login;
-        Form connecting_form = new MatchmakingConnectingForm(this, main_menu, login, null);
-        gui_root.addModalForm(connecting_form);
-    }
-
-    private final class NewUserListener implements MouseClickListener {
-        @Override
-        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            remove();
-            main_menu.setMenu(new NewUserForm(main_menu));
-        }
-    }
-
-    private final class LoginListener implements MouseClickListener, EnterListener {
-        @Override
-        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            login();
-        }
-
-        @Override
-        public void enterPressed(CharSequence text) {
-            login();
-        }
-    }
+  }
 }

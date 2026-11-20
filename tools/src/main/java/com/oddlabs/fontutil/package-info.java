@@ -1,6 +1,4 @@
-/**
- * Provides tools and utilities for building and rendering font assets.
- */
+/** Provides tools and utilities for building and rendering font assets. */
 @NullMarked
 package com.oddlabs.fontutil;
 

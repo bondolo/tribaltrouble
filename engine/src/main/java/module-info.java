@@ -1,37 +1,37 @@
 module com.oddlabs.tt.engine {
-    requires transitive com.oddlabs.common;
-    requires transitive com.oddlabs.tt.base;
-    requires transitive com.oddlabs.tt.simulation;
-    requires com.oddlabs.tt.procedural;
-    requires transitive com.oddlabs.tt.window;
-    requires transitive org.joml;
-    requires static org.jspecify;
-    requires java.desktop;
-    requires java.logging;
-    requires transitive org.lwjgl;
-    requires transitive org.lwjgl.opengl;
-    requires org.lwjgl.sdl;
-    requires org.lwjgl.stb;
+  requires transitive com.oddlabs.common;
+  requires transitive com.oddlabs.tt.base;
+  requires transitive com.oddlabs.tt.simulation;
+  requires com.oddlabs.tt.procedural;
+  requires transitive com.oddlabs.tt.window;
+  requires transitive org.joml;
+  requires static org.jspecify;
+  requires java.desktop;
+  requires java.logging;
+  requires transitive org.lwjgl;
+  requires transitive org.lwjgl.opengl;
+  requires org.lwjgl.sdl;
+  requires org.lwjgl.stb;
 
-    exports com.oddlabs.tt.engine.cursor;
-    exports com.oddlabs.tt.engine.font;
-    exports com.oddlabs.tt.engine.image;
-    exports com.oddlabs.tt.engine.procedural;
-    exports com.oddlabs.tt.engine.render;
-    exports com.oddlabs.tt.engine.render.shader;
-    exports com.oddlabs.tt.engine.render.state;
-    exports com.oddlabs.tt.engine.resource;
-    exports com.oddlabs.tt.engine.settings;
-    exports com.oddlabs.tt.engine.util;
-    exports com.oddlabs.tt.engine.vbo;
+  exports com.oddlabs.tt.engine.cursor;
+  exports com.oddlabs.tt.engine.font;
+  exports com.oddlabs.tt.engine.image;
+  exports com.oddlabs.tt.engine.procedural;
+  exports com.oddlabs.tt.engine.render;
+  exports com.oddlabs.tt.engine.render.shader;
+  exports com.oddlabs.tt.engine.render.state;
+  exports com.oddlabs.tt.engine.resource;
+  exports com.oddlabs.tt.engine.settings;
+  exports com.oddlabs.tt.engine.util;
+  exports com.oddlabs.tt.engine.vbo;
 
-    provides com.oddlabs.tt.base.global.PropertiesSerializer with
-            com.oddlabs.tt.engine.settings.AccessibilitySettings,
-            com.oddlabs.tt.engine.settings.GraphicsSettings;
+  provides com.oddlabs.tt.base.global.PropertiesSerializer with
+      com.oddlabs.tt.engine.settings.AccessibilitySettings,
+      com.oddlabs.tt.engine.settings.GraphicsSettings;
 
-    uses com.oddlabs.tt.engine.resource.TextureGenerator;
+  uses com.oddlabs.tt.engine.resource.TextureGenerator;
 
-    provides com.oddlabs.tt.engine.resource.TextureGenerator with
-            com.oddlabs.tt.engine.procedural.GeneratorRock,
-            com.oddlabs.tt.engine.procedural.GeneratorIron;
+  provides com.oddlabs.tt.engine.resource.TextureGenerator with
+      com.oddlabs.tt.engine.procedural.GeneratorRock,
+      com.oddlabs.tt.engine.procedural.GeneratorIron;
 }

@@ -1,6 +1,4 @@
-/**
- * Procedural noise, fractal, and cell division algorithms.
- */
+/** Procedural noise, fractal, and cell division algorithms. */
 @NullMarked
 package com.oddlabs.tt.procedural.noise;
 

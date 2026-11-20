@@ -1,6 +1,4 @@
-/**
- * Provides animation and geometry descriptor structures.
- */
+/** Provides animation and geometry descriptor structures. */
 @NullMarked
 package com.oddlabs.geometry;
 

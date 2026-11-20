@@ -6,151 +6,147 @@ import com.oddlabs.tt.engine.render.shader.VertexAttribute;
 import org.joml.Matrix4fc;
 import org.lwjgl.opengl.GL11;
 
-/**
- * Renders the 2D user interface with model-view-projection transformation, vertex colors, and texture modulation.
- */
+/// Renders the 2D user interface with model-view-projection transformation, vertex colors, and texture modulation.
 final class GUIShader extends ShaderProgram {
 
-    /**
-     * The vertex shader source code for UI rendering.
-     */
-    private static final String VERTEX_SHADER = SHADER_HEADER +
-            """
-                    uniform mat4 u_projectionMatrix;
+  /// The vertex shader source code for UI rendering.
+  private static final String VERTEX_SHADER =
+      SHADER_HEADER
+          + """
+          uniform mat4 u_projectionMatrix;
 
-                    layout(location = 0) in vec3 in_Position;
-                    layout(location = 3) in vec4 in_Color;
-                    layout(location = 2) in vec2 in_TexCoord;
-                    layout(location = 4) in float in_TexIndex;
+          layout(location = 0) in vec3 in_Position;
+          layout(location = 3) in vec4 in_Color;
+          layout(location = 2) in vec2 in_TexCoord;
+          layout(location = 4) in float in_TexIndex;
 
-                    out VS_OUT {
-                        vec4 Color;
-                        vec2 TexCoord;
-                        flat int TexIndex;
-                    } vs_out;
+          out VS_OUT {
+              vec4 Color;
+              vec2 TexCoord;
+              flat int TexIndex;
+          } vs_out;
 
-                    void main() {
-                        gl_Position = u_projectionMatrix * vec4(in_Position, 1.0);
-                        vs_out.Color = in_Color;
-                        vs_out.TexCoord = in_TexCoord;
-                        vs_out.TexIndex = int(in_TexIndex);
-                    }
-                    """;
+          void main() {
+              gl_Position = u_projectionMatrix * vec4(in_Position, 1.0);
+              vs_out.Color = in_Color;
+              vs_out.TexCoord = in_TexCoord;
+              vs_out.TexIndex = int(in_TexIndex);
+          }
+          """;
 
-    /**
-     * The fragment shader source code for UI rendering.
-     */
-    private static final String FRAGMENT_SHADER = SHADER_HEADER +
-            """
-                    uniform sampler2D u_textures[8];
+  /// The fragment shader source code for UI rendering.
+  private static final String FRAGMENT_SHADER =
+      SHADER_HEADER
+          + """
+          uniform sampler2D u_textures[8];
 
-                    in VS_OUT {
-                        vec4 Color;
-                        vec2 TexCoord;
-                        flat int TexIndex;
-                    } fs_in;
+          in VS_OUT {
+              vec4 Color;
+              vec2 TexCoord;
+              flat int TexIndex;
+          } fs_in;
 
-                    layout(location = 0) out vec4 out_FragColor;
+          layout(location = 0) out vec4 out_FragColor;
 
-                    void main() {
-                        vec4 color;
-                        if (fs_in.TexIndex < 0) {
-                            color = fs_in.Color;
-                        } else {
-                            vec4 texColor;
-                            switch (fs_in.TexIndex) {
-                                case 0: texColor = texture(u_textures[0], fs_in.TexCoord); break;
-                                case 1: texColor = texture(u_textures[1], fs_in.TexCoord); break;
-                                case 2: texColor = texture(u_textures[2], fs_in.TexCoord); break;
-                                case 3: texColor = texture(u_textures[3], fs_in.TexCoord); break;
-                                case 4: texColor = texture(u_textures[4], fs_in.TexCoord); break;
-                                case 5: texColor = texture(u_textures[5], fs_in.TexCoord); break;
-                                case 6: texColor = texture(u_textures[6], fs_in.TexCoord); break;
-                                case 7: texColor = texture(u_textures[7], fs_in.TexCoord); break;
-                                default: texColor = texture(u_textures[0], fs_in.TexCoord); break;
-                            }
-                            color = fs_in.Color * texColor;
-                        }
+          void main() {
+              vec4 color;
+              if (fs_in.TexIndex < 0) {
+                  color = fs_in.Color;
+              } else {
+                  vec4 texColor;
+                  switch (fs_in.TexIndex) {
+                      case 0: texColor = texture(u_textures[0], fs_in.TexCoord); break;
+                      case 1: texColor = texture(u_textures[1], fs_in.TexCoord); break;
+                      case 2: texColor = texture(u_textures[2], fs_in.TexCoord); break;
+                      case 3: texColor = texture(u_textures[3], fs_in.TexCoord); break;
+                      case 4: texColor = texture(u_textures[4], fs_in.TexCoord); break;
+                      case 5: texColor = texture(u_textures[5], fs_in.TexCoord); break;
+                      case 6: texColor = texture(u_textures[6], fs_in.TexCoord); break;
+                      case 7: texColor = texture(u_textures[7], fs_in.TexCoord); break;
+                      default: texColor = texture(u_textures[0], fs_in.TexCoord); break;
+                  }
+                  color = fs_in.Color * texColor;
+              }
 
-                        if (color.a < 0.001) {
-                            discard;
-                        }
+              if (color.a < 0.001) {
+                  discard;
+              }
 
-                        out_FragColor = vec4(color.rgb * color.a, color.a);
-                    }
-                    """;
+              out_FragColor = vec4(color.rgb * color.a, color.a);
+          }
+          """;
 
-    private static final int[] TEXTURE_UNITS = new int[]{0, 1, 2, 3, 4, 5, 6, 7};
+  private static final int[] TEXTURE_UNITS = new int[] {0, 1, 2, 3, 4, 5, 6, 7};
 
-    private interface Uniforms {
-        String PROJECTION_MATRIX = Shader.Uniforms.PROJECTION_MATRIX;
-        String TEXTURES = "u_textures";
+  private interface Uniforms {
+    String PROJECTION_MATRIX = Shader.Uniforms.PROJECTION_MATRIX;
+    String TEXTURES = "u_textures";
+  }
+
+  private interface Attributes {
+    String POSITION = Shader.Attributes.POSITION;
+    String COLOR = Shader.Attributes.COLOR;
+    String TEX_COORD = Shader.Attributes.TEX_COORD;
+    String TEX_INDEX = "in_TexIndex";
+  }
+
+  enum Attribute implements VertexAttribute {
+    POSITION(Attributes.POSITION, 3, GL11.GL_FLOAT),
+    COLOR(Attributes.COLOR, 4, GL11.GL_FLOAT, false),
+    TEX_COORD(Attributes.TEX_COORD, 2, GL11.GL_FLOAT),
+    TEX_INDEX(Attributes.TEX_INDEX, 1, GL11.GL_FLOAT);
+
+    private final String name;
+    private final int componentCount;
+    private final int glType;
+    private final boolean normalized;
+
+    Attribute(String name, int componentCount, int glType) {
+      this(name, componentCount, glType, false);
     }
 
-    private interface Attributes {
-        String POSITION = Shader.Attributes.POSITION;
-        String COLOR = Shader.Attributes.COLOR;
-        String TEX_COORD = Shader.Attributes.TEX_COORD;
-        String TEX_INDEX = "in_TexIndex";
+    Attribute(String name, int componentCount, int glType, boolean normalized) {
+      this.name = name;
+      this.componentCount = componentCount;
+      this.glType = glType;
+      this.normalized = normalized;
     }
 
-    enum Attribute implements VertexAttribute {
-        POSITION(Attributes.POSITION, 3, GL11.GL_FLOAT),
-        COLOR(Attributes.COLOR, 4, GL11.GL_FLOAT, false),
-        TEX_COORD(Attributes.TEX_COORD, 2, GL11.GL_FLOAT),
-        TEX_INDEX(Attributes.TEX_INDEX, 1, GL11.GL_FLOAT);
-
-        private final String name;
-        private final int componentCount;
-        private final int glType;
-        private final boolean normalized;
-
-        Attribute(String name, int componentCount, int glType) {
-            this(name, componentCount, glType, false);
-        }
-
-        Attribute(String name, int componentCount, int glType, boolean normalized) {
-            this.name = name;
-            this.componentCount = componentCount;
-            this.glType = glType;
-            this.normalized = normalized;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public int getComponentCount() {
-            return componentCount;
-        }
-
-        @Override
-        public int getGlType() {
-            return glType;
-        }
-
-        @Override
-        public boolean isNormalized() {
-            return normalized;
-        }
+    @Override
+    public String getName() {
+      return name;
     }
 
-    private final int locProjectionMatrix;
-
-    GUIShader() {
-        super(GUIShader.VERTEX_SHADER, GUIShader.FRAGMENT_SHADER);
-        link();
-        locProjectionMatrix = getUniformLocation(Uniforms.PROJECTION_MATRIX);
-        int locTextures = getUniformLocation(Uniforms.TEXTURES);
-
-        try (var _ = use()) {
-            setUniform(locTextures, TEXTURE_UNITS);
-        }
+    @Override
+    public int getComponentCount() {
+      return componentCount;
     }
 
-    void setProjectionMatrix(Matrix4fc matrix) {
-        setUniform(locProjectionMatrix, matrix);
+    @Override
+    public int getGlType() {
+      return glType;
     }
+
+    @Override
+    public boolean isNormalized() {
+      return normalized;
+    }
+  }
+
+  private final int locProjectionMatrix;
+
+  GUIShader() {
+    super(GUIShader.VERTEX_SHADER, GUIShader.FRAGMENT_SHADER);
+    link();
+    locProjectionMatrix = getUniformLocation(Uniforms.PROJECTION_MATRIX);
+    int locTextures = getUniformLocation(Uniforms.TEXTURES);
+
+    try (var _ = use()) {
+      setUniform(locTextures, TEXTURE_UNITS);
+    }
+  }
+
+  void setProjectionMatrix(Matrix4fc matrix) {
+    setUniform(locProjectionMatrix, matrix);
+  }
 }

@@ -2,96 +2,91 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
+import java.util.List;
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
-
-/**
- * Row containing columns of comparable GUIObjects within a MultiColumnComboBox.
- */
+/// Row containing columns of comparable GUIObjects within a MultiColumnComboBox.
 public final class Row<T, C extends GUIObject & Comparable<C>> extends GUIObject implements Comparable<Row<T, C>> {
-    private final Skin skin;
-    private final MultiColumnComboBoxData comboBoxData;
-    private final List<C> columns;
-    private final @Nullable T content_object;
-    private int sort_index;
-    private Color.Linear color = Color.Linear.TRANSPARENT;
-    private boolean marked = false;
+  private final Skin skin;
+  private final MultiColumnComboBoxData comboBoxData;
+  private final List<C> columns;
+  private final @Nullable T content_object;
+  private int sort_index;
+  private Color.Linear color = Color.Linear.TRANSPARENT;
+  private boolean marked = false;
 
-    public Row(GUIRoot guiRoot, C[] columns, @Nullable T content_object) {
-        this(guiRoot, List.of(columns), content_object);
+  public Row(GUIRoot guiRoot, C[] columns, @Nullable T content_object) {
+    this(guiRoot, List.of(columns), content_object);
+  }
+
+  public Row(GUIRoot guiRoot, List<C> columns, @Nullable T content_object) {
+    this.skin = guiRoot.getSkin();
+    this.comboBoxData = skin.getMultiColumnComboBoxData();
+    this.columns = columns;
+    this.content_object = content_object;
+    setDim(0, columns.stream().mapToInt(C::getHeight).max().orElse(0));
+    setCanFocus(true);
+  }
+
+  @Override
+  protected Skin getSkin() {
+    return skin;
+  }
+
+  public C getColumn(int index) {
+    return columns.get(index);
+  }
+
+  public void setColumnInfos(ColumnInfo... column_infos) {
+    int x = 0;
+    var box = comboBoxData.box();
+    for (int i = 0; i < column_infos.length; i++) {
+      C gui_object = getColumn(i);
+      gui_object.setPos(x, 0);
+      int colWidth = column_infos[i].width();
+      if (i == 0) {
+        colWidth -= box.getLeftOffset();
+      } else if (i == column_infos.length - 1) {
+        colWidth -= box.getRightOffset();
+      }
+      gui_object.setDim(colWidth, gui_object.getHeight());
+      addChild(gui_object);
+      x += column_infos[i].width();
+
+      // if left most column, correct for the radio button starting without left_offset
+      if (i == 0) x -= box.getLeftOffset();
+      // if right most column, correct for the radio button extending over right_offset
+      if (i == column_infos.length - 1) x -= box.getRightOffset();
     }
+    setDim(x, getHeight());
+  }
 
-    public Row(GUIRoot guiRoot, List<C> columns, @Nullable T content_object) {
-        this.skin = guiRoot.getSkin();
-        this.comboBoxData = skin.getMultiColumnComboBoxData();
-        this.columns = columns;
-        this.content_object = content_object;
-        setDim(0, columns.stream().mapToInt(C::getHeight).max().orElse(0));
-        setCanFocus(true);
+  public void setSortIndex(int sort_index) {
+    this.sort_index = sort_index;
+  }
+
+  @Override
+  public int compareTo(Row<T, C> o) {
+    return getColumn(sort_index).compareTo(o.getColumn(sort_index));
+  }
+
+  public void setColor(Color color) {
+    this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
+  }
+
+  @Override
+  protected void renderGeometry(GUIRenderer renderer) {
+    var c = marked ? comboBoxData.colorMarked() : color;
+    if (c.a() >= .2f) {
+      renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), c);
     }
+  }
 
-    @Override
-    protected Skin getSkin() {
-        return skin;
-    }
+  public @Nullable T getContentObject() {
+    return content_object;
+  }
 
-    public C getColumn(int index) {
-        return columns.get(index);
-    }
-
-    public void setColumnInfos(ColumnInfo... column_infos) {
-        int x = 0;
-        var box = comboBoxData.box();
-        for (int i = 0; i < column_infos.length; i++) {
-            C gui_object = getColumn(i);
-            gui_object.setPos(x, 0);
-            int colWidth = column_infos[i].width();
-            if (i == 0) {
-                colWidth -= box.getLeftOffset();
-            } else if (i == column_infos.length - 1) {
-                colWidth -= box.getRightOffset();
-            }
-            gui_object.setDim(colWidth, gui_object.getHeight());
-            addChild(gui_object);
-            x += column_infos[i].width();
-
-            // if left most column, correct for the radio button starting without left_offset
-            if (i == 0)
-                x -= box.getLeftOffset();
-            // if right most column, correct for the radio button extending over right_offset
-            if (i == column_infos.length - 1)
-                x -= box.getRightOffset();
-        }
-        setDim(x, getHeight());
-    }
-
-    public void setSortIndex(int sort_index) {
-        this.sort_index = sort_index;
-    }
-
-    @Override
-    public int compareTo(Row<T, C> o) {
-        return getColumn(sort_index).compareTo(o.getColumn(sort_index));
-    }
-
-    public void setColor(Color color) {
-        this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
-    }
-
-    @Override
-    protected void renderGeometry(GUIRenderer renderer) {
-        var c = marked ? comboBoxData.colorMarked() : color;
-        if (c.a() >= .2f) {
-            renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), c);
-        }
-    }
-
-    public @Nullable T getContentObject() {
-        return content_object;
-    }
-
-    public void mark(boolean marked) {
-        this.marked = marked;
-    }
+  public void mark(boolean marked) {
+    this.marked = marked;
+  }
 }

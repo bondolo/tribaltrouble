@@ -8,5 +8,4 @@ import org.jspecify.annotations.Nullable;
  * @param parent previous node along the path
  * @param region region represented by this node
  */
-public record RegionNode(@Nullable RegionNode parent, Region region) implements PathNode<RegionNode> {
-}
+public record RegionNode(@Nullable RegionNode parent, Region region) implements PathNode<RegionNode> {}

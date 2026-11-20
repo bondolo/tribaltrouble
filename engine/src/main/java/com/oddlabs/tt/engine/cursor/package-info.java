@@ -1,6 +1,4 @@
-/**
- * Native hardware cursor abstractions and resource loaders.
- */
+/** Native hardware cursor abstractions and resource loaders. */
 @NullMarked
 package com.oddlabs.tt.engine.cursor;
 

@@ -1,35 +1,29 @@
 package com.oddlabs.tt.content.tutorial.trigger;
 
 import com.oddlabs.tt.content.tutorial.Tutorial;
-
 import com.oddlabs.tt.content.tutorial.TutorialForm;
 import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Unit;
-
 import java.util.EnumSet;
 
-/**
- * Tutorial trigger tracking when a chieftain successfully uses magic spells.
- */
+/// Tutorial trigger tracking when a chieftain successfully uses magic spells.
 final class MagicTrigger extends TutorialTrigger {
-    private final EnumSet<MagicType> magic_used = EnumSet.noneOf(MagicType.class);
+  private final EnumSet<MagicType> magic_used = EnumSet.noneOf(MagicType.class);
 
-    private final Unit chieftain;
+  private final Unit chieftain;
 
-    MagicTrigger(Unit chieftain) {
-        super(.1f, 20f, "magic");
-        this.chieftain = chieftain;
+  MagicTrigger(Unit chieftain) {
+    super(.1f, 20f, "magic");
+    this.chieftain = chieftain;
+  }
+
+  @Override
+  public void run(Tutorial tutorial) {
+    MagicType last = chieftain.getLastMagicType();
+    if (last != null) magic_used.add(last);
+    for (MagicType type : chieftain.getOwner().getRaceInfo().getMagics()) {
+      if (!magic_used.contains(type)) return;
     }
-
-    @Override
-    public void run(Tutorial tutorial) {
-        MagicType last = chieftain.getLastMagicType();
-        if (last != null)
-            magic_used.add(last);
-        for (MagicType type : chieftain.getOwner().getRaceInfo().getMagics()) {
-            if (!magic_used.contains(type))
-                return;
-        }
-        tutorial.done(TutorialForm.TUTORIAL_CHIEFTAIN);
-    }
+    tutorial.done(TutorialForm.TUTORIAL_CHIEFTAIN);
+  }
 }

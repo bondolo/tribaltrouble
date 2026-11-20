@@ -1,11 +1,7 @@
 package com.oddlabs.tt.engine.render;
 
-
 import com.oddlabs.tt.base.animation.Animated;
 
-/**
- * An {@link Accessory} that requires continuous animation updates.
- * Used for dynamic visuals like particle emitters or cycling animations.
- */
-public non-sealed interface AnimatedAccessory extends Accessory, Animated {
-}
+/// An {@link Accessory} that requires continuous animation updates. Used for dynamic visuals like particle emitters or
+/// cycling animations.
+public non-sealed interface AnimatedAccessory extends Accessory, Animated {}

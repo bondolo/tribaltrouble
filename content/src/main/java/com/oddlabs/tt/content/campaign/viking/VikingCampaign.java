@@ -1,9 +1,8 @@
 package com.oddlabs.tt.content.campaign.viking;
 
-
-import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.screen.ScreenManager;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.content.campaign.Campaign;
 import com.oddlabs.tt.content.campaign.CampaignDialogForm;
 import com.oddlabs.tt.content.campaign.CampaignIcons;
@@ -13,95 +12,110 @@ import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
-
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-/**
- * Viking faction single-player campaign sequence.
- */
+/// Viking faction single-player campaign sequence.
 public final class VikingCampaign extends Campaign {
-    public static final int MAX_UNITS = 46;
-    private static final int[] INITIAL_STATES = new int[]{
-            CampaignState.ISLAND_AVAILABLE,
-            CampaignState.ISLAND_UNAVAILABLE,
-            CampaignState.ISLAND_UNAVAILABLE,
-            CampaignState.ISLAND_UNAVAILABLE,
-            CampaignState.ISLAND_UNAVAILABLE,
-            CampaignState.ISLAND_UNAVAILABLE,
-            CampaignState.ISLAND_UNAVAILABLE,
-            CampaignState.ISLAND_UNAVAILABLE,
-            CampaignState.ISLAND_HIDDEN,
-            CampaignState.ISLAND_UNAVAILABLE,
-            CampaignState.ISLAND_UNAVAILABLE,
-            CampaignState.ISLAND_UNAVAILABLE,
-            CampaignState.ISLAND_UNAVAILABLE,
-            CampaignState.ISLAND_UNAVAILABLE,
-            CampaignState.ISLAND_UNAVAILABLE};
+  public static final int MAX_UNITS = 46;
+  private static final int[] INITIAL_STATES =
+      new int[] {
+        CampaignState.ISLAND_AVAILABLE,
+        CampaignState.ISLAND_UNAVAILABLE,
+        CampaignState.ISLAND_UNAVAILABLE,
+        CampaignState.ISLAND_UNAVAILABLE,
+        CampaignState.ISLAND_UNAVAILABLE,
+        CampaignState.ISLAND_UNAVAILABLE,
+        CampaignState.ISLAND_UNAVAILABLE,
+        CampaignState.ISLAND_UNAVAILABLE,
+        CampaignState.ISLAND_HIDDEN,
+        CampaignState.ISLAND_UNAVAILABLE,
+        CampaignState.ISLAND_UNAVAILABLE,
+        CampaignState.ISLAND_UNAVAILABLE,
+        CampaignState.ISLAND_UNAVAILABLE,
+        CampaignState.ISLAND_UNAVAILABLE,
+        CampaignState.ISLAND_UNAVAILABLE
+      };
 
-    private final Island[] islands = Stream.<Function<VikingCampaign, Island>>of(
-            VikingIsland0::new, VikingIsland1::new, VikingIsland2::new, VikingIsland3::new, VikingIsland4::new,
-            VikingIsland5::new, VikingIsland6::new, VikingIsland7::new, VikingIsland8::new, VikingIsland9::new,
-            VikingIsland10::new, VikingIsland11::new, VikingIsland12::new, VikingIsland13::new, VikingIsland14::new)
-            .map(c -> c.apply(this))
-            .toArray(Island[]::new);
+  private final Island[] islands =
+      Stream.<Function<VikingCampaign, Island>>of(
+              VikingIsland0::new,
+              VikingIsland1::new,
+              VikingIsland2::new,
+              VikingIsland3::new,
+              VikingIsland4::new,
+              VikingIsland5::new,
+              VikingIsland6::new,
+              VikingIsland7::new,
+              VikingIsland8::new,
+              VikingIsland9::new,
+              VikingIsland10::new,
+              VikingIsland11::new,
+              VikingIsland12::new,
+              VikingIsland13::new,
+              VikingIsland14::new)
+          .map(c -> c.apply(this))
+          .toArray(Island[]::new);
 
-    private transient final VikingCampaignIcons icons;
+  private final transient VikingCampaignIcons icons;
 
-    public VikingCampaign(Menu menu) {
-        this(menu.getGUIRoot(), menu.getPeer(), menu.getScreenManager());
+  public VikingCampaign(Menu menu) {
+    this(menu.getGUIRoot(), menu.getPeer(), menu.getScreenManager());
+  }
+
+  public VikingCampaign(CampaignState campaign_state, Menu menu) {
+    this(menu.getGUIRoot(), campaign_state, menu.getPeer(), menu.getScreenManager());
+  }
+
+  public VikingCampaign(GUIRoot gui_root, Peer peer, ScreenManager screenManager) {
+    this(gui_root, new CampaignState(INITIAL_STATES), peer, screenManager);
+  }
+
+  public VikingCampaign(GUIRoot gui_root, CampaignState campaign_state, Peer peer, ScreenManager screenManager) {
+    super(campaign_state, peer, screenManager);
+    icons = new VikingCampaignIcons("/gui/viking_campaign.xml");
+
+    if (getState().getCurrentIsland() == -1) {
+      startIsland(gui_root, 0);
     }
+  }
 
-    public VikingCampaign(CampaignState campaign_state, Menu menu) {
-        this(menu.getGUIRoot(), campaign_state, menu.getPeer(), menu.getScreenManager());
+  @Override
+  public CampaignIcons getIcons() {
+    return icons;
+  }
+
+  @Override
+  protected void islandChosen(GUIRoot gui_root, int number) {
+    Form dialog =
+        new CampaignDialogForm(
+            gui_root,
+            islands[number].getHeader(),
+            islands[number].getDescription(),
+            null,
+            Origin.AT_START,
+            () -> startIsland(gui_root, number),
+            true);
+    gui_root.addModalForm(dialog);
+  }
+
+  @Override
+  protected CharSequence getCurrentObjective() {
+    if (getState().getCurrentIsland() != -1) {
+      return islands[getState().getCurrentIsland()].getCurrentObjective();
     }
+    throw new IllegalStateException("No current island");
+  }
 
-    public VikingCampaign(GUIRoot gui_root, Peer peer, ScreenManager screenManager) {
-        this(gui_root, new CampaignState(INITIAL_STATES), peer, screenManager);
-    }
+  @Override
+  public void defeated(WorldViewer viewer, String game_over_message) {
+    if (getState().getCurrentIsland() == 13) ((VikingIsland13) islands[13]).removeCounter();
+    super.defeated(viewer, game_over_message);
+  }
 
-    public VikingCampaign(GUIRoot gui_root, CampaignState campaign_state, Peer peer, ScreenManager screenManager) {
-        super(campaign_state, peer, screenManager);
-        icons = new VikingCampaignIcons("/gui/viking_campaign.xml");
-
-        if (getState().getCurrentIsland() == -1) {
-            startIsland(gui_root, 0);
-        }
-    }
-
-    @Override
-    public CampaignIcons getIcons() {
-        return icons;
-    }
-
-    @Override
-    protected void islandChosen(GUIRoot gui_root, int number) {
-        Form dialog = new CampaignDialogForm(gui_root, islands[number].getHeader(),
-                islands[number].getDescription(),
-                null,
-                Origin.AT_START,
-                () -> startIsland(gui_root, number), true);
-        gui_root.addModalForm(dialog);
-    }
-
-    @Override
-    protected CharSequence getCurrentObjective() {
-        if (getState().getCurrentIsland() != -1) {
-            return islands[getState().getCurrentIsland()].getCurrentObjective();
-        }
-        throw new IllegalStateException("No current island");
-    }
-
-    @Override
-    public void defeated(WorldViewer viewer, String game_over_message) {
-        if (getState().getCurrentIsland() == 13)
-            ((VikingIsland13) islands[13]).removeCounter();
-        super.defeated(viewer, game_over_message);
-    }
-
-    @Override
-    protected void startIsland(GUIRoot gui_root, int number) {
-        getState().setCurrentIsland(number);
-        islands[number].chosen(gui_root);
-    }
+  @Override
+  protected void startIsland(GUIRoot gui_root, int number) {
+    getState().setCurrentIsland(number);
+    islands[number].chosen(gui_root);
+  }
 }

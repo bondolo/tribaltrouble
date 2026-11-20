@@ -1,88 +1,87 @@
 package com.oddlabs.tt.effects.particle;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.oddlabs.util.Color;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-/**
- * Unit tests for {@link Particle} and {@link LinearParticle}.
- */
+/// Unit tests for {@link Particle} and {@link LinearParticle}.
 final class ParticleTest {
 
-    @Test
-    void testParticleAngle() {
-        Particle particle = new Particle(1.5f);
-        assertEquals(1.5f, particle.getAngle(), 1e-4f);
-        particle.setAngularVelocity(2.0f);
-        particle.update(1.0f);
-        assertEquals(3.5f, particle.getAngle(), 1e-4f);
-    }
+  @Test
+  void testParticleAngle() {
+    Particle particle = new Particle(1.5f);
+    assertEquals(1.5f, particle.getAngle(), 1e-4f);
+    particle.setAngularVelocity(2.0f);
+    particle.update(1.0f);
+    assertEquals(3.5f, particle.getAngle(), 1e-4f);
+  }
 
-    @Test
-    void testLinearParticleKinematics() {
-        LinearParticle particle = new LinearParticle(0f);
-        particle.setPos(10f, 20f, 30f);
-        particle.setVelocity(1f, 2f, 3f);
-        particle.setAcceleration(0.5f, -0.5f, 0f);
-        particle.setEnergy(5f);
-        particle.setColor(1f, 1f, 1f, 1f);
-        particle.setDeltaColor(-0.1f, -0.1f, -0.1f, -0.1f);
+  @Test
+  void testLinearParticleKinematics() {
+    LinearParticle particle = new LinearParticle(0f);
+    particle.setPos(10f, 20f, 30f);
+    particle.setVelocity(1f, 2f, 3f);
+    particle.setAcceleration(0.5f, -0.5f, 0f);
+    particle.setEnergy(5f);
+    particle.setColor(1f, 1f, 1f, 1f);
+    particle.setDeltaColor(-0.1f, -0.1f, -0.1f, -0.1f);
 
-        particle.update(1.0f);
+    particle.update(1.0f);
 
-        // Velocity should become (1.5, 1.5, 3.0)
-        assertEquals(1.5f, particle.getVelocityX(), 1e-4f);
-        assertEquals(1.5f, particle.getVelocityY(), 1e-4f);
-        assertEquals(3.0f, particle.getVelocityZ(), 1e-4f);
+    // Velocity should become (1.5, 1.5, 3.0)
+    assertEquals(1.5f, particle.getVelocityX(), 1e-4f);
+    assertEquals(1.5f, particle.getVelocityY(), 1e-4f);
+    assertEquals(3.0f, particle.getVelocityZ(), 1e-4f);
 
-        // Position should update to (10 + 1.5, 20 + 1.5, 30 + 3.0) = (11.5, 21.5, 33.0)
-        assertEquals(11.5f, particle.getPosX(), 1e-4f);
-        assertEquals(21.5f, particle.getPosY(), 1e-4f);
-        assertEquals(33.0f, particle.getPosZ(), 1e-4f);
+    // Position should update to (10 + 1.5, 20 + 1.5, 30 + 3.0) = (11.5, 21.5, 33.0)
+    assertEquals(11.5f, particle.getPosX(), 1e-4f);
+    assertEquals(21.5f, particle.getPosY(), 1e-4f);
+    assertEquals(33.0f, particle.getPosZ(), 1e-4f);
 
-        // Energy should decrease by t = 1.0
-        assertEquals(4.0f, particle.getEnergy(), 1e-4f);
+    // Energy should decrease by t = 1.0
+    assertEquals(4.0f, particle.getEnergy(), 1e-4f);
 
-        // Color should update
-        assertEquals(0.9f, particle.getColor().r(), 1e-4f);
-        assertEquals(0.9f, particle.getColor().g(), 1e-4f);
-        assertEquals(0.9f, particle.getColor().b(), 1e-4f);
-        assertEquals(0.9f, particle.getColor().a(), 1e-4f);
-    }
+    // Color should update
+    assertEquals(0.9f, particle.getColor().r(), 1e-4f);
+    assertEquals(0.9f, particle.getColor().g(), 1e-4f);
+    assertEquals(0.9f, particle.getColor().b(), 1e-4f);
+    assertEquals(0.9f, particle.getColor().a(), 1e-4f);
+  }
 
-    @Test
-    void testParametricParticleHeightLightingColor() {
-        ParametricFunction function = new ParametricFunction() {
-            @Override
-            public float getX(float u, float v) {
-                return 0f;
-            }
+  @Test
+  void testParametricParticleHeightLightingColor() {
+    ParametricFunction function =
+        new ParametricFunction() {
+          @Override
+          public float getX(float u, float v) {
+            return 0f;
+          }
 
-            @Override
-            public float getY(float u, float v) {
-                return 0f;
-            }
+          @Override
+          public float getY(float u, float v) {
+            return 0f;
+          }
 
-            @Override
-            public float getZ(float u, float v) {
-                return 1f;
-            }
+          @Override
+          public float getZ(float u, float v) {
+            return 1f;
+          }
         };
-        ParametricParticle particle = new ParametricParticle(function, 0f, 0f, 0f, 0f, 0f);
-        particle.setColor(0.5f, 0.5f, 0.5f, 1.0f);
-        particle.setHeightLighting(0.2f, 1.0f);
-        particle.update(0f, 1f, 1f, 1f);
+    ParametricParticle particle = new ParametricParticle(function, 0f, 0f, 0f, 0f, 0f);
+    particle.setColor(0.5f, 0.5f, 0.5f, 1.0f);
+    particle.setHeightLighting(0.2f, 1.0f);
+    particle.update(0f, 1f, 1f, 1f);
 
-        assertEquals(0.6f, particle.getColorR(), 1e-4f);
-        assertEquals(0.6f, particle.getColorG(), 1e-4f);
-        assertEquals(0.6f, particle.getColorB(), 1e-4f);
-        assertEquals(1.0f, particle.getColorA(), 1e-4f);
+    assertEquals(0.6f, particle.getColorR(), 1e-4f);
+    assertEquals(0.6f, particle.getColorG(), 1e-4f);
+    assertEquals(0.6f, particle.getColorB(), 1e-4f);
+    assertEquals(1.0f, particle.getColorA(), 1e-4f);
 
-        Color.Linear color = particle.getColor();
-        assertEquals(0.6f, color.r(), 1e-4f);
-        assertEquals(0.6f, color.g(), 1e-4f);
-        assertEquals(0.6f, color.b(), 1e-4f);
-        assertEquals(1.0f, color.a(), 1e-4f);
-    }
+    Color.Linear color = particle.getColor();
+    assertEquals(0.6f, color.r(), 1e-4f);
+    assertEquals(0.6f, color.g(), 1e-4f);
+    assertEquals(0.6f, color.b(), 1e-4f);
+    assertEquals(1.0f, color.a(), 1e-4f);
+  }
 }

@@ -1,20 +1,26 @@
 package com.oddlabs.tt.content.skirmish;
 
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_RIGHT;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
+import static com.oddlabs.tt.gui.Placement.TOP_LEFT;
+import static com.oddlabs.tt.gui.Placement.TOP_MID;
+
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.procedural.MapCode;
 import com.oddlabs.procedural.MapParameters;
-import java.util.List;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.client.viewer.InGameInfo;
+import com.oddlabs.tt.client.Peer;
+import com.oddlabs.tt.client.match.MatchLauncher;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.client.settings.AbstractOptionsMenu;
+import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.content.menu.SelectGameMenu;
-import com.oddlabs.tt.client.match.MatchLauncher;
-import com.oddlabs.tt.client.Peer;
-import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.CheckBox;
@@ -47,665 +53,680 @@ import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.SlotType;
-import org.jspecify.annotations.Nullable;
-
 import java.math.BigInteger;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
+import org.jspecify.annotations.Nullable;
 
-import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.gui.Placement.BOTTOM_RIGHT;
-import static com.oddlabs.tt.gui.Placement.LEFT_MID;
-import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
-import static com.oddlabs.tt.gui.Placement.TOP_LEFT;
-import static com.oddlabs.tt.gui.Placement.TOP_MID;
-
-/**
- * UI menu for configuring and starting single-player and multiplayer games.
- */
+/// UI menu for configuring and starting single-player and multiplayer games.
 public final class TerrainMenu extends Group {
-    private static final int[] SIZES = new int[]{256, 512, 1024};
+  private static final int[] SIZES = new int[] {256, 512, 1024};
 
-    private static final int SLIDER_LENGTH = 250;
-    private static final int BUTTON_WIDTH = 100;
-    private static final int SLIDER_MAX_VALUE = 10;
+  private static final int SLIDER_LENGTH = 250;
+  private static final int BUTTON_WIDTH = 100;
+  private static final int SLIDER_MAX_VALUE = 10;
 
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(TerrainMenu.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(TerrainMenu.class.getName());
 
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  private final Peer peer;
+  private final @Nullable Menu main_menu;
+  private final @Nullable TerrainMenuListener owner;
+
+  private final PulldownMenu<Integer> pulldown_size;
+  private final EditLine editline_name;
+  private final PulldownMenu<Terrain> pm_terrain;
+  private final Slider slider_hills;
+  private final Slider slider_vegetation;
+  private final Slider slider_supplies;
+  private final Label label_mapcode;
+  private final HorizButton button_ok;
+  private final PulldownMenu<AIDifficulty>[] difficulty_pulldown_menus;
+  private final PulldownButton<Race>[] race_pulldown_buttons;
+  private final PulldownMenu<Race>[] race_pulldown_menus;
+  private final PulldownMenu<Integer>[] team_pulldown_menus;
+  private final PulldownButton<Integer>[] team_pulldown_buttons;
+  private final Label[] labels_players;
+  private final CheckBox cb_rated;
+  private final boolean multiplayer;
+  private final PulldownMenu<Gamespeed> pm_gamespeed;
+  private final GUIRoot gui_root;
+  private final ScreenManager screen_manager;
+  private final NetworkSelector network;
+  private int seed;
+
+  public TerrainMenu(Menu main_menu, boolean multiplayer, @Nullable TerrainMenuListener owner) {
+    this(main_menu.getGUIRoot(), main_menu.getPeer(), main_menu.getScreenManager(), main_menu, multiplayer, owner);
+  }
+
+  @SuppressWarnings("unchecked")
+  public TerrainMenu(
+      GUIRoot gui_root,
+      Peer peer,
+      ScreenManager screen_manager,
+      @Nullable Menu main_menu,
+      boolean multiplayer,
+      @Nullable TerrainMenuListener owner) {
+    super(gui_root);
+    this.peer = peer;
+    this.network = peer.getNetwork().getSelector();
+    this.gui_root = gui_root;
+    this.screen_manager = screen_manager;
+    this.main_menu = main_menu;
+    this.multiplayer = multiplayer;
+    this.owner = owner;
+    var font = skin.getEditFont();
+    var headlineFont = skin.getHeadlineFont();
+    var sectionSpacing = skin.getFormData().sectionSpacing();
+
+    // headline
+    Label label_headline = new Label(i18n(multiplayer ? "new_game" : "skirmish"), headlineFont);
+    addChild(label_headline);
+    Panel standard = new Panel(gui_root, i18n("standard_options"));
+    Panel advanced = new Panel(gui_root, i18n("advanced_options"));
+    Group group_map_options = new Group(gui_root);
+
+    // game name
+    Label label_name = new Label(i18n("game_name"), font);
+    editline_name = new EditLine(gui_root, 180, Game.MAX_LENGTH);
+    if (multiplayer) {
+      standard.addChild(label_name);
+      var matchmakingClient = peer.getNetwork().getMatchmakingClient();
+      var profile = matchmakingClient.getProfile();
+      String nick = profile != null ? profile.getNick() : "Player";
+      String default_name = i18n("default_name", nick);
+      editline_name.append(default_name);
+      standard.addChild(editline_name);
+    }
+    String rated_tip = i18n("rated_game_tip", GameSession.MIN_WINS_FOR_RANKING);
+    cb_rated = new CheckBox(gui_root, false, i18n("rated_game"), rated_tip);
+    if (multiplayer) {
+      standard.addChild(cb_rated);
+      var matchmakingClient = peer.getNetwork().getMatchmakingClient();
+      var profile = matchmakingClient.getProfile();
+      cb_rated.setDisabled(profile == null || profile.getWins() < GameSession.MIN_WINS_FOR_RANKING);
     }
 
-    private final Peer peer;
-    private final @Nullable Menu main_menu;
-    private final @Nullable TerrainMenuListener owner;
+    // gamespeed
+    Group group_gamespeed = new Group(gui_root);
+    Label label_gamespeed = new Label(i18n("gamespeed"), font);
+    group_gamespeed.addChild(label_gamespeed);
+    pm_gamespeed = new PulldownMenu<>(gui_root);
+    pm_gamespeed.addItem(
+        new PulldownItem<>(gui_root, ServerMessageBundler.getGamespeedString(Game.GAMESPEED_SLOW), Gamespeed.SLOW));
+    pm_gamespeed.addItem(
+        new PulldownItem<>(gui_root, ServerMessageBundler.getGamespeedString(Game.GAMESPEED_NORMAL), Gamespeed.NORMAL));
+    pm_gamespeed.addItem(
+        new PulldownItem<>(gui_root, ServerMessageBundler.getGamespeedString(Game.GAMESPEED_FAST), Gamespeed.FAST));
+    pm_gamespeed.addItem(
+        new PulldownItem<>(
+            gui_root, ServerMessageBundler.getGamespeedString(Game.GAMESPEED_LUDICROUS), Gamespeed.LUDICROUS));
+    var pb_gamespeed = new PulldownButton<>(gui_root, pm_gamespeed, 1, 150);
+    group_gamespeed.addChild(pb_gamespeed);
+    label_gamespeed.place();
+    pb_gamespeed.place(label_gamespeed, RIGHT_MID);
+    group_gamespeed.compileCanvas();
 
-    private final PulldownMenu<Integer> pulldown_size;
-    private final EditLine editline_name;
-    private final PulldownMenu<Terrain> pm_terrain;
-    private final Slider slider_hills;
-    private final Slider slider_vegetation;
-    private final Slider slider_supplies;
-    private final Label label_mapcode;
-    private final HorizButton button_ok;
-    private final PulldownMenu<AIDifficulty>[] difficulty_pulldown_menus;
-    private final PulldownButton<Race>[] race_pulldown_buttons;
-    private final PulldownMenu<Race>[] race_pulldown_menus;
-    private final PulldownMenu<Integer>[] team_pulldown_menus;
-    private final PulldownButton<Integer>[] team_pulldown_buttons;
-    private final Label[] labels_players;
-    private final CheckBox cb_rated;
-    private final boolean multiplayer;
-    private final PulldownMenu<Gamespeed> pm_gamespeed;
-    private final GUIRoot gui_root;
-    private final ScreenManager screen_manager;
-    private final NetworkSelector network;
-    private int seed;
-
-    public TerrainMenu(Menu main_menu, boolean multiplayer, @Nullable TerrainMenuListener owner) {
-        this(main_menu.getGUIRoot(), main_menu.getPeer(), main_menu.getScreenManager(), main_menu, multiplayer, owner);
+    if (multiplayer) {
+      group_map_options.addChild(group_gamespeed);
     }
+    // size
+    Group group_size = new Group(gui_root);
 
-    @SuppressWarnings("unchecked")
-    public TerrainMenu(GUIRoot gui_root, Peer peer, ScreenManager screen_manager,
-            @Nullable Menu main_menu, boolean multiplayer, @Nullable TerrainMenuListener owner) {
-        super(gui_root);
-        this.peer = peer;
-        this.network = peer.getNetwork().getSelector();
-        this.gui_root = gui_root;
-        this.screen_manager = screen_manager;
-        this.main_menu = main_menu;
-        this.multiplayer = multiplayer;
-        this.owner = owner;
-        var font = skin.getEditFont();
-        var headlineFont = skin.getHeadlineFont();
-        var sectionSpacing = skin.getFormData().sectionSpacing();
+    Label label_size = new Label(i18n("island_size"), font);
+    group_size.addChild(label_size);
 
-        // headline
-        Label label_headline = new Label(i18n(multiplayer ? "new_game" : "skirmish"), headlineFont);
-        addChild(label_headline);
-        Panel standard = new Panel(gui_root, i18n("standard_options"));
-        Panel advanced = new Panel(gui_root, i18n("advanced_options"));
-        Group group_map_options = new Group(gui_root);
+    pulldown_size = new PulldownMenu<>(gui_root);
+    pulldown_size.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getSizeString(Game.SIZE_SMALL), 0));
+    pulldown_size.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getSizeString(Game.SIZE_MEDIUM), 1));
+    pulldown_size.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getSizeString(Game.SIZE_LARGE), 2));
 
-        // game name
-        Label label_name = new Label(i18n("game_name"), font);
-        editline_name = new EditLine(gui_root, 180, Game.MAX_LENGTH);
-        if (multiplayer) {
-            standard.addChild(label_name);
-            var matchmakingClient = peer.getNetwork().getMatchmakingClient();
-            var profile = matchmakingClient.getProfile();
-            String nick = profile != null ? profile.getNick() : "Player";
-            String default_name = i18n("default_name", nick);
-            editline_name.append(default_name);
-            standard.addChild(editline_name);
-        }
-        String rated_tip = i18n("rated_game_tip", GameSession.MIN_WINS_FOR_RANKING);
-        cb_rated = new CheckBox(gui_root, false, i18n("rated_game"), rated_tip);
-        if (multiplayer) {
-            standard.addChild(cb_rated);
-            var matchmakingClient = peer.getNetwork().getMatchmakingClient();
-            var profile = matchmakingClient.getProfile();
-            cb_rated.setDisabled(profile == null || profile.getWins() < GameSession.MIN_WINS_FOR_RANKING);
-        }
+    var pb_size = new PulldownButton<>(gui_root, pulldown_size, 1, 150);
+    group_size.addChild(pb_size);
+    label_size.place();
+    pb_size.place(label_size, RIGHT_MID);
+    group_size.compileCanvas();
+    group_map_options.addChild(group_size);
+    pulldown_size.addItemChosenListener((_, _) -> setMapcode());
 
-        // gamespeed
-        Group group_gamespeed = new Group(gui_root);
-        Label label_gamespeed = new Label(i18n("gamespeed"), font);
-        group_gamespeed.addChild(label_gamespeed);
-        pm_gamespeed = new PulldownMenu<>(gui_root);
-        pm_gamespeed.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getGamespeedString(Game.GAMESPEED_SLOW),
-                Gamespeed.SLOW));
-        pm_gamespeed.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getGamespeedString(
-                Game.GAMESPEED_NORMAL),
-                Gamespeed.NORMAL));
-        pm_gamespeed.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getGamespeedString(Game.GAMESPEED_FAST),
-                Gamespeed.FAST));
-        pm_gamespeed.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getGamespeedString(
-                Game.GAMESPEED_LUDICROUS),
-                Gamespeed.LUDICROUS));
-        var pb_gamespeed = new PulldownButton<>(gui_root, pm_gamespeed, 1, 150);
-        group_gamespeed.addChild(pb_gamespeed);
-        label_gamespeed.place();
-        pb_gamespeed.place(label_gamespeed, RIGHT_MID);
-        group_gamespeed.compileCanvas();
+    // seed
+    Label label_seed = new Label(i18n("map_code"), font);
+    label_mapcode = new Label("", headlineFont, 250);
 
-        if (multiplayer) {
-            group_map_options.addChild(group_gamespeed);
-        }
-        // size
-        Group group_size = new Group(gui_root);
+    Group group_seed = new Group(gui_root);
+    group_seed.addChild(label_seed);
+    group_seed.addChild(label_mapcode);
+    label_seed.place();
+    label_mapcode.place(label_seed, RIGHT_MID);
+    group_seed.compileCanvas();
+    advanced.addChild(group_seed);
 
-        Label label_size = new Label(i18n("island_size"), font);
-        group_size.addChild(label_size);
+    // terrain_type
+    Group group_terrain_type = new Group(gui_root);
+    Label label_terrain_type = new Label(i18n("terrain_type"), font);
+    group_terrain_type.addChild(label_terrain_type);
+    pm_terrain = new PulldownMenu<>(gui_root);
+    pm_terrain.addItem(
+        new PulldownItem<>(
+            gui_root, ServerMessageBundler.getTerrainTypeString(Game.TERRAIN_TYPE_NATIVE), Terrain.NATIVE));
+    pm_terrain.addItem(
+        new PulldownItem<>(
+            gui_root, ServerMessageBundler.getTerrainTypeString(Game.TERRAIN_TYPE_VIKING), Terrain.VIKING));
+    var pb_terrain_type = new PulldownButton<>(gui_root, pm_terrain, 0, 150);
+    group_terrain_type.addChild(pb_terrain_type);
+    label_terrain_type.place();
+    pb_terrain_type.place(label_terrain_type, RIGHT_MID);
+    group_terrain_type.compileCanvas();
+    pm_terrain.addItemChosenListener((_, _) -> setMapcode());
+    group_map_options.addChild(group_terrain_type);
 
-        pulldown_size = new PulldownMenu<>(gui_root);
-        pulldown_size.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getSizeString(Game.SIZE_SMALL), 0));
-        pulldown_size.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getSizeString(Game.SIZE_MEDIUM), 1));
-        pulldown_size.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getSizeString(Game.SIZE_LARGE), 2));
+    Group group_sliders = new Group(gui_root);
+    // hills
+    Label label_hills_low = new Label(i18n("min"), font);
+    group_sliders.addChild(label_hills_low);
+    Label label_hills_high = new Label(i18n("max"), font);
+    group_sliders.addChild(label_hills_high);
+    Label label_hills = new Label(i18n("hills"), font);
+    group_sliders.addChild(label_hills);
+    slider_hills = new Slider(gui_root, SLIDER_LENGTH, 0, SLIDER_MAX_VALUE, SLIDER_MAX_VALUE / 2);
+    slider_hills.addValueListener(new SliderUpdateMapcodeListener());
+    group_sliders.addChild(slider_hills);
 
-        var pb_size = new PulldownButton<>(gui_root, pulldown_size, 1, 150);
-        group_size.addChild(pb_size);
-        label_size.place();
-        pb_size.place(label_size, RIGHT_MID);
-        group_size.compileCanvas();
-        group_map_options.addChild(group_size);
-        pulldown_size.addItemChosenListener((_, _) -> setMapcode());
+    // vegetation
+    Label label_vegetation_low = new Label(i18n("min"), font);
+    group_sliders.addChild(label_vegetation_low);
+    Label label_vegetation_high = new Label(i18n("max"), font);
+    group_sliders.addChild(label_vegetation_high);
+    Label label_vegetation = new Label(i18n("trees"), font);
+    group_sliders.addChild(label_vegetation);
+    slider_vegetation = new Slider(gui_root, SLIDER_LENGTH, 0, SLIDER_MAX_VALUE, SLIDER_MAX_VALUE / 2);
+    slider_vegetation.addValueListener(new SliderUpdateMapcodeListener());
+    group_sliders.addChild(slider_vegetation);
 
-        // seed
-        Label label_seed = new Label(i18n("map_code"), font);
-        label_mapcode = new Label("", headlineFont, 250);
+    // supplies
+    Label label_supplies_low = new Label(i18n("min"), font);
+    group_sliders.addChild(label_supplies_low);
+    Label label_supplies_high = new Label(i18n("max"), font);
+    group_sliders.addChild(label_supplies_high);
+    Label label_supplies = new Label(i18n("resources"), font);
+    group_sliders.addChild(label_supplies);
+    slider_supplies = new Slider(gui_root, SLIDER_LENGTH, 0, SLIDER_MAX_VALUE, SLIDER_MAX_VALUE / 2);
+    slider_supplies.addValueListener(new SliderUpdateMapcodeListener());
+    group_sliders.addChild(slider_supplies);
 
-        Group group_seed = new Group(gui_root);
-        group_seed.addChild(label_seed);
-        group_seed.addChild(label_mapcode);
-        label_seed.place();
-        label_mapcode.place(label_seed, RIGHT_MID);
-        group_seed.compileCanvas();
-        advanced.addChild(group_seed);
+    // supplies
+    label_supplies.place();
+    label_supplies_low.place(label_supplies, RIGHT_MID);
+    slider_supplies.place(label_supplies_low, RIGHT_MID);
+    label_supplies_high.place(slider_supplies, RIGHT_MID);
+    // vegetation
+    label_vegetation.place(label_supplies, TOP_LEFT, sectionSpacing);
+    slider_vegetation.place(slider_supplies, TOP_MID, sectionSpacing);
+    label_vegetation_low.place(slider_vegetation, LEFT_MID);
+    label_vegetation_high.place(slider_vegetation, RIGHT_MID);
+    // hills
+    label_hills.place(label_vegetation, TOP_LEFT, sectionSpacing);
+    slider_hills.place(slider_vegetation, TOP_MID, sectionSpacing);
+    label_hills_low.place(slider_hills, LEFT_MID);
+    label_hills_high.place(slider_hills, RIGHT_MID);
+    // sliders
+    group_sliders.compileCanvas();
+    advanced.addChild(group_sliders);
 
-        // terrain_type
-        Group group_terrain_type = new Group(gui_root);
-        Label label_terrain_type = new Label(i18n("terrain_type"), font);
-        group_terrain_type.addChild(label_terrain_type);
-        pm_terrain = new PulldownMenu<>(gui_root);
-        pm_terrain.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getTerrainTypeString(
-                Game.TERRAIN_TYPE_NATIVE), Terrain.NATIVE));
-        pm_terrain.addItem(new PulldownItem<>(gui_root, ServerMessageBundler.getTerrainTypeString(
-                Game.TERRAIN_TYPE_VIKING), Terrain.VIKING));
-        var pb_terrain_type = new PulldownButton<>(gui_root, pm_terrain, 0, 150);
-        group_terrain_type.addChild(pb_terrain_type);
-        label_terrain_type.place();
-        pb_terrain_type.place(label_terrain_type, RIGHT_MID);
-        group_terrain_type.compileCanvas();
-        pm_terrain.addItemChosenListener((_, _) -> setMapcode());
-        group_map_options.addChild(group_terrain_type);
+    // races and teams
+    Group group_race_team = new Group(gui_root);
+    labels_players = new Label[MatchmakingServerInterface.MAX_PLAYERS];
+    difficulty_pulldown_menus = new PulldownMenu[MatchmakingServerInterface.MAX_PLAYERS];
+    race_pulldown_menus = new PulldownMenu[MatchmakingServerInterface.MAX_PLAYERS];
+    team_pulldown_menus = new PulldownMenu[MatchmakingServerInterface.MAX_PLAYERS];
+    PulldownButton<AIDifficulty>[] difficulty_pulldown_buttons =
+        new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
+    race_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
+    team_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
+    for (int i = 0; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
+      difficulty_pulldown_menus[i] = new PulldownMenu<>(gui_root);
+      race_pulldown_menus[i] = new PulldownMenu<>(gui_root);
+      team_pulldown_menus[i] = new PulldownMenu<>(gui_root);
 
-        Group group_sliders = new Group(gui_root);
-        // hills
-        Label label_hills_low = new Label(i18n("min"), font);
-        group_sliders.addChild(label_hills_low);
-        Label label_hills_high = new Label(i18n("max"), font);
-        group_sliders.addChild(label_hills_high);
-        Label label_hills = new Label(i18n("hills"), font);
-        group_sliders.addChild(label_hills);
-        slider_hills = new Slider(gui_root, SLIDER_LENGTH, 0, SLIDER_MAX_VALUE, SLIDER_MAX_VALUE / 2);
-        slider_hills.addValueListener(new SliderUpdateMapcodeListener());
-        group_sliders.addChild(slider_hills);
+      if (i == 0) {
+        difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("human"), AIDifficulty.NONE));
+      } else {
+        difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("closed"), AIDifficulty.NONE));
+        difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("easy_ai"), AIDifficulty.EASY));
+        difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("normal_ai"), AIDifficulty.NORMAL));
+        difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("hard_ai"), AIDifficulty.HARD));
+      }
 
-        // vegetation
-        Label label_vegetation_low = new Label(i18n("min"), font);
-        group_sliders.addChild(label_vegetation_low);
-        Label label_vegetation_high = new Label(i18n("max"), font);
-        group_sliders.addChild(label_vegetation_high);
-        Label label_vegetation = new Label(i18n("trees"), font);
-        group_sliders.addChild(label_vegetation);
-        slider_vegetation = new Slider(gui_root, SLIDER_LENGTH, 0, SLIDER_MAX_VALUE, SLIDER_MAX_VALUE / 2);
-        slider_vegetation.addValueListener(new SliderUpdateMapcodeListener());
-        group_sliders.addChild(slider_vegetation);
+      difficulty_pulldown_buttons[i] = new PulldownButton<>(gui_root, difficulty_pulldown_menus[i], 0, 115);
+      group_race_team.addChild(difficulty_pulldown_buttons[i]);
 
-        // supplies
-        Label label_supplies_low = new Label(i18n("min"), font);
-        group_sliders.addChild(label_supplies_low);
-        Label label_supplies_high = new Label(i18n("max"), font);
-        group_sliders.addChild(label_supplies_high);
-        Label label_supplies = new Label(i18n("resources"), font);
-        group_sliders.addChild(label_supplies);
-        slider_supplies = new Slider(gui_root, SLIDER_LENGTH, 0, SLIDER_MAX_VALUE, SLIDER_MAX_VALUE / 2);
-        slider_supplies.addValueListener(new SliderUpdateMapcodeListener());
-        group_sliders.addChild(slider_supplies);
+      for (Race race : Race.values()) {
+        PulldownItem<Race> pulldown_item_race = new PulldownItem<>(gui_root, RaceData.getRaceName(race), race);
+        race_pulldown_menus[i].addItem(pulldown_item_race);
+      }
 
-        // supplies
-        label_supplies.place();
-        label_supplies_low.place(label_supplies, RIGHT_MID);
-        slider_supplies.place(label_supplies_low, RIGHT_MID);
-        label_supplies_high.place(slider_supplies, RIGHT_MID);
-        // vegetation
-        label_vegetation.place(label_supplies, TOP_LEFT, sectionSpacing);
-        slider_vegetation.place(slider_supplies, TOP_MID, sectionSpacing);
-        label_vegetation_low.place(slider_vegetation, LEFT_MID);
-        label_vegetation_high.place(slider_vegetation, RIGHT_MID);
-        // hills
-        label_hills.place(label_vegetation, TOP_LEFT, sectionSpacing);
-        slider_hills.place(slider_vegetation, TOP_MID, sectionSpacing);
-        label_hills_low.place(slider_hills, LEFT_MID);
-        label_hills_high.place(slider_hills, RIGHT_MID);
-        // sliders
-        group_sliders.compileCanvas();
-        advanced.addChild(group_sliders);
-
-        // races and teams
-        Group group_race_team = new Group(gui_root);
-        labels_players = new Label[MatchmakingServerInterface.MAX_PLAYERS];
-        difficulty_pulldown_menus = new PulldownMenu[MatchmakingServerInterface.MAX_PLAYERS];
-        race_pulldown_menus = new PulldownMenu[MatchmakingServerInterface.MAX_PLAYERS];
-        team_pulldown_menus = new PulldownMenu[MatchmakingServerInterface.MAX_PLAYERS];
-        PulldownButton<AIDifficulty>[] difficulty_pulldown_buttons
-                = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
-        race_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
-        team_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
-        for (int i = 0; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
-            difficulty_pulldown_menus[i] = new PulldownMenu<>(gui_root);
-            race_pulldown_menus[i] = new PulldownMenu<>(gui_root);
-            team_pulldown_menus[i] = new PulldownMenu<>(gui_root);
-
-            if (i == 0) {
-                difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("human"),
-                        AIDifficulty.NONE));
-            } else {
-                difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("closed"),
-                        AIDifficulty.NONE));
-                difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("easy_ai"),
-                        AIDifficulty.EASY));
-                difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("normal_ai"),
-                        AIDifficulty.NORMAL));
-                difficulty_pulldown_menus[i].addItem(new PulldownItem<>(gui_root, i18n("hard_ai"),
-                        AIDifficulty.HARD));
-            }
-
-            difficulty_pulldown_buttons[i] = new PulldownButton<>(gui_root, difficulty_pulldown_menus[i], 0, 115);
-            group_race_team.addChild(difficulty_pulldown_buttons[i]);
-
-            for (Race race : Race.values()) {
-                PulldownItem<Race> pulldown_item_race = new PulldownItem<>(gui_root,
-                        RaceData.getRaceName(race), race);
-                race_pulldown_menus[i].addItem(pulldown_item_race);
-            }
-
-            race_pulldown_buttons[i] = new PulldownButton<>(gui_root, race_pulldown_menus[i], 0, 115);
-            group_race_team.addChild(race_pulldown_buttons[i]);
-            for (int j = 0; j < MatchmakingServerInterface.MAX_PLAYERS; j++) {
-                String team_str = i18n("team", Integer.toString(j + 1));
-                PulldownItem<Integer> pulldown_item_team = new PulldownItem<>(gui_root, team_str, j);
-                team_pulldown_menus[i].addItem(pulldown_item_team);
-            }
-            team_pulldown_buttons[i] = new PulldownButton<>(gui_root, team_pulldown_menus[i], i, 115);
-            group_race_team.addChild(team_pulldown_buttons[i]);
-            if (i == 0) {
-                String player_str = i18n("player", Integer.toString(1));
-                labels_players[0] = new Label(player_str, font)
-                        .setColor(AccessibilitySettings.from(peer.getSettings()).linear_player_colours[0]);
-                group_race_team.addChild(labels_players[0]);
-                labels_players[0].place();
-                difficulty_pulldown_buttons[0].place(labels_players[0], RIGHT_MID);
-                race_pulldown_buttons[0].place(difficulty_pulldown_buttons[0], RIGHT_MID);
-                team_pulldown_buttons[0].place(race_pulldown_buttons[0], RIGHT_MID);
-            } else {
-                String player_str = i18n("player", Integer.toString(i + 1));
-                labels_players[i] = new Label(player_str, font)
-                        .setColor(AccessibilitySettings.from(peer.getSettings()).linear_player_colours[i]);
-                group_race_team.addChild(labels_players[i]);
-                labels_players[i].place(labels_players[i - 1], BOTTOM_RIGHT);
-                difficulty_pulldown_buttons[i].place(labels_players[i], RIGHT_MID);
-                race_pulldown_buttons[i].place(difficulty_pulldown_buttons[i], RIGHT_MID);
-                team_pulldown_buttons[i].place(race_pulldown_buttons[i], RIGHT_MID);
-                final int idx = i;
-                difficulty_pulldown_menus[i].addItemChosenListener((menu, _) -> {
-                    AIDifficulty difficulty = menu.getChosenItem().map(PulldownItem::getAttachment).orElse(
-                            AIDifficulty.NONE);
-                    if (difficulty == AIDifficulty.NONE) {
-                        labels_players[idx].setDisabled(true);
-                        race_pulldown_buttons[idx].setDisabled(true);
-                        team_pulldown_buttons[idx].setDisabled(true);
-                    } else {
-                        labels_players[idx].setDisabled(false);
-                        race_pulldown_buttons[idx].setDisabled(false);
-                        team_pulldown_buttons[idx].setDisabled(false);
-                    }
-                });
-            }
-            difficulty_pulldown_menus[i].addItemChosenListener((_, _) -> setMapcode());
-            race_pulldown_menus[i].addItemChosenListener((_, _) -> setMapcode());
-            team_pulldown_menus[i].addItemChosenListener((_, _) -> setMapcode());
-        }
-        if (!multiplayer) {
-            group_race_team.compileCanvas();
-            standard.addChild(group_race_team);
-        }
-
-        // buttons
-        Group group_buttons = new Group(gui_root);
-
-        button_ok = new OKButton(gui_root, BUTTON_WIDTH);
-        button_ok.addMouseClickListener(new OKListener());
-        HorizButton button_cancel = new CancelButton(gui_root, BUTTON_WIDTH);
-        button_cancel.addMouseClickListener(new CancelButtonListener());
-        HorizButton button_mapcode = new HorizButton(gui_root, i18n("enter_map_code"), 170);
-        button_mapcode.addMouseClickListener(new MapcodeListener());
-
-        group_buttons.addChild(button_mapcode);
-        group_buttons.addChild(button_ok);
-        group_buttons.addChild(button_cancel);
-
-        button_cancel.place();
-        button_ok.place(button_cancel, LEFT_MID);
-        button_mapcode.place(button_ok, LEFT_MID);
-
-        group_buttons.compileCanvas();
-        addChild(group_buttons);
-
-        // map options
-        if (multiplayer) {
-            group_gamespeed.place();
-            group_size.place(group_gamespeed, BOTTOM_RIGHT);
-        } else {
-            group_size.place();
-        }
-        group_terrain_type.place(group_size, BOTTOM_RIGHT);
-        group_map_options.compileCanvas();
-        standard.addChild(group_map_options);
-
-        // standard
-        if (multiplayer) {
-            label_name.place();
-            editline_name.place(label_name, RIGHT_MID);
-            cb_rated.place(label_name, BOTTOM_LEFT, sectionSpacing);
-            group_map_options.place(cb_rated, BOTTOM_LEFT);
-        } else {
-            group_map_options.place();
-            group_race_team.place(group_map_options, BOTTOM_LEFT, sectionSpacing);
-        }
-        standard.compileCanvas();
-
-        // advanced
-        group_sliders.place();
-        group_seed.place(group_sliders, BOTTOM_LEFT, sectionSpacing);
-        advanced.compileCanvas();
-
-        PanelGroup panel_group = new PanelGroup(gui_root, standard, advanced);
-        addChild(panel_group);
-
-        // Place objects
-        label_headline.place();
-        panel_group.place(label_headline, BOTTOM_LEFT);
-
-        // buttons
-        group_buttons.place(Origin.AT_END);
-
-        compileCanvas();
-        randomize();
-
-        // set standard game
-        pulldown_size.addItemChosenListener((_, _) -> {
+      race_pulldown_buttons[i] = new PulldownButton<>(gui_root, race_pulldown_menus[i], 0, 115);
+      group_race_team.addChild(race_pulldown_buttons[i]);
+      for (int j = 0; j < MatchmakingServerInterface.MAX_PLAYERS; j++) {
+        String team_str = i18n("team", Integer.toString(j + 1));
+        PulldownItem<Integer> pulldown_item_team = new PulldownItem<>(gui_root, team_str, j);
+        team_pulldown_menus[i].addItem(pulldown_item_team);
+      }
+      team_pulldown_buttons[i] = new PulldownButton<>(gui_root, team_pulldown_menus[i], i, 115);
+      group_race_team.addChild(team_pulldown_buttons[i]);
+      if (i == 0) {
+        String player_str = i18n("player", Integer.toString(1));
+        labels_players[0] =
+            new Label(player_str, font)
+                .setColor(AccessibilitySettings.from(peer.getSettings()).linear_player_colours[0]);
+        group_race_team.addChild(labels_players[0]);
+        labels_players[0].place();
+        difficulty_pulldown_buttons[0].place(labels_players[0], RIGHT_MID);
+        race_pulldown_buttons[0].place(difficulty_pulldown_buttons[0], RIGHT_MID);
+        team_pulldown_buttons[0].place(race_pulldown_buttons[0], RIGHT_MID);
+      } else {
+        String player_str = i18n("player", Integer.toString(i + 1));
+        labels_players[i] =
+            new Label(player_str, font)
+                .setColor(AccessibilitySettings.from(peer.getSettings()).linear_player_colours[i]);
+        group_race_team.addChild(labels_players[i]);
+        labels_players[i].place(labels_players[i - 1], BOTTOM_RIGHT);
+        difficulty_pulldown_buttons[i].place(labels_players[i], RIGHT_MID);
+        race_pulldown_buttons[i].place(difficulty_pulldown_buttons[i], RIGHT_MID);
+        team_pulldown_buttons[i].place(race_pulldown_buttons[i], RIGHT_MID);
+        final int idx = i;
+        difficulty_pulldown_menus[i].addItemChosenListener((menu, _) -> {
+          AIDifficulty difficulty = menu.getChosenItem().map(PulldownItem::getAttachment).orElse(AIDifficulty.NONE);
+          if (difficulty == AIDifficulty.NONE) {
+            labels_players[idx].setDisabled(true);
+            race_pulldown_buttons[idx].setDisabled(true);
+            team_pulldown_buttons[idx].setDisabled(true);
+          } else {
+            labels_players[idx].setDisabled(false);
+            race_pulldown_buttons[idx].setDisabled(false);
+            team_pulldown_buttons[idx].setDisabled(false);
+          }
         });
-        pm_terrain.addItemChosenListener((_, _) -> {
-        });
-        for (int i = 0; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
-            difficulty_pulldown_menus[i].addItemChosenListener((_, _) -> {
-            });
-            if (i == 0) {
-                team_pulldown_menus[i].chooseItem(0);
-            } else {
-                team_pulldown_menus[i].chooseItem(1);
-            }
-            if (i == 1) {
-                difficulty_pulldown_menus[i].chooseItem(AIDifficulty.EASY.getValue());
-                Race player0_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(
-                        Race.NATIVES);
-                Race other_race = (player0_race == Race.VIKINGS) ? Race.NATIVES : Race.VIKINGS;
-                race_pulldown_menus[i].chooseItem(other_race.ordinal());
-            } else {
-                difficulty_pulldown_menus[i].chooseItem(AIDifficulty.NONE.getValue());
-            }
-        }
-        pulldown_size.chooseItem(1);
+      }
+      difficulty_pulldown_menus[i].addItemChosenListener((_, _) -> setMapcode());
+      race_pulldown_menus[i].addItemChosenListener((_, _) -> setMapcode());
+      team_pulldown_menus[i].addItemChosenListener((_, _) -> setMapcode());
+    }
+    if (!multiplayer) {
+      group_race_team.compileCanvas();
+      standard.addChild(group_race_team);
     }
 
-    private void setMapcode() {
-        int hills = slider_hills.getValue();
-        int vegetation_amount = slider_vegetation.getValue();
-        int supplies_amount = slider_supplies.getValue();
-        int terrain_type = pm_terrain.getChosenItem().map(PulldownItem::getAttachment).map(Terrain::getValue).orElse(0);
-        int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
-        int player_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).map(Race::ordinal)
-                .orElse(0);
-        int player_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+    // buttons
+    Group group_buttons = new Group(gui_root);
 
-        List<MapParameters.SlotSetting> otherSlots = new java.util.ArrayList<>();
-        for (int i = 1; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
-            AIDifficulty difficulty = difficulty_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment)
-                    .orElse(AIDifficulty.NONE);
-            int race = race_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).map(Race::ordinal)
-                    .orElse(0);
-            int team = team_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-            otherSlots.add(new MapParameters.SlotSetting(difficulty.getValue(), race, team));
-        }
+    button_ok = new OKButton(gui_root, BUTTON_WIDTH);
+    button_ok.addMouseClickListener(new OKListener());
+    HorizButton button_cancel = new CancelButton(gui_root, BUTTON_WIDTH);
+    button_cancel.addMouseClickListener(new CancelButtonListener());
+    HorizButton button_mapcode = new HorizButton(gui_root, i18n("enter_map_code"), 170);
+    button_mapcode.addMouseClickListener(new MapcodeListener());
 
-        MapParameters params = new MapParameters(
-                seed,
-                hills,
-                vegetation_amount,
-                supplies_amount,
-                terrain_type,
-                size,
-                player_race,
-                player_team,
-                otherSlots
-        );
+    group_buttons.addChild(button_mapcode);
+    group_buttons.addChild(button_ok);
+    group_buttons.addChild(button_cancel);
 
-        String code = MapCode.encode(params);
-        label_mapcode.clear();
-        label_mapcode.append(code);
+    button_cancel.place();
+    button_ok.place(button_cancel, LEFT_MID);
+    button_mapcode.place(button_ok, LEFT_MID);
+
+    group_buttons.compileCanvas();
+    addChild(group_buttons);
+
+    // map options
+    if (multiplayer) {
+      group_gamespeed.place();
+      group_size.place(group_gamespeed, BOTTOM_RIGHT);
+    } else {
+      group_size.place();
+    }
+    group_terrain_type.place(group_size, BOTTOM_RIGHT);
+    group_map_options.compileCanvas();
+    standard.addChild(group_map_options);
+
+    // standard
+    if (multiplayer) {
+      label_name.place();
+      editline_name.place(label_name, RIGHT_MID);
+      cb_rated.place(label_name, BOTTOM_LEFT, sectionSpacing);
+      group_map_options.place(cb_rated, BOTTOM_LEFT);
+    } else {
+      group_map_options.place();
+      group_race_team.place(group_map_options, BOTTOM_LEFT, sectionSpacing);
+    }
+    standard.compileCanvas();
+
+    // advanced
+    group_sliders.place();
+    group_seed.place(group_sliders, BOTTOM_LEFT, sectionSpacing);
+    advanced.compileCanvas();
+
+    PanelGroup panel_group = new PanelGroup(gui_root, standard, advanced);
+    addChild(panel_group);
+
+    // Place objects
+    label_headline.place();
+    panel_group.place(label_headline, BOTTOM_LEFT);
+
+    // buttons
+    group_buttons.place(Origin.AT_END);
+
+    compileCanvas();
+    randomize();
+
+    // set standard game
+    pulldown_size.addItemChosenListener((_, _) -> {});
+    pm_terrain.addItemChosenListener((_, _) -> {});
+    for (int i = 0; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
+      difficulty_pulldown_menus[i].addItemChosenListener((_, _) -> {});
+      if (i == 0) {
+        team_pulldown_menus[i].chooseItem(0);
+      } else {
+        team_pulldown_menus[i].chooseItem(1);
+      }
+      if (i == 1) {
+        difficulty_pulldown_menus[i].chooseItem(AIDifficulty.EASY.getValue());
+        Race player0_race =
+            race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(Race.NATIVES);
+        Race other_race = (player0_race == Race.VIKINGS) ? Race.NATIVES : Race.VIKINGS;
+        race_pulldown_menus[i].chooseItem(other_race.ordinal());
+      } else {
+        difficulty_pulldown_menus[i].chooseItem(AIDifficulty.NONE.getValue());
+      }
+    }
+    pulldown_size.chooseItem(1);
+  }
+
+  private void setMapcode() {
+    int hills = slider_hills.getValue();
+    int vegetation_amount = slider_vegetation.getValue();
+    int supplies_amount = slider_supplies.getValue();
+    int terrain_type = pm_terrain.getChosenItem().map(PulldownItem::getAttachment).map(Terrain::getValue).orElse(0);
+    int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
+    int player_race =
+        race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).map(Race::ordinal).orElse(0);
+    int player_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+
+    List<MapParameters.SlotSetting> otherSlots = new java.util.ArrayList<>();
+    for (int i = 1; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
+      AIDifficulty difficulty =
+          difficulty_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(AIDifficulty.NONE);
+      int race = race_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).map(Race::ordinal).orElse(0);
+      int team = team_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+      otherSlots.add(new MapParameters.SlotSetting(difficulty.getValue(), race, team));
     }
 
-    public void parseMapcode(String text) {
-        String code = text.toUpperCase();
-        MapParameters params = MapCode.decode(code);
-        populateFromMapParameters(params);
-        label_mapcode.clear();
-        label_mapcode.append(code);
+    MapParameters params =
+        new MapParameters(
+            seed, hills, vegetation_amount, supplies_amount, terrain_type, size, player_race, player_team, otherSlots);
+
+    String code = MapCode.encode(params);
+    label_mapcode.clear();
+    label_mapcode.append(code);
+  }
+
+  public void parseMapcode(String text) {
+    String code = text.toUpperCase();
+    MapParameters params = MapCode.decode(code);
+    populateFromMapParameters(params);
+    label_mapcode.clear();
+    label_mapcode.append(code);
+  }
+
+  private void populateFromMapParameters(MapParameters params) {
+    for (int i = 1; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
+      MapParameters.SlotSetting setting =
+          (i - 1 < params.otherSlots().size())
+              ? params.otherSlots().get(i - 1)
+              : new MapParameters.SlotSetting(0, 0, 0);
+
+      team_pulldown_menus[i].chooseItem(setting.team());
+      race_pulldown_menus[i].chooseItem(setting.race());
+      AIDifficulty difficulty = AIDifficulty.fromValue(setting.difficulty());
+      difficulty_pulldown_menus[i].chooseItem(difficulty.getValue());
+      if (difficulty == AIDifficulty.NONE) {
+        labels_players[i].setDisabled(true);
+        race_pulldown_buttons[i].setDisabled(true);
+        team_pulldown_buttons[i].setDisabled(true);
+      } else {
+        labels_players[i].setDisabled(false);
+        race_pulldown_buttons[i].setDisabled(false);
+        team_pulldown_buttons[i].setDisabled(false);
+      }
     }
 
-    private void populateFromMapParameters(MapParameters params) {
-        for (int i = 1; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
-            MapParameters.SlotSetting setting = (i - 1 < params.otherSlots().size())
-                    ? params.otherSlots().get(i - 1)
-                    : new MapParameters.SlotSetting(0, 0, 0);
+    team_pulldown_menus[0].chooseItem(params.player0Team());
+    race_pulldown_menus[0].chooseItem(params.player0Race());
+    pulldown_size.chooseItem(params.size());
+    pm_terrain.chooseItem(params.terrainType());
+    slider_supplies.setValue(params.supplies());
+    slider_vegetation.setValue(params.vegetation());
+    slider_hills.setValue(params.hills());
+    this.seed = params.seed();
+  }
 
-            team_pulldown_menus[i].chooseItem(setting.team());
-            race_pulldown_menus[i].chooseItem(setting.race());
-            AIDifficulty difficulty = AIDifficulty.fromValue(setting.difficulty());
-            difficulty_pulldown_menus[i].chooseItem(difficulty.getValue());
-            if (difficulty == AIDifficulty.NONE) {
-                labels_players[i].setDisabled(true);
-                race_pulldown_buttons[i].setDisabled(true);
-                team_pulldown_buttons[i].setDisabled(true);
-            } else {
-                labels_players[i].setDisabled(false);
-                race_pulldown_buttons[i].setDisabled(false);
-                team_pulldown_buttons[i].setDisabled(false);
-            }
-        }
+  public void setSeed(int seed) {
+    this.seed = seed;
+  }
 
-        team_pulldown_menus[0].chooseItem(params.player0Team());
-        race_pulldown_menus[0].chooseItem(params.player0Race());
-        pulldown_size.chooseItem(params.size());
-        pm_terrain.chooseItem(params.terrainType());
-        slider_supplies.setValue(params.supplies());
-        slider_vegetation.setValue(params.vegetation());
-        slider_hills.setValue(params.hills());
-        this.seed = params.seed();
+  public GUIObject getButtonOK() {
+    return button_ok;
+  }
+
+  @Override
+  public void setFocus(FocusDirection direction) {
+    if (direction == FocusDirection.BACKWARD) {
+      super.setFocus(direction);
+    } else {
+      button_ok.setFocus(direction);
     }
+  }
 
-    public void setSeed(int seed) {
-        this.seed = seed;
-    }
-
-    public GUIObject getButtonOK() {
-        return button_ok;
-    }
-
+  private final class CancelButtonListener implements MouseClickListener {
     @Override
-    public void setFocus(FocusDirection direction) {
-        if (direction == FocusDirection.BACKWARD) {
-            super.setFocus(direction);
-        } else {
-            button_ok.setFocus(direction);
-        }
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {
+      owner.terrainMenuCancel();
     }
+  }
 
-    private final class CancelButtonListener implements MouseClickListener {
-        @Override
-        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            owner.terrainMenuCancel();
-        }
-    }
+  private void randomize() {
+    var random = ThreadLocalRandom.current();
+    random.nextInt();
+    BigInteger rand_int = new BigInteger(100, random);
+    MapParameters params = MapCode.decode(rand_int);
+    populateFromMapParameters(params);
+    setMapcode();
+  }
 
-    private void randomize() {
-        var random = ThreadLocalRandom.current();
-        random.nextInt();
-        BigInteger rand_int = new BigInteger(100, random);
-        MapParameters params = MapCode.decode(rand_int);
-        populateFromMapParameters(params);
-        setMapcode();
+  void doCancel() {
+    if (multiplayer) {
+      assert main_menu != null;
+      new SelectGameMenu(main_menu);
     }
+  }
 
-    void doCancel() {
-        if (multiplayer) {
-            assert main_menu != null;
-            new SelectGameMenu(main_menu);
-        }
-    }
+  private boolean isChosen(PulldownMenu<AIDifficulty> menu) {
+    return menu.getChosenItem().map(PulldownItem::getAttachment).orElse(AIDifficulty.NONE) != AIDifficulty.NONE;
+  }
 
-    private boolean isChosen(PulldownMenu<AIDifficulty> menu) {
-        return menu.getChosenItem().map(PulldownItem::getAttachment).orElse(AIDifficulty.NONE)
-                != AIDifficulty.NONE;
+  private SkirmishSetup buildSkirmishSetup(Terrain terrain, int hills, int vegetation_amount, int supplies_amount) {
+    Race p0_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(Race.NATIVES);
+    int p0_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+    var slots = new java.util.ArrayList<SkirmishPlayerSlot>();
+    slots.add(new SkirmishPlayerSlot(0, true, p0_race, p0_team, AIDifficulty.NONE));
+    for (int i = 1; i < race_pulldown_menus.length; i++) {
+      if (isChosen(difficulty_pulldown_menus[i])) {
+        AIDifficulty difficulty =
+            difficulty_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(AIDifficulty.NONE);
+        Race current_race =
+            race_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(Race.NATIVES);
+        int current_team = team_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+        slots.add(new SkirmishPlayerSlot(i, false, current_race, current_team, difficulty));
+      }
     }
+    int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
+    IslandConfig islandConfig =
+        new IslandConfig(
+            terrain,
+            SIZES[size],
+            hills / (float) SLIDER_MAX_VALUE,
+            vegetation_amount / (float) SLIDER_MAX_VALUE,
+            supplies_amount / (float) SLIDER_MAX_VALUE,
+            seed * seed);
+    WorldParameters worldParameters =
+        new WorldParameters(label_mapcode.getContents(), Player.INITIAL_UNIT_COUNT, Player.DEFAULT_MAX_UNIT_COUNT);
+    return new SkirmishSetup(worldParameters, islandConfig, slots);
+  }
 
-    private SkirmishSetup buildSkirmishSetup(Terrain terrain, int hills, int vegetation_amount,
-            int supplies_amount) {
-        Race p0_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(Race.NATIVES);
-        int p0_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-        var slots = new java.util.ArrayList<SkirmishPlayerSlot>();
-        slots.add(new SkirmishPlayerSlot(0, true, p0_race, p0_team, AIDifficulty.NONE));
-        for (int i = 1; i < race_pulldown_menus.length; i++) {
-            if (isChosen(difficulty_pulldown_menus[i])) {
-                AIDifficulty difficulty = difficulty_pulldown_menus[i].getChosenItem().map(
-                        PulldownItem::getAttachment).orElse(AIDifficulty.NONE);
-                Race current_race = race_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(
-                        Race.NATIVES);
-                int current_team = team_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-                slots.add(new SkirmishPlayerSlot(i, false, current_race, current_team, difficulty));
-            }
-        }
-        int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
-        IslandConfig islandConfig = new IslandConfig(terrain, SIZES[size],
-                hills / (float) SLIDER_MAX_VALUE, vegetation_amount / (float) SLIDER_MAX_VALUE,
-                supplies_amount / (float) SLIDER_MAX_VALUE, seed * seed);
-        WorldParameters worldParameters = new WorldParameters(label_mapcode.getContents(),
-                Player.INITIAL_UNIT_COUNT, Player.DEFAULT_MAX_UNIT_COUNT);
-        return new SkirmishSetup(worldParameters, islandConfig, slots);
+  private @Nullable MultiplayerSetup buildMultiplayerSetup(
+      Terrain terrain, int hills, int vegetation_amount, int supplies_amount, boolean rated) {
+    String game_name = editline_name.getContents();
+    if (game_name.length() < Game.MIN_LENGTH) {
+      String min_name = i18n("min_name_length", Game.MIN_LENGTH);
+      gui_root.addModalForm(new MessageForm(gui_root, min_name));
+      return null;
     }
+    float random_start_pos = peer.getEventQueue().getTime() % 1f;
+    int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
+    byte gamespeed =
+        pm_gamespeed
+            .getChosenItem()
+            .map(PulldownItem::getAttachment)
+            .map(Gamespeed::getValue)
+            .map(Integer::byteValue)
+            .orElse((byte) Game.GAMESPEED_NORMAL);
+    Game game =
+        new Game(
+            game_name,
+            (byte) size,
+            (byte) terrain.getValue(),
+            (byte) hills,
+            (byte) vegetation_amount,
+            (byte) supplies_amount,
+            rated,
+            gamespeed,
+            label_mapcode.getContents(),
+            random_start_pos,
+            Player.DEFAULT_MAX_UNIT_COUNT);
+    Race p0_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(Race.NATIVES);
+    int p0_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+    IslandConfig islandConfig =
+        new IslandConfig(
+            terrain,
+            SIZES[size],
+            hills / (float) SLIDER_MAX_VALUE,
+            vegetation_amount / (float) SLIDER_MAX_VALUE,
+            supplies_amount / (float) SLIDER_MAX_VALUE,
+            seed * seed);
+    WorldParameters worldParameters =
+        new WorldParameters(label_mapcode.getContents(), Player.INITIAL_UNIT_COUNT, game.getMaxUnitCount());
+    return new MultiplayerSetup(worldParameters, game, islandConfig, p0_race, p0_team);
+  }
 
-    private @Nullable MultiplayerSetup buildMultiplayerSetup(Terrain terrain, int hills, int vegetation_amount,
-            int supplies_amount, boolean rated) {
-        String game_name = editline_name.getContents();
-        if (game_name.length() < Game.MIN_LENGTH) {
-            String min_name = i18n("min_name_length", Game.MIN_LENGTH);
-            gui_root.addModalForm(new MessageForm(gui_root, min_name));
-            return null;
-        }
-        float random_start_pos = peer.getEventQueue().getTime() % 1f;
-        int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
-        byte gamespeed = pm_gamespeed.getChosenItem().map(PulldownItem::getAttachment).map(Gamespeed::getValue)
-                .map(Integer::byteValue).orElse((byte) Game.GAMESPEED_NORMAL);
-        Game game = new Game(game_name, (byte) size, (byte) terrain.getValue(),
-                (byte) hills, (byte) vegetation_amount, (byte) supplies_amount, rated, gamespeed,
-                label_mapcode.getContents(), random_start_pos, Player.DEFAULT_MAX_UNIT_COUNT);
-        Race p0_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(Race.NATIVES);
-        int p0_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-        IslandConfig islandConfig = new IslandConfig(terrain, SIZES[size],
-                hills / (float) SLIDER_MAX_VALUE, vegetation_amount / (float) SLIDER_MAX_VALUE,
-                supplies_amount / (float) SLIDER_MAX_VALUE, seed * seed);
-        WorldParameters worldParameters = new WorldParameters(label_mapcode.getContents(),
-                Player.INITIAL_UNIT_COUNT, game.getMaxUnitCount());
-        return new MultiplayerSetup(worldParameters, game, islandConfig, p0_race, p0_team);
+  public boolean startGame() {
+    int hills = slider_hills.getValue();
+    int vegetation_amount = slider_vegetation.getValue();
+    int supplies_amount = slider_supplies.getValue();
+    Terrain terrain = pm_terrain.getChosenItem().map(PulldownItem::getAttachment).orElse(Terrain.NATIVE);
+    boolean rated = cb_rated.isChecked();
+    if (rated) {
+      int first_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+      team_pulldown_menus[0].chooseItem(first_team % 2);
     }
+    SkirmishSetup skirmish_setup = null;
+    MultiplayerSetup multiplayer_setup = null;
+    if (multiplayer) {
+      multiplayer_setup = buildMultiplayerSetup(terrain, hills, vegetation_amount, supplies_amount, rated);
+      if (multiplayer_setup == null) {
+        return false;
+      }
+    } else {
+      skirmish_setup = buildSkirmishSetup(terrain, hills, vegetation_amount, supplies_amount);
+      if (!skirmish_setup.hasEnemyTeams()) {
+        String min_name = i18n("min_num_teams", 2);
+        gui_root.addModalForm(new MessageForm(gui_root, min_name));
+        return false;
+      }
+    }
+    if (owner != null) owner.terrainMenuOK();
+    SelectGameMenu menu = null;
+    if (multiplayer) menu = (SelectGameMenu) owner;
+    IO.println(
+        "hills = "
+            + hills / (float) SLIDER_MAX_VALUE
+            + " | vegetation_amount = "
+            + vegetation_amount / (float) SLIDER_MAX_VALUE
+            + " | supplies_amount = "
+            + supplies_amount / (float) SLIDER_MAX_VALUE
+            + " | seed = "
+            + seed * seed);
+    String ai_string = i18n("ai");
+    InGameInfo ingame_info =
+        multiplayer
+            ? new MultiplayerInGameInfo(multiplayer_setup.game())
+            : new DefaultInGameInfo(AbstractOptionsMenu.getPreferredGamespeed());
+    WorldParameters parameters = multiplayer ? multiplayer_setup.worldParameters() : skirmish_setup.worldParameters();
+    IslandConfig islandConfig = multiplayer ? multiplayer_setup.islandConfig() : skirmish_setup.islandConfig();
+    var game_network =
+        MatchLauncher.startNewGame(
+            peer,
+            gui_root,
+            screen_manager,
+            menu,
+            parameters,
+            ingame_info,
+            new MatchLauncher.DefaultWorldInitAction(),
+            islandConfig,
+            IntStream.rangeClosed(0, 5).mapToObj(i -> ai_string + i).toArray(String[]::new));
+    if (!multiplayer) {
+      skirmish_setup.startSkirmishServer(game_network);
+      IO.println("Start server");
+    } else {
+      game_network
+          .getClient()
+          .getServerInterface()
+          .setPlayerSlot(
+              0,
+              SlotType.HUMAN,
+              multiplayer_setup.player0Race(),
+              multiplayer_setup.player0Team(),
+              false,
+              AIDifficulty.NONE);
+    }
+    IO.println("Map code: " + label_mapcode.getContents());
+    IO.println("Map code: " + label_mapcode.getContents());
+    return true;
+  }
 
-    public boolean startGame() {
-        int hills = slider_hills.getValue();
-        int vegetation_amount = slider_vegetation.getValue();
-        int supplies_amount = slider_supplies.getValue();
-        Terrain terrain = pm_terrain.getChosenItem().map(PulldownItem::getAttachment).orElse(Terrain.NATIVE);
-        boolean rated = cb_rated.isChecked();
-        if (rated) {
-            int first_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-            team_pulldown_menus[0].chooseItem(first_team % 2);
-        }
-        SkirmishSetup skirmish_setup = null;
-        MultiplayerSetup multiplayer_setup = null;
-        if (multiplayer) {
-            multiplayer_setup = buildMultiplayerSetup(terrain, hills, vegetation_amount, supplies_amount, rated);
-            if (multiplayer_setup == null) {
-                return false;
-            }
-        } else {
-            skirmish_setup = buildSkirmishSetup(terrain, hills, vegetation_amount, supplies_amount);
-            if (!skirmish_setup.hasEnemyTeams()) {
-                String min_name = i18n("min_num_teams", 2);
-                gui_root.addModalForm(new MessageForm(gui_root, min_name));
-                return false;
-            }
-        }
-        if (owner != null)
-            owner.terrainMenuOK();
-        SelectGameMenu menu = null;
-        if (multiplayer)
-            menu = (SelectGameMenu) owner;
-        IO.println("hills = " + hills / (float) SLIDER_MAX_VALUE + " | vegetation_amount = " + vegetation_amount
-                / (float) SLIDER_MAX_VALUE + " | supplies_amount = " + supplies_amount / (float) SLIDER_MAX_VALUE
-                + " | seed = " + seed * seed);
-        String ai_string = i18n("ai");
-        InGameInfo ingame_info = multiplayer
-                ? new MultiplayerInGameInfo(multiplayer_setup.game())
-                : new DefaultInGameInfo(AbstractOptionsMenu.getPreferredGamespeed());
-        WorldParameters parameters = multiplayer
-                ? multiplayer_setup.worldParameters() : skirmish_setup.worldParameters();
-        IslandConfig islandConfig = multiplayer
-                ? multiplayer_setup.islandConfig() : skirmish_setup.islandConfig();
-        var game_network = MatchLauncher.startNewGame(peer,
-                gui_root,
-                screen_manager,
-                menu,
-                parameters,
-                ingame_info,
-                new MatchLauncher.DefaultWorldInitAction(),
-                islandConfig,
-                IntStream.rangeClosed(0, 5).mapToObj(i -> ai_string + i).toArray(String[]::new));
-        if (!multiplayer) {
-            skirmish_setup.startSkirmishServer(game_network);
-            IO.println("Start server");
-        } else {
-            game_network.getClient().getServerInterface().setPlayerSlot(0, SlotType.HUMAN,
-                    multiplayer_setup.player0Race(), multiplayer_setup.player0Team(),
-                    false, AIDifficulty.NONE);
-        }
-        IO.println("Map code: " + label_mapcode.getContents());
-        IO.println("Map code: " + label_mapcode.getContents());
-        return true;
+  private final class MapcodeListener implements MouseClickListener {
+    @Override
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {
+      gui_root.addModalForm(new MapcodeForm(gui_root, TerrainMenu.this));
     }
+  }
 
-    private final class MapcodeListener implements MouseClickListener {
-        @Override
-        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            gui_root.addModalForm(new MapcodeForm(gui_root, TerrainMenu.this));
-        }
+  private final class OKListener implements MouseClickListener {
+    @Override
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {
+      boolean started = startGame();
+      if (started) button_ok.setDisabled(true);
     }
+  }
 
-    private final class OKListener implements MouseClickListener {
-        @Override
-        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            boolean started = startGame();
-            if (started)
-                button_ok.setDisabled(true);
-        }
+  private final class SliderUpdateMapcodeListener implements ValueListener {
+    @Override
+    public void valueSet(long value) {
+      setMapcode();
     }
-
-    private final class SliderUpdateMapcodeListener implements ValueListener {
-        @Override
-        public void valueSet(long value) {
-            setMapcode();
-        }
-    }
+  }
 }

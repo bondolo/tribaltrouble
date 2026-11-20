@@ -13,8 +13,7 @@ import java.io.Serializable;
  * @param minZ minimum Z coordinate
  * @param maxZ maximum Z coordinate
  */
-public record BoundsData(float minX, float maxX, float minY, float maxY, float minZ, float maxZ) implements
-        Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
+public record BoundsData(float minX, float maxX, float minY, float maxY, float minZ, float maxZ)
+    implements Serializable {
+  @Serial private static final long serialVersionUID = 1L;
 }

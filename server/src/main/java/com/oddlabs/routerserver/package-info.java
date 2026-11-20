@@ -1,6 +1,4 @@
-/**
- * Standalone packet routing server.
- */
+/** Standalone packet routing server. */
 @NullMarked
 package com.oddlabs.routerserver;
 

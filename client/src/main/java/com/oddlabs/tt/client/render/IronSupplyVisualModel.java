@@ -2,363 +2,415 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.effects.particle.RingEmitter;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.client.resource.AssetRegistry;
-import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.util.Color;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Deque;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Deque;
-
-/**
- * {@link VisualModel} implementation for iron supply meteors managing trail, impact explosion, and cooling smoke
- * emitters.
- */
+/// {@link VisualModel} implementation for iron supply meteors managing trail, impact explosion, and cooling smoke
+/// emitters.
 public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronSupply> implements EmitterAccessory {
-    private static final float FALL_DURATION_RATIO = 0.12f;
-    private static final float SMOKE_PARTICLES_PER_SECOND = 30.0f;
-    private static final float AIRBURST_HEIGHT = 25.0f;
-    private static final float AIRBURST_AUDIO_DISTANCE = 300.0f;
-    private static final float AIRBURST_AUDIO_RADIUS = 60.0f;
-    private static final Color.Linear COLOR_WHITE_HOT = new Color.Linear(2.0f, 2.0f, 2.0f, 1.0f);
+  private static final float FALL_DURATION_RATIO = 0.12f;
+  private static final float SMOKE_PARTICLES_PER_SECOND = 30.0f;
+  private static final float AIRBURST_HEIGHT = 25.0f;
+  private static final float AIRBURST_AUDIO_DISTANCE = 300.0f;
+  private static final float AIRBURST_AUDIO_RADIUS = 60.0f;
+  private static final Color.Linear COLOR_WHITE_HOT = new Color.Linear(2.0f, 2.0f, 2.0f, 1.0f);
 
-    private static final Color.Linear IRON_COLOR_FALLING = new Color.Linear(2.0f, 0.5f, 0.05f, 1.0f);
-    private static final Color.Linear IRON_COLOR_LANDING = new Color.Linear(2.0f, 1.0f, 0.2f, 1.0f);
-    private static final Color.Linear IRON_COLOR_HOT = new Color.Linear(2.0f, 0.2f, 0.1f, 1.0f);
-    private static final Color.Linear IRON_COLOR_COOLING = new Color.Standard(0xFF_6B_6B_7A).linear();
-    private static final Color.Linear IRON_COLOR_COOLED = IRON_COLOR_COOLING.mul(0.35f);
-    private static final Color.Linear IRON_START_TINT = IRON_COLOR_COOLING.mul(0.9f);
-    private static final Color.Linear IRON_COLOR_DECAL_COOLED = Color.Linear.BLACK;
+  private static final Color.Linear IRON_COLOR_FALLING = new Color.Linear(2.0f, 0.5f, 0.05f, 1.0f);
+  private static final Color.Linear IRON_COLOR_LANDING = new Color.Linear(2.0f, 1.0f, 0.2f, 1.0f);
+  private static final Color.Linear IRON_COLOR_HOT = new Color.Linear(2.0f, 0.2f, 0.1f, 1.0f);
+  private static final Color.Linear IRON_COLOR_COOLING = new Color.Standard(0xFF_6B_6B_7A).linear();
+  private static final Color.Linear IRON_COLOR_COOLED = IRON_COLOR_COOLING.mul(0.35f);
+  private static final Color.Linear IRON_START_TINT = IRON_COLOR_COOLING.mul(0.9f);
+  private static final Color.Linear IRON_COLOR_DECAL_COOLED = Color.Linear.BLACK;
 
-    private final IronSupply ironSupply;
-    private final AudioImplementation audio;
+  private final IronSupply ironSupply;
+  private final AudioImplementation audio;
 
-    private boolean landed = false;
-    private boolean cooling = false;
-    private boolean airBurstPlayed = false;
-    private @Nullable RandomVelocityEmitter trailEmitter = null;
-    private @Nullable RandomVelocityEmitter coolingEmitter = null;
-    private final Deque<Emitter<?>> oneShotEmitters = new ArrayDeque<>();
+  private boolean landed = false;
+  private boolean cooling = false;
+  private boolean airBurstPlayed = false;
+  private @Nullable RandomVelocityEmitter trailEmitter = null;
+  private @Nullable RandomVelocityEmitter coolingEmitter = null;
+  private final Deque<Emitter<?>> oneShotEmitters = new ArrayDeque<>();
 
-    public IronSupplyVisualModel(IronSupply ironSupply, AudioImplementation audio) {
-        super(ironSupply);
-        this.ironSupply = ironSupply;
-        this.audio = audio;
+  public IronSupplyVisualModel(IronSupply ironSupply, AudioImplementation audio) {
+    super(ironSupply);
+    this.ironSupply = ironSupply;
+    this.audio = audio;
+  }
+
+  @Override
+  public float getOffsetZ() {
+    if (!isSpawning()) {
+      return 0.0f;
     }
+    float progress = getSpawnProgress();
+    float fallProgress = Math.min(1.0f, progress / FALL_DURATION_RATIO);
+    return (1.0f - fallProgress) * 200.0f;
+  }
 
-    @Override
-    public float getOffsetZ() {
-        if (!isSpawning()) {
-            return 0.0f;
-        }
-        float progress = getSpawnProgress();
-        float fallProgress = Math.min(1.0f, progress / FALL_DURATION_RATIO);
-        return (1.0f - fallProgress) * 200.0f;
+  @Override
+  public Color.@Nullable Linear getSpawnColorTint() {
+    if (!isSpawning()) {
+      return null;
     }
+    float progress = getSpawnProgress();
+    if (progress < FALL_DURATION_RATIO) {
+      return IRON_COLOR_FALLING;
+    }
+    float coolProgress = Math.min(1.0f, (progress - FALL_DURATION_RATIO) / (0.85f - FALL_DURATION_RATIO));
+    if (coolProgress < 0.3f) {
+      float factor = coolProgress / 0.3f;
+      return IRON_COLOR_FALLING.lerp(IRON_COLOR_LANDING, factor);
+    } else if (coolProgress < 0.6f) {
+      float factor = (coolProgress - 0.3f) / 0.3f;
+      return IRON_COLOR_LANDING.lerp(IRON_COLOR_HOT, factor);
+    } else if (coolProgress < 0.8f) {
+      float factor = (coolProgress - 0.6f) / 0.2f;
+      return IRON_COLOR_HOT.lerp(IRON_COLOR_COOLING, factor);
+    } else if (coolProgress < 0.9f) {
+      float factor = (coolProgress - 0.8f) / 0.1f;
+      return IRON_COLOR_COOLING.lerp(IRON_COLOR_COOLED, factor);
+    } else if (coolProgress < 1.0f) {
+      float factor = (coolProgress - 0.9f) / 0.1f;
+      return IRON_START_TINT.lerp(Color.Linear.WHITE, factor);
+    } else {
+      return null;
+    }
+  }
 
-    @Override
-    public Color.@Nullable Linear getSpawnColorTint() {
-        if (!isSpawning()) {
-            return null;
+  @Override
+  public ShadowProperties getShadowProperties() {
+    float ratio = ironSupply.getSupplyRatio();
+    float diameter = 7.0f * ratio;
+    float opacity = isSpawning() ? 0.0f : 0.5f * ratio;
+    return new ShadowProperties(diameter, opacity, 0.3f);
+  }
+
+  @Override
+  public DecalProperties getDecalProperties() {
+    if (!isSpawning()) {
+      return new DecalProperties(null, 0.0f, 0.0f, 0.0f);
+    }
+    float progress = getSpawnProgress();
+    float crackDuration = 0.6f;
+    if (progress >= FALL_DURATION_RATIO && progress < FALL_DURATION_RATIO + crackDuration) {
+      float crackProgress = (progress - FALL_DURATION_RATIO) / crackDuration;
+      float opacity = 1.0f - crackProgress;
+      float diameter = ironSupply.getSize() * 2.5f;
+      float pattern = 10.5f;
+      Color.Linear color = Color.Linear.WHITE.lerp(IRON_COLOR_DECAL_COOLED, crackProgress);
+      return new DecalProperties(color, opacity, diameter, pattern);
+    }
+    return new DecalProperties(null, 0.0f, 0.0f, 0.0f);
+  }
+
+  @Override
+  public SpriteKey getSpriteKey() {
+    if (isSpawning()) {
+      float progress = getSpawnProgress();
+      float coolProgress = Math.min(1.0f, (progress - FALL_DURATION_RATIO) / (0.85f - FALL_DURATION_RATIO));
+      if (coolProgress < 0.9f) {
+        return AssetRegistry.getInstance().getRockFragmentSprite(ironSupply.getFragmentIndex());
+      }
+    }
+    return AssetRegistry.getInstance().getIronFragmentSprite(ironSupply.getFragmentIndex());
+  }
+
+  @Override
+  public void animate(float dt) {
+    if (isSpawning()) {
+      float progress = getSpawnProgress();
+      if (progress < FALL_DURATION_RATIO) {
+        // falling
+        float fallProgress = progress / FALL_DURATION_RATIO;
+        var emitter = ensureTrailEmitter();
+
+        float pps = 800f + 1600f * fallProgress;
+        emitter.setParticlesPerSecond(pps);
+
+        float radiusXZ = 1.6f - 0.8f * fallProgress;
+        float radiusY = 2.0f - 1.25f * fallProgress;
+        emitter.setParticleRadius(radiusXZ, radiusY, radiusXZ);
+
+        float growthXZ = 2.4f - 1.2f * fallProgress;
+        float growthY = 3.0f - 2.25f * fallProgress;
+        emitter.setGrowthRate(growthXZ, growthY, growthXZ);
+
+        if (!airBurstPlayed) {
+          airBurstPlayed = true;
+          audio.newAudio(
+              ironSupply.getPositionX(),
+              ironSupply.getPositionY(),
+              ironSupply.getPositionZ() + AIRBURST_HEIGHT,
+              new AudioParameters(
+                  AudioRegistry.SFX_LURBLAST,
+                  AudioRegistry.AUDIO_RANK_SUPPLY_ACTION,
+                  AIRBURST_AUDIO_DISTANCE,
+                  AudioRegistry.AUDIO_GAIN_SUPPLY_ACTION,
+                  AIRBURST_AUDIO_RADIUS,
+                  0.8f));
         }
-        float progress = getSpawnProgress();
-        if (progress < FALL_DURATION_RATIO) {
-            return IRON_COLOR_FALLING;
+
+        float visualZ = ironSupply.getPositionZ() + getOffsetZ();
+        emitter.getPosition().set(ironSupply.getPositionX(), ironSupply.getPositionY(), visualZ);
+        emitter.animate(dt);
+      } else {
+        if (trailEmitter != null) {
+          trailEmitter.done();
+          oneShotEmitters.add(trailEmitter);
+          trailEmitter = null;
         }
+
+        if (!landed) {
+          landed = true;
+
+          Vector3f landingPos =
+              new Vector3f(ironSupply.getPositionX(), ironSupply.getPositionY(), ironSupply.getPositionZ() + 0.15f);
+          World world = ironSupply.getWorld();
+
+          RingEmitter flash =
+              new RingEmitter(
+                  world,
+                  landingPos,
+                  0.0f,
+                  0.0f,
+                  0.0f,
+                  1,
+                  1000f,
+                  new Vector3f(0f, 0f, 0f),
+                  new Vector3f(0f, 0f, 0f),
+                  COLOR_WHITE_HOT,
+                  Color.LinearDelta.ZERO.alpha(-10.0f),
+                  new Vector3f(10.0f, 10.0f, 10.0f),
+                  new Vector3f(0.0f, 0.0f, 0.0f),
+                  0.1f,
+                  0.0f,
+                  GL11.GL_SRC_ALPHA,
+                  GL11.GL_ONE,
+                  AssetRegistry.getInstance().getSmokeTextures());
+          oneShotEmitters.add(flash);
+
+          RingEmitter puff =
+              new RingEmitter(
+                  world,
+                  landingPos,
+                  0.0f,
+                  0.5f,
+                  0.0f,
+                  48,
+                  10f,
+                  new Vector3f(0f, 0f, 40.0f),
+                  new Vector3f(0f, 0f, 0.0f),
+                  Color.Linear.WHITE.alpha(0.30f),
+                  Color.LinearDelta.ZERO,
+                  new Vector3f(1.0f, 1.0f, 0.0f),
+                  new Vector3f(15.0f, 15.0f, 0.0f),
+                  0.6f,
+                  0.1f,
+                  GL11.GL_SRC_ALPHA,
+                  GL11.GL_ONE_MINUS_SRC_ALPHA,
+                  AssetRegistry.getInstance().getSmokeTextures());
+
+          puff.setSpectrumRange(0.0f, 0.9f);
+          puff.setBaseColor(world.getTerrainType().getDustColor());
+          puff.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum * 0.5f));
+          puff.setTransition(0.1f, 0.1f, 0.0f, 0.5f);
+          puff.setJitterIntensity(0.15f);
+
+          oneShotEmitters.add(puff);
+
+          RingEmitter debris =
+              new RingEmitter(
+                  world,
+                  landingPos,
+                  0.0f,
+                  0.5f,
+                  0.0f,
+                  64,
+                  10f,
+                  new Vector3f(0f, 0f, 6.0f),
+                  new Vector3f(0f, 0f, 0f),
+                  Color.Linear.WHITE.alpha(0.15f),
+                  Color.LinearDelta.ZERO,
+                  new Vector3f(1.0f, 0.2f, 0.0f),
+                  new Vector3f(4.0f, 0.25f, 0.0f),
+                  1.0f,
+                  0.45f,
+                  GL11.GL_SRC_ALPHA,
+                  GL11.GL_ONE_MINUS_SRC_ALPHA,
+                  AssetRegistry.getInstance().getSmokeTextures());
+          debris.setBaseColor(world.getTerrainType().getDustColor());
+          debris.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum * 0.4f));
+          debris.setSpectrumRange(0.1f, 0.9f);
+          debris.setJitterIntensity(0.20f);
+          oneShotEmitters.add(debris);
+        }
+
         float coolProgress = Math.min(1.0f, (progress - FALL_DURATION_RATIO) / (0.85f - FALL_DURATION_RATIO));
-        if (coolProgress < 0.3f) {
-            float factor = coolProgress / 0.3f;
-            return IRON_COLOR_FALLING.lerp(IRON_COLOR_LANDING, factor);
-        } else if (coolProgress < 0.6f) {
-            float factor = (coolProgress - 0.3f) / 0.3f;
-            return IRON_COLOR_LANDING.lerp(IRON_COLOR_HOT, factor);
-        } else if (coolProgress < 0.8f) {
-            float factor = (coolProgress - 0.6f) / 0.2f;
-            return IRON_COLOR_HOT.lerp(IRON_COLOR_COOLING, factor);
-        } else if (coolProgress < 0.9f) {
-            float factor = (coolProgress - 0.8f) / 0.1f;
-            return IRON_COLOR_COOLING.lerp(IRON_COLOR_COOLED, factor);
-        } else if (coolProgress < 1.0f) {
-            float factor = (coolProgress - 0.9f) / 0.1f;
-            return IRON_START_TINT.lerp(Color.Linear.WHITE, factor);
-        } else {
-            return null;
-        }
-    }
 
-    @Override
-    public ShadowProperties getShadowProperties() {
-        float ratio = ironSupply.getSupplyRatio();
-        float diameter = 7.0f * ratio;
-        float opacity = isSpawning() ? 0.0f : 0.5f * ratio;
-        return new ShadowProperties(diameter, opacity, 0.3f);
-    }
-
-    @Override
-    public DecalProperties getDecalProperties() {
-        if (!isSpawning()) {
-            return new DecalProperties(null, 0.0f, 0.0f, 0.0f);
-        }
-        float progress = getSpawnProgress();
-        float crackDuration = 0.6f;
-        if (progress >= FALL_DURATION_RATIO && progress < FALL_DURATION_RATIO + crackDuration) {
-            float crackProgress = (progress - FALL_DURATION_RATIO) / crackDuration;
-            float opacity = 1.0f - crackProgress;
-            float diameter = ironSupply.getSize() * 2.5f;
-            float pattern = 10.5f;
-            Color.Linear color = Color.Linear.WHITE.lerp(IRON_COLOR_DECAL_COOLED, crackProgress);
-            return new DecalProperties(color, opacity, diameter, pattern);
-        }
-        return new DecalProperties(null, 0.0f, 0.0f, 0.0f);
-    }
-
-    @Override
-    public SpriteKey getSpriteKey() {
-        if (isSpawning()) {
-            float progress = getSpawnProgress();
-            float coolProgress = Math.min(1.0f, (progress - FALL_DURATION_RATIO) / (0.85f - FALL_DURATION_RATIO));
-            if (coolProgress < 0.9f) {
-                return AssetRegistry.getInstance().getRockFragmentSprite(ironSupply.getFragmentIndex());
-            }
-        }
-        return AssetRegistry.getInstance().getIronFragmentSprite(ironSupply.getFragmentIndex());
-    }
-
-    @Override
-    public void animate(float dt) {
-        if (isSpawning()) {
-            float progress = getSpawnProgress();
-            if (progress < FALL_DURATION_RATIO) {
-                // falling
-                float fallProgress = progress / FALL_DURATION_RATIO;
-                var emitter = ensureTrailEmitter();
-
-                float pps = 800f + 1600f * fallProgress;
-                emitter.setParticlesPerSecond(pps);
-
-                float radiusXZ = 1.6f - 0.8f * fallProgress;
-                float radiusY = 2.0f - 1.25f * fallProgress;
-                emitter.setParticleRadius(radiusXZ, radiusY, radiusXZ);
-
-                float growthXZ = 2.4f - 1.2f * fallProgress;
-                float growthY = 3.0f - 2.25f * fallProgress;
-                emitter.setGrowthRate(growthXZ, growthY, growthXZ);
-
-                if (!airBurstPlayed) {
-                    airBurstPlayed = true;
-                    audio.newAudio(ironSupply.getPositionX(), ironSupply.getPositionY(),
-                            ironSupply.getPositionZ() + AIRBURST_HEIGHT,
-                            new AudioParameters(AudioRegistry.SFX_LURBLAST, AudioRegistry.AUDIO_RANK_SUPPLY_ACTION,
-                                    AIRBURST_AUDIO_DISTANCE, AudioRegistry.AUDIO_GAIN_SUPPLY_ACTION,
-                                    AIRBURST_AUDIO_RADIUS, 0.8f
-                            ));
-                }
-
-                float visualZ = ironSupply.getPositionZ() + getOffsetZ();
-                emitter.getPosition().set(ironSupply.getPositionX(), ironSupply.getPositionY(), visualZ);
-                emitter.animate(dt);
-            } else {
-                if (trailEmitter != null) {
-                    trailEmitter.done();
-                    oneShotEmitters.add(trailEmitter);
-                    trailEmitter = null;
-                }
-
-                if (!landed) {
-                    landed = true;
-
-                    Vector3f landingPos = new Vector3f(ironSupply.getPositionX(), ironSupply.getPositionY(), ironSupply
-                            .getPositionZ() + 0.15f);
-                    World world = ironSupply.getWorld();
-
-                    RingEmitter flash = new RingEmitter(
-                            world, landingPos, 0.0f,
-                            0.0f, 0.0f,
-                            1, 1000f,
-                            new Vector3f(0f, 0f, 0f),
-                            new Vector3f(0f, 0f, 0f),
-                            COLOR_WHITE_HOT, Color.LinearDelta.ZERO.alpha(-10.0f),
-                            new Vector3f(10.0f, 10.0f, 10.0f),
-                            new Vector3f(0.0f, 0.0f, 0.0f),
-                            0.1f, 0.0f,
-                            GL11.GL_SRC_ALPHA, GL11.GL_ONE,
-                            AssetRegistry.getInstance().getSmokeTextures()
-                    );
-                    oneShotEmitters.add(flash);
-
-                    RingEmitter puff = new RingEmitter(
-                            world, landingPos, 0.0f,
-                            0.5f, 0.0f,
-                            48, 10f,
-                            new Vector3f(0f, 0f, 40.0f),
-                            new Vector3f(0f, 0f, 0.0f),
-                            Color.Linear.WHITE.alpha(0.30f), Color.LinearDelta.ZERO,
-                            new Vector3f(1.0f, 1.0f, 0.0f),
-                            new Vector3f(15.0f, 15.0f, 0.0f),
-                            0.6f, 0.1f,
-                            GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                            AssetRegistry.getInstance().getSmokeTextures()
-                    );
-
-                    puff.setSpectrumRange(0.0f, 0.9f);
-                    puff.setBaseColor(world.getTerrainType().getDustColor());
-                    puff.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum * 0.5f));
-                    puff.setTransition(0.1f, 0.1f, 0.0f, 0.5f);
-                    puff.setJitterIntensity(0.15f);
-
-                    oneShotEmitters.add(puff);
-
-                    RingEmitter debris = new RingEmitter(
-                            world, landingPos, 0.0f,
-                            0.5f, 0.0f,
-                            64, 10f,
-                            new Vector3f(0f, 0f, 6.0f),
-                            new Vector3f(0f, 0f, 0f),
-                            Color.Linear.WHITE.alpha(0.15f), Color.LinearDelta.ZERO,
-                            new Vector3f(1.0f, 0.2f, 0.0f),
-                            new Vector3f(4.0f, 0.25f, 0.0f),
-                            1.0f, 0.45f,
-                            GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                            AssetRegistry.getInstance().getSmokeTextures()
-                    );
-                    debris.setBaseColor(world.getTerrainType().getDustColor());
-                    debris.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum
-                            * 0.4f));
-                    debris.setSpectrumRange(0.1f, 0.9f);
-                    debris.setJitterIntensity(0.20f);
-                    oneShotEmitters.add(debris);
-                }
-
-                float coolProgress = Math.min(1.0f, (progress - FALL_DURATION_RATIO) / (0.85f - FALL_DURATION_RATIO));
-
-                if (!cooling) {
-                    cooling = true;
-                    audio.newAudio(ironSupply.getPositionX(), ironSupply.getPositionY(),
-                            ironSupply.getPositionZ(),
-                            new AudioParameters(AudioRegistry.SFX_GAS, AudioRegistry.AUDIO_RANK_SUPPLY_ACTION,
-                                    AudioRegistry.AUDIO_DISTANCE_SUPPLY_ACTION, AudioRegistry.AUDIO_GAIN_SUPPLY_ACTION,
-                                    AudioRegistry.AUDIO_RADIUS_SUPPLY_ACTION, 0.65f
-                            )).stop(1.3f);
-                }
-
-                var emitter = ensureCoolingEmitter();
-                emitter.getPosition().set(ironSupply.getPositionX(), ironSupply.getPositionY(), ironSupply
-                        .getPositionZ());
-                emitter.setParticlesPerSecond(SMOKE_PARTICLES_PER_SECOND * (1.0f - coolProgress));
-                emitter.animate(dt);
-            }
-        } else {
-            cleanupEmitters();
+        if (!cooling) {
+          cooling = true;
+          audio
+              .newAudio(
+                  ironSupply.getPositionX(),
+                  ironSupply.getPositionY(),
+                  ironSupply.getPositionZ(),
+                  new AudioParameters(
+                      AudioRegistry.SFX_GAS,
+                      AudioRegistry.AUDIO_RANK_SUPPLY_ACTION,
+                      AudioRegistry.AUDIO_DISTANCE_SUPPLY_ACTION,
+                      AudioRegistry.AUDIO_GAIN_SUPPLY_ACTION,
+                      AudioRegistry.AUDIO_RADIUS_SUPPLY_ACTION,
+                      0.65f))
+              .stop(1.3f);
         }
 
-        for (var e : oneShotEmitters) {
-            e.animate(dt);
-        }
-        oneShotEmitters.removeIf(Emitter::isFinished);
+        var emitter = ensureCoolingEmitter();
+        emitter.getPosition().set(ironSupply.getPositionX(), ironSupply.getPositionY(), ironSupply.getPositionZ());
+        emitter.setParticlesPerSecond(SMOKE_PARTICLES_PER_SECOND * (1.0f - coolProgress));
+        emitter.animate(dt);
+      }
+    } else {
+      cleanupEmitters();
     }
 
-    private void cleanupEmitters() {
-        landed = false;
-        cooling = false;
-        airBurstPlayed = false;
-        if (trailEmitter != null) {
-            trailEmitter.done();
-            trailEmitter = null;
-        }
-        if (coolingEmitter != null) {
-            coolingEmitter.done();
-            coolingEmitter = null;
-        }
-        oneShotEmitters.clear();
+    for (var e : oneShotEmitters) {
+      e.animate(dt);
     }
+    oneShotEmitters.removeIf(Emitter::isFinished);
+  }
 
-    private RandomVelocityEmitter ensureTrailEmitter() {
-        if (trailEmitter == null) {
-            World world = ironSupply.getWorld();
-            float visualZ = ironSupply.getPositionZ() + getOffsetZ();
-            Vector3f pos = new Vector3f(ironSupply.getPositionX(), ironSupply.getPositionY(), visualZ);
-            trailEmitter = new RandomVelocityEmitter(
-                    world, pos, 0.0f, 0.0f,
-                    0.02f, 5.0f,
-                    0.1f, 0.02f,
-                    -1, 800f,
-                    new Vector3f(0f, 0f, 10.0f), new Vector3f(0f, 0f, 5.0f),
-                    new Color.Linear(0.08f, 0.6f), new Color.LinearDelta(0f, -0.24f),
-                    new Vector3f(1.6f, 2.0f, 1.6f), new Vector3f(2.4f, 3.0f, 2.4f),
-                    2.5f, 0.1f,
-                    GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                    AssetRegistry.getInstance().getSmokeTextures(),
-                    null, AssetRegistry.getInstance().getSmokeTextures().length,
-                    true, true
-            );
-            trailEmitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
-            trailEmitter.setSpectrumRange(0.2f, 0.2f);
-            trailEmitter.setJitterIntensity(0.5f);
-            trailEmitter.setEnergyRange(1.2f, 2.5f);
-        }
-        return trailEmitter;
+  private void cleanupEmitters() {
+    landed = false;
+    cooling = false;
+    airBurstPlayed = false;
+    if (trailEmitter != null) {
+      trailEmitter.done();
+      trailEmitter = null;
     }
+    if (coolingEmitter != null) {
+      coolingEmitter.done();
+      coolingEmitter = null;
+    }
+    oneShotEmitters.clear();
+  }
 
-    private RandomVelocityEmitter ensureCoolingEmitter() {
-        if (coolingEmitter == null) {
-            World world = ironSupply.getWorld();
-            Vector3f pos = new Vector3f(ironSupply.getPositionX(), ironSupply.getPositionY(), ironSupply
-                    .getPositionZ());
-            coolingEmitter = new RandomVelocityEmitter(
-                    world, pos, 0.0f, 0.0f,
-                    ironSupply.getSize() * 0.5f, 0.1f, 0.2f, 0.1f,
-                    -1, SMOKE_PARTICLES_PER_SECOND,
-                    new Vector3f(0f, 0f, 1.5f), new Vector3f(0f, 0f, -0.3f),
-                    new Color.Linear(0.15f, 0.5f), new Color.LinearDelta(0f, -0.4f),
-                    new Vector3f(0.8f, 0.8f, 0.8f), new Vector3f(2.5f, 2.5f, 2.5f),
-                    1.2f, 0.1f,
-                    GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                    AssetRegistry.getInstance().getSmokeTextures()
-            );
-            coolingEmitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
-            coolingEmitter.setSpectrumRange(0.2f, 0.8f);
-            coolingEmitter.setJitterIntensity(0.02f);
-            coolingEmitter.setTransition(0f, 3.0f, 0.8f, 0f);
-        }
-        return coolingEmitter;
+  private RandomVelocityEmitter ensureTrailEmitter() {
+    if (trailEmitter == null) {
+      World world = ironSupply.getWorld();
+      float visualZ = ironSupply.getPositionZ() + getOffsetZ();
+      Vector3f pos = new Vector3f(ironSupply.getPositionX(), ironSupply.getPositionY(), visualZ);
+      trailEmitter =
+          new RandomVelocityEmitter(
+              world,
+              pos,
+              0.0f,
+              0.0f,
+              0.02f,
+              5.0f,
+              0.1f,
+              0.02f,
+              -1,
+              800f,
+              new Vector3f(0f, 0f, 10.0f),
+              new Vector3f(0f, 0f, 5.0f),
+              new Color.Linear(0.08f, 0.6f),
+              new Color.LinearDelta(0f, -0.24f),
+              new Vector3f(1.6f, 2.0f, 1.6f),
+              new Vector3f(2.4f, 3.0f, 2.4f),
+              2.5f,
+              0.1f,
+              GL11.GL_SRC_ALPHA,
+              GL11.GL_ONE_MINUS_SRC_ALPHA,
+              AssetRegistry.getInstance().getSmokeTextures(),
+              null,
+              AssetRegistry.getInstance().getSmokeTextures().length,
+              true,
+              true);
+      trailEmitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
+      trailEmitter.setSpectrumRange(0.2f, 0.2f);
+      trailEmitter.setJitterIntensity(0.5f);
+      trailEmitter.setEnergyRange(1.2f, 2.5f);
     }
+    return trailEmitter;
+  }
 
-    @Override
-    public void addEmitters(Collection<Emitter<?>> dest) {
-        if (trailEmitter != null) {
-            dest.add(trailEmitter);
-        }
-        if (coolingEmitter != null) {
-            dest.add(coolingEmitter);
-        }
-        dest.addAll(oneShotEmitters);
+  private RandomVelocityEmitter ensureCoolingEmitter() {
+    if (coolingEmitter == null) {
+      World world = ironSupply.getWorld();
+      Vector3f pos = new Vector3f(ironSupply.getPositionX(), ironSupply.getPositionY(), ironSupply.getPositionZ());
+      coolingEmitter =
+          new RandomVelocityEmitter(
+              world,
+              pos,
+              0.0f,
+              0.0f,
+              ironSupply.getSize() * 0.5f,
+              0.1f,
+              0.2f,
+              0.1f,
+              -1,
+              SMOKE_PARTICLES_PER_SECOND,
+              new Vector3f(0f, 0f, 1.5f),
+              new Vector3f(0f, 0f, -0.3f),
+              new Color.Linear(0.15f, 0.5f),
+              new Color.LinearDelta(0f, -0.4f),
+              new Vector3f(0.8f, 0.8f, 0.8f),
+              new Vector3f(2.5f, 2.5f, 2.5f),
+              1.2f,
+              0.1f,
+              GL11.GL_SRC_ALPHA,
+              GL11.GL_ONE_MINUS_SRC_ALPHA,
+              AssetRegistry.getInstance().getSmokeTextures());
+      coolingEmitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
+      coolingEmitter.setSpectrumRange(0.2f, 0.8f);
+      coolingEmitter.setJitterIntensity(0.02f);
+      coolingEmitter.setTransition(0f, 3.0f, 0.8f, 0f);
     }
+    return coolingEmitter;
+  }
 
-    @Override
-    protected boolean isSelfExpired() {
-        return ironSupply.isDead();
+  @Override
+  public void addEmitters(Collection<Emitter<?>> dest) {
+    if (trailEmitter != null) {
+      dest.add(trailEmitter);
     }
+    if (coolingEmitter != null) {
+      dest.add(coolingEmitter);
+    }
+    dest.addAll(oneShotEmitters);
+  }
 
-    @Override
-    public boolean isVisible(Model parent, CameraState camera) {
-        return !ironSupply.isDead();
-    }
+  @Override
+  protected boolean isSelfExpired() {
+    return ironSupply.isDead();
+  }
 
-    @Override
-    public void close() {
-        super.close();
-        cleanupEmitters();
-    }
+  @Override
+  public boolean isVisible(Model parent, CameraState camera) {
+    return !ironSupply.isDead();
+  }
+
+  @Override
+  public void close() {
+    super.close();
+    cleanupEmitters();
+  }
 }

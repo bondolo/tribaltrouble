@@ -1,32 +1,30 @@
 package com.oddlabs.tt.content.tutorial.trigger;
 
 import com.oddlabs.tt.content.tutorial.Tutorial;
-
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.SupplyContainer;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.player.Player;
 
-/** Tutorial trigger waiting for sufficient supplies (wood and rock) to be harvested. */
+/// Tutorial trigger waiting for sufficient supplies (wood and rock) to be harvested.
 final class SupplyTrigger extends TutorialTrigger {
-    private static final int TREE = 20;
-    private static final int ROCK = 10;
+  private static final int TREE = 20;
+  private static final int ROCK = 10;
 
-    SupplyTrigger(Player player) {
-        super(.5f, 0f, "supply", new Object[]{TREE, ROCK});
-        player.enableHarvesting(true);
-    }
+  SupplyTrigger(Player player) {
+    super(.5f, 0f, "supply", new Object[] {TREE, ROCK});
+    player.enableHarvesting(true);
+  }
 
-    @Override
-    public void run(Tutorial tutorial) {
-        for (var s : tutorial.getViewer().getSelection().getCurrentSelection().getSet()) {
-            if (s instanceof Building armory && s.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
-                if (armory.getSupplyContainer(SupplyType.ROCK).map(SupplyContainer::getNumSupplies).orElse(0) >= ROCK &&
-                        armory.getSupplyContainer(SupplyType.WOOD).map(SupplyContainer::getNumSupplies).orElse(0)
-                                >= TREE)
-                    tutorial.next(new BuildMenuTrigger(tutorial.getViewer().getLocalPlayer()));
-            }
-        }
+  @Override
+  public void run(Tutorial tutorial) {
+    for (var s : tutorial.getViewer().getSelection().getCurrentSelection().getSet()) {
+      if (s instanceof Building armory && s.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+        if (armory.getSupplyContainer(SupplyType.ROCK).map(SupplyContainer::getNumSupplies).orElse(0) >= ROCK
+            && armory.getSupplyContainer(SupplyType.WOOD).map(SupplyContainer::getNumSupplies).orElse(0) >= TREE)
+          tutorial.next(new BuildMenuTrigger(tutorial.getViewer().getLocalPlayer()));
+      }
     }
+  }
 }

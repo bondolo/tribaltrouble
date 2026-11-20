@@ -1,34 +1,34 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.IconQuad;
 
-/** Composite label displaying an icon alongside a text label. */
+/// Composite label displaying an icon alongside a text label.
 public final class IconLabel extends GUIObject implements Comparable<IconLabel> {
-    private final IconQuad icon;
-    private final Label label;
+  private final IconQuad icon;
+  private final Label label;
 
-    public IconLabel(IconQuad icon, Label label) {
-        this.icon = icon;
-        this.label = label;
-        label.setPos(icon.getWidth(), 0);
-        addChild(label);
-        int width = icon.getWidth() + label.getWidth();
-        int height = Math.max(icon.getHeight(), label.getHeight());
-        setDim(width, height);
-    }
+  public IconLabel(IconQuad icon, Label label) {
+    this.icon = icon;
+    this.label = label;
+    label.setPos(icon.getWidth(), 0);
+    addChild(label);
+    int width = icon.getWidth() + label.getWidth();
+    int height = Math.max(icon.getHeight(), label.getHeight());
+    setDim(width, height);
+  }
 
-    @Override
-    protected void renderGeometry(GUIRenderer renderer) {
-        renderer.drawIcon(icon, 0, 0);
-    }
+  @Override
+  protected void renderGeometry(GUIRenderer renderer) {
+    renderer.drawIcon(icon, 0, 0);
+  }
 
-    private Label getLabel() {
-        return label;
-    }
+  private Label getLabel() {
+    return label;
+  }
 
-    @Override
-    public int compareTo(IconLabel o) {
-        return label.compareTo(o.getLabel());
-    }
+  @Override
+  public int compareTo(IconLabel o) {
+    return label.compareTo(o.getLabel());
+  }
 }

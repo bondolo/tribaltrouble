@@ -10,159 +10,158 @@ import com.oddlabs.net.Connection;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.IllegalARMIEventException;
 import com.oddlabs.net.NetworkSelector;
+import com.oddlabs.tt.base.util.LoadCallback;
+import com.oddlabs.tt.simulation.landscape.WorldGenerator;
+import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 
-import com.oddlabs.tt.base.util.LoadCallback;
-import com.oddlabs.tt.simulation.landscape.WorldGenerator;
-import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
-import com.oddlabs.tt.simulation.player.UnitInfo;
-
-/** Network client endpoint managing connection negotiation and game startup. */
+/// Network client endpoint managing connection negotiation and game startup.
 public final class Client implements ARMIEventBroker, GameClientInterface, ConnectionInterface {
-    private static final int CONNECTING = 1;
-    private static final int NEGOTIATING = 2;
-    private static final int CLOSED = 5;
+  private static final int CONNECTING = 1;
+  private static final int NEGOTIATING = 2;
+  private static final int CLOSED = 5;
 
-    private final AbstractConnection connection;
+  private final AbstractConnection connection;
 
-    private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(GameClientInterface.class);
-    private final GameServerInterface gameserver_interface;
-    private final UnitInfo[] unit_infos;
-    private final @Nullable LoadCallbackFactory starter_factory;
-    private final @Nullable ChatHub chat_hub;
-    private final NetworkSelector network;
-    private final @Nullable Runnable cleanup_action;
-    private int state = CONNECTING;
+  private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(GameClientInterface.class);
+  private final GameServerInterface gameserver_interface;
+  private final UnitInfo[] unit_infos;
+  private final @Nullable LoadCallbackFactory starter_factory;
+  private final @Nullable ChatHub chat_hub;
+  private final NetworkSelector network;
+  private final @Nullable Runnable cleanup_action;
+  private int state = CONNECTING;
 
-    private @Nullable WorldGenerator<?> generator = null;
+  private @Nullable WorldGenerator<?> generator = null;
 
-    private PlayerSlot[] player_slots = new PlayerSlot[0];
-    private short player_slot = -1;
-    private @Nullable ConfigurationListener configuration_listener;
+  private PlayerSlot[] player_slots = new PlayerSlot[0];
+  private short player_slot = -1;
+  private @Nullable ConfigurationListener configuration_listener;
 
-    public Client(@Nullable Runnable cleanup_action, NetworkSelector network,
-            MatchmakingClient matchmaking_client, @Nullable ChatHub chat_hub, int host_id,
-            @Nullable LoadCallbackFactory starter_factory) {
-        this.cleanup_action = cleanup_action;
-        this.network = network;
-        this.chat_hub = chat_hub;
-        this.starter_factory = starter_factory;
-        if (host_id != -1)
-            this.connection = new TunnelledConnection(matchmaking_client, host_id, this);
-        else
-            this.connection = new Connection(network, new InetSocketAddress(Utils.getLoopbackAddress(),
-                    NetConfig.DEFAULT_NET_PORT), this);
-        gameserver_interface = (GameServerInterface) ARMIEvent.createProxy(connection, GameServerInterface.class);
+  public Client(
+      @Nullable Runnable cleanup_action,
+      NetworkSelector network,
+      MatchmakingClient matchmaking_client,
+      @Nullable ChatHub chat_hub,
+      int host_id,
+      @Nullable LoadCallbackFactory starter_factory) {
+    this.cleanup_action = cleanup_action;
+    this.network = network;
+    this.chat_hub = chat_hub;
+    this.starter_factory = starter_factory;
+    if (host_id != -1) this.connection = new TunnelledConnection(matchmaking_client, host_id, this);
+    else
+      this.connection =
+          new Connection(network, new InetSocketAddress(Utils.getLoopbackAddress(), NetConfig.DEFAULT_NET_PORT), this);
+    gameserver_interface = (GameServerInterface) ARMIEvent.createProxy(connection, GameServerInterface.class);
 
-        this.unit_infos = new UnitInfo[MatchmakingServerInterface.MAX_PLAYERS];
-        for (int i = 0; i < unit_infos.length; i++) {
-            unit_infos[i] = new UnitInfo(false, false, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
-        }
+    this.unit_infos = new UnitInfo[MatchmakingServerInterface.MAX_PLAYERS];
+    for (int i = 0; i < unit_infos.length; i++) {
+      unit_infos[i] = new UnitInfo(false, false, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
     }
+  }
 
-    private @Nullable ConfigurationListener getConfigurationListener() {
-        return configuration_listener;
-    }
+  private @Nullable ConfigurationListener getConfigurationListener() {
+    return configuration_listener;
+  }
 
-    public void setConfigurationListener(ConfigurationListener listener) {
-        configuration_listener = listener;
-    }
+  public void setConfigurationListener(ConfigurationListener listener) {
+    configuration_listener = listener;
+  }
 
-    public void setUnitInfo(int slot, UnitInfo unit_info) {
-        this.unit_infos[slot] = unit_info;
-    }
+  public void setUnitInfo(int slot, UnitInfo unit_info) {
+    this.unit_infos[slot] = unit_info;
+  }
 
-    public GameServerInterface getServerInterface() {
-        return gameserver_interface;
-    }
+  public GameServerInterface getServerInterface() {
+    return gameserver_interface;
+  }
 
-    @Override
-    public void chat(int player_slot, @Nullable String chat) {
-        if (chat != null && player_slot >= 0 && player_slot < player_slots.length && chat_hub != null) {
-            PlayerSlot slot = player_slots[player_slot];
-            String name = slot.getInfo() != null ? slot.getInfo().name() : "Player " + slot.getSlot();
-            chat_hub.chat(new ChatMessage(name, chat, ChatMessage.Type.GAME_MENU));
-        }
+  @Override
+  public void chat(int player_slot, @Nullable String chat) {
+    if (chat != null && player_slot >= 0 && player_slot < player_slots.length && chat_hub != null) {
+      PlayerSlot slot = player_slots[player_slot];
+      String name = slot.getInfo() != null ? slot.getInfo().name() : "Player " + slot.getSlot();
+      chat_hub.chat(new ChatMessage(name, chat, ChatMessage.Type.GAME_MENU));
     }
+  }
 
-    @Override
-    public void setWorldGeneratorAndPlayerSlot(Game game, WorldGenerator<?> generator,
-            short player_slot) {
-        if (state != CONNECTING)
-            return;
-        state = NEGOTIATING;
-        this.generator = generator;
-        this.player_slot = player_slot;
-        getConfigurationListener().connected(this, game, generator, player_slot);
-    }
+  @Override
+  public void setWorldGeneratorAndPlayerSlot(Game game, WorldGenerator<?> generator, short player_slot) {
+    if (state != CONNECTING) return;
+    state = NEGOTIATING;
+    this.generator = generator;
+    this.player_slot = player_slot;
+    getConfigurationListener().connected(this, game, generator, player_slot);
+  }
 
-    @Override
-    public void writeBufferDrained(AbstractConnection conn) {
-    }
+  @Override
+  public void writeBufferDrained(AbstractConnection conn) {}
 
-    public void close() {
-        connection.close();
-        state = CLOSED;
-        if (cleanup_action != null)
-            cleanup_action.run();
-    }
+  public void close() {
+    connection.close();
+    state = CLOSED;
+    if (cleanup_action != null) cleanup_action.run();
+  }
 
-    public List<PlayerSlot> getPlayers() {
-        return Collections.unmodifiableList(Arrays.asList(player_slots));
-    }
+  public List<PlayerSlot> getPlayers() {
+    return Collections.unmodifiableList(Arrays.asList(player_slots));
+  }
 
-    public NetworkSelector getNetwork() {
-        return network;
-    }
+  public NetworkSelector getNetwork() {
+    return network;
+  }
 
-    @Override
-    public void startGame(int session_id) {
-        if (state != NEGOTIATING)
-            return;
-        close();
-        LoadCallback<?, ?> starter = starter_factory != null
-                ? starter_factory.createCallback(session_id, Objects.requireNonNull(generator),
-                        Arrays.asList(player_slots), Arrays.asList(unit_infos), player_slot)
-                : null;
-        if (starter != null)
-            getConfigurationListener().gameStarted(starter);
-    }
+  @Override
+  public void startGame(int session_id) {
+    if (state != NEGOTIATING) return;
+    close();
+    LoadCallback<?, ?> starter =
+        starter_factory != null
+            ? starter_factory.createCallback(
+                session_id,
+                Objects.requireNonNull(generator),
+                Arrays.asList(player_slots),
+                Arrays.asList(unit_infos),
+                player_slot)
+            : null;
+    if (starter != null) getConfigurationListener().gameStarted(starter);
+  }
 
-    @Override
-    public void setPlayers(PlayerSlot[] player_slots) {
-        this.player_slots = player_slots;
-        getConfigurationListener().setPlayers(Arrays.asList(player_slots));
-    }
+  @Override
+  public void setPlayers(PlayerSlot[] player_slots) {
+    this.player_slots = player_slots;
+    getConfigurationListener().setPlayers(Arrays.asList(player_slots));
+  }
 
-    @Override
-    public void handle(Object sender, ARMIEvent armi_event) {
-        try {
-            armi_event.execute(interface_methods, this);
-        } catch (IllegalARMIEventException _) {
-            error();
-        }
+  @Override
+  public void handle(Object sender, ARMIEvent armi_event) {
+    try {
+      armi_event.execute(interface_methods, this);
+    } catch (IllegalARMIEventException _) {
+      error();
     }
+  }
 
-    @Override
-    public void connected(AbstractConnection conn) {
-    }
+  @Override
+  public void connected(AbstractConnection conn) {}
 
-    @Override
-    public void error(AbstractConnection conn, IOException e) {
-        error();
-    }
+  @Override
+  public void error(AbstractConnection conn, IOException e) {
+    error();
+  }
 
-    private void error() {
-        getConfigurationListener().connectionLost();
-        close();
-    }
+  private void error() {
+    getConfigurationListener().connectionLost();
+    close();
+  }
 }

@@ -4,869 +4,875 @@ import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.state.Hunting;
-import com.oddlabs.tt.simulation.state.Gathering;
-import com.oddlabs.tt.simulation.state.Transporting;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.Nullable;
-
+import com.oddlabs.tt.simulation.state.Gathering;
+import com.oddlabs.tt.simulation.state.Hunting;
+import com.oddlabs.tt.simulation.state.Transporting;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Represents a static building structure in the game world.
- */
+/// Represents a static building structure in the game world.
 public final class Building extends Selectable<BuildingTemplate> implements Occupant {
-    private static final float REMOVE_DELAY = 1f / 10f;
+  private static final float REMOVE_DELAY = 1f / 10f;
 
-    private static final int PLACING_BORDER = 1;
-    private static final int MAX_SUPPLY_COUNT = 200;
+  private static final int PLACING_BORDER = 1;
+  private static final int MAX_SUPPLY_COUNT = 200;
 
-    private final Map<SupplyType, SupplyContainer> resource_containers
-            = new EnumMap<>(SupplyType.class);
-    private final Map<WeaponTier, SupplyContainer> weapon_containers
-            = new EnumMap<>(WeaponTier.class);
-    private final Map<WeaponTier, BuildProductionContainer> weapon_build_containers
-            = new EnumMap<>(WeaponTier.class);
-    private final Map<DeployType, DeployContainer> deploy_containers
-            = new EnumMap<>(DeployType.class);
+  private final Map<SupplyType, SupplyContainer> resource_containers = new EnumMap<>(SupplyType.class);
+  private final Map<WeaponTier, SupplyContainer> weapon_containers = new EnumMap<>(WeaponTier.class);
+  private final Map<WeaponTier, BuildProductionContainer> weapon_build_containers = new EnumMap<>(WeaponTier.class);
+  private final Map<DeployType, DeployContainer> deploy_containers = new EnumMap<>(DeployType.class);
 
-    private @Nullable UnitContainer unit_container = null;
-    private @Nullable ChieftainContainer chieftain_container = null;
-    private @Nullable WeaponsProducer weapons_producer = null;
-    private float remove_delay = 0;
-    private int hit_points = 1;
-    private int build_points = 0; // 0 = not placed, > 0 = placed
-    private float[][] old_landscape_heights;
+  private @Nullable UnitContainer unit_container = null;
+  private @Nullable ChieftainContainer chieftain_container = null;
+  private @Nullable WeaponsProducer weapons_producer = null;
+  private float remove_delay = 0;
+  private int hit_points = 1;
+  private int build_points = 0; // 0 = not placed, > 0 = placed
+  private float[][] old_landscape_heights;
 
-    private Target rally_point = this;
-    private boolean is_training_chieftain = false;
+  private Target rally_point = this;
+  private boolean is_training_chieftain = false;
 
-    /**
-     * Represents the construction stages of a building in the game world.
-     */
-    public enum BuildStage {
-        /** The building template has not yet been placed on the terrain grid. */
-        UNPLACED,
-        /** Construction has started but is under 50% completed. */
-        START,
-        /** Construction progress is between 50% and 99%. */
-        HALFBUILT,
-        /** Construction is completed (100% built). */
-        BUILT
+  /// Represents the construction stages of a building in the game world.
+  public enum BuildStage {
+    /// The building template has not yet been placed on the terrain grid.
+    UNPLACED,
+    /// Construction has started but is under 50% completed.
+    START,
+    /// Construction progress is between 50% and 99%.
+    HALFBUILT,
+    /// Construction is completed (100% built).
+    BUILT
+  }
+
+  private final @Nullable LegacyDamagedSmokeEmitter damaged_emitter;
+
+  public Building(Player owner, BuildingTemplate template, int grid_x, int grid_y) {
+    super(owner, template);
+    setGridPosition(grid_x, grid_y);
+    float x = UnitGrid.coordinateFromGrid(grid_x);
+    float y = UnitGrid.coordinateFromGrid(grid_y);
+    setPosition(x, y);
+    if (AppConfig.LEGACY_DETERMINISTIC) {
+      damaged_emitter = new LegacyDamagedSmokeEmitter(owner.getWorld());
+      owner.getWorld().getAnimationManagerRealTime().registerAnimation(damaged_emitter);
+    } else {
+      damaged_emitter = null;
     }
+  }
 
-    private final @Nullable LegacyDamagedSmokeEmitter damaged_emitter;
+  public boolean hasRallyPoint() {
+    return rally_point != this;
+  }
 
-    public Building(Player owner, BuildingTemplate template, int grid_x, int grid_y) {
-        super(owner, template);
-        setGridPosition(grid_x, grid_y);
-        float x = UnitGrid.coordinateFromGrid(grid_x);
-        float y = UnitGrid.coordinateFromGrid(grid_y);
-        setPosition(x, y);
-        if (AppConfig.LEGACY_DETERMINISTIC) {
-            damaged_emitter = new LegacyDamagedSmokeEmitter(owner.getWorld());
-            owner.getWorld().getAnimationManagerRealTime().registerAnimation(damaged_emitter);
-        } else {
-            damaged_emitter = null;
+  public Target getRallyPoint() {
+    return rally_point;
+  }
+
+  public boolean isProducing() {
+    return weapons_producer != null && weapons_producer.isProducing();
+  }
+
+  @Override
+  protected void doAnimate(float t) {
+    if (!isDead()) {
+      if (unit_container != null) {
+        unit_container.animate(t);
+      }
+      if (weapons_producer != null) {
+        weapons_producer.animate(t);
+      }
+
+      int num_deploying = 0;
+      for (DeployContainer deploy_container : deploy_containers.values()) {
+        if (deploy_container.getNumSupplies() > 0) {
+          num_deploying++;
         }
-    }
-
-    public boolean hasRallyPoint() {
-        return rally_point != this;
-    }
-
-    public Target getRallyPoint() {
-        return rally_point;
-    }
-
-    public boolean isProducing() {
-        return weapons_producer != null && weapons_producer.isProducing();
-    }
-
-    @Override
-    protected void doAnimate(float t) {
-        if (!isDead()) {
-            if (unit_container != null) {
-                unit_container.animate(t);
-            }
-            if (weapons_producer != null) {
-                weapons_producer.animate(t);
-            }
-
-            int num_deploying = 0;
-            for (DeployContainer deploy_container : deploy_containers.values()) {
-                if (deploy_container.getNumSupplies() > 0) {
-                    num_deploying++;
-                }
-            }
-            if (num_deploying > 0) {
-                float amount = t / num_deploying;
-                for (DeployContainer deploy_container : deploy_containers.values()) {
-                    if (deploy_container.getNumSupplies() > 0) {
-                        deploy_container.deploy(amount);
-                    }
-                }
-            }
-        }
-
-        if (remove_delay > 0) {
-            remove_delay -= t;
-            if (remove_delay <= 0) {
-                remove();
-                if (AppConfig.LEGACY_DETERMINISTIC) {
-                    int numFragments = getTemplate().getNumFragments();
-                    getWorld().getAnimationManagerRealTime().registerAnimation(
-                            new LegacyOneShotEmitter(getWorld(), getWorld().getAnimationManagerRealTime(),
-                                    numFragments, (float) numFragments, 0.05f, (float) Math.PI, 4));
-                }
-            }
-        }
-    }
-
-    @Override
-    public void remove() {
-        super.remove();
-        if (weapons_producer != null) {
-            weapons_producer.remove();
-        }
-        if (damaged_emitter != null) {
-            getOwner().getWorld().getAnimationManagerRealTime().removeAnimation(damaged_emitter);
-        }
-        getWorld().getNotificationListener().onModelRemoved(this);
-    }
-
-    public @Nullable UnitContainer getRawUnitContainer() {
-        assert !isDead();
-        return unit_container;
-    }
-
-    public Optional<UnitContainer> getUnitContainer() {
-        assert !isDead();
-        return Optional.ofNullable(unit_container);
-    }
-
-    public Optional<SupplyContainer> getSupplyContainer(SupplyType key) {
-        assert !isDead();
-        return Optional.ofNullable(resource_containers.get(key));
-    }
-
-    public @Nullable SupplyContainer getSupplyContainerDirect(SupplyType key) {
-        assert !isDead();
-        return resource_containers.get(key);
-    }
-
-    public Optional<SupplyContainer> getWeaponContainer(WeaponTier tier) {
-        assert !isDead();
-        return Optional.ofNullable(weapon_containers.get(tier));
-    }
-
-    public int getWeaponSupplyCount(WeaponTier tier) {
-        SupplyContainer container = weapon_containers.get(tier);
-        return container != null ? container.getNumSupplies() : 0;
-    }
-
-    public Optional<BuildProductionContainer> getWeaponBuildContainer(WeaponTier tier) {
-        assert !isDead();
-        return Optional.ofNullable(weapon_build_containers.get(tier));
-    }
-
-    public DeployContainer getDeployContainer(DeployType type) {
-        assert !isDead();
-        return deploy_containers.get(type);
-    }
-
-    public Optional<ChieftainContainer> getChieftainContainer() {
-        assert !isDead();
-        return Optional.ofNullable(chieftain_container);
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return !isDead();
-    }
-
-    public int getUnitCount() {
-        assert !isDead();
-        return unit_container != null ? unit_container.getNumSupplies() : 0;
-    }
-
-    public boolean canExitTower() {
-        return !isDead() && getAbilities().hasAbilities(Abilities.ATTACK)
-                && unit_container != null
-                && unit_container.getNumSupplies() > 0
-                && getOwner().canExitTowers()
-                && !((MountUnitContainer) unit_container).getUnit().isStunned();
-    }
-
-    public void exitTower() {
-        assert !isDead();
-        if (canExitTower() && unit_container != null) {
-            unit_container.exit();
-        }
-    }
-
-    public boolean canDeployUnits(DeployType type) {
-        return !isDead() && isBuilt() && deploy_containers.containsKey(type);
-    }
-
-    public void deployUnits(DeployType type, int num_units) {
-        assert !isDead();
-        if (!canDeployUnits(type) || num_units == 0 || num_units == Integer.MIN_VALUE) {
-            return;
-        }
-        getOwner().getWorld().updateGlobalChecksum(type.ordinal());
-        getOwner().getWorld().updateGlobalChecksum(num_units);
-        getDeployContainer(type).orderSupply(num_units);
-    }
-
-    public boolean canCreateHarvesters(long totalRequested) {
-        return !isDead()
-                && isBuilt()
-                && totalRequested >= 0
-                && unit_container instanceof WorkerUnitContainer
-                && totalRequested <= unit_container.getNumSupplies();
-    }
-
-    public void createHarvesters(int num_tree, int num_rock, int num_iron, int num_rubber) {
-        assert !isDead();
-        if (num_tree < 0 || num_rock < 0 || num_iron < 0 || num_rubber < 0) {
-            return;
-        }
-        long total = (long) num_tree + num_rock + num_iron + num_rubber;
-        if (!canCreateHarvesters(total)) {
-            return;
-        }
-        if (num_tree > 0) createHarvesters(SupplyType.WOOD, num_tree, false);
-        if (num_rock > 0) createHarvesters(SupplyType.ROCK, num_rock, false);
-        if (num_iron > 0) createHarvesters(SupplyType.IRON, num_iron, false);
-        if (num_rubber > 0) createHarvesters(SupplyType.RUBBER, num_rubber, false);
-    }
-
-    void createHarvesters(SupplyType supplyType, int amount) {
-        createHarvesters(supplyType, amount, true);
-    }
-
-    private void createHarvesters(SupplyType supplyType, int amount, boolean prepared) {
-        RaceInfo raceInfo = getOwner().getRaceInfo();
-        for (int i = 0; i < amount; i++) {
-            if (unit_container != null) {
-                if (prepared) {
-                    unit_container.prepareDeploy(-1);
-                }
-                unit_container.exit();
-            }
-            Unit unit = createUnit(null, raceInfo.getUnitTemplate(UnitType.PEON));
-            unit.pushOrder(new Gathering(null, supplyType, unit.getCurrentState()));
-        }
-    }
-
-    public boolean canBuildWeapons(WeaponTier tier) {
-        return !isDead() && isBuilt() && weapon_build_containers.containsKey(tier);
-    }
-
-    public void buildWeapons(WeaponTier tier, int num_weapons, boolean infinite) {
-        assert !isDead();
-        if (!canBuildWeapons(tier) || (!infinite && num_weapons == 0) || num_weapons == Integer.MIN_VALUE) {
-            return;
-        }
-        if (infinite)
-            getOwner().getWorld().updateGlobalChecksum(num_weapons);
-        else
-            getOwner().getWorld().updateGlobalChecksum(1000000);
-        BuildProductionContainer build_container = weapon_build_containers.get(tier);
-        if (build_container != null) {
-            build_container.orderSupply(num_weapons, infinite);
-        }
-    }
-
-    public boolean canBuildChieftain() {
-        return !isDead() && chieftain_container != null && getOwner().canBuildChieftains() && !getOwner()
-                .hasActiveChieftain() && !getOwner().isTrainingChieftain();
-    }
-
-    public boolean canStopChieftain() {
-        return !isDead() && chieftain_container != null && chieftain_container.isTraining();
-    }
-
-    public boolean isTrainingChieftain() {
-        return !isDead() && is_training_chieftain;
-    }
-
-    public void trainChieftain(boolean start) {
-        if (canBuildChieftain() && start) {
-            chieftain_container.startTraining();
-            getOwner().setTrainingChieftain(true);
-            is_training_chieftain = true;
-        } else if (canStopChieftain() && !start) {
-            chieftain_container.stopTraining();
-            getOwner().setTrainingChieftain(false);
-            is_training_chieftain = false;
-        }
-    }
-
-    public void deployChieftain() {
-        chieftain_container.stopTraining();
-        getOwner().setTrainingChieftain(false);
-        is_training_chieftain = false;
-        Unit chieftain = createUnit(null, getOwner().getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN));
-        getOwner().setActiveChieftain(chieftain);
-    }
-
-    private Unit createUnit(@Nullable Target rally_point, UnitTemplate template) {
-        return new Unit(getOwner(), getPositionX(), getPositionY(), rally_point, template, null, true, true);
-    }
-
-    void createWarriors(WeaponTier tier, int amount) {
-        assert !isDead();
-        UnitType template = switch (tier) {
-            case ROCK -> UnitType.WARRIOR_ROCK;
-            case IRON -> UnitType.WARRIOR_IRON;
-            case RUBBER -> UnitType.WARRIOR_RUBBER;
-        };
-        createArmy(amount, template);
-    }
-
-    void createPeons(int amount) {
-        assert !isDead();
-        createArmy(amount, UnitType.PEON);
-    }
-
-    void createArmy(int num_peon, int num_rock, int num_iron, int num_rubber) {
-        assert !isDead();
-        if (num_peon > 0) createPeons(num_peon);
-        if (num_rock > 0) createWarriors(WeaponTier.ROCK, num_rock);
-        if (num_iron > 0) createWarriors(WeaponTier.IRON, num_iron);
-        if (num_rubber > 0) createWarriors(WeaponTier.RUBBER, num_rubber);
-    }
-
-    private void createArmy(int amount, UnitType template) {
-        RaceInfo raceInfo = getOwner().getRaceInfo();
-        checkRallyPoint();
-        for (int i = 0; i < amount; i++) {
-            if (unit_container != null) {
-                unit_container.prepareDeploy(-1);
-                unit_container.exit();
-            }
-            Unit unit = createUnit(hasRallyPoint() ? rally_point : null, raceInfo.getUnitTemplate(template));
-            if (getAbilities().hasAbilities(Abilities.REPRODUCE) && !hasRallyPoint()) {
-                unit.pushOrder(new Transporting(unit.getCurrentState()));
-            }
-        }
-    }
-
-    void createTransporters(SupplyType supply, int amount) {
-        assert !isDead();
-        RaceInfo raceInfo = getOwner().getRaceInfo();
-        checkRallyPoint();
-        for (int i = 0; i < amount; i++) {
-            if (unit_container != null) {
-                unit_container.prepareDeploy(-1);
-                unit_container.exit();
-            }
-            Unit unit = createUnit(hasRallyPoint() ? rally_point : null, raceInfo.getUnitTemplate(UnitType.PEON));
-            unit.getSupplyContainer().increaseSupply(unit.getSupplyContainer().getMaxSupplyCount(), supply);
-        }
-    }
-
-    public void createTransporters(int num_tree, int num_rock, int num_iron, int num_rubber) {
-        assert !isDead();
-        if (num_tree > 0) createTransporters(SupplyType.WOOD, num_tree);
-        if (num_rock > 0) createTransporters(SupplyType.ROCK, num_rock);
-        if (num_iron > 0) createTransporters(SupplyType.IRON, num_iron);
-        if (num_rubber > 0) createTransporters(SupplyType.RUBBER, num_rubber);
-    }
-
-    private void checkRallyPoint() {
-        if (hasRallyPoint() && rally_point.isDead())
-            rally_point = this;
-    }
-
-    public boolean isDamaged() {
-        assert !isDead();
-        return hit_points > 0 && hit_points < getTemplate().getMaxHitPoints();
-    }
-
-    public int getHitPoints() {
-        return hit_points;
-    }
-
-    private void adjustHitPoints(int amount) {
-        setHitPoints(hit_points + amount);
-    }
-
-    private void setHitPoints(int new_hit_points) {
-        final int START_SMOKE = getTemplate().getMaxHitPoints() / 2;
-        hit_points = Math.clamp(new_hit_points, 0, getTemplate().getMaxHitPoints());
-        if (damaged_emitter != null) {
-            if (build_points == getTemplate().getMaxHitPoints() && hit_points < START_SMOKE) {
-                damaged_emitter.start();
-            } else {
-                damaged_emitter.stop();
-            }
-        }
-    }
-
-    public void repair(int amount) {
-        assert !isDead();
-        assert isPlaced();
-        if (!isDamaged())
-            return;
-
-        setHitPoints(hit_points + amount);
-        if (!isBuilt()) {
-            var max_hitpoints = getTemplate().getMaxHitPoints();
-            build_points = Math.min(build_points + amount, max_hitpoints);
-            reinsert();
-            if (build_points == max_hitpoints) {
-                buildingCompleted();
-            }
-        }
-    }
-
-    public static boolean isPlacingLegal(UnitGrid unit_grid, BuildingTemplate template, int grid_x,
-            int grid_y) {
-        return doIsPlacingLegal(unit_grid, grid_x, grid_y, template.getPlacingSize());
-    }
-
-    public boolean isPlacingLegal() {
-        return !isDead() && getOwner().canBuild(getTemplate().getBuildingType()) &&
-                doIsPlacingLegal(getUnitGrid(), getGridX(), getGridY(), getTemplate().getPlacingSize()
-                        - PLACING_BORDER);
-    }
-
-    /** {@return true if the building is placed, false otherwise} */
-    public boolean isPlaced() {
-        assert !isDead();
-        return getBuildStage() != BuildStage.UNPLACED;
-    }
-
-    /** {@return true if construction is complete, false otherwise} */
-    public boolean isBuilt() {
-        return build_points == getTemplate().getMaxHitPoints();
-    }
-
-    /// Returns true if this building is completed and operating normally.
-    public boolean isOperating() {
-        return !isDead() && isBuilt();
-    }
-
-    @Override
-    public EntityActivity getActivity() {
-        if (isDead()) {
-            return EntityActivity.DEAD;
-        }
-        if (getBuildStage() != BuildStage.BUILT) {
-            return EntityActivity.UNDER_CONSTRUCTION;
-        }
-        if (isProducing()) {
-            return EntityActivity.ACTIVE;
-        }
-        return isOperating()
-                ? EntityActivity.IDLE
-                : EntityActivity.OTHER;
-    }
-
-    public int getBuildPoints() {
-        return build_points;
-    }
-
-    public BuildStage getBuildStage() {
-        var max_points = getTemplate().getMaxHitPoints();
-        return build_points == max_points
-                ? BuildStage.BUILT
-                : (float) build_points / max_points > .5f
-                        ? BuildStage.HALFBUILT
-                : build_points > 0 ? BuildStage.START : BuildStage.UNPLACED;
-    }
-
-    private void buildingCompleted() {
-        getOwner().getWorld().getNotificationListener().newSelectableNotification(this);
-        getAbilities().addAbilities(getTemplate().getAbilities());
-        unit_container = getTemplate().getUnitContainerFactory().createContainer(this);
-        if (getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER)) {
-            resource_containers.put(SupplyType.WOOD, new SupplyContainer(MAX_SUPPLY_COUNT));
-            resource_containers.put(SupplyType.ROCK, new SupplyContainer(MAX_SUPPLY_COUNT));
-            resource_containers.put(SupplyType.IRON, new SupplyContainer(MAX_SUPPLY_COUNT));
-            resource_containers.put(SupplyType.RUBBER, new SupplyContainer(MAX_SUPPLY_COUNT));
-
-            for (WeaponTier tier : WeaponTier.values()) {
-                SupplyContainer weaponContainer = new SupplyContainer(MAX_SUPPLY_COUNT);
-                weapon_containers.put(tier, weaponContainer);
-                BuildProductionContainer buildContainer = new BuildProductionContainer(
-                        weaponContainer,
-                        this,
-                        tier);
-                weapon_build_containers.put(tier, buildContainer);
-            }
-
-            BuildProductionContainer[] production_containers = weapon_build_containers.values()
-                    .toArray(new BuildProductionContainer[0]);
-
-            weapons_producer = new WeaponsProducer(this, (WorkerUnitContainer) unit_container,
-                    production_containers);
-
-            deploy_containers.put(DeployType.ROCK_WARRIOR, new DeployContainer(this, 1f,
-                    DeployType.ROCK_WARRIOR, weapon_containers.get(WeaponTier.ROCK)));
-            deploy_containers.put(DeployType.IRON_WARRIOR, new DeployContainer(this, 1.5f,
-                    DeployType.IRON_WARRIOR, weapon_containers.get(WeaponTier.IRON)));
-            deploy_containers.put(DeployType.RUBBER_WARRIOR, new DeployContainer(this, 2f,
-                    DeployType.RUBBER_WARRIOR, weapon_containers.get(WeaponTier.RUBBER)));
-            deploy_containers.put(DeployType.PEON, new DeployContainer(this, .5f, DeployType.PEON, null));
-            deploy_containers.put(DeployType.PEON_HARVEST_TREE, new DeployContainer(this, .5f,
-                    DeployType.PEON_HARVEST_TREE, null));
-            deploy_containers.put(DeployType.PEON_TRANSPORT_TREE, new DeployContainer(this, .5f,
-                    DeployType.PEON_TRANSPORT_TREE, resource_containers.get(SupplyType.WOOD)));
-            deploy_containers.put(DeployType.PEON_HARVEST_ROCK, new DeployContainer(this, .5f,
-                    DeployType.PEON_HARVEST_ROCK, null));
-            deploy_containers.put(DeployType.PEON_TRANSPORT_ROCK, new DeployContainer(this, .5f,
-                    DeployType.PEON_TRANSPORT_ROCK, resource_containers.get(SupplyType.ROCK)));
-            deploy_containers.put(DeployType.PEON_HARVEST_IRON, new DeployContainer(this, .5f,
-                    DeployType.PEON_HARVEST_IRON, null));
-            deploy_containers.put(DeployType.PEON_TRANSPORT_IRON, new DeployContainer(this, .5f,
-                    DeployType.PEON_TRANSPORT_IRON, resource_containers.get(SupplyType.IRON)));
-            deploy_containers.put(DeployType.PEON_HARVEST_RUBBER, new DeployContainer(this, .5f,
-                    DeployType.PEON_HARVEST_RUBBER, null));
-            deploy_containers.put(DeployType.PEON_TRANSPORT_RUBBER, new DeployContainer(this, .5f,
-                    DeployType.PEON_TRANSPORT_RUBBER, resource_containers.get(SupplyType.RUBBER)));
-        } else if (getAbilities().hasAbilities(Abilities.REPRODUCE)) {
-            chieftain_container = new ChieftainContainer(this);
-            deploy_containers.put(DeployType.PEON, new DeployContainer(this, .5f, DeployType.PEON, null));
-        }
-    }
-
-    @Override
-    public float getHitOffsetZ() {
-        int index = switch (getBuildStage()) {
-            case START -> 0;
-            case HALFBUILT -> 1;
-            case UNPLACED, BUILT -> 2;
-        };
-        return getTemplate().getHitOffsetZ(index);
-    }
-
-    public static boolean doIsPlacingLegal(UnitGrid unit_grid, int grid_x, int grid_y, int size) {
-        if (!unit_grid.getHeightMap().canBuild(grid_x, grid_y, size))
-            return false;
-
-        for (int y = 0; y < size * 2 - 1; y++) {
-            for (int x = 0; x < size * 2 - 1; x++) {
-                int current_grid_x = grid_x + x - (size - 1);
-                int current_grid_y = grid_y + y - (size - 1);
-                if (current_grid_x >= unit_grid.getGridSize() || current_grid_y >= unit_grid.getGridSize() ||
-                        current_grid_x < 0 || current_grid_y < 0 || unit_grid.isGridOccupied(current_grid_x,
-                                current_grid_y))
-                    return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public AttackScanFilter.Priority getAttackPriority() {
-        return getAbilities().hasAbilities(Abilities.ATTACK)
-                ? AttackScanFilter.Priority.TOWER
-                : getAbilities().hasAbilities(Abilities.BUILD_ARMIES)
-                        ? AttackScanFilter.Priority.ARMORY
-                : AttackScanFilter.Priority.QUARTERS;
-    }
-
-    @Override
-    protected void setTarget(Target target, Action action, boolean aggressive) {
-        if (getAbilities().hasAbilities(Abilities.ATTACK)) {
-            if (target != this && unit_container instanceof MountUnitContainer mountContainer) {
-                boolean kill_friendly = action == Action.ATTACK;
-                Unit unit = mountContainer.getUnit();
-                if (unit != null && unit.canAttack(target, kill_friendly))
-                    unit.pushOrder(new Hunting((Selectable<?>) target, false, unit.getCurrentState()));
-            }
-        } else {
-            setRallyPoint(target);
-        }
-    }
-
-    public void place() {
-        assert !isDead();
-        assert isPlacingLegal();
-        register();
-        occupy();
-        flattenLandscape();
-        int result = getOwner().getBuildingCountContainer().increaseSupply(1);
-        assert (result == 1) : "Too many buildings";
-        build_points = 1;
-        reinsert();
-    }
-
-    @Override
-    public float getSize() {
-        assert !isDead();
-        float radius = (getTemplate().getPlacingSize() - 1);
-        return (float) Math.sqrt(2) * radius + .1f;
-    }
-
-    @Override
-    public int getPenalty() {
-        assert !isDead();
-        return Occupant.STATIC;
-    }
-
-    @Override
-    public void removeDying() {
-        remove_delay = REMOVE_DELAY;
-        if (unit_container != null) {
-            while (unit_container.getNumSupplies() > 0) {
-                Unit unit = unit_container.exit();
-                if (unit != null)
-                    unit.removeNow();
-            }
-        }
+      }
+      if (num_deploying > 0) {
+        float amount = t / num_deploying;
         for (DeployContainer deploy_container : deploy_containers.values()) {
-            int result = getOwner().getUnitCountContainer().increaseSupply(-deploy_container.getNumSupplies());
-            assert result == -deploy_container.getNumSupplies();
+          if (deploy_container.getNumSupplies() > 0) {
+            deploy_container.deploy(amount);
+          }
         }
-        free();
-        undoLandscape();
-        int result = getOwner().getBuildingCountContainer().increaseSupply(-1);
-        assert result == -1;
+      }
+    }
+
+    if (remove_delay > 0) {
+      remove_delay -= t;
+      if (remove_delay <= 0) {
+        remove();
         if (AppConfig.LEGACY_DETERMINISTIC) {
-            getWorld().getAnimationManagerRealTime().registerAnimation(
-                    new LegacyOneShotEmitter(getWorld(), getWorld().getAnimationManagerRealTime(),
-                            30, 400f, 1f, 1f, 1));
+          int numFragments = getTemplate().getNumFragments();
+          getWorld()
+              .getAnimationManagerRealTime()
+              .registerAnimation(
+                  new LegacyOneShotEmitter(
+                      getWorld(),
+                      getWorld().getAnimationManagerRealTime(),
+                      numFragments,
+                      (float) numFragments,
+                      0.05f,
+                      (float) Math.PI,
+                      4));
         }
-        super.removeDying();
+      }
     }
+  }
 
-    public boolean isValidRallyPoint(Target t) {
-        return t instanceof Building b &&
-                getOwner() == b.getOwner() &&
-                b.getAbilities().hasAbilities(Abilities.RALLY_TO);
+  @Override
+  public void remove() {
+    super.remove();
+    if (weapons_producer != null) {
+      weapons_producer.remove();
     }
-
-    public boolean canSetRallyPoint() {
-        return !isDead() && getOwner().canSetRallyPoints() && !deploy_containers.isEmpty();
+    if (damaged_emitter != null) {
+      getOwner().getWorld().getAnimationManagerRealTime().removeAnimation(damaged_emitter);
     }
+    getWorld().getNotificationListener().onModelRemoved(this);
+  }
 
-    public void setRallyPoint(Target target) {
-        if (!canSetRallyPoint())
-            return;
-        rally_point = isValidRallyPoint(target)
-                ? target
-                : getUnitGrid().findGridTarget(target.getGridX(), target.getGridY(), false);
+  public @Nullable UnitContainer getRawUnitContainer() {
+    assert !isDead();
+    return unit_container;
+  }
+
+  public Optional<UnitContainer> getUnitContainer() {
+    assert !isDead();
+    return Optional.ofNullable(unit_container);
+  }
+
+  public Optional<SupplyContainer> getSupplyContainer(SupplyType key) {
+    assert !isDead();
+    return Optional.ofNullable(resource_containers.get(key));
+  }
+
+  public @Nullable SupplyContainer getSupplyContainerDirect(SupplyType key) {
+    assert !isDead();
+    return resource_containers.get(key);
+  }
+
+  public Optional<SupplyContainer> getWeaponContainer(WeaponTier tier) {
+    assert !isDead();
+    return Optional.ofNullable(weapon_containers.get(tier));
+  }
+
+  public int getWeaponSupplyCount(WeaponTier tier) {
+    SupplyContainer container = weapon_containers.get(tier);
+    return container != null ? container.getNumSupplies() : 0;
+  }
+
+  public Optional<BuildProductionContainer> getWeaponBuildContainer(WeaponTier tier) {
+    assert !isDead();
+    return Optional.ofNullable(weapon_build_containers.get(tier));
+  }
+
+  public DeployContainer getDeployContainer(DeployType type) {
+    assert !isDead();
+    return deploy_containers.get(type);
+  }
+
+  public Optional<ChieftainContainer> getChieftainContainer() {
+    assert !isDead();
+    return Optional.ofNullable(chieftain_container);
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return !isDead();
+  }
+
+  public int getUnitCount() {
+    assert !isDead();
+    return unit_container != null ? unit_container.getNumSupplies() : 0;
+  }
+
+  public boolean canExitTower() {
+    return !isDead()
+        && getAbilities().hasAbilities(Abilities.ATTACK)
+        && unit_container != null
+        && unit_container.getNumSupplies() > 0
+        && getOwner().canExitTowers()
+        && !((MountUnitContainer) unit_container).getUnit().isStunned();
+  }
+
+  public void exitTower() {
+    assert !isDead();
+    if (canExitTower() && unit_container != null) {
+      unit_container.exit();
     }
+  }
 
-    @Override
-    public float getShadowOpacity() {
-        return switch (getBuildStage()) {
-            case UNPLACED, START -> 0.0f;
-            case HALFBUILT, BUILT -> super.getShadowOpacity();
+  public boolean canDeployUnits(DeployType type) {
+    return !isDead() && isBuilt() && deploy_containers.containsKey(type);
+  }
+
+  public void deployUnits(DeployType type, int num_units) {
+    assert !isDead();
+    if (!canDeployUnits(type) || num_units == 0 || num_units == Integer.MIN_VALUE) {
+      return;
+    }
+    getOwner().getWorld().updateGlobalChecksum(type.ordinal());
+    getOwner().getWorld().updateGlobalChecksum(num_units);
+    getDeployContainer(type).orderSupply(num_units);
+  }
+
+  public boolean canCreateHarvesters(long totalRequested) {
+    return !isDead()
+        && isBuilt()
+        && totalRequested >= 0
+        && unit_container instanceof WorkerUnitContainer
+        && totalRequested <= unit_container.getNumSupplies();
+  }
+
+  public void createHarvesters(int num_tree, int num_rock, int num_iron, int num_rubber) {
+    assert !isDead();
+    if (num_tree < 0 || num_rock < 0 || num_iron < 0 || num_rubber < 0) {
+      return;
+    }
+    long total = (long) num_tree + num_rock + num_iron + num_rubber;
+    if (!canCreateHarvesters(total)) {
+      return;
+    }
+    if (num_tree > 0) createHarvesters(SupplyType.WOOD, num_tree, false);
+    if (num_rock > 0) createHarvesters(SupplyType.ROCK, num_rock, false);
+    if (num_iron > 0) createHarvesters(SupplyType.IRON, num_iron, false);
+    if (num_rubber > 0) createHarvesters(SupplyType.RUBBER, num_rubber, false);
+  }
+
+  void createHarvesters(SupplyType supplyType, int amount) {
+    createHarvesters(supplyType, amount, true);
+  }
+
+  private void createHarvesters(SupplyType supplyType, int amount, boolean prepared) {
+    RaceInfo raceInfo = getOwner().getRaceInfo();
+    for (int i = 0; i < amount; i++) {
+      if (unit_container != null) {
+        if (prepared) {
+          unit_container.prepareDeploy(-1);
+        }
+        unit_container.exit();
+      }
+      Unit unit = createUnit(null, raceInfo.getUnitTemplate(UnitType.PEON));
+      unit.pushOrder(new Gathering(null, supplyType, unit.getCurrentState()));
+    }
+  }
+
+  public boolean canBuildWeapons(WeaponTier tier) {
+    return !isDead() && isBuilt() && weapon_build_containers.containsKey(tier);
+  }
+
+  public void buildWeapons(WeaponTier tier, int num_weapons, boolean infinite) {
+    assert !isDead();
+    if (!canBuildWeapons(tier) || (!infinite && num_weapons == 0) || num_weapons == Integer.MIN_VALUE) {
+      return;
+    }
+    if (infinite) getOwner().getWorld().updateGlobalChecksum(num_weapons);
+    else getOwner().getWorld().updateGlobalChecksum(1000000);
+    BuildProductionContainer build_container = weapon_build_containers.get(tier);
+    if (build_container != null) {
+      build_container.orderSupply(num_weapons, infinite);
+    }
+  }
+
+  public boolean canBuildChieftain() {
+    return !isDead()
+        && chieftain_container != null
+        && getOwner().canBuildChieftains()
+        && !getOwner().hasActiveChieftain()
+        && !getOwner().isTrainingChieftain();
+  }
+
+  public boolean canStopChieftain() {
+    return !isDead() && chieftain_container != null && chieftain_container.isTraining();
+  }
+
+  public boolean isTrainingChieftain() {
+    return !isDead() && is_training_chieftain;
+  }
+
+  public void trainChieftain(boolean start) {
+    if (canBuildChieftain() && start) {
+      chieftain_container.startTraining();
+      getOwner().setTrainingChieftain(true);
+      is_training_chieftain = true;
+    } else if (canStopChieftain() && !start) {
+      chieftain_container.stopTraining();
+      getOwner().setTrainingChieftain(false);
+      is_training_chieftain = false;
+    }
+  }
+
+  public void deployChieftain() {
+    chieftain_container.stopTraining();
+    getOwner().setTrainingChieftain(false);
+    is_training_chieftain = false;
+    Unit chieftain = createUnit(null, getOwner().getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN));
+    getOwner().setActiveChieftain(chieftain);
+  }
+
+  private Unit createUnit(@Nullable Target rally_point, UnitTemplate template) {
+    return new Unit(getOwner(), getPositionX(), getPositionY(), rally_point, template, null, true, true);
+  }
+
+  void createWarriors(WeaponTier tier, int amount) {
+    assert !isDead();
+    UnitType template =
+        switch (tier) {
+          case ROCK -> UnitType.WARRIOR_ROCK;
+          case IRON -> UnitType.WARRIOR_IRON;
+          case RUBBER -> UnitType.WARRIOR_RUBBER;
         };
-    }
+    createArmy(amount, template);
+  }
 
-    @Override
-    protected BoundingBox[] getLocalBounds() {
-        return switch (getBuildStage()) {
-            case START -> getTemplate().getStartBounds();
-            case HALFBUILT -> getTemplate().getHalfbuiltBounds();
-            case UNPLACED, BUILT -> getTemplate().getBuiltBounds();
+  void createPeons(int amount) {
+    assert !isDead();
+    createArmy(amount, UnitType.PEON);
+  }
+
+  void createArmy(int num_peon, int num_rock, int num_iron, int num_rubber) {
+    assert !isDead();
+    if (num_peon > 0) createPeons(num_peon);
+    if (num_rock > 0) createWarriors(WeaponTier.ROCK, num_rock);
+    if (num_iron > 0) createWarriors(WeaponTier.IRON, num_iron);
+    if (num_rubber > 0) createWarriors(WeaponTier.RUBBER, num_rubber);
+  }
+
+  private void createArmy(int amount, UnitType template) {
+    RaceInfo raceInfo = getOwner().getRaceInfo();
+    checkRallyPoint();
+    for (int i = 0; i < amount; i++) {
+      if (unit_container != null) {
+        unit_container.prepareDeploy(-1);
+        unit_container.exit();
+      }
+      Unit unit = createUnit(hasRallyPoint() ? rally_point : null, raceInfo.getUnitTemplate(template));
+      if (getAbilities().hasAbilities(Abilities.REPRODUCE) && !hasRallyPoint()) {
+        unit.pushOrder(new Transporting(unit.getCurrentState()));
+      }
+    }
+  }
+
+  void createTransporters(SupplyType supply, int amount) {
+    assert !isDead();
+    RaceInfo raceInfo = getOwner().getRaceInfo();
+    checkRallyPoint();
+    for (int i = 0; i < amount; i++) {
+      if (unit_container != null) {
+        unit_container.prepareDeploy(-1);
+        unit_container.exit();
+      }
+      Unit unit = createUnit(hasRallyPoint() ? rally_point : null, raceInfo.getUnitTemplate(UnitType.PEON));
+      unit.getSupplyContainer().increaseSupply(unit.getSupplyContainer().getMaxSupplyCount(), supply);
+    }
+  }
+
+  public void createTransporters(int num_tree, int num_rock, int num_iron, int num_rubber) {
+    assert !isDead();
+    if (num_tree > 0) createTransporters(SupplyType.WOOD, num_tree);
+    if (num_rock > 0) createTransporters(SupplyType.ROCK, num_rock);
+    if (num_iron > 0) createTransporters(SupplyType.IRON, num_iron);
+    if (num_rubber > 0) createTransporters(SupplyType.RUBBER, num_rubber);
+  }
+
+  private void checkRallyPoint() {
+    if (hasRallyPoint() && rally_point.isDead()) rally_point = this;
+  }
+
+  public boolean isDamaged() {
+    assert !isDead();
+    return hit_points > 0 && hit_points < getTemplate().getMaxHitPoints();
+  }
+
+  public int getHitPoints() {
+    return hit_points;
+  }
+
+  private void adjustHitPoints(int amount) {
+    setHitPoints(hit_points + amount);
+  }
+
+  private void setHitPoints(int new_hit_points) {
+    final int START_SMOKE = getTemplate().getMaxHitPoints() / 2;
+    hit_points = Math.clamp(new_hit_points, 0, getTemplate().getMaxHitPoints());
+    if (damaged_emitter != null) {
+      if (build_points == getTemplate().getMaxHitPoints() && hit_points < START_SMOKE) {
+        damaged_emitter.start();
+      } else {
+        damaged_emitter.stop();
+      }
+    }
+  }
+
+  public void repair(int amount) {
+    assert !isDead();
+    assert isPlaced();
+    if (!isDamaged()) return;
+
+    setHitPoints(hit_points + amount);
+    if (!isBuilt()) {
+      var max_hitpoints = getTemplate().getMaxHitPoints();
+      build_points = Math.min(build_points + amount, max_hitpoints);
+      reinsert();
+      if (build_points == max_hitpoints) {
+        buildingCompleted();
+      }
+    }
+  }
+
+  public static boolean isPlacingLegal(UnitGrid unit_grid, BuildingTemplate template, int grid_x, int grid_y) {
+    return doIsPlacingLegal(unit_grid, grid_x, grid_y, template.getPlacingSize());
+  }
+
+  public boolean isPlacingLegal() {
+    return !isDead()
+        && getOwner().canBuild(getTemplate().getBuildingType())
+        && doIsPlacingLegal(getUnitGrid(), getGridX(), getGridY(), getTemplate().getPlacingSize() - PLACING_BORDER);
+  }
+
+  /// {@return true if the building is placed, false otherwise}
+  public boolean isPlaced() {
+    assert !isDead();
+    return getBuildStage() != BuildStage.UNPLACED;
+  }
+
+  /// {@return true if construction is complete, false otherwise}
+  public boolean isBuilt() {
+    return build_points == getTemplate().getMaxHitPoints();
+  }
+
+  /// Returns true if this building is completed and operating normally.
+  public boolean isOperating() {
+    return !isDead() && isBuilt();
+  }
+
+  @Override
+  public EntityActivity getActivity() {
+    if (isDead()) {
+      return EntityActivity.DEAD;
+    }
+    if (getBuildStage() != BuildStage.BUILT) {
+      return EntityActivity.UNDER_CONSTRUCTION;
+    }
+    if (isProducing()) {
+      return EntityActivity.ACTIVE;
+    }
+    return isOperating() ? EntityActivity.IDLE : EntityActivity.OTHER;
+  }
+
+  public int getBuildPoints() {
+    return build_points;
+  }
+
+  public BuildStage getBuildStage() {
+    var max_points = getTemplate().getMaxHitPoints();
+    return build_points == max_points
+        ? BuildStage.BUILT
+        : (float) build_points / max_points > .5f
+            ? BuildStage.HALFBUILT
+            : build_points > 0 ? BuildStage.START : BuildStage.UNPLACED;
+  }
+
+  private void buildingCompleted() {
+    getOwner().getWorld().getNotificationListener().newSelectableNotification(this);
+    getAbilities().addAbilities(getTemplate().getAbilities());
+    unit_container = getTemplate().getUnitContainerFactory().createContainer(this);
+    if (getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER)) {
+      resource_containers.put(SupplyType.WOOD, new SupplyContainer(MAX_SUPPLY_COUNT));
+      resource_containers.put(SupplyType.ROCK, new SupplyContainer(MAX_SUPPLY_COUNT));
+      resource_containers.put(SupplyType.IRON, new SupplyContainer(MAX_SUPPLY_COUNT));
+      resource_containers.put(SupplyType.RUBBER, new SupplyContainer(MAX_SUPPLY_COUNT));
+
+      for (WeaponTier tier : WeaponTier.values()) {
+        SupplyContainer weaponContainer = new SupplyContainer(MAX_SUPPLY_COUNT);
+        weapon_containers.put(tier, weaponContainer);
+        BuildProductionContainer buildContainer = new BuildProductionContainer(weaponContainer, this, tier);
+        weapon_build_containers.put(tier, buildContainer);
+      }
+
+      BuildProductionContainer[] production_containers =
+          weapon_build_containers.values().toArray(new BuildProductionContainer[0]);
+
+      weapons_producer = new WeaponsProducer(this, (WorkerUnitContainer) unit_container, production_containers);
+
+      deploy_containers.put(
+          DeployType.ROCK_WARRIOR,
+          new DeployContainer(this, 1f, DeployType.ROCK_WARRIOR, weapon_containers.get(WeaponTier.ROCK)));
+      deploy_containers.put(
+          DeployType.IRON_WARRIOR,
+          new DeployContainer(this, 1.5f, DeployType.IRON_WARRIOR, weapon_containers.get(WeaponTier.IRON)));
+      deploy_containers.put(
+          DeployType.RUBBER_WARRIOR,
+          new DeployContainer(this, 2f, DeployType.RUBBER_WARRIOR, weapon_containers.get(WeaponTier.RUBBER)));
+      deploy_containers.put(DeployType.PEON, new DeployContainer(this, .5f, DeployType.PEON, null));
+      deploy_containers.put(
+          DeployType.PEON_HARVEST_TREE, new DeployContainer(this, .5f, DeployType.PEON_HARVEST_TREE, null));
+      deploy_containers.put(
+          DeployType.PEON_TRANSPORT_TREE,
+          new DeployContainer(this, .5f, DeployType.PEON_TRANSPORT_TREE, resource_containers.get(SupplyType.WOOD)));
+      deploy_containers.put(
+          DeployType.PEON_HARVEST_ROCK, new DeployContainer(this, .5f, DeployType.PEON_HARVEST_ROCK, null));
+      deploy_containers.put(
+          DeployType.PEON_TRANSPORT_ROCK,
+          new DeployContainer(this, .5f, DeployType.PEON_TRANSPORT_ROCK, resource_containers.get(SupplyType.ROCK)));
+      deploy_containers.put(
+          DeployType.PEON_HARVEST_IRON, new DeployContainer(this, .5f, DeployType.PEON_HARVEST_IRON, null));
+      deploy_containers.put(
+          DeployType.PEON_TRANSPORT_IRON,
+          new DeployContainer(this, .5f, DeployType.PEON_TRANSPORT_IRON, resource_containers.get(SupplyType.IRON)));
+      deploy_containers.put(
+          DeployType.PEON_HARVEST_RUBBER, new DeployContainer(this, .5f, DeployType.PEON_HARVEST_RUBBER, null));
+      deploy_containers.put(
+          DeployType.PEON_TRANSPORT_RUBBER,
+          new DeployContainer(this, .5f, DeployType.PEON_TRANSPORT_RUBBER, resource_containers.get(SupplyType.RUBBER)));
+    } else if (getAbilities().hasAbilities(Abilities.REPRODUCE)) {
+      chieftain_container = new ChieftainContainer(this);
+      deploy_containers.put(DeployType.PEON, new DeployContainer(this, .5f, DeployType.PEON, null));
+    }
+  }
+
+  @Override
+  public float getHitOffsetZ() {
+    int index =
+        switch (getBuildStage()) {
+          case START -> 0;
+          case HALFBUILT -> 1;
+          case UNPLACED, BUILT -> 2;
         };
+    return getTemplate().getHitOffsetZ(index);
+  }
+
+  public static boolean doIsPlacingLegal(UnitGrid unit_grid, int grid_x, int grid_y, int size) {
+    if (!unit_grid.getHeightMap().canBuild(grid_x, grid_y, size)) return false;
+
+    for (int y = 0; y < size * 2 - 1; y++) {
+      for (int x = 0; x < size * 2 - 1; x++) {
+        int current_grid_x = grid_x + x - (size - 1);
+        int current_grid_y = grid_y + y - (size - 1);
+        if (current_grid_x >= unit_grid.getGridSize()
+            || current_grid_y >= unit_grid.getGridSize()
+            || current_grid_x < 0
+            || current_grid_y < 0
+            || unit_grid.isGridOccupied(current_grid_x, current_grid_y)) return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public AttackScanFilter.Priority getAttackPriority() {
+    return getAbilities().hasAbilities(Abilities.ATTACK)
+        ? AttackScanFilter.Priority.TOWER
+        : getAbilities().hasAbilities(Abilities.BUILD_ARMIES)
+            ? AttackScanFilter.Priority.ARMORY
+            : AttackScanFilter.Priority.QUARTERS;
+  }
+
+  @Override
+  protected void setTarget(Target target, Action action, boolean aggressive) {
+    if (getAbilities().hasAbilities(Abilities.ATTACK)) {
+      if (target != this && unit_container instanceof MountUnitContainer mountContainer) {
+        boolean kill_friendly = action == Action.ATTACK;
+        Unit unit = mountContainer.getUnit();
+        if (unit != null && unit.canAttack(target, kill_friendly))
+          unit.pushOrder(new Hunting((Selectable<?>) target, false, unit.getCurrentState()));
+      }
+    } else {
+      setRallyPoint(target);
+    }
+  }
+
+  public void place() {
+    assert !isDead();
+    assert isPlacingLegal();
+    register();
+    occupy();
+    flattenLandscape();
+    int result = getOwner().getBuildingCountContainer().increaseSupply(1);
+    assert (result == 1) : "Too many buildings";
+    build_points = 1;
+    reinsert();
+  }
+
+  @Override
+  public float getSize() {
+    assert !isDead();
+    float radius = (getTemplate().getPlacingSize() - 1);
+    return (float) Math.sqrt(2) * radius + .1f;
+  }
+
+  @Override
+  public int getPenalty() {
+    assert !isDead();
+    return Occupant.STATIC;
+  }
+
+  @Override
+  public void removeDying() {
+    remove_delay = REMOVE_DELAY;
+    if (unit_container != null) {
+      while (unit_container.getNumSupplies() > 0) {
+        Unit unit = unit_container.exit();
+        if (unit != null) unit.removeNow();
+      }
+    }
+    for (DeployContainer deploy_container : deploy_containers.values()) {
+      int result = getOwner().getUnitCountContainer().increaseSupply(-deploy_container.getNumSupplies());
+      assert result == -deploy_container.getNumSupplies();
+    }
+    free();
+    undoLandscape();
+    int result = getOwner().getBuildingCountContainer().increaseSupply(-1);
+    assert result == -1;
+    if (AppConfig.LEGACY_DETERMINISTIC) {
+      getWorld()
+          .getAnimationManagerRealTime()
+          .registerAnimation(
+              new LegacyOneShotEmitter(getWorld(), getWorld().getAnimationManagerRealTime(), 30, 400f, 1f, 1f, 1));
+    }
+    super.removeDying();
+  }
+
+  public boolean isValidRallyPoint(Target t) {
+    return t instanceof Building b && getOwner() == b.getOwner() && b.getAbilities().hasAbilities(Abilities.RALLY_TO);
+  }
+
+  public boolean canSetRallyPoint() {
+    return !isDead() && getOwner().canSetRallyPoints() && !deploy_containers.isEmpty();
+  }
+
+  public void setRallyPoint(Target target) {
+    if (!canSetRallyPoint()) return;
+    rally_point =
+        isValidRallyPoint(target) ? target : getUnitGrid().findGridTarget(target.getGridX(), target.getGridY(), false);
+  }
+
+  @Override
+  public float getShadowOpacity() {
+    return switch (getBuildStage()) {
+      case UNPLACED, START -> 0.0f;
+      case HALFBUILT, BUILT -> super.getShadowOpacity();
+    };
+  }
+
+  @Override
+  protected BoundingBox[] getLocalBounds() {
+    return switch (getBuildStage()) {
+      case START -> getTemplate().getStartBounds();
+      case HALFBUILT -> getTemplate().getHalfbuiltBounds();
+      case UNPLACED, BUILT -> getTemplate().getBuiltBounds();
+    };
+  }
+
+  private void flattenLandscape() {
+    int size = getTemplate().getPlacingSize();
+    int height_points = (size - PLACING_BORDER) * 2;
+    int offset_x = getGridX() - (size - 1);
+    int offset_y = getGridY() - (size - 1);
+    float total_height = 0;
+    old_landscape_heights = new float[height_points][height_points];
+    for (int y = 0; y < height_points; y++) {
+      for (int x = 0; x < height_points; x++) {
+        float old_height =
+            getOwner()
+                .getWorld()
+                .getHeightMap()
+                .getWrappedHeight(offset_x + x + PLACING_BORDER, offset_y + y + PLACING_BORDER);
+        old_landscape_heights[y][x] = old_height;
+        total_height += old_height;
+      }
     }
 
-    private void flattenLandscape() {
-        int size = getTemplate().getPlacingSize();
-        int height_points = (size - PLACING_BORDER) * 2;
-        int offset_x = getGridX() - (size - 1);
-        int offset_y = getGridY() - (size - 1);
-        float total_height = 0;
-        old_landscape_heights = new float[height_points][height_points];
-        for (int y = 0; y < height_points; y++) {
-            for (int x = 0; x < height_points; x++) {
-                float old_height = getOwner().getWorld().getHeightMap().getWrappedHeight(offset_x + x + PLACING_BORDER,
-                        offset_y + y + PLACING_BORDER);
-                old_landscape_heights[y][x] = old_height;
-                total_height += old_height;
-            }
-        }
+    float new_height = total_height / (height_points * height_points);
+    for (int y = 0; y < height_points; y++) {
+      for (int x = 0; x < height_points; x++) {
+        getOwner()
+            .getWorld()
+            .getHeightMap()
+            .editHeight(offset_x + x + PLACING_BORDER, offset_y + y + PLACING_BORDER, new_height);
+      }
+    }
+  }
 
-        float new_height = total_height / (height_points * height_points);
-        for (int y = 0; y < height_points; y++) {
-            for (int x = 0; x < height_points; x++) {
-                getOwner().getWorld().getHeightMap().editHeight(offset_x + x + PLACING_BORDER, offset_y + y
-                        + PLACING_BORDER, new_height);
-            }
-        }
+  private void undoLandscape() {
+    int size = getTemplate().getPlacingSize();
+    int offset_x = getGridX() - (size - 1);
+    int offset_y = getGridY() - (size - 1);
+    for (int y = 0; y < old_landscape_heights.length; y++) {
+      for (int x = 0; x < old_landscape_heights[y].length; x++) {
+        getOwner()
+            .getWorld()
+            .getHeightMap()
+            .editHeight(offset_x + x + PLACING_BORDER, offset_y + y + PLACING_BORDER, old_landscape_heights[y][x]);
+      }
+    }
+  }
+
+  private void occupy() {
+    UnitGrid grid = getUnitGrid();
+    grid.getRegion(getGridX(), getGridY()).registerBuilding(this);
+    int size = getTemplate().getPlacingSize() * 2 - 1;
+    for (int y = PLACING_BORDER; y < size - PLACING_BORDER; y++) {
+      for (int x = PLACING_BORDER; x < size - PLACING_BORDER; x++) {
+        grid.occupyGrid(getGridX() - size / 2 + x, getGridY() - size / 2 + y, this);
+      }
+    }
+  }
+
+  private void free() {
+    UnitGrid grid = getUnitGrid();
+    grid.getRegion(getGridX(), getGridY()).unregisterBuilding(this);
+    int size = getTemplate().getPlacingSize() * 2 - 1;
+    for (int y = PLACING_BORDER; y < size - PLACING_BORDER; y++) {
+      for (int x = PLACING_BORDER; x < size - PLACING_BORDER; x++) {
+        grid.freeGrid(getGridX() - size / 2 + x, getGridY() - size / 2 + y, this);
+      }
+    }
+  }
+
+  @Override
+  public void hit(int damage, float dir_x, float dir_y, Player owner) {
+    super.hit(damage, dir_x, dir_y, owner);
+    if (!isDead()) {
+      if (AppConfig.LEGACY_DETERMINISTIC) {
+        getWorld().getRandom().nextInt(4);
+      }
+      adjustHitPoints(-damage);
+      getWorld().getNotificationListener().onBuildingHit(this);
+      if (hit_points <= 0) {
+        // stats
+        getOwner().buildingLost();
+        owner.buildingDestroyed();
+        if (is_training_chieftain) getOwner().setTrainingChieftain(false);
+        removeDying();
+      }
+    }
+  }
+
+  @Override
+  public String toString() {
+    return "Building: isDead() = " + isDead();
+  }
+
+  public void fillUnits(int max) {
+    getUnitContainer()
+        .ifPresent(container -> {
+          container.increaseSupply(Math.min(container.getMaxSupplyCount() - container.getNumSupplies(), max));
+        });
+  }
+
+  public void removeUnits() {
+    getUnitContainer()
+        .ifPresent(container -> {
+          container.increaseSupply(-container.getNumSupplies());
+        });
+  }
+
+  public void fillWeapons(WeaponTier tier, int max) {
+    getWeaponContainer(tier)
+        .ifPresent(container -> {
+          container.increaseSupply(Math.min(container.getMaxSupplyCount() - container.getNumSupplies(), max));
+        });
+  }
+
+  public void removeWeapons(WeaponTier tier) {
+    getWeaponContainer(tier)
+        .ifPresent(container -> {
+          container.increaseSupply(-container.getNumSupplies());
+        });
+  }
+
+  @Override
+  public int getStatusValue() {
+    int unitCount = unit_container != null ? unit_container.getNumSupplies() : 0;
+    return getAbilities().hasAbilities(Abilities.REPRODUCE)
+        ? unitCount
+        : getAbilities().hasAbilities(Abilities.BUILD_ARMIES)
+            ? unitCount
+                + getWeaponSupplyCount(WeaponTier.ROCK) * WeaponTier.ROCK.getStatusMultiplier()
+                + getWeaponSupplyCount(WeaponTier.IRON) * WeaponTier.IRON.getStatusMultiplier()
+                + getWeaponSupplyCount(WeaponTier.RUBBER) * WeaponTier.RUBBER.getStatusMultiplier()
+            : 0;
+  }
+
+  public void printDebugInfo() {
+    IO.println("-----------------------------------");
+    int unitCount = unit_container != null ? unit_container.getNumSupplies() : 0;
+    if (getAbilities().hasAbilities(Abilities.REPRODUCE)) {
+      IO.println("Units = " + unitCount);
+    } else if (getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+      IO.println("Units = " + unitCount);
+      IO.println("Tree = " + getSupplyContainer(SupplyType.WOOD).map(SupplyContainer::getNumSupplies).orElse(0));
+      IO.println("Rock = " + getSupplyContainer(SupplyType.ROCK).map(SupplyContainer::getNumSupplies).orElse(0));
+      IO.println("Iron = " + getSupplyContainer(SupplyType.IRON).map(SupplyContainer::getNumSupplies).orElse(0));
+      IO.println("Rubber = " + getSupplyContainer(SupplyType.RUBBER).map(SupplyContainer::getNumSupplies).orElse(0));
+      IO.println("Rock Weapons = " + getWeaponSupplyCount(WeaponTier.ROCK));
+      IO.println("Iron Weapons = " + getWeaponSupplyCount(WeaponTier.IRON));
+      IO.println("Rubber Weapons = " + getWeaponSupplyCount(WeaponTier.RUBBER));
+    }
+  }
+
+  private static final class LegacyDamagedSmokeEmitter implements Animated {
+    private final World world;
+    private float particleCounter = 0f;
+    private boolean started = false;
+    private float xAngle = 0f;
+    private float yAngle = 0f;
+
+    LegacyDamagedSmokeEmitter(World world) {
+      this.world = world;
     }
 
-    private void undoLandscape() {
-        int size = getTemplate().getPlacingSize();
-        int offset_x = getGridX() - (size - 1);
-        int offset_y = getGridY() - (size - 1);
-        for (int y = 0; y < old_landscape_heights.length; y++) {
-            for (int x = 0; x < old_landscape_heights[y].length; x++) {
-                getOwner().getWorld().getHeightMap().editHeight(offset_x + x + PLACING_BORDER, offset_y + y
-                        + PLACING_BORDER, old_landscape_heights[y][x]);
-            }
-        }
+    void start() {
+      started = true;
     }
 
-    private void occupy() {
-        UnitGrid grid = getUnitGrid();
-        grid.getRegion(getGridX(), getGridY()).registerBuilding(this);
-        int size = getTemplate().getPlacingSize() * 2 - 1;
-        for (int y = PLACING_BORDER; y < size - PLACING_BORDER; y++) {
-            for (int x = PLACING_BORDER; x < size - PLACING_BORDER; x++) {
-                grid.occupyGrid(getGridX() - size / 2 + x, getGridY() - size / 2 + y, this);
-            }
-        }
-    }
-
-    private void free() {
-        UnitGrid grid = getUnitGrid();
-        grid.getRegion(getGridX(), getGridY()).unregisterBuilding(this);
-        int size = getTemplate().getPlacingSize() * 2 - 1;
-        for (int y = PLACING_BORDER; y < size - PLACING_BORDER; y++) {
-            for (int x = PLACING_BORDER; x < size - PLACING_BORDER; x++) {
-                grid.freeGrid(getGridX() - size / 2 + x, getGridY() - size / 2 + y, this);
-            }
-        }
+    void stop() {
+      started = false;
     }
 
     @Override
-    public void hit(int damage, float dir_x, float dir_y, Player owner) {
-        super.hit(damage, dir_x, dir_y, owner);
-        if (!isDead()) {
-            if (AppConfig.LEGACY_DETERMINISTIC) {
-                getWorld().getRandom().nextInt(4);
-            }
-            adjustHitPoints(-damage);
-            getWorld().getNotificationListener().onBuildingHit(this);
-            if (hit_points <= 0) {
-                // stats
-                getOwner().buildingLost();
-                owner.buildingDestroyed();
-                if (is_training_chieftain)
-                    getOwner().setTrainingChieftain(false);
-                removeDying();
-            }
-        }
+    public void animate(float t) {
+      if (started) {
+        particleCounter += 4f * t;
+      }
+      while (particleCounter >= 1f && started) {
+        initParticle();
+        particleCounter -= 1f;
+      }
     }
 
-    @Override
-    public String toString() {
-        return "Building: isDead() = " + isDead();
+    private void initParticle() {
+      randomizeVelocity();
+      world.getRandom().nextInt(1);
     }
 
-    public void fillUnits(int max) {
-        getUnitContainer().ifPresent(container -> {
-            container.increaseSupply(Math.min(container.getMaxSupplyCount() - container.getNumSupplies(), max));
-        });
+    private void randomizeVelocity() {
+      Random random = world.getRandom();
+      float angleMaxJump = 0.7f;
+      float angleBound = 0.5f;
+      float dxAngle = random.nextFloat() * angleMaxJump - .5f * angleMaxJump;
+      float dyAngle = random.nextFloat() * angleMaxJump - .5f * angleMaxJump;
+
+      if ((xAngle + dxAngle < -angleBound) || (xAngle + dxAngle > angleBound)) {
+        xAngle -= dxAngle;
+      } else {
+        xAngle += dxAngle;
+      }
+
+      if ((yAngle + dyAngle < -angleBound) || (yAngle + dyAngle > angleBound)) {
+        yAngle -= dyAngle;
+      } else {
+        yAngle += dyAngle;
+      }
     }
-
-    public void removeUnits() {
-        getUnitContainer().ifPresent(container -> {
-            container.increaseSupply(-container.getNumSupplies());
-        });
-    }
-
-    public void fillWeapons(WeaponTier tier, int max) {
-        getWeaponContainer(tier).ifPresent(container -> {
-            container.increaseSupply(Math.min(container.getMaxSupplyCount() - container.getNumSupplies(), max));
-        });
-    }
-
-    public void removeWeapons(WeaponTier tier) {
-        getWeaponContainer(tier).ifPresent(container -> {
-            container.increaseSupply(-container.getNumSupplies());
-        });
-    }
-
-    @Override
-    public int getStatusValue() {
-        int unitCount = unit_container != null ? unit_container.getNumSupplies() : 0;
-        return getAbilities().hasAbilities(Abilities.REPRODUCE)
-                ? unitCount
-                : getAbilities().hasAbilities(Abilities.BUILD_ARMIES)
-                        ? unitCount +
-                                getWeaponSupplyCount(WeaponTier.ROCK) * WeaponTier.ROCK.getStatusMultiplier() +
-                                getWeaponSupplyCount(WeaponTier.IRON) * WeaponTier.IRON.getStatusMultiplier() +
-                                getWeaponSupplyCount(WeaponTier.RUBBER) * WeaponTier.RUBBER.getStatusMultiplier()
-                : 0;
-    }
-
-    public void printDebugInfo() {
-        IO.println("-----------------------------------");
-        int unitCount = unit_container != null ? unit_container.getNumSupplies() : 0;
-        if (getAbilities().hasAbilities(Abilities.REPRODUCE)) {
-            IO.println("Units = " + unitCount);
-        } else if (getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
-            IO.println("Units = " + unitCount);
-            IO.println("Tree = " + getSupplyContainer(SupplyType.WOOD).map(SupplyContainer::getNumSupplies).orElse(0));
-            IO.println("Rock = " + getSupplyContainer(SupplyType.ROCK).map(SupplyContainer::getNumSupplies).orElse(0));
-            IO.println("Iron = " + getSupplyContainer(SupplyType.IRON).map(SupplyContainer::getNumSupplies).orElse(0));
-            IO.println("Rubber = " + getSupplyContainer(SupplyType.RUBBER).map(SupplyContainer::getNumSupplies).orElse(
-                    0));
-            IO.println("Rock Weapons = " + getWeaponSupplyCount(WeaponTier.ROCK));
-            IO.println("Iron Weapons = " + getWeaponSupplyCount(WeaponTier.IRON));
-            IO.println("Rubber Weapons = " + getWeaponSupplyCount(WeaponTier.RUBBER));
-        }
-    }
-
-    private static final class LegacyDamagedSmokeEmitter implements Animated {
-        private final World world;
-        private float particleCounter = 0f;
-        private boolean started = false;
-        private float xAngle = 0f;
-        private float yAngle = 0f;
-
-        LegacyDamagedSmokeEmitter(World world) {
-            this.world = world;
-        }
-
-        void start() {
-            started = true;
-        }
-
-        void stop() {
-            started = false;
-        }
-
-        @Override
-        public void animate(float t) {
-            if (started) {
-                particleCounter += 4f * t;
-            }
-            while (particleCounter >= 1f && started) {
-                initParticle();
-                particleCounter -= 1f;
-            }
-        }
-
-        private void initParticle() {
-            randomizeVelocity();
-            world.getRandom().nextInt(1);
-        }
-
-        private void randomizeVelocity() {
-            Random random = world.getRandom();
-            float angleMaxJump = 0.7f;
-            float angleBound = 0.5f;
-            float dxAngle = random.nextFloat() * angleMaxJump - .5f * angleMaxJump;
-            float dyAngle = random.nextFloat() * angleMaxJump - .5f * angleMaxJump;
-
-            if ((xAngle + dxAngle < -angleBound) || (xAngle + dxAngle > angleBound)) {
-                xAngle -= dxAngle;
-            } else {
-                xAngle += dxAngle;
-            }
-
-            if ((yAngle + dyAngle < -angleBound) || (yAngle + dyAngle > angleBound)) {
-                yAngle -= dyAngle;
-            } else {
-                yAngle += dyAngle;
-            }
-        }
-    }
+  }
 }

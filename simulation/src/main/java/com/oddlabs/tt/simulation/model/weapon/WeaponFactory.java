@@ -2,59 +2,60 @@ package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.Selectable;
-import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.Target;
+import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.WeaponTier;
 import org.jspecify.annotations.Nullable;
 
 public abstract sealed class WeaponFactory permits InstantHitFactory, ThrowingFactory {
-    private static final float TERRAIN_MAX_BONUS = .25f;
-    private static final float TERRAIN_BONUS_PER_HEIGHT = TERRAIN_MAX_BONUS / 20f;
+  private static final float TERRAIN_MAX_BONUS = .25f;
+  private static final float TERRAIN_BONUS_PER_HEIGHT = TERRAIN_MAX_BONUS / 20f;
 
-    private final float hit_chance;
-    private final float range;
-    private final float release_ratio;
+  private final float hit_chance;
+  private final float range;
+  private final float release_ratio;
 
-    protected WeaponFactory(float hit_chance, float range, float release_ratio) {
-        this.hit_chance = hit_chance;
-        this.range = range;
-        this.release_ratio = release_ratio;
-    }
+  protected WeaponFactory(float hit_chance, float range, float release_ratio) {
+    this.hit_chance = hit_chance;
+    this.range = range;
+    this.release_ratio = release_ratio;
+  }
 
-    public final float getSecondsPerRelease(float anim_per_second) {
-        return release_ratio / anim_per_second;
-    }
+  public final float getSecondsPerRelease(float anim_per_second) {
+    return release_ratio / anim_per_second;
+  }
 
-    public final float getRange() {
-        return range;
-    }
+  public final float getRange() {
+    return range;
+  }
 
-    public final float getReleaseRatio() {
-        return release_ratio;
-    }
+  public final float getReleaseRatio() {
+    return release_ratio;
+  }
 
-    private static float computeTerrainBonus(HeightMap heightmap, Target src, Target dst) {
-        float src_z = heightmap.getNearestHeight(src.getPositionX(), src.getPositionY());
-        float dst_z = heightmap.getNearestHeight(dst.getPositionX(), dst.getPositionY());
-        float bonus = (src_z - dst_z) * TERRAIN_BONUS_PER_HEIGHT;
-        bonus = Math.clamp(bonus, -TERRAIN_MAX_BONUS, TERRAIN_MAX_BONUS);
-        return bonus;
-    }
+  private static float computeTerrainBonus(HeightMap heightmap, Target src, Target dst) {
+    float src_z = heightmap.getNearestHeight(src.getPositionX(), src.getPositionY());
+    float dst_z = heightmap.getNearestHeight(dst.getPositionX(), dst.getPositionY());
+    float bonus = (src_z - dst_z) * TERRAIN_BONUS_PER_HEIGHT;
+    bonus = Math.clamp(bonus, -TERRAIN_MAX_BONUS, TERRAIN_MAX_BONUS);
+    return bonus;
+  }
 
-    public final void attack(Unit src, Selectable<?> target, float factor) {
-        /* GAMEPLAY: Terrain bonus, according to who is positioned highest */
-        float terrain_bonus = computeTerrainBonus(src.getOwner().getWorld().getHeightMap(), src, target);
-        float difficulty_bonus = src.getOwner().getHitBonus();
-        boolean hit = target.getOwner().getWorld().getRandom().nextFloat() < factor * (difficulty_bonus + terrain_bonus
-                + hit_chance) * (1 - target.getDefenseChance());
-        doAttack(hit, src, target);
-    }
+  public final void attack(Unit src, Selectable<?> target, float factor) {
+    /* GAMEPLAY: Terrain bonus, according to who is positioned highest */
+    float terrain_bonus = computeTerrainBonus(src.getOwner().getWorld().getHeightMap(), src, target);
+    float difficulty_bonus = src.getOwner().getHitBonus();
+    boolean hit =
+        target.getOwner().getWorld().getRandom().nextFloat()
+            < factor * (difficulty_bonus + terrain_bonus + hit_chance) * (1 - target.getDefenseChance());
+    doAttack(hit, src, target);
+  }
 
-    public final void attack(Unit src, Selectable<?> target) {
-        attack(src, target, 1f);
-    }
+  public final void attack(Unit src, Selectable<?> target) {
+    attack(src, target, 1f);
+  }
 
-    protected abstract void doAttack(boolean hit, Unit src, Selectable<?> target);
+  protected abstract void doAttack(boolean hit, Unit src, Selectable<?> target);
 
-    public abstract @Nullable WeaponTier getTier();
+  public abstract @Nullable WeaponTier getTier();
 }

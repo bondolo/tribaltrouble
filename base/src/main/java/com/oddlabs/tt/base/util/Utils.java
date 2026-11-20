@@ -1,7 +1,5 @@
 package com.oddlabs.tt.base.util;
 
-import org.jspecify.annotations.Nullable;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,220 +20,215 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
+import org.jspecify.annotations.Nullable;
 
-/**
- * General purpose utility methods for the application.
- */
+/// General purpose utility methods for the application.
 public final class Utils {
-    private static final Logger logger = Logger.getLogger(Utils.class.getName());
+  private static final Logger logger = Logger.getLogger(Utils.class.getName());
 
-    @FunctionalInterface
-    public interface I18N extends BiFunction<String, Object[], String> {
-        @Override
-        default String apply(String key, Object[] args) {
-            return i18n(key, args);
-        }
-
-        String i18n(String key, Object... args);
+  @FunctionalInterface
+  public interface I18N extends BiFunction<String, Object[], String> {
+    @Override
+    default String apply(String key, Object[] args) {
+      return i18n(key, args);
     }
 
-    public static String getBundleString(ResourceBundle bundle, String key,
-            Object... object_array) {
-        return MessageFormat.format(bundle.getString(key), object_array);
+    String i18n(String key, Object... args);
+  }
+
+  public static String getBundleString(ResourceBundle bundle, String key, Object... object_array) {
+    return MessageFormat.format(bundle.getString(key), object_array);
+  }
+
+  public static Path getInstallDir() {
+    return Path.of(System.getProperty("user.dir"));
+  }
+
+  public static ByteBuffer ioResourceToByteBuffer(URL url) throws IOException {
+    try (InputStream is = url.openStream()) {
+      byte[] bytes = is.readAllBytes();
+      ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.length).order(ByteOrder.nativeOrder());
+      buffer.put(bytes);
+      buffer.flip();
+      return buffer;
     }
+  }
 
-    public static Path getInstallDir() {
-        return Path.of(System.getProperty("user.dir"));
-    }
+  /// {@return a stream of the remaining ints in the provided buffer}
+  public static IntStream toIntStream(IntBuffer buffer) {
+    var spliterator =
+        new Spliterator.OfInt() {
+          @Override
+          public @Nullable OfInt trySplit() {
+            // IntBuffers are too general to offer a generic split.
+            return null;
+          }
 
-    public static ByteBuffer ioResourceToByteBuffer(URL url) throws IOException {
-        try (InputStream is = url.openStream()) {
-            byte[] bytes = is.readAllBytes();
-            ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.length).order(ByteOrder.nativeOrder());
-            buffer.put(bytes);
-            buffer.flip();
-            return buffer;
-        }
-    }
-
-    /** {@return a stream of the remaining ints in the provided buffer} */
-    public static IntStream toIntStream(IntBuffer buffer) {
-        var spliterator = new Spliterator.OfInt() {
-            @Override
-            public @Nullable OfInt trySplit() {
-                // IntBuffers are too general to offer a generic split.
-                return null;
+          @Override
+          public boolean tryAdvance(IntConsumer action) {
+            if (buffer.hasRemaining()) {
+              action.accept(buffer.get());
+              return true;
             }
+            return false;
+          }
 
-            @Override
-            public boolean tryAdvance(IntConsumer action) {
-                if (buffer.hasRemaining()) {
-                    action.accept(buffer.get());
-                    return true;
-                }
-                return false;
-            }
+          @Override
+          public long estimateSize() {
+            return buffer.remaining();
+          }
 
-            @Override
-            public long estimateSize() {
-                return buffer.remaining();
-            }
-
-            @Override
-            public int characteristics() {
-                return ORDERED | SIZED | IMMUTABLE;
-            }
+          @Override
+          public int characteristics() {
+            return ORDERED | SIZED | IMMUTABLE;
+          }
         };
-        return StreamSupport.intStream(spliterator, false);
+    return StreamSupport.intStream(spliterator, false);
+  }
+
+  public static void saveAsBMP(String filename, ByteBuffer pixel_data, int width, int height) {
+    long before = System.nanoTime();
+    int pad = 4 - (width * 3) % 4;
+    if (pad == 4) pad = 0;
+    int size = (width * 3 + pad) * height + 54;
+    ByteBuffer buffer = ByteBuffer.allocate(size);
+
+    // write BMP header
+    buffer.put((byte) 0x42); // signature, must be 4D42 hex
+    buffer.put((byte) 0x4D); // ...
+    buffer.put((byte) (size & 0x000000ff)); // size of BMP file in bytes
+    buffer.put((byte) ((size & 0x0000ff00) >> 8)); // ...
+    buffer.put((byte) ((size & 0x00ff0000) >> 16)); // ...
+    buffer.put((byte) ((size & 0xff000000) >> 24)); // ...
+    buffer.put((byte) 0); // reserved, must be zero
+    buffer.put((byte) 0); // reserved, must be zero
+    buffer.put((byte) 0); // reserved, must be zero
+    buffer.put((byte) 0); // reserved, must be zero
+    buffer.put((byte) 54); // offset to start of image data in bytes
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 40); // size of BITMAPINFOHEADER structure, must be 40
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) (width & 0x000000ff)); // image width in pixels
+    buffer.put((byte) ((width & 0x0000ff00) >> 8)); // ...
+    buffer.put((byte) ((width & 0x00ff0000) >> 16)); // ...
+    buffer.put((byte) ((width & 0xff000000) >> 24)); // ...
+    buffer.put((byte) (height & 0x000000ff)); // image width in pixels
+    buffer.put((byte) ((height & 0x0000ff00) >> 8)); // ...
+    buffer.put((byte) ((height & 0x00ff0000) >> 16)); // ...
+    buffer.put((byte) ((height & 0xff000000) >> 24)); // ...
+    buffer.put((byte) 1); // number of planes in the image, must be 1
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 24); // number of bits per pixel (1, 4, 8, or 24)
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // compression type (0=none, 1=RLE-8, 2=RLE-4)
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) ((size - 54) & 0x000000ff)); // size of image data in bytes (including padding)
+    buffer.put((byte) (((size - 54) & 0x0000ff00) >> 8)); // ...
+    buffer.put((byte) (((size - 54) & 0x00ff0000) >> 16)); // ...
+    buffer.put((byte) (((size - 54) & 0xff000000) >> 24)); // ...
+    buffer.put((byte) 0); // horizontal resolution in pixels per meter (unreliable)
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // vertical resolution in pixels per meter (unreliable)
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // number of colors in image, or zero
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // number of important colors, or zero
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // ...
+    buffer.put((byte) 0); // ...
+
+    pixel_data.rewind();
+    IntBuffer int_pixel_data = pixel_data.asIntBuffer();
+    // write BMP image data
+    for (int y = height - 1; y >= 0; y--) {
+      for (int x = 0; x < width; x++) {
+        int pixel = int_pixel_data.get(y * width + x);
+        byte r = (byte) ((pixel >> 24) & 0xff);
+        byte g = (byte) ((pixel >> 16) & 0xff);
+        byte b = (byte) ((pixel >> 8) & 0xff);
+        buffer.put(b);
+        buffer.put(g);
+        buffer.put(r);
+      }
+      for (int i = 0; i < pad; i++) {
+        buffer.put((byte) 0);
+      }
     }
-
-    public static void saveAsBMP(String filename, ByteBuffer pixel_data, int width, int height) {
-        long before = System.nanoTime();
-        int pad = 4 - (width * 3) % 4;
-        if (pad == 4)
-            pad = 0;
-        int size = (width * 3 + pad) * height + 54;
-        ByteBuffer buffer = ByteBuffer.allocate(size);
-
-        //write BMP header
-        buffer.put((byte) 0x42);                             // signature, must be 4D42 hex
-        buffer.put((byte) 0x4D);                             // ...
-        buffer.put((byte) (size & 0x000000ff));        // size of BMP file in bytes
-        buffer.put((byte) ((size & 0x0000ff00) >> 8));   // ...
-        buffer.put((byte) ((size & 0x00ff0000) >> 16));  // ...
-        buffer.put((byte) ((size & 0xff000000) >> 24));  // ...
-        buffer.put((byte) 0);                                // reserved, must be zero
-        buffer.put((byte) 0);                                // reserved, must be zero
-        buffer.put((byte) 0);                                // reserved, must be zero
-        buffer.put((byte) 0);                                // reserved, must be zero
-        buffer.put((byte) 54);                               // offset to start of image data in bytes
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 40);                               // size of BITMAPINFOHEADER structure, must be 40
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) (width & 0x000000ff));       // image width in pixels
-        buffer.put((byte) ((width & 0x0000ff00) >> 8));  // ...
-        buffer.put((byte) ((width & 0x00ff0000) >> 16)); // ...
-        buffer.put((byte) ((width & 0xff000000) >> 24)); // ...
-        buffer.put((byte) (height & 0x000000ff));      // image width in pixels
-        buffer.put((byte) ((height & 0x0000ff00) >> 8)); // ...
-        buffer.put((byte) ((height & 0x00ff0000) >> 16));// ...
-        buffer.put((byte) ((height & 0xff000000) >> 24));// ...
-        buffer.put((byte) 1);                                // number of planes in the image, must be 1
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 24);           // number of bits per pixel (1, 4, 8, or 24)
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // compression type (0=none, 1=RLE-8, 2=RLE-4)
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) ((size - 54) & 0x000000ff));        // size of image data in bytes (including padding)
-        buffer.put((byte) (((size - 54) & 0x0000ff00) >> 8));   // ...
-        buffer.put((byte) (((size - 54) & 0x00ff0000) >> 16));  // ...
-        buffer.put((byte) (((size - 54) & 0xff000000) >> 24));  // ...
-        buffer.put((byte) 0);                                // horizontal resolution in pixels per meter (unreliable)
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // vertical resolution in pixels per meter (unreliable)
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // number of colors in image, or zero
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // number of important colors, or zero
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // ...
-        buffer.put((byte) 0);                                // ...
-
-        pixel_data.rewind();
-        IntBuffer int_pixel_data = pixel_data.asIntBuffer();
-        //write BMP image data
-        for (int y = height - 1; y >= 0; y--) {
-            for (int x = 0; x < width; x++) {
-                int pixel = int_pixel_data.get(y * width + x);
-                byte r = (byte) ((pixel >> 24) & 0xff);
-                byte g = (byte) ((pixel >> 16) & 0xff);
-                byte b = (byte) ((pixel >> 8) & 0xff);
-                buffer.put(b);
-                buffer.put(g);
-                buffer.put(r);
-            }
-            for (int i = 0; i < pad; i++) {
-                buffer.put((byte) 0);
-            }
-
-        }
-        buffer.rewind();
-        Path image_file = Path.of(filename);
-        try (OutputStream fout = Files.newOutputStream(image_file)) {
-            fout.write(buffer.array());
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "Failed to save BMP: " + filename, e);
-        }
-        long after = System.nanoTime();
-        IO.println("File " + filename + " saved in " + TimeUnit.NANOSECONDS.toMillis(after - before) + " milliseconds");
+    buffer.rewind();
+    Path image_file = Path.of(filename);
+    try (OutputStream fout = Files.newOutputStream(image_file)) {
+      fout.write(buffer.array());
+    } catch (IOException e) {
+      logger.log(Level.WARNING, "Failed to save BMP: " + filename, e);
     }
+    long after = System.nanoTime();
+    IO.println("File " + filename + " saved in " + TimeUnit.NANOSECONDS.toMillis(after - before) + " milliseconds");
+  }
 
-    public static void saveAsTGA(String filename, ByteBuffer pixel_data, int width, int height) {
-        long before = System.nanoTime();
-        try (FileOutputStream fout = new FileOutputStream(filename + ".tga")) {
+  public static void saveAsTGA(String filename, ByteBuffer pixel_data, int width, int height) {
+    long before = System.nanoTime();
+    try (FileOutputStream fout = new FileOutputStream(filename + ".tga")) {
 
-            //write TGA header
-            fout.write(0); //ID length, 0 because no image id field
-            fout.write(0); //no color map
-            fout.write(2); //image type (24 bit RGB, uncompressed)
-            fout.write(0); //color map origin, ignore because no color map
-            fout.write(0); //color map origin, ignore because no color map
-            fout.write(0); //color map origin, ignore because no color map
-            fout.write(0); //color map length, ignore because no color map
-            fout.write(0); //color map entry size, ignore because no color map
-            fout.write(0); //x origin
-            fout.write(0); //x origin
-            fout.write(0); //x origin
-            fout.write(0); //y origin
-            short s = (short) width;
-            fout.write((byte) (s & 0x00ff));      //image width low byte
-            fout.write((byte) ((s & 0xff00) >> 8)); //image width high byte
-            s = (short) height;
-            fout.write((byte) (s & 0x00ff));      //image height low byte
-            fout.write((byte) ((s & 0xff00) >> 8)); //image height high byte
-            fout.write(32); //bpp
-            fout.write(0); //description bits
+      // write TGA header
+      fout.write(0); // ID length, 0 because no image id field
+      fout.write(0); // no color map
+      fout.write(2); // image type (24 bit RGB, uncompressed)
+      fout.write(0); // color map origin, ignore because no color map
+      fout.write(0); // color map origin, ignore because no color map
+      fout.write(0); // color map origin, ignore because no color map
+      fout.write(0); // color map length, ignore because no color map
+      fout.write(0); // color map entry size, ignore because no color map
+      fout.write(0); // x origin
+      fout.write(0); // x origin
+      fout.write(0); // x origin
+      fout.write(0); // y origin
+      short s = (short) width;
+      fout.write((byte) (s & 0x00ff)); // image width low byte
+      fout.write((byte) ((s & 0xff00) >> 8)); // image width high byte
+      s = (short) height;
+      fout.write((byte) (s & 0x00ff)); // image height low byte
+      fout.write((byte) ((s & 0xff00) >> 8)); // image height high byte
+      fout.write(32); // bpp
+      fout.write(0); // description bits
 
-            pixel_data.rewind();
-            //write TGA image data
-            fout.getChannel().write(pixel_data);
+      pixel_data.rewind();
+      // write TGA image data
+      fout.getChannel().write(pixel_data);
 
-            fout.flush();
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "Failed to save TGA: " + filename, e);
-        }
-        long after = System.nanoTime();
-        IO.println("File " + filename + " saved in " + TimeUnit.NANOSECONDS.toMillis(after - before) + " milliseconds");
+      fout.flush();
+    } catch (IOException e) {
+      logger.log(Level.WARNING, "Failed to save TGA: " + filename, e);
     }
+    long after = System.nanoTime();
+    IO.println("File " + filename + " saved in " + TimeUnit.NANOSECONDS.toMillis(after - before) + " milliseconds");
+  }
 
-    public static int roundToTextureSize(int size) {
-        int tex_size = 1;
-        while (tex_size < size)
-            tex_size <<= 1;
-        return tex_size;
-    }
+  public static int roundToTextureSize(int size) {
+    int tex_size = 1;
+    while (tex_size < size) tex_size <<= 1;
+    return tex_size;
+  }
 
-    public static float invsqrt(float x) {
-        float xhalf = 0.5f * x;
-        int i = Float.floatToRawIntBits(x);
-        i = 0x5f375a86 - (i >> 1);
-        x = Float.intBitsToFloat(i);
-        x *= (1.5f - xhalf * x * x); // This line may be duplicated for more accuracy.
-        return x;
-    }
+  public static float invsqrt(float x) {
+    float xhalf = 0.5f * x;
+    int i = Float.floatToRawIntBits(x);
+    i = 0x5f375a86 - (i >> 1);
+    x = Float.intBitsToFloat(i);
+    x *= (1.5f - xhalf * x * x); // This line may be duplicated for more accuracy.
+    return x;
+  }
 
-    private Utils() {
-    }
+  private Utils() {}
 }

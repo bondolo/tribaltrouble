@@ -1,6 +1,4 @@
-/**
- * Provides font loading, measurement, and layout utilities for the game engine.
- */
+/** Provides font loading, measurement, and layout utilities for the game engine. */
 @NullMarked
 package com.oddlabs.tt.engine.font;
 

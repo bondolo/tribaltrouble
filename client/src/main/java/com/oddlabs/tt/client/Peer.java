@@ -9,8 +9,8 @@ import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.GamePaths;
-import com.oddlabs.tt.gui.LocaleSettings;
-import com.oddlabs.tt.window.WindowSettings;
+import com.oddlabs.tt.base.global.Settings;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.FramePacer;
@@ -18,16 +18,13 @@ import com.oddlabs.tt.engine.render.FrameTimeRecorder;
 import com.oddlabs.tt.engine.render.GpuPass;
 import com.oddlabs.tt.engine.render.RenderHost;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.client.screen.ScreenManager;
-import com.oddlabs.tt.gui.GUI;
-import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.engine.util.GLUtils;
+import com.oddlabs.tt.gui.GUI;
+import com.oddlabs.tt.gui.LocaleSettings;
 import com.oddlabs.tt.net.Network;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import com.oddlabs.tt.window.Window;
-import org.jspecify.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
-
+import com.oddlabs.tt.window.WindowSettings;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,545 +38,541 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+import org.jspecify.annotations.Nullable;
+import org.lwjgl.opengl.GL11;
 
-/**
- * Desktop client peer node coordinating the main game loop, window events, audio updates, simulation pacing, and
- * presentation.
- */
+/// Desktop client peer node coordinating the main game loop, window events, audio updates, simulation pacing, and
+/// presentation.
 public final class Peer implements AutoCloseable, DisplayModeController {
-    private static final Logger logger = Logger.getLogger(Peer.class.getSimpleName());
-    private static final boolean PROFILE = Boolean.getBoolean("com.oddlabs.tt.profile");
+  private static final Logger logger = Logger.getLogger(Peer.class.getSimpleName());
+  private static final boolean PROFILE = Boolean.getBoolean("com.oddlabs.tt.profile");
 
-    /** This is expected to be initialized before Locale.setDefault is ever called */
-    private static final Locale default_locale = Locale.of(Locale.getDefault().getLanguage(), Locale.getDefault()
-            .getCountry(), "default");
+  /// This is expected to be initialized before Locale.setDefault is ever called
+  private static final Locale default_locale =
+      Locale.of(Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), "default");
 
-    private volatile boolean finished = false;
-    private static boolean grab_frames = false;
+  private volatile boolean finished = false;
+  private static boolean grab_frames = false;
 
-    private final GamePaths gamePaths;
-    private final Settings settings;
-    private final Window window;
-    private final LocalEventQueue event_queue;
-    private final Network network;
-    private final AudioManager audioManager;
-    private final FramePacer framePacer = new FramePacer();
-    private final CameraState frustumState = new CameraState();
-    private final RenderHost renderHost;
-    private @Nullable IntSupplier pathfindCountSupplier;
-    private @Nullable Runnable renderFrameCallback;
+  private final GamePaths gamePaths;
+  private final Settings settings;
+  private final Window window;
+  private final LocalEventQueue event_queue;
+  private final Network network;
+  private final AudioManager audioManager;
+  private final FramePacer framePacer = new FramePacer();
+  private final CameraState frustumState = new CameraState();
+  private final RenderHost renderHost;
+  private @Nullable IntSupplier pathfindCountSupplier;
+  private @Nullable Runnable renderFrameCallback;
 
-    private boolean movie_recording_started = false;
+  private boolean movie_recording_started = false;
 
-    private final FrameTimeRecorder frameTimeRecorder;
+  private final FrameTimeRecorder frameTimeRecorder;
 
-    private final boolean startSafeMode;
-    private final boolean networkAvailable;
+  private final boolean startSafeMode;
+  private final boolean networkAvailable;
 
-    public Peer(
-            GamePaths gamePaths,
-            Settings settings,
-            Window window,
-            LocalEventQueue eventQueue,
-            boolean startSafeMode
-    ) throws IOException {
-        this.gamePaths = gamePaths;
-        this.settings = settings;
-        this.window = window;
-        this.event_queue = eventQueue;
-        this.startSafeMode = startSafeMode;
-        this.network = new Network(new NetworkSelector(eventQueue.getDeterministic(), eventQueue::getMillis));
-        boolean networkAvailable;
-        try {
-            com.oddlabs.util.Utils.tryGetLoopbackAddress();
-            networkAvailable = true;
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed to initialize network", e);
-            networkAvailable = false;
+  public Peer(GamePaths gamePaths, Settings settings, Window window, LocalEventQueue eventQueue, boolean startSafeMode)
+      throws IOException {
+    this.gamePaths = gamePaths;
+    this.settings = settings;
+    this.window = window;
+    this.event_queue = eventQueue;
+    this.startSafeMode = startSafeMode;
+    this.network = new Network(new NetworkSelector(eventQueue.getDeterministic(), eventQueue::getMillis));
+    boolean networkAvailable;
+    try {
+      com.oddlabs.util.Utils.tryGetLoopbackAddress();
+      networkAvailable = true;
+    } catch (IOException e) {
+      logger.log(Level.SEVERE, "Failed to initialize network", e);
+      networkAvailable = false;
+    }
+    this.networkAvailable = eventQueue.getDeterministic().log(networkAvailable);
+    AudioSettings audioSettings = AudioSettings.from(settings);
+    this.audioManager = AudioProvider.load(audioSettings, eventQueue.getManager());
+    this.audioManager
+        .setSfxGain(audioSettings.sound_gain)
+        .setMusicGain(audioSettings.music_gain)
+        .setSfxEnabled(audioSettings.play_sfx);
+    window.setSettings(WindowSettings.from(settings));
+    this.renderHost = new RenderHost(window, settings);
+    this.frameTimeRecorder = new FrameTimeRecorder(gamePaths.logDir(), renderHost.getGpuTimer());
+  }
+
+  public void shutdown() {
+    finished = true;
+  }
+
+  public boolean isFinished() {
+    return finished;
+  }
+
+  public GamePaths getGamePaths() {
+    return gamePaths;
+  }
+
+  public Settings getSettings() {
+    return settings;
+  }
+
+  public Window getWindow() {
+    return window;
+  }
+
+  public LocalEventQueue getEventQueue() {
+    return event_queue;
+  }
+
+  public Network getNetwork() {
+    return network;
+  }
+
+  public AudioManager getAudioManager() {
+    return audioManager;
+  }
+
+  public FramePacer getFramePacer() {
+    return framePacer;
+  }
+
+  public boolean isCrashRecovering() {
+    return startSafeMode;
+  }
+
+  public boolean isNetworkAvailable() {
+    return networkAvailable;
+  }
+
+  public void setPathfindCountSupplier(@Nullable IntSupplier supplier) {
+    this.pathfindCountSupplier = supplier;
+  }
+
+  public void updateProgress() {
+    var callback = renderFrameCallback;
+    if (callback != null) {
+      renderHost.updateProgress(callback);
+    }
+  }
+
+  private void renderFrame(ScreenManager screenManager) {
+    RenderContext context = RenderContext.current();
+    var screen = screenManager.getScreen();
+    var guiRoot = screen.guiRoot();
+    var delegate = guiRoot.getDelegate();
+    int width = context.getViewportWidth();
+    int height = context.getViewportHeight();
+    delegate.updateView(width, height);
+
+    CameraState camera = delegate.getCameraState();
+    if (camera != null) {
+      if (!DebugFlags.frustum_freeze) {
+        frustumState.set(camera);
+      }
+    } else {
+      frustumState.setView(width, height);
+    }
+
+    screen.render3D(context, frustumState);
+
+    var gpu = context.gpuTimer();
+    gpu.begin(GpuPass.GUI);
+    screenManager.renderUI(context);
+    gpu.end();
+
+    var renderer = screen.sceneRenderer();
+    if (renderer != null && !renderer.isClosed()) {
+      frameTimeRecorder.recordSceneStats(
+          (float) Math.toDegrees(frustumState.getCurrentVertAngle()),
+          (float) Math.toDegrees(frustumState.getHorizAngle()),
+          frustumState.getCurrentZ(),
+          renderer.getVisiblePatchCount(),
+          renderer.getRenderedTreeCount(),
+          renderer.getLandscapePrepNanos() / 1000L,
+          renderer.getTreePrepNanos() / 1000L);
+    } else {
+      frameTimeRecorder.recordSceneStats(0f, 0f, 0f, 0, 0, 0L, 0L);
+    }
+  }
+
+  public float getFPS() {
+    return renderHost.getFPS();
+  }
+
+  public static Locale getDefaultLocale() {
+    return default_locale;
+  }
+
+  /// global sound enable
+  public void startSound() {
+    audioManager.startSources();
+  }
+
+  /// global sound disable
+  public void stopSound() {
+    audioManager.stopSources();
+  }
+
+  public void toggleSound() {
+    AudioSettings audio = AudioSettings.from(settings);
+    audio.play_sfx = !audio.play_sfx;
+    audioManager.setSfxEnabled(audio.play_sfx);
+  }
+
+  public void startMovieRecording() {
+    logger.info("ACTION! Movie recording started.");
+    movie_recording_started = true;
+  }
+
+  public SerializableDisplayMode getCurrentDisplayMode() {
+    return event_queue.getDeterministic().log(window.getDisplayMode());
+  }
+
+  @Override
+  public void toggleFullscreen() {
+    try {
+      boolean fs = !window.isFullscreen() && !event_queue.getDeterministic().isPlayback();
+      logger.info("Toggling fullscreen to: " + fs + ". Current mode: " + window.getDisplayMode());
+      window.setFullscreen(fs);
+      WindowSettings.from(settings).fullscreen = fs;
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Mode switching failed with exception", e);
+      throw new IllegalStateException("Mode switching failed", e);
+    }
+  }
+
+  @Override
+  public void switchMode(SerializableDisplayMode mode, boolean switch_now) {
+    if (switch_now) {
+      try {
+        window.setDisplayMode(mode);
+      } catch (Exception e) {
+        throw new IllegalArgumentException(e);
+      }
+      modeSwitchedNow(mode);
+    } else {
+      modeSwitchedLater(mode);
+    }
+  }
+
+  public void setModeToNearest(SerializableDisplayMode mode) {
+    boolean fs = WindowSettings.from(settings).fullscreen;
+    window.create(mode, fs);
+    modeSwitchedNow(mode);
+  }
+
+  private void modeSwitchedLater(SerializableDisplayMode new_mode) {
+    WindowSettings windowSettings = WindowSettings.from(settings);
+    windowSettings.fullscreen = window.isFullscreen();
+    windowSettings.new_view_width = new_mode.getWidth();
+    windowSettings.new_view_height = new_mode.getHeight();
+    windowSettings.new_view_freq = new_mode.getFrequency();
+  }
+
+  private void modeSwitchedNow(SerializableDisplayMode new_mode) {
+    modeSwitchedLater(new_mode);
+    modeSwitched();
+  }
+
+  private void modeSwitched() {
+    SerializableDisplayMode new_mode = getCurrentDisplayMode();
+    logger.info("Mode switch detected. New mode: " + new_mode);
+    WindowSettings windowSettings = WindowSettings.from(settings);
+    windowSettings.view_width = new_mode.getWidth();
+    windowSettings.view_height = new_mode.getHeight();
+    windowSettings.view_freq = new_mode.getFrequency();
+  }
+
+  private void runGameLoop(ScreenManager screenManager) {
+    if (framePacer.isTimeFrozen() && !framePacer.isTimeStopped()) {
+      framePacer.unfreezeTime();
+    }
+    long current_time;
+    if (grab_frames) {
+      framePacer.warpTime(AppConfig.FRAME_GRAB_MILLISECONDS_PER_FRAME);
+      current_time = framePacer.getSystemTime();
+    } else {
+      current_time = framePacer.getSystemTime();
+    }
+    long last_frame_time = framePacer.getLastFrameTime();
+    long time_diff = current_time - last_frame_time;
+    framePacer.setLastFrameTime(current_time);
+    Deterministic deterministic = event_queue.getDeterministic();
+    if (time_diff > AnimationManager.MAX_STEP_MILLIS && !deterministic.isPlayback()) {
+      Logger.getLogger(Peer.class.getName()).warning("Skipping large time diff: " + time_diff + " ms.");
+      time_diff = 0;
+    }
+
+    framePacer.getFrameTimeCounter().updateAbsolute(time_diff);
+    framePacer.addExecutionTimePrecision(framePacer.getFrameTimeCounter().getAveragePerUpdate());
+    deterministic.setEnabled(true);
+    var selector = network.getSelector();
+    GUI gui = screenManager.getGUI();
+    while (framePacer.getExecutionTimePrecision() >= AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK
+        && !isFinished()) {
+      framePacer.addExecutionTimePrecision((float) -AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK);
+      framePacer.addExecutionTime(AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK);
+      event_queue.tickHighPrecision(AnimationManager.ANIMATION_SECONDS_PER_PRECISION_TICK);
+      while (framePacer.getExecutionTime() >= AnimationManager.ANIMATION_MILLISECONDS_PER_TICK && !isFinished()) {
+        selector.tick();
+
+        gui.tick();
+        if (deterministic.log(window.isOpen() && window.isCloseRequested())) {
+          window.setCloseRequested(false);
+          gui.onCloseRequested();
         }
-        this.networkAvailable = eventQueue.getDeterministic().log(networkAvailable);
-        AudioSettings audioSettings = AudioSettings.from(settings);
-        this.audioManager = AudioProvider.load(audioSettings, eventQueue.getManager());
-        this.audioManager.setSfxGain(audioSettings.sound_gain)
-                .setMusicGain(audioSettings.music_gain)
-                .setSfxEnabled(audioSettings.play_sfx);
-        window.setSettings(WindowSettings.from(settings));
-        this.renderHost = new RenderHost(window, settings);
-        this.frameTimeRecorder = new FrameTimeRecorder(gamePaths.logDir(), renderHost.getGpuTimer());
-    }
-
-    public void shutdown() {
-        finished = true;
-    }
-
-    public boolean isFinished() {
-        return finished;
-    }
-
-    public GamePaths getGamePaths() {
-        return gamePaths;
-    }
-
-    public Settings getSettings() {
-        return settings;
-    }
-
-    public Window getWindow() {
-        return window;
-    }
-
-    public LocalEventQueue getEventQueue() {
-        return event_queue;
-    }
-
-    public Network getNetwork() {
-        return network;
-    }
-
-    public AudioManager getAudioManager() {
-        return audioManager;
-    }
-
-    public FramePacer getFramePacer() {
-        return framePacer;
-    }
-
-    public boolean isCrashRecovering() {
-        return startSafeMode;
-    }
-
-    public boolean isNetworkAvailable() {
-        return networkAvailable;
-    }
-
-    public void setPathfindCountSupplier(@Nullable IntSupplier supplier) {
-        this.pathfindCountSupplier = supplier;
-    }
-
-    public void updateProgress() {
-        var callback = renderFrameCallback;
-        if (callback != null) {
-            renderHost.updateProgress(callback);
+        int pathfinds = pathfindCountSupplier != null ? pathfindCountSupplier.getAsInt() : 0;
+        framePacer.pathfindsPerTick.updateAbsolute(pathfinds);
+        event_queue.tickLowPrecision(AnimationManager.ANIMATION_SECONDS_PER_TICK);
+        framePacer.addExecutionTime(-AnimationManager.ANIMATION_MILLISECONDS_PER_TICK);
+        framePacer.addChecksumMillisecondCounter(AnimationManager.ANIMATION_MILLISECONDS_PER_TICK);
+        if (framePacer.getChecksumMillisecondCounter() >= AnimationManager.ANIMATION_MILLISECONDS_PER_CHECKSUM) {
+          framePacer.addChecksumMillisecondCounter(-AnimationManager.ANIMATION_MILLISECONDS_PER_CHECKSUM);
+          int checksum = event_queue.computeChecksum();
+          int logged_checksum = deterministic.log(checksum);
+          if (checksum != logged_checksum && framePacer.shouldComplainChecksum()) {
+            Logger.getLogger(Peer.class.getName())
+                .severe(
+                    "********** ERROR: Checksum mismatch at tick "
+                        + event_queue.getHighPrecisionManager().getTick()
+                        + " | checksum = "
+                        + checksum
+                        + " | logged_checksum = "
+                        + logged_checksum
+                        + " **********");
+            framePacer.setChecksumComplain(false);
+          }
         }
+      }
     }
+    deterministic.setEnabled(false);
+    if (!DebugFlags.frustum_freeze) {
+      CameraState camera = screenManager.getScreen().guiRoot().getDelegate().getCameraState();
+      screenManager.pickHover(
+          camera != null ? camera : frustumState, gui.getLocalInput().getMouseX(), gui.getLocalInput().getMouseY());
+    }
+  }
 
-    private void renderFrame(ScreenManager screenManager) {
-        RenderContext context = RenderContext.current();
-        var screen = screenManager.getScreen();
-        var guiRoot = screen.guiRoot();
-        var delegate = guiRoot.getDelegate();
-        int width = context.getViewportWidth();
-        int height = context.getViewportHeight();
-        delegate.updateView(width, height);
-
-        CameraState camera = delegate.getCameraState();
-        if (camera != null) {
-            if (!DebugFlags.frustum_freeze) {
-                frustumState.set(camera);
-            }
-        } else {
-            frustumState.setView(width, height);
+  public void run(ClientStartup startup, String... args) throws IOException {
+    Instant start_time = Instant.now();
+    logger.info("********** Running tt **********");
+    logger.info("game dir: " + gamePaths.dataDir());
+    logger.info("logs dir: " + gamePaths.logDir());
+    boolean eventload = false;
+    boolean zipped = false;
+    boolean silent = false;
+    for (int i = 0; i < args.length; i++) {
+      switch (args[i]) {
+        case "--grabframes" -> grab_frames = true;
+        case "--eventload" -> {
+          eventload = true;
+          i++;
+          switch (args[i]) {
+            case "zipped":
+              zipped = true;
+              break;
+            case "normal":
+              break;
+            default:
+              throw new IllegalArgumentException("Unknown event load mode: " + args[i]);
+          }
         }
+        case "--silent" -> silent = true;
+        default -> throw new IllegalArgumentException("Unknown command line flag: " + args[i]);
+      }
+    }
 
-        screen.render3D(context, frustumState);
+    if (eventload || grab_frames) {
+      Path last_event_log_path = settings.getLastEventLogDir().resolve(zipped ? "event.log.gz" : "event.log");
+      logger.info("last_event_log_path = " + last_event_log_path);
+      event_queue.loadEvents(last_event_log_path, zipped);
+    }
 
-        var gpu = context.gpuTimer();
-        gpu.begin(GpuPass.GUI);
-        screenManager.renderUI(context);
-        gpu.end();
+    Path event_logs_dir = gamePaths.logDir();
+    Path event_log_dir = event_logs_dir.resolve(Long.toString(System.currentTimeMillis()));
+    if (AppConfig.SAVE_EVENT_LOG) {
+      setupLogging(event_log_dir, silent);
+      event_queue.setEventsLogged(event_log_dir.resolve(com.oddlabs.util.Utils.EVENT_LOG));
+    }
+    Deterministic deterministic = event_queue.getDeterministic();
+    settings.setPlayback(deterministic.isPlayback());
+    var game_dir = deterministic.log(gamePaths.dataDir());
+    event_log_dir = deterministic.log(event_log_dir);
+    deterministic.log(settings);
+    LocaleSettings locale = LocaleSettings.from(settings);
+    Locale language =
+        "default".equals(locale.language)
+            ? deterministic.log(Peer.default_locale)
+            : Locale.forLanguageTag(locale.language);
+    IO.println("Using language " + language);
+    Locale.setDefault(language);
 
-        var renderer = screen.sceneRenderer();
-        if (renderer != null && !renderer.isClosed()) {
-            frameTimeRecorder.recordSceneStats(
-                    (float) Math.toDegrees(frustumState.getCurrentVertAngle()),
-                    (float) Math.toDegrees(frustumState.getHorizAngle()),
-                    frustumState.getCurrentZ(),
-                    renderer.getVisiblePatchCount(),
-                    renderer.getRenderedTreeCount(),
-                    renderer.getLandscapePrepNanos() / 1000L,
-                    renderer.getTreePrepNanos() / 1000L
-            );
-        } else {
-            frameTimeRecorder.recordSceneStats(0f, 0f, 0f, 0, 0, 0L, 0L);
+    Path last_event_log_dir = settings.getLastEventLogDir();
+
+    if (!AppConfig.DEVELOPER_MODE && !deterministic.isPlayback()) {
+      deleteOldLogs(last_event_log_dir.toFile(), event_log_dir.toFile(), event_logs_dir.toFile());
+    }
+
+    Duration startup_time_init = Duration.between(start_time, Instant.now());
+    logger.info("Init done after " + startup_time_init + "ms");
+
+    startSound();
+
+    renderHost.runWithContext(() -> {
+      try {
+        renderHost.initNative(startSafeMode);
+      } catch (Throwable e) {
+        throw new IllegalStateException("Failed initializing natives", e);
+      }
+
+      runSession(startup, start_time);
+    });
+  }
+
+  private void runSession(ClientStartup startup, Instant startTime) {
+    try (ClientStartup.Session session = startup.init(this, true)) {
+      runMainLoop(session, startTime);
+    }
+  }
+
+  private void runMainLoop(ClientStartup.Session session, Instant startTime) {
+    ScreenManager screenManager = session.screenManager();
+    Runnable load_task = session.loadTask();
+    boolean first_frame = true;
+    boolean wasActive = window.isActive();
+    renderFrameCallback = () -> renderFrame(screenManager);
+    while (!finished) {
+      frameTimeRecorder.begin();
+
+      boolean isActive = window.isActive();
+      if (isActive) {
+        window.pollEvents();
+      } else {
+        window.waitEvents(100);
+      }
+      frameTimeRecorder.mark(FrameTimeRecorder.Phase.POLL_EVENTS);
+
+      if (isActive && !wasActive) {
+        logger.info("[ClientEngine] Focus Gained (isActive=true, wasActive=" + wasActive + ")");
+        if (window.isIconified()) {
+          window.restore();
         }
-    }
-
-    public float getFPS() {
-        return renderHost.getFPS();
-    }
-
-    public static Locale getDefaultLocale() {
-        return default_locale;
-    }
-
-    /** global sound enable */
-    public void startSound() {
-        audioManager.startSources();
-    }
-
-    /** global sound disable */
-    public void stopSound() {
-        audioManager.stopSources();
-    }
-
-    public void toggleSound() {
-        AudioSettings audio = AudioSettings.from(settings);
-        audio.play_sfx = !audio.play_sfx;
-        audioManager.setSfxEnabled(audio.play_sfx);
-    }
-
-    public void startMovieRecording() {
-        logger.info("ACTION! Movie recording started.");
-        movie_recording_started = true;
-    }
-
-    public SerializableDisplayMode getCurrentDisplayMode() {
-        return event_queue.getDeterministic()
-                .log(window.getDisplayMode());
-    }
-
-    @Override
-    public void toggleFullscreen() {
-        try {
-            boolean fs = !window.isFullscreen() && !event_queue.getDeterministic().isPlayback();
-            logger.info("Toggling fullscreen to: " + fs + ". Current mode: " + window.getDisplayMode());
-            window.setFullscreen(fs);
-            WindowSettings.from(settings).fullscreen = fs;
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Mode switching failed with exception", e);
-            throw new IllegalStateException("Mode switching failed", e);
+        if (!window.isVisible()) {
+          window.show();
         }
+        window.focus();
+      } else if (!isActive && wasActive) {
+        logger.info("[ClientEngine] Focus Lost (isActive=false, wasActive=" + wasActive + ")");
+        if (WindowSettings.from(settings).fullscreen) {
+          window.minimize();
+        }
+      }
+      wasActive = isActive;
+
+      runGameLoop(screenManager);
+      frameTimeRecorder.mark(FrameTimeRecorder.Phase.SIMULATION);
+
+      audioManager.update(AnimationManager.ANIMATION_SECONDS_PER_TICK);
+      frameTimeRecorder.mark(FrameTimeRecorder.Phase.AUDIO);
+
+      audioManager.setMasterGain(isActive ? 1f : 0f);
+      renderHost.display(() -> renderFrame(screenManager));
+      frameTimeRecorder.mark(FrameTimeRecorder.Phase.DISPLAY);
+
+      if (window.isVisible()) {
+        window.update();
+      }
+      frameTimeRecorder.mark(FrameTimeRecorder.Phase.SWAP);
+
+      if (PROFILE) {
+        GL11.glFinish();
+      }
+      frameTimeRecorder.mark(FrameTimeRecorder.Phase.GL_FINISH);
+      frameTimeRecorder.end();
+
+      if (first_frame) {
+        Duration startup_time = Duration.between(startTime, Instant.now());
+        logger.info("First frame rendered after " + startup_time);
+        first_frame = false;
+        if (load_task != null) {
+          event_queue.getDeterministic().setEnabled(true);
+          try {
+            load_task.run();
+          } finally {
+            event_queue.getDeterministic().setEnabled(false);
+            renderHost.resetContext();
+          }
+          load_task = null;
+        }
+      }
+      if (grab_frames && movie_recording_started) {
+        GLUtils.takeScreenshot("");
+      }
     }
 
-    @Override
-    public void switchMode(SerializableDisplayMode mode, boolean switch_now) {
-        if (switch_now) {
-            try {
-                window.setDisplayMode(mode);
-            } catch (Exception e) {
-                throw new IllegalArgumentException(e);
-            }
-            modeSwitchedNow(mode);
-        } else {
-            modeSwitchedLater(mode);
-        }
+    event_queue.getDeterministic().setEnabled(true);
+    renderFrameCallback = null;
+    settings.save();
+  }
+
+  private void setupLogging(Path event_log_dir, boolean silent) throws IOException {
+    try {
+      Files.createDirectories(event_log_dir);
+      logger.info("Writing log files in " + event_log_dir);
+
+      Logger rootLogger = Logger.getLogger("");
+      for (java.util.logging.Handler handler : rootLogger.getHandlers()) {
+        rootLogger.removeHandler(handler);
+      }
+
+      FileHandler fileHandler = new FileHandler(event_log_dir.resolve("output.log").toString());
+      fileHandler.setFormatter(new SimpleFormatter());
+      rootLogger.addHandler(fileHandler);
+
+      if (!silent) {
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setFormatter(new SimpleFormatter());
+        rootLogger.addHandler(consoleHandler);
+      }
+    } catch (IOException e) {
+      logger.log(Level.WARNING, "Failed to setup file logging", e);
+      throw e;
     }
+  }
 
-    public void setModeToNearest(SerializableDisplayMode mode) {
-        boolean fs = WindowSettings.from(settings).fullscreen;
-        window.create(mode, fs);
-        modeSwitchedNow(mode);
+  private static void deleteLog(Path log) throws IOException {
+    for (Path LOG_FILES : com.oddlabs.util.Utils.LOG_FILES) {
+      Path log_file = log.resolve(LOG_FILES);
+      Files.deleteIfExists(log_file);
     }
+    Files.deleteIfExists(log);
+  }
 
-    private void modeSwitchedLater(SerializableDisplayMode new_mode) {
-        WindowSettings windowSettings = WindowSettings.from(settings);
-        windowSettings.fullscreen = window.isFullscreen();
-        windowSettings.new_view_width = new_mode.getWidth();
-        windowSettings.new_view_height = new_mode.getHeight();
-        windowSettings.new_view_freq = new_mode.getFrequency();
+  private static void deleteOldLogs(File last_log_dir, File new_log_dir, File logs_dir) {
+    File[] logs = logs_dir.listFiles();
+    if (logs == null) {
+      return;
     }
-
-    private void modeSwitchedNow(SerializableDisplayMode new_mode) {
-        modeSwitchedLater(new_mode);
-        modeSwitched();
+    for (File log : logs) {
+      try {
+        if (!log.isDirectory() || log.equals(last_log_dir) || log.equals(new_log_dir)) {
+          continue;
+        }
+        deleteLog(log.toPath());
+      } catch (IOException _) {
+        /* ignore */
+      }
     }
+  }
 
-    private void modeSwitched() {
-        SerializableDisplayMode new_mode = getCurrentDisplayMode();
-        logger.info("Mode switch detected. New mode: " + new_mode);
-        WindowSettings windowSettings = WindowSettings.from(settings);
-        windowSettings.view_width = new_mode.getWidth();
-        windowSettings.view_height = new_mode.getHeight();
-        windowSettings.view_freq = new_mode.getFrequency();
-    }
-
-    private void runGameLoop(ScreenManager screenManager) {
-        if (framePacer.isTimeFrozen() && !framePacer.isTimeStopped()) {
-            framePacer.unfreezeTime();
-        }
-        long current_time;
-        if (grab_frames) {
-            framePacer.warpTime(AppConfig.FRAME_GRAB_MILLISECONDS_PER_FRAME);
-            current_time = framePacer.getSystemTime();
-        } else {
-            current_time = framePacer.getSystemTime();
-        }
-        long last_frame_time = framePacer.getLastFrameTime();
-        long time_diff = current_time - last_frame_time;
-        framePacer.setLastFrameTime(current_time);
-        Deterministic deterministic = event_queue.getDeterministic();
-        if (time_diff > AnimationManager.MAX_STEP_MILLIS && !deterministic.isPlayback()) {
-            Logger.getLogger(Peer.class.getName()).warning("Skipping large time diff: "
-                    + time_diff + " ms.");
-            time_diff = 0;
-        }
-
-        framePacer.getFrameTimeCounter().updateAbsolute(time_diff);
-        framePacer.addExecutionTimePrecision(framePacer.getFrameTimeCounter().getAveragePerUpdate());
-        deterministic.setEnabled(true);
-        var selector = network.getSelector();
-        GUI gui = screenManager.getGUI();
-        while (framePacer.getExecutionTimePrecision()
-                >= AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK && !isFinished()) {
-            framePacer.addExecutionTimePrecision(
-                    (float) -AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK);
-            framePacer.addExecutionTime(AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK);
-            event_queue.tickHighPrecision(AnimationManager.ANIMATION_SECONDS_PER_PRECISION_TICK);
-            while (framePacer.getExecutionTime() >= AnimationManager.ANIMATION_MILLISECONDS_PER_TICK
-                    && !isFinished()) {
-                selector.tick();
-
-                gui.tick();
-                if (deterministic.log(window.isOpen() && window.isCloseRequested())) {
-                    window.setCloseRequested(false);
-                    gui.onCloseRequested();
-                }
-                int pathfinds = pathfindCountSupplier != null ? pathfindCountSupplier.getAsInt() : 0;
-                framePacer.pathfindsPerTick.updateAbsolute(pathfinds);
-                event_queue.tickLowPrecision(AnimationManager.ANIMATION_SECONDS_PER_TICK);
-                framePacer.addExecutionTime(-AnimationManager.ANIMATION_MILLISECONDS_PER_TICK);
-                framePacer.addChecksumMillisecondCounter(AnimationManager.ANIMATION_MILLISECONDS_PER_TICK);
-                if (framePacer.getChecksumMillisecondCounter()
-                        >= AnimationManager.ANIMATION_MILLISECONDS_PER_CHECKSUM) {
-                    framePacer.addChecksumMillisecondCounter(
-                            -AnimationManager.ANIMATION_MILLISECONDS_PER_CHECKSUM);
-                    int checksum = event_queue.computeChecksum();
-                    int logged_checksum = deterministic.log(checksum);
-                    if (checksum != logged_checksum && framePacer.shouldComplainChecksum()) {
-                        Logger.getLogger(Peer.class.getName()).severe(
-                                "********** ERROR: Checksum mismatch at tick " + event_queue
-                                        .getHighPrecisionManager().getTick() + " | checksum = " + checksum
-                                        + " | logged_checksum = " + logged_checksum + " **********");
-                        framePacer.setChecksumComplain(false);
-                    }
-                }
-            }
-        }
-        deterministic.setEnabled(false);
-        if (!DebugFlags.frustum_freeze) {
-            CameraState camera = screenManager.getScreen().guiRoot().getDelegate().getCameraState();
-            screenManager.pickHover(camera != null ? camera : frustumState, gui.getLocalInput().getMouseX(),
-                    gui.getLocalInput().getMouseY());
-        }
-    }
-
-    public void run(ClientStartup startup, String... args) throws IOException {
-        Instant start_time = Instant.now();
-        logger.info("********** Running tt **********");
-        logger.info("game dir: " + gamePaths.dataDir());
-        logger.info("logs dir: " + gamePaths.logDir());
-        boolean eventload = false;
-        boolean zipped = false;
-        boolean silent = false;
-        for (int i = 0; i < args.length; i++) {
-            switch (args[i]) {
-                case "--grabframes" -> grab_frames = true;
-                case "--eventload" -> {
-                    eventload = true;
-                    i++;
-                    switch (args[i]) {
-                        case "zipped":
-                            zipped = true;
-                            break;
-                        case "normal":
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unknown event load mode: " + args[i]);
-                    }
-                }
-                case "--silent" -> silent = true;
-                default -> throw new IllegalArgumentException("Unknown command line flag: " + args[i]);
-            }
-        }
-
-        if (eventload || grab_frames) {
-            Path last_event_log_path = settings.getLastEventLogDir().resolve(zipped ? "event.log.gz" : "event.log");
-            logger.info("last_event_log_path = " + last_event_log_path);
-            event_queue.loadEvents(last_event_log_path, zipped);
-        }
-
-        Path event_logs_dir = gamePaths.logDir();
-        Path event_log_dir = event_logs_dir.resolve(Long.toString(System.currentTimeMillis()));
-        if (AppConfig.SAVE_EVENT_LOG) {
-            setupLogging(event_log_dir, silent);
-            event_queue.setEventsLogged(event_log_dir.resolve(com.oddlabs.util.Utils.EVENT_LOG));
-        }
-        Deterministic deterministic = event_queue.getDeterministic();
-        settings.setPlayback(deterministic.isPlayback());
-        var game_dir = deterministic.log(gamePaths.dataDir());
-        event_log_dir = deterministic.log(event_log_dir);
-        deterministic.log(settings);
-        LocaleSettings locale = LocaleSettings.from(settings);
-        Locale language = "default".equals(locale.language)
-                ? deterministic.log(Peer.default_locale) : Locale.forLanguageTag(locale.language);
-        IO.println("Using language " + language);
-        Locale.setDefault(language);
-
-        Path last_event_log_dir = settings.getLastEventLogDir();
-
-        if (!AppConfig.DEVELOPER_MODE && !deterministic.isPlayback()) {
-            deleteOldLogs(last_event_log_dir.toFile(), event_log_dir.toFile(), event_logs_dir.toFile());
-        }
-
-        Duration startup_time_init = Duration.between(start_time, Instant.now());
-        logger.info("Init done after " + startup_time_init + "ms");
-
-        startSound();
-
-        renderHost.runWithContext(() -> {
-            try {
-                renderHost.initNative(startSafeMode);
-            } catch (Throwable e) {
-                throw new IllegalStateException("Failed initializing natives", e);
-            }
-
-            runSession(startup, start_time);
-        });
-    }
-
-    private void runSession(ClientStartup startup, Instant startTime) {
-        try (ClientStartup.Session session = startup.init(this, true)) {
-            runMainLoop(session, startTime);
-        }
-    }
-
-    private void runMainLoop(ClientStartup.Session session, Instant startTime) {
-        ScreenManager screenManager = session.screenManager();
-        Runnable load_task = session.loadTask();
-        boolean first_frame = true;
-        boolean wasActive = window.isActive();
-        renderFrameCallback = () -> renderFrame(screenManager);
-        while (!finished) {
-            frameTimeRecorder.begin();
-
-            boolean isActive = window.isActive();
-            if (isActive) {
-                window.pollEvents();
-            } else {
-                window.waitEvents(100);
-            }
-            frameTimeRecorder.mark(FrameTimeRecorder.Phase.POLL_EVENTS);
-
-            if (isActive && !wasActive) {
-                logger.info("[ClientEngine] Focus Gained (isActive=true, wasActive=" + wasActive + ")");
-                if (window.isIconified()) {
-                    window.restore();
-                }
-                if (!window.isVisible()) {
-                    window.show();
-                }
-                window.focus();
-            } else if (!isActive && wasActive) {
-                logger.info("[ClientEngine] Focus Lost (isActive=false, wasActive=" + wasActive + ")");
-                if (WindowSettings.from(settings).fullscreen) {
-                    window.minimize();
-                }
-            }
-            wasActive = isActive;
-
-            runGameLoop(screenManager);
-            frameTimeRecorder.mark(FrameTimeRecorder.Phase.SIMULATION);
-
-            audioManager.update(AnimationManager.ANIMATION_SECONDS_PER_TICK);
-            frameTimeRecorder.mark(FrameTimeRecorder.Phase.AUDIO);
-
-            audioManager.setMasterGain(isActive ? 1f : 0f);
-            renderHost.display(() -> renderFrame(screenManager));
-            frameTimeRecorder.mark(FrameTimeRecorder.Phase.DISPLAY);
-
-            if (window.isVisible()) {
-                window.update();
-            }
-            frameTimeRecorder.mark(FrameTimeRecorder.Phase.SWAP);
-
-            if (PROFILE) {
-                GL11.glFinish();
-            }
-            frameTimeRecorder.mark(FrameTimeRecorder.Phase.GL_FINISH);
-            frameTimeRecorder.end();
-
-            if (first_frame) {
-                Duration startup_time = Duration.between(startTime, Instant.now());
-                logger.info("First frame rendered after " + startup_time);
-                first_frame = false;
-                if (load_task != null) {
-                    event_queue.getDeterministic().setEnabled(true);
-                    try {
-                        load_task.run();
-                    } finally {
-                        event_queue.getDeterministic().setEnabled(false);
-                        renderHost.resetContext();
-                    }
-                    load_task = null;
-                }
-            }
-            if (grab_frames && movie_recording_started) {
-                GLUtils.takeScreenshot("");
-            }
-        }
-
-        event_queue.getDeterministic().setEnabled(true);
-        renderFrameCallback = null;
-        settings.save();
-    }
-
-    private void setupLogging(Path event_log_dir, boolean silent) throws IOException {
-        try {
-            Files.createDirectories(event_log_dir);
-            logger.info("Writing log files in " + event_log_dir);
-
-            Logger rootLogger = Logger.getLogger("");
-            for (java.util.logging.Handler handler : rootLogger.getHandlers()) {
-                rootLogger.removeHandler(handler);
-            }
-
-            FileHandler fileHandler = new FileHandler(event_log_dir.resolve("output.log").toString());
-            fileHandler.setFormatter(new SimpleFormatter());
-            rootLogger.addHandler(fileHandler);
-
-            if (!silent) {
-                ConsoleHandler consoleHandler = new ConsoleHandler();
-                consoleHandler.setFormatter(new SimpleFormatter());
-                rootLogger.addHandler(consoleHandler);
-            }
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "Failed to setup file logging", e);
-            throw e;
-        }
-    }
-
-    private static void deleteLog(Path log) throws IOException {
-        for (Path LOG_FILES : com.oddlabs.util.Utils.LOG_FILES) {
-            Path log_file = log.resolve(LOG_FILES);
-            Files.deleteIfExists(log_file);
-        }
-        Files.deleteIfExists(log);
-    }
-
-    private static void deleteOldLogs(File last_log_dir, File new_log_dir, File logs_dir) {
-        File[] logs = logs_dir.listFiles();
-        if (logs == null) {
-            return;
-        }
-        for (File log : logs) {
-            try {
-                if (!log.isDirectory() || log.equals(last_log_dir) || log.equals(new_log_dir)) {
-                    continue;
-                }
-                deleteLog(log.toPath());
-            } catch (IOException _) {
-                /* ignore */
-            }
-        }
-    }
-
-    @Override
-    public void close() {
-        logger.info("Cleaning up peer...");
-        frameTimeRecorder.close();
-        renderHost.cleanup();
-        audioManager.close();
-        network.close();
-        logger.info("Peer cleanup complete. Exiting");
-    }
+  @Override
+  public void close() {
+    logger.info("Cleaning up peer...");
+    frameTimeRecorder.close();
+    renderHost.cleanup();
+    audioManager.close();
+    network.close();
+    logger.info("Peer cleanup complete. Exiting");
+  }
 }

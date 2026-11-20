@@ -11,7 +11,7 @@ import com.oddlabs.util.Color;
  */
 record BlendLighting(Channel alphaChannel, Color.Linear color) implements BlendInfo {
 
-    BlendLighting(Channel alphaChannel, Color color) {
-        this(alphaChannel, color instanceof Color.Linear linear ? linear : new Color.Linear(color));
-    }
+  BlendLighting(Channel alphaChannel, Color color) {
+    this(alphaChannel, color instanceof Color.Linear linear ? linear : new Color.Linear(color));
+  }
 }

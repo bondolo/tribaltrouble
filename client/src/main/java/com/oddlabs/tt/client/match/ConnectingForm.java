@@ -1,16 +1,18 @@
 package com.oddlabs.tt.client.match;
 
+import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
+
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MessageForm;
-import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.GameNetwork;
@@ -19,90 +21,81 @@ import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.SlotType;
-
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
-
-/**
- * UI form shown while establishing a multiplayer connection or initializing a local game.
- */
+/// UI form shown while establishing a multiplayer connection or initializing a local game.
 public final class ConnectingForm extends Form implements ConfigurationListener {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(ConnectingForm.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(ConnectingForm.class.getName());
 
-    public static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
-    }
+  public static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
 
-    private final MultiplayerLobby owner;
-    private final GUIRoot gui_root;
-    private final GameNetwork game_network;
-    private final ScreenManager screenManager;
-    private final AudioManager audioManager;
+  private final MultiplayerLobby owner;
+  private final GUIRoot gui_root;
+  private final GameNetwork game_network;
+  private final ScreenManager screenManager;
+  private final AudioManager audioManager;
 
-    public ConnectingForm(GameNetwork game_network, GUIRoot gui_root,
-            MultiplayerLobby owner,
-            ScreenManager screenManager,
-            AudioManager audioManager) {
-        super(gui_root, "");
-        this.game_network = game_network;
-        this.gui_root = gui_root;
-        this.owner = owner;
-        this.screenManager = screenManager;
-        this.audioManager = audioManager;
+  public ConnectingForm(
+      GameNetwork game_network,
+      GUIRoot gui_root,
+      MultiplayerLobby owner,
+      ScreenManager screenManager,
+      AudioManager audioManager) {
+    super(gui_root, "");
+    this.game_network = game_network;
+    this.gui_root = gui_root;
+    this.owner = owner;
+    this.screenManager = screenManager;
+    this.audioManager = audioManager;
 
-        Label info_label = new Label(i18n("connecting"), getSkin().getHeadlineFont());
-        addChild(info_label);
-        HorizButton cancel_button = new CancelButton(gui_root, 120);
-        addChild(cancel_button);
-        cancel_button.addMouseClickListener((_, _, _, _) -> this.cancel());
+    Label info_label = new Label(i18n("connecting"), getSkin().getHeadlineFont());
+    addChild(info_label);
+    HorizButton cancel_button = new CancelButton(gui_root, 120);
+    addChild(cancel_button);
+    cancel_button.addMouseClickListener((_, _, _, _) -> this.cancel());
 
-        // Place objects
-        info_label.place();
-        cancel_button.place(info_label, BOTTOM_MID);
+    // Place objects
+    info_label.place();
+    cancel_button.place(info_label, BOTTOM_MID);
 
-        // headline
-        compileCanvas();
-        centerPos();
-    }
+    // headline
+    compileCanvas();
+    centerPos();
+  }
 
-    @Override
-    public void connected(Client client, Game game, WorldGenerator<?> generator,
-            int player_slot) {
-        Race race = Race.values()[ThreadLocalRandom.current().nextInt(Race.values().length)];
-        int team = player_slot;
-        if (game.isRated())
-            team = player_slot % 2;
-        client.getServerInterface().setPlayerSlot(player_slot, SlotType.HUMAN, race, team, false,
-                AIDifficulty.NONE);
-        remove();
-        owner.createGameMenu(game_network, game, generator, player_slot);
-    }
+  @Override
+  public void connected(Client client, Game game, WorldGenerator<?> generator, int player_slot) {
+    Race race = Race.values()[ThreadLocalRandom.current().nextInt(Race.values().length)];
+    int team = player_slot;
+    if (game.isRated()) team = player_slot % 2;
+    client.getServerInterface().setPlayerSlot(player_slot, SlotType.HUMAN, race, team, false, AIDifficulty.NONE);
+    remove();
+    owner.createGameMenu(game_network, game, generator, player_slot);
+  }
 
-    public void chat(int player_slot, String chat) {
-    }
+  public void chat(int player_slot, String chat) {}
 
-    @Override
-    public void setPlayers(List<PlayerSlot> players) {
-    }
+  @Override
+  public void setPlayers(List<PlayerSlot> players) {}
 
-    @Override
-    public void connectionLost() {
-        remove();
-        gui_root.addModalForm(new MessageForm(gui_root, i18n("connection_lost")));
-    }
+  @Override
+  public void connectionLost() {
+    remove();
+    gui_root.addModalForm(new MessageForm(gui_root, i18n("connection_lost")));
+  }
 
-    @Override
-    public void gameStarted(LoadCallback<?, ?> loadCallback) {
-        remove();
-        ProgressForm.setProgressForm(game_network.getClient().getNetwork(), screenManager, audioManager,
-                loadCallback);
-    }
+  @Override
+  public void gameStarted(LoadCallback<?, ?> loadCallback) {
+    remove();
+    ProgressForm.setProgressForm(game_network.getClient().getNetwork(), screenManager, audioManager, loadCallback);
+  }
 
-    @Override
-    protected void doCancel() {
-        game_network.close();
-    }
+  @Override
+  protected void doCancel() {
+    game_network.close();
+  }
 }

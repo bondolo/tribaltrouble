@@ -10,12 +10,12 @@ import com.oddlabs.tt.simulation.model.Model;
  */
 @FunctionalInterface
 public interface VisualModelFactory<M extends Model> {
-    /**
-     * Creates a decorated {@link VisualModel} for the given simulation model and audio system.
-     *
-     * @param model the simulation model instance
-     * @param audio the active audio implementation
-     * @return decorated VisualModel instance
-     */
-    VisualModel create(M model, AudioImplementation audio);
+  /**
+   * Creates a decorated {@link VisualModel} for the given simulation model and audio system.
+   *
+   * @param model the simulation model instance
+   * @param audio the active audio implementation
+   * @return decorated VisualModel instance
+   */
+  VisualModel create(M model, AudioImplementation audio);
 }

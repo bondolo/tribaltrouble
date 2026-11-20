@@ -2,44 +2,42 @@ package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.util.Color;
 
-/**
- * Interface for world objects that can cast a dynamic shadow decal.
- */
+/// Interface for world objects that can cast a dynamic shadow decal.
 public interface Shadowable {
-    /** diameter of the shadow or zero for no shadow */
-    float getShadowDiameter();
+  /// diameter of the shadow or zero for no shadow
+  float getShadowDiameter();
 
-    /** darkness of the shadow */
-    default float getShadowOpacity() {
-        return 0.5f;
-    }
+  /// darkness of the shadow
+  default float getShadowOpacity() {
+    return 0.5f;
+  }
 
-    /** vertical center of the shadow relative to object height */
-    default float getShadowVerticalCenter() {
-        return 0.6f;
-    }
+  /// vertical center of the shadow relative to object height
+  default float getShadowVerticalCenter() {
+    return 0.6f;
+  }
 
-    default Color.Linear getShadowColor() {
-        return Color.Linear.BLACK;
-    }
+  default Color.Linear getShadowColor() {
+    return Color.Linear.BLACK;
+  }
 
-    default float getShadowPattern() {
-        return 0.0f;
-    }
+  default float getShadowPattern() {
+    return 0.0f;
+  }
 
-    float getPositionX();
+  float getPositionX();
 
-    float getPositionY();
+  float getPositionY();
 
-    default float getInterpolatedPositionX(float alpha) {
-        return getPositionX();
-    }
+  default float getInterpolatedPositionX(float alpha) {
+    return getPositionX();
+  }
 
-    default float getInterpolatedPositionY(float alpha) {
-        return getPositionY();
-    }
+  default float getInterpolatedPositionY(float alpha) {
+    return getPositionY();
+  }
 
-    default boolean isDead() {
-        return false;
-    }
+  default boolean isDead() {
+    return false;
+  }
 }

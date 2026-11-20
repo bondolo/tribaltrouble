@@ -1,5 +1,10 @@
 package com.oddlabs.tt.client.gui;
 
+import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.IconQuad;
+import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.IconButton;
@@ -10,214 +15,213 @@ import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.TextField;
 import com.oddlabs.tt.gui.ToolTipBox;
-import com.oddlabs.tt.engine.render.IconQuad;
-import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.gui.event.MouseButtonListener;
 import com.oddlabs.tt.input.GameAction;
-import com.oddlabs.tt.engine.render.GUIRenderer;
-import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.Nullable;
-
 import java.util.List;
 import java.util.ResourceBundle;
+import org.jspecify.annotations.Nullable;
 
-/** Spinner control with an associated icon. */
+/// Spinner control with an associated icon.
 public abstract class IconSpinner extends GUIObject {
-    /** Number of items adjusted in a batch operation. */
-    public static final int BATCH_AMOUNT = 10;
-    /** Number of items adjusted in a single-step operation. */
-    public static final int SINGLE_AMOUNT = 1;
+  /// Number of items adjusted in a batch operation.
+  public static final int BATCH_AMOUNT = 10;
 
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(IconSpinner.class.getName());
+  /// Number of items adjusted in a single-step operation.
+  public static final int SINGLE_AMOUNT = 1;
 
-    private String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(IconSpinner.class.getName());
+
+  private String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  private final ModeIconQuads icon_quad;
+  private final String tool_tip;
+  private final @Nullable List<IconQuad> tool_tip_icons;
+  private final TextField label;
+  private final IconButton button_plus;
+  private final IconButton button_minus;
+  private final WorldViewer viewer;
+  private @Nullable IconDisabler icon_disabler = null;
+
+  private int text_count = 0;
+
+  public IconSpinner(
+      WorldViewer viewer,
+      ModeIconQuads icon_quad,
+      String tool_tip,
+      @Nullable List<IconQuad> tool_tip_icons,
+      GameAction action,
+      GameAction dec_action) {
+    this.icon_quad = icon_quad;
+    this.tool_tip = tool_tip;
+    this.tool_tip_icons = tool_tip_icons;
+    this.viewer = viewer;
+    setCanFocus(true);
+    setDim(icon_quad.quad(ModeIconQuads.Mode.NORMAL).getWidth(), icon_quad.quad(ModeIconQuads.Mode.NORMAL).getHeight());
+
+    Skin skin = viewer.getGUIRoot().getSkin();
+    button_plus =
+        new IconSpinnerButton(
+            viewer.getGUIRoot(),
+            skin.getPlusButton(),
+            action,
+            () -> i18n("increase", viewer.getInputManager().getBindingString(action)),
+            this);
+    button_plus.setPos(0, 0);
+    button_plus.addMouseButtonListener(new IncreaseListener());
+    addChild(button_plus);
+
+    button_minus =
+        new IconSpinnerButton(
+            viewer.getGUIRoot(),
+            skin.getMinusButton(),
+            dec_action,
+            () -> i18n("decrease", viewer.getInputManager().getBindingString(dec_action)),
+            this);
+    button_minus.setPos(button_plus.getWidth(), 0);
+    button_minus.addMouseButtonListener(new DecreaseListener());
+    addChild(button_minus);
+
+    label =
+        new Label("", skin.getHeadlineFont(), icon_quad.quad(ModeIconQuads.Mode.NORMAL).getWidth(), Origin.AT_MIDDLE);
+    label.setPos(0, (getHeight() - label.getHeight()) / 2);
+    addChild(label);
+  }
+
+  @Override
+  public final void setFocus(FocusDirection direction) {
+    if (viewer.getGUIRoot().getDelegate() instanceof GUIObject obj) {
+      obj.setFocus(direction);
     }
+  }
 
-    private final ModeIconQuads icon_quad;
-    private final String tool_tip;
-    private final @Nullable List<IconQuad> tool_tip_icons;
-    private final TextField label;
-    private final IconButton button_plus;
-    private final IconButton button_minus;
-    private final WorldViewer viewer;
-    private @Nullable IconDisabler icon_disabler = null;
+  public final void setIconDisabler(IconDisabler icon_disabler) {
+    this.icon_disabler = icon_disabler;
+  }
 
-    private int text_count = 0;
+  public final void doUpdate() {
+    setCount();
+    if (icon_disabler != null) {
+      setDisabled(computeCount() == 0 && getOrderSize() == 0 && icon_disabler.isDisabled());
+    }
+  }
 
-    public IconSpinner(WorldViewer viewer, ModeIconQuads icon_quad, String tool_tip,
-            @Nullable List<IconQuad> tool_tip_icons,
-            GameAction action, GameAction dec_action) {
-        this.icon_quad = icon_quad;
-        this.tool_tip = tool_tip;
-        this.tool_tip_icons = tool_tip_icons;
-        this.viewer = viewer;
-        setCanFocus(true);
-        setDim(icon_quad.quad(ModeIconQuads.Mode.NORMAL).getWidth(), icon_quad.quad(ModeIconQuads.Mode.NORMAL)
-                .getHeight());
+  public abstract int computeCount();
 
-        Skin skin = viewer.getGUIRoot().getSkin();
-        button_plus = new IconSpinnerButton(viewer.getGUIRoot(), skin.getPlusButton(), action,
-                () -> i18n("increase", viewer.getInputManager().getBindingString(action)),
-                this);
-        button_plus.setPos(0, 0);
-        button_plus.addMouseButtonListener(new IncreaseListener());
-        addChild(button_plus);
+  protected abstract void increase(int amount);
 
-        button_minus = new IconSpinnerButton(viewer.getGUIRoot(), skin.getMinusButton(), dec_action,
-                () -> i18n("decrease", viewer.getInputManager().getBindingString(dec_action)),
-                this);
-        button_minus.setPos(button_plus.getWidth(), 0);
-        button_minus.addMouseButtonListener(new DecreaseListener());
-        addChild(button_minus);
+  protected abstract void decrease(int amount);
 
-        label = new Label("", skin.getHeadlineFont(), icon_quad.quad(ModeIconQuads.Mode.NORMAL).getWidth(),
-                Origin.AT_MIDDLE);
-        label.setPos(0, (getHeight() - label.getHeight()) / 2);
-        addChild(label);
+  protected abstract void release();
+
+  protected abstract int getOrderSize();
+
+  public abstract boolean renderInfinite();
+
+  protected abstract float getProgress();
+
+  private void setCount() {
+    int count = computeCount();
+    if (count != text_count) {
+      text_count = count;
+      label.clear();
+      if (text_count != 0) {
+        label.append(renderInfinite() ? "∞" : Integer.toString(text_count));
+      }
+    }
+  }
+
+  @Override
+  public void appendToolTip(ToolTipBox tool_tip_box) {
+    tool_tip_box.append(tool_tip);
+    tool_tip_box.append(tool_tip_icons);
+  }
+
+  public final void shortcutPressed(boolean decrement, boolean batch) {
+    if (!isDisabled()) {
+      int amount = batch ? BATCH_AMOUNT : SINGLE_AMOUNT;
+      if (decrement) {
+        decrease(amount);
+      } else {
+        increase(amount);
+      }
+    }
+  }
+
+  public final void shortcutReleased(boolean decrement, boolean batch) {
+    if (!isDisabled()) {
+      release();
+    }
+  }
+
+  @Override
+  protected final void renderGeometry(GUIRenderer renderer) {
+    int x = (getWidth() - icon_quad.quad(ModeIconQuads.Mode.NORMAL).getWidth()) / 2;
+    int y = (getHeight() - icon_quad.quad(ModeIconQuads.Mode.NORMAL).getHeight()) / 2;
+
+    ModeIconQuads.Mode skinMode =
+        isDisabled()
+            ? ModeIconQuads.Mode.DISABLED
+            : isHovered() ? ModeIconQuads.Mode.ACTIVE : ModeIconQuads.Mode.NORMAL;
+
+    renderer.drawIcon(icon_quad.quad(skinMode), x, y);
+
+    if (text_count > 0) {
+      var watchQuad = viewer.getIcons().getWatch(getProgress());
+      renderer.drawIcon(watchQuad, getWidth() - watchQuad.getWidth(), getHeight() - watchQuad.getHeight());
+    }
+  }
+
+  @Override
+  protected final void mouseReleased(MouseButton button, int x, int y) {}
+
+  @Override
+  protected final void mousePressed(MouseButton button, int x, int y) {}
+
+  @Override
+  protected final void mouseClicked(MouseButton button, int x, int y, int clicks) {}
+
+  @Override
+  protected final void mouseHeld(MouseButton button, int x, int y) {}
+
+  private final class IncreaseListener implements MouseButtonListener {
+    @Override
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {}
+
+    @Override
+    public void mouseHeld(MouseButton button, int x, int y) {
+      mousePressed(button, x, y);
     }
 
     @Override
-    public final void setFocus(FocusDirection direction) {
-        if (viewer.getGUIRoot().getDelegate() instanceof GUIObject obj) {
-            obj.setFocus(direction);
-        }
-    }
-
-    public final void setIconDisabler(IconDisabler icon_disabler) {
-        this.icon_disabler = icon_disabler;
-    }
-
-    public final void doUpdate() {
-        setCount();
-        if (icon_disabler != null) {
-            setDisabled(computeCount() == 0 && getOrderSize() == 0 && icon_disabler.isDisabled());
-        }
-    }
-
-    public abstract int computeCount();
-
-    protected abstract void increase(int amount);
-
-    protected abstract void decrease(int amount);
-
-    protected abstract void release();
-
-    protected abstract int getOrderSize();
-
-    public abstract boolean renderInfinite();
-
-    protected abstract float getProgress();
-
-    private void setCount() {
-        int count = computeCount();
-        if (count != text_count) {
-            text_count = count;
-            label.clear();
-            if (text_count != 0) {
-                label.append(renderInfinite() ? "∞" : Integer.toString(text_count));
-            }
-        }
+    public void mousePressed(MouseButton button, int x, int y) {
+      increase(button == MouseButton.RIGHT ? BATCH_AMOUNT : SINGLE_AMOUNT);
     }
 
     @Override
-    public void appendToolTip(ToolTipBox tool_tip_box) {
-        tool_tip_box.append(tool_tip);
-        tool_tip_box.append(tool_tip_icons);
+    public void mouseReleased(MouseButton button, int x, int y) {
+      release();
     }
+  }
 
-    public final void shortcutPressed(boolean decrement, boolean batch) {
-        if (!isDisabled()) {
-            int amount = batch ? BATCH_AMOUNT : SINGLE_AMOUNT;
-            if (decrement) {
-                decrease(amount);
-            } else {
-                increase(amount);
-            }
-        }
-    }
+  private final class DecreaseListener implements MouseButtonListener {
+    @Override
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {}
 
-    public final void shortcutReleased(boolean decrement, boolean batch) {
-        if (!isDisabled()) {
-            release();
-        }
+    @Override
+    public void mouseHeld(MouseButton button, int x, int y) {
+      mousePressed(button, x, y);
     }
 
     @Override
-    protected final void renderGeometry(GUIRenderer renderer) {
-        int x = (getWidth() - icon_quad.quad(ModeIconQuads.Mode.NORMAL).getWidth()) / 2;
-        int y = (getHeight() - icon_quad.quad(ModeIconQuads.Mode.NORMAL).getHeight()) / 2;
-
-        ModeIconQuads.Mode skinMode = isDisabled()
-                ? ModeIconQuads.Mode.DISABLED
-                : isHovered()
-                        ? ModeIconQuads.Mode.ACTIVE
-                : ModeIconQuads.Mode.NORMAL;
-
-        renderer.drawIcon(icon_quad.quad(skinMode), x, y);
-
-        if (text_count > 0) {
-            var watchQuad = viewer.getIcons().getWatch(getProgress());
-            renderer.drawIcon(watchQuad, getWidth() - watchQuad.getWidth(), getHeight() - watchQuad.getHeight());
-        }
+    public void mousePressed(MouseButton button, int x, int y) {
+      decrease(button == MouseButton.RIGHT ? BATCH_AMOUNT : SINGLE_AMOUNT);
     }
 
     @Override
-    protected final void mouseReleased(MouseButton button, int x, int y) {
+    public void mouseReleased(MouseButton button, int x, int y) {
+      release();
     }
-
-    @Override
-    protected final void mousePressed(MouseButton button, int x, int y) {
-    }
-
-    @Override
-    protected final void mouseClicked(MouseButton button, int x, int y, int clicks) {
-    }
-
-    @Override
-    protected final void mouseHeld(MouseButton button, int x, int y) {
-    }
-
-    private final class IncreaseListener implements MouseButtonListener {
-        @Override
-        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-        }
-
-        @Override
-        public void mouseHeld(MouseButton button, int x, int y) {
-            mousePressed(button, x, y);
-        }
-
-        @Override
-        public void mousePressed(MouseButton button, int x, int y) {
-            increase(button == MouseButton.RIGHT ? BATCH_AMOUNT : SINGLE_AMOUNT);
-        }
-
-        @Override
-        public void mouseReleased(MouseButton button, int x, int y) {
-            release();
-        }
-    }
-
-    private final class DecreaseListener implements MouseButtonListener {
-        @Override
-        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-        }
-
-        @Override
-        public void mouseHeld(MouseButton button, int x, int y) {
-            mousePressed(button, x, y);
-        }
-
-        @Override
-        public void mousePressed(MouseButton button, int x, int y) {
-            decrease(button == MouseButton.RIGHT ? BATCH_AMOUNT : SINGLE_AMOUNT);
-        }
-
-        @Override
-        public void mouseReleased(MouseButton button, int x, int y) {
-            release();
-        }
-    }
+  }
 }

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.net;
 
 public interface ProfileListener {
-    void success();
+  void success();
 
-    void error(int error_code);
+  void error(int error_code);
 }

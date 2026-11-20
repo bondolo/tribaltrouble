@@ -1,6 +1,4 @@
-/**
- * OpenGL render context, blending, depth, and global uniform states.
- */
+/** OpenGL render context, blending, depth, and global uniform states. */
 @NullMarked
 package com.oddlabs.tt.engine.render.state;
 

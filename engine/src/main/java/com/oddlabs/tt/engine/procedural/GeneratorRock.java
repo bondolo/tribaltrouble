@@ -8,21 +8,27 @@ import com.oddlabs.tt.procedural.image.RockProcedural;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL21;
 
-/**
- * Procedural texture generator for rock diffuse and normal textures.
- */
+/// Procedural texture generator for rock diffuse and normal textures.
 @NamedGenerator("Rock")
 public final class GeneratorRock extends TextureGenerator {
-    @Override
-    public Texture[] generate() {
-        RockProcedural.RockLayers layers = RockProcedural.generate();
-        return new Texture[]{
-                new Texture(new GLIntImage(layers.diffuse()), GL21.GL_SRGB8, GL11.GL_LINEAR_MIPMAP_LINEAR,
-                        GL11.GL_LINEAR,
-                        GL11.GL_REPEAT, GL11.GL_REPEAT),
-                new Texture(new GLIntImage(layers.normalMap()), GL11.GL_RGBA8, GL11.GL_LINEAR_MIPMAP_LINEAR,
-                        GL11.GL_LINEAR,
-                        GL11.GL_REPEAT, GL11.GL_REPEAT)
-        };
-    }
+  @Override
+  public Texture[] generate() {
+    RockProcedural.RockLayers layers = RockProcedural.generate();
+    return new Texture[] {
+      new Texture(
+          new GLIntImage(layers.diffuse()),
+          GL21.GL_SRGB8,
+          GL11.GL_LINEAR_MIPMAP_LINEAR,
+          GL11.GL_LINEAR,
+          GL11.GL_REPEAT,
+          GL11.GL_REPEAT),
+      new Texture(
+          new GLIntImage(layers.normalMap()),
+          GL11.GL_RGBA8,
+          GL11.GL_LINEAR_MIPMAP_LINEAR,
+          GL11.GL_LINEAR,
+          GL11.GL_REPEAT,
+          GL11.GL_REPEAT)
+    };
+  }
 }

@@ -1,6 +1,4 @@
-/**
- * GLSL shader implementations and OpenGL program management.
- */
+/** GLSL shader implementations and OpenGL program management. */
 @NullMarked
 package com.oddlabs.tt.engine.render.shader;
 

@@ -1,6 +1,7 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.event.Deterministic;
+import com.oddlabs.tt.engine.render.FramePacer;
 import com.oddlabs.tt.input.ExtendedMouseButton;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputProvider;
@@ -9,202 +10,200 @@ import com.oddlabs.tt.input.LWJGL3InputProvider;
 import com.oddlabs.tt.input.Modifier;
 import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.tt.window.Window;
-
-import com.oddlabs.tt.engine.render.FramePacer;
-import org.jspecify.annotations.Nullable;
-
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.logging.Logger;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Coordinates keyboard and pointer input for the local user.
- */
+/// Coordinates keyboard and pointer input for the local user.
 public final class LocalInput implements AutoCloseable {
-    private static final Logger logger = Logger.getLogger(LocalInput.class.getName());
+  private static final Logger logger = Logger.getLogger(LocalInput.class.getName());
 
-    private int mouse_x;
-    private int mouse_y;
+  private int mouse_x;
+  private int mouse_y;
 
-    private final Window window;
-    private final InputProvider<?> inputProvider;
-    private final InputManager inputManager;
-    private final Deterministic deterministic;
-    private final Runnable shutdownAction;
-    private final KeyboardInput keyboardInput;
-    private final PointerInput pointerInput;
+  private final Window window;
+  private final InputProvider<?> inputProvider;
+  private final InputManager inputManager;
+  private final Deterministic deterministic;
+  private final Runnable shutdownAction;
+  private final KeyboardInput keyboardInput;
+  private final PointerInput pointerInput;
 
-    private final Set<Key> keys = EnumSet.noneOf(Key.class);
-    private final Set<Modifier> global_modifiers = EnumSet.noneOf(Modifier.class);
+  private final Set<Key> keys = EnumSet.noneOf(Key.class);
+  private final Set<Modifier> global_modifiers = EnumSet.noneOf(Modifier.class);
 
-    public LocalInput(Window lwjglWindow, InputManager inputManager,
-            Deterministic deterministic,
-            Runnable shutdownAction, @Nullable FramePacer framePacer) {
-        this.window = lwjglWindow;
-        this.inputManager = inputManager;
-        this.deterministic = deterministic;
-        this.shutdownAction = shutdownAction;
-        this.keyboardInput = new KeyboardInput(framePacer);
-        if (lwjglWindow instanceof LWJGL3Window win) {
-            LWJGL3InputProvider p = new LWJGL3InputProvider(win);
-            this.inputProvider = p;
-            this.pointerInput = new PointerInput(p, this);
-            p.setFocusGainedCallback(this.pointerInput::reapplyCursor);
-        } else {
-            throw new IllegalStateException("Window is not LWJGL3Window");
-        }
+  public LocalInput(
+      Window lwjglWindow,
+      InputManager inputManager,
+      Deterministic deterministic,
+      Runnable shutdownAction,
+      @Nullable FramePacer framePacer) {
+    this.window = lwjglWindow;
+    this.inputManager = inputManager;
+    this.deterministic = deterministic;
+    this.shutdownAction = shutdownAction;
+    this.keyboardInput = new KeyboardInput(framePacer);
+    if (lwjglWindow instanceof LWJGL3Window win) {
+      LWJGL3InputProvider p = new LWJGL3InputProvider(win);
+      this.inputProvider = p;
+      this.pointerInput = new PointerInput(p, this);
+      p.setFocusGainedCallback(this.pointerInput::reapplyCursor);
+    } else {
+      throw new IllegalStateException("Window is not LWJGL3Window");
     }
+  }
 
-    public LocalInput(Window lwjglWindow, InputManager inputManager,
-            Deterministic deterministic, BooleanSupplier developerModeSupplier,
-            Runnable shutdownAction) {
-        this(lwjglWindow, inputManager, deterministic, shutdownAction, null);
-    }
+  public LocalInput(
+      Window lwjglWindow,
+      InputManager inputManager,
+      Deterministic deterministic,
+      BooleanSupplier developerModeSupplier,
+      Runnable shutdownAction) {
+    this(lwjglWindow, inputManager, deterministic, shutdownAction, null);
+  }
 
-    public LocalInput(Window lwjglWindow, InputManager inputManager, Deterministic deterministic) {
-        this(lwjglWindow, inputManager, deterministic, () -> {
-        }, null);
-    }
+  public LocalInput(Window lwjglWindow, InputManager inputManager, Deterministic deterministic) {
+    this(lwjglWindow, inputManager, deterministic, () -> {}, null);
+  }
 
-    public void shutdown() {
-        shutdownAction.run();
-    }
+  public void shutdown() {
+    shutdownAction.run();
+  }
 
-    public Window getWindow() {
-        return window;
-    }
+  public Window getWindow() {
+    return window;
+  }
 
-    public Deterministic getDeterministic() {
-        return deterministic;
-    }
+  public Deterministic getDeterministic() {
+    return deterministic;
+  }
 
-    public void poll(GUIRoot root) {
-        pointerInput.poll(root);
-        keyboardInput.poll(inputProvider, this, root);
-    }
+  public void poll(GUIRoot root) {
+    pointerInput.poll(root);
+    keyboardInput.poll(inputProvider, this, root);
+  }
 
-    public void checkMagicKeys() {
-        keyboardInput.checkMagicKeys(inputProvider, deterministic);
-    }
+  public void checkMagicKeys() {
+    keyboardInput.checkMagicKeys(inputProvider, deterministic);
+  }
 
-    public void setKeys(Key key, boolean state, Set<Modifier> modifiers) {
-        if (state)
-            keys.add(key);
-        else
-            keys.remove(key);
-        global_modifiers.clear();
-        global_modifiers.addAll(modifiers);
-    }
+  public void setKeys(Key key, boolean state, Set<Modifier> modifiers) {
+    if (state) keys.add(key);
+    else keys.remove(key);
+    global_modifiers.clear();
+    global_modifiers.addAll(modifiers);
+  }
 
-    public void mouseDragged(GUIRoot gui_root, MouseButton button, short x, short y) {
-        mouse_x = x;
-        mouse_y = y;
-        gui_root.getInputState().mouseDragged(button, x, y);
-    }
+  public void mouseDragged(GUIRoot gui_root, MouseButton button, short x, short y) {
+    mouse_x = x;
+    mouse_y = y;
+    gui_root.getInputState().mouseDragged(button, x, y);
+  }
 
-    public void mouseReleased(GUIRoot gui_root, MouseButton button) {
-        gui_root.getInputState().mouseReleased(button);
-    }
+  public void mouseReleased(GUIRoot gui_root, MouseButton button) {
+    gui_root.getInputState().mouseReleased(button);
+  }
 
-    public void extendedMousePressed(GUIRoot gui_root, ExtendedMouseButton button) {
-        gui_root.getInputState().extendedMousePressed(button);
-    }
+  public void extendedMousePressed(GUIRoot gui_root, ExtendedMouseButton button) {
+    gui_root.getInputState().extendedMousePressed(button);
+  }
 
-    public void extendedMouseReleased(GUIRoot gui_root, ExtendedMouseButton button) {
-        gui_root.getInputState().extendedMouseReleased(button);
-    }
+  public void extendedMouseReleased(GUIRoot gui_root, ExtendedMouseButton button) {
+    gui_root.getInputState().extendedMouseReleased(button);
+  }
 
-    public void mousePressed(GUIRoot gui_root, MouseButton button) {
-        gui_root.getInputState().mousePressed(button);
-    }
+  public void mousePressed(GUIRoot gui_root, MouseButton button) {
+    gui_root.getInputState().mousePressed(button);
+  }
 
-    public void mouseScrolled(GUIRoot gui_root, int dz) {
-        gui_root.getInputState().mouseScrolled(dz);
-    }
+  public void mouseScrolled(GUIRoot gui_root, int dz) {
+    gui_root.getInputState().mouseScrolled(dz);
+  }
 
-    public void mouseScrolledHorizontally(GUIRoot gui_root, int dx) {
-        gui_root.getInputState().mouseScrolledHorizontally(dx);
-    }
+  public void mouseScrolledHorizontally(GUIRoot gui_root, int dx) {
+    gui_root.getInputState().mouseScrolledHorizontally(dx);
+  }
 
-    public void mouseMoved(GUIRoot gui_root, short x, short y) {
-        mouse_x = x;
-        mouse_y = y;
-        gui_root.getInputState().mouseMoved(x, y);
-    }
+  public void mouseMoved(GUIRoot gui_root, short x, short y) {
+    mouse_x = x;
+    mouse_y = y;
+    gui_root.getInputState().mouseMoved(x, y);
+  }
 
-    public boolean isShiftDownCurrently() {
-        return global_modifiers.contains(Modifier.SHIFT);
-    }
+  public boolean isShiftDownCurrently() {
+    return global_modifiers.contains(Modifier.SHIFT);
+  }
 
-    public boolean isControlDownCurrently() {
-        return global_modifiers.contains(Modifier.CONTROL);
-    }
+  public boolean isControlDownCurrently() {
+    return global_modifiers.contains(Modifier.CONTROL);
+  }
 
-    public boolean isAltDownCurrently() {
-        return global_modifiers.contains(Modifier.ALT);
-    }
+  public boolean isAltDownCurrently() {
+    return global_modifiers.contains(Modifier.ALT);
+  }
 
-    public boolean isSuperDownCurrently() {
-        return global_modifiers.contains(Modifier.META);
-    }
+  public boolean isSuperDownCurrently() {
+    return global_modifiers.contains(Modifier.META);
+  }
 
-    public void resetKeys() {
-        keyboardInput.reset(inputProvider);
-        inputManager.reset();
-        keys.clear();
-    }
+  public void resetKeys() {
+    keyboardInput.reset(inputProvider);
+    inputManager.reset();
+    keys.clear();
+  }
 
-    public boolean isKeyDown(Key key) {
-        return keys.contains(key);
-    }
+  public boolean isKeyDown(Key key) {
+    return keys.contains(key);
+  }
 
-    public void resetKeyboard() {
-        resetKeys();
-        global_modifiers.clear();
-    }
+  public void resetKeyboard() {
+    resetKeys();
+    global_modifiers.clear();
+  }
 
-    public int getMouseY() {
-        return mouse_y;
-    }
+  public int getMouseY() {
+    return mouse_y;
+  }
 
-    public int getMouseX() {
-        return mouse_x;
-    }
+  public int getMouseX() {
+    return mouse_x;
+  }
 
-    void setMousePosition(int x, int y) {
-        this.mouse_x = x;
-        this.mouse_y = y;
-    }
+  void setMousePosition(int x, int y) {
+    this.mouse_x = x;
+    this.mouse_y = y;
+  }
 
-    public void init() {
-        if (inputProvider instanceof LWJGL3InputProvider lwjgl3InputProvider) {
-            lwjgl3InputProvider.initCallbacks();
-        }
-        pointerInput.loadCursors(window.getPixelDensity());
-        mouse_x = deterministic.log(inputProvider.getMouseX());
-        mouse_y = deterministic.log(inputProvider.getMouseY());
+  public void init() {
+    if (inputProvider instanceof LWJGL3InputProvider lwjgl3InputProvider) {
+      lwjgl3InputProvider.initCallbacks();
     }
+    pointerInput.loadCursors(window.getPixelDensity());
+    mouse_x = deterministic.log(inputProvider.getMouseX());
+    mouse_y = deterministic.log(inputProvider.getMouseY());
+  }
 
-    @Override
-    public void close() {
-        inputProvider.close();
-    }
+  @Override
+  public void close() {
+    inputProvider.close();
+  }
 
-    public <T> InputProvider<T> getInputProvider() {
-        //noinspection unchecked
-        return (InputProvider<T>) inputProvider;
-    }
+  public <T> InputProvider<T> getInputProvider() {
+    //noinspection unchecked
+    return (InputProvider<T>) inputProvider;
+  }
 
-    public InputManager getInputManager() {
-        return inputManager;
-    }
+  public InputManager getInputManager() {
+    return inputManager;
+  }
 
-    public KeyboardInput getKeyboardInput() {
-        return keyboardInput;
-    }
+  public KeyboardInput getKeyboardInput() {
+    return keyboardInput;
+  }
 
-    public PointerInput getPointerInput() {
-        return pointerInput;
-    }
+  public PointerInput getPointerInput() {
+    return pointerInput;
+  }
 }

@@ -1,29 +1,27 @@
 package com.oddlabs.tt.gui;
 
-
-/** Base class for selectable GUI elements belonging to a mutually exclusive group. */
+/// Base class for selectable GUI elements belonging to a mutually exclusive group.
 public abstract class RadioButtonGroupElement extends GUIObject {
-    private boolean marked = false;
+  private boolean marked = false;
 
-    private final RadioButtonGroup group;
+  private final RadioButtonGroup group;
 
-    public RadioButtonGroupElement(boolean marked, RadioButtonGroup group) {
-        this.group = group;
-        group.add(this);
-        if (marked)
-            group.mark(this);
-    }
+  public RadioButtonGroupElement(boolean marked, RadioButtonGroup group) {
+    this.group = group;
+    group.add(this);
+    if (marked) group.mark(this);
+  }
 
-    public final boolean isMarked() {
-        return marked;
-    }
+  public final boolean isMarked() {
+    return marked;
+  }
 
-    protected final void setMarked(boolean marked) {
-        this.marked = marked;
-    }
+  protected final void setMarked(boolean marked) {
+    this.marked = marked;
+  }
 
-    @Override
-    protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
-        group.mark(this);
-    }
+  @Override
+  protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
+    group.mark(this);
+  }
 }

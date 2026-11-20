@@ -1,255 +1,296 @@
 package com.oddlabs.tt.content.campaign;
 
-import com.oddlabs.tt.simulation.model.Difficulty;
-
-import com.oddlabs.tt.simulation.model.BuildingType;
-
-import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.simulation.model.UnitType;
-
+import com.oddlabs.tt.ai.AI;
+import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.tt.client.match.MatchLauncher;
+import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.client.viewer.InGameInfo;
+import com.oddlabs.tt.client.viewer.WorldInitAction;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.net.GameNetwork;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Action;
+import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.DeployType;
+import com.oddlabs.tt.simulation.model.Difficulty;
+import com.oddlabs.tt.simulation.model.StatueScenery;
+import com.oddlabs.tt.simulation.model.Target;
+import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitTemplate;
+import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.model.WeaponTier;
-import com.oddlabs.tt.net.GameNetwork;
-import com.oddlabs.tt.client.viewer.WorldInitAction;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.ai.AI;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.base.event.StateChecksum;
-import com.oddlabs.tt.simulation.model.Target;
-import com.oddlabs.tt.client.resource.AssetRegistry;
-import com.oddlabs.tt.client.viewer.InGameInfo;
-import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.model.StatueScenery;
-import org.jspecify.annotations.Nullable;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 
-
-/**
- * Base class for all campaign islands, defining common logic for game setup,
- * difficulty scaling, and scenario-specific object placement.
- */
+/// Base class for all campaign islands, defining common logic for game setup, difficulty scaling, and scenario-specific
+/// object placement.
 public abstract class Island {
-    private static final float CAMPAIGN_DIFFICULTY_BONUS = .75f;
+  private static final float CAMPAIGN_DIFFICULTY_BONUS = .75f;
 
-    private final Campaign campaign;
+  private final Campaign campaign;
 
-    private @Nullable WorldViewer world_viewer;
+  private @Nullable WorldViewer world_viewer;
 
-    public Island(Campaign campaign) {
-        this.campaign = campaign;
-    }
+  public Island(Campaign campaign) {
+    this.campaign = campaign;
+  }
 
-    protected final Campaign getCampaign() {
-        return campaign;
-    }
+  protected final Campaign getCampaign() {
+    return campaign;
+  }
 
-    public final void chosen(GUIRoot gui_root) {
-        init(gui_root);
-    }
+  public final void chosen(GUIRoot gui_root) {
+    init(gui_root);
+  }
 
-    protected final void addModalForm(Form form) {
-        getViewer().getGUIRoot().addModalForm(form);
-    }
+  protected final void addModalForm(Form form) {
+    getViewer().getGUIRoot().addModalForm(form);
+  }
 
-    protected final GameNetwork startNewGame(GUIRoot gui_root,
-            int meters_per_world, Terrain terrain, float hills, float vegetation_amount,
-            float supplies_amount, int seed, int campaign_num, int initial_units, String[] ai_names) {
-        InGameInfo ingame_info = new CampaignInGameInfo(campaign);
-        WorldInitAction init_action = (WorldViewer viewer) -> {
-            world_viewer = viewer;
-            MatchLauncher.completeGameSetup(world_viewer);
-            if (!campaign.getState().hasRubberWeapons()) {
-                viewer.getLocalPlayer().enableRubber(false);
-            }
-            if (!campaign.getState().hasMagic0()) {
-                viewer.getLocalPlayer().enableMagic(viewer.getLocalPlayer().getRaceInfo().getMagicType(0), false);
-            }
-            if (!campaign.getState().hasMagic1()) {
-                viewer.getLocalPlayer().enableMagic(viewer.getLocalPlayer().getRaceInfo().getMagicType(1), false);
-            }
-            List<Player> players = viewer.getWorld().getPlayers();
-            switch (campaign.getState().getDifficulty()) {
-                case Difficulty.EASY -> {
-                    for (Player player : players) {
-                        if (player.isEnemy(viewer.getLocalPlayer())) {
-                            viewer.getLocalPlayer().setHitBonus(CAMPAIGN_DIFFICULTY_BONUS);
-                        }
-                    }
+  protected final GameNetwork startNewGame(
+      GUIRoot gui_root,
+      int meters_per_world,
+      Terrain terrain,
+      float hills,
+      float vegetation_amount,
+      float supplies_amount,
+      int seed,
+      int campaign_num,
+      int initial_units,
+      String[] ai_names) {
+    InGameInfo ingame_info = new CampaignInGameInfo(campaign);
+    WorldInitAction init_action =
+        (WorldViewer viewer) -> {
+          world_viewer = viewer;
+          MatchLauncher.completeGameSetup(world_viewer);
+          if (!campaign.getState().hasRubberWeapons()) {
+            viewer.getLocalPlayer().enableRubber(false);
+          }
+          if (!campaign.getState().hasMagic0()) {
+            viewer.getLocalPlayer().enableMagic(viewer.getLocalPlayer().getRaceInfo().getMagicType(0), false);
+          }
+          if (!campaign.getState().hasMagic1()) {
+            viewer.getLocalPlayer().enableMagic(viewer.getLocalPlayer().getRaceInfo().getMagicType(1), false);
+          }
+          List<Player> players = viewer.getWorld().getPlayers();
+          switch (campaign.getState().getDifficulty()) {
+            case Difficulty.EASY -> {
+              for (Player player : players) {
+                if (player.isEnemy(viewer.getLocalPlayer())) {
+                  viewer.getLocalPlayer().setHitBonus(CAMPAIGN_DIFFICULTY_BONUS);
                 }
-                case Difficulty.NORMAL -> {
-                }
-                case Difficulty.HARD -> {
-                    for (Player player : players) {
-                        if (player.isEnemy(viewer.getLocalPlayer())) {
-                            player.setHitBonus(CAMPAIGN_DIFFICULTY_BONUS);
-                        }
-                    }
-                }
-                default ->
-                    throw new IllegalArgumentException("unexpected difficulty: " + campaign.getState().getDifficulty());
+              }
             }
-            start();
-            new DefeatTrigger(getViewer(), campaign, viewer.getLocalPlayer().getChieftain().orElse(null));
+            case Difficulty.NORMAL -> {}
+            case Difficulty.HARD -> {
+              for (Player player : players) {
+                if (player.isEnemy(viewer.getLocalPlayer())) {
+                  player.setHitBonus(CAMPAIGN_DIFFICULTY_BONUS);
+                }
+              }
+            }
+            default ->
+                throw new IllegalArgumentException("unexpected difficulty: " + campaign.getState().getDifficulty());
+          }
+          start();
+          new DefeatTrigger(getViewer(), campaign, viewer.getLocalPlayer().getChieftain().orElse(null));
         };
-        IslandConfig islandConfig = new IslandConfig(terrain, meters_per_world, hills, vegetation_amount,
-                supplies_amount, seed);
-        return MatchLauncher.startNewGame(campaign.getPeer(), gui_root, campaign.getScreenManager(), null,
-                new WorldParameters(
-                        "Campaign" + campaign_num, initial_units,
-                        Player.DEFAULT_MAX_UNIT_COUNT),
-                ingame_info,
-                init_action,
-                islandConfig, ai_names);
-    }
+    IslandConfig islandConfig =
+        new IslandConfig(terrain, meters_per_world, hills, vegetation_amount, supplies_amount, seed);
+    return MatchLauncher.startNewGame(
+        campaign.getPeer(),
+        gui_root,
+        campaign.getScreenManager(),
+        null,
+        new WorldParameters("Campaign" + campaign_num, initial_units, Player.DEFAULT_MAX_UNIT_COUNT),
+        ingame_info,
+        init_action,
+        islandConfig,
+        ai_names);
+  }
 
-    protected final WorldViewer getViewer() {
-        return Objects.requireNonNull(world_viewer);
-    }
+  protected final WorldViewer getViewer() {
+    return Objects.requireNonNull(world_viewer);
+  }
 
-    protected abstract void init(GUIRoot gui_root);
+  protected abstract void init(GUIRoot gui_root);
 
-    protected abstract void start();
+  protected abstract void start();
 
-    public abstract CharSequence getHeader();
+  public abstract CharSequence getHeader();
 
-    public abstract CharSequence getDescription();
+  public abstract CharSequence getDescription();
 
-    public abstract CharSequence getCurrentObjective();
+  public abstract CharSequence getCurrentObjective();
 
-    protected final @Nullable Unit changeOwner(Unit unit, Player owner) {
-        float x = unit.getPositionX();
-        float y = unit.getPositionY();
-        UnitTemplate template = unit.getTemplate();
-        unit.removeNow();
-        if (!owner.getUnitCountContainer().isSupplyFull()) {
-            Unit new_unit = new Unit(owner, x, y, null, template);
-            getViewer().getPicker().getRespondManager().addResponder(new_unit);
-            return new_unit;
-        } else
-            return null;
-    }
+  protected final @Nullable Unit changeOwner(Unit unit, Player owner) {
+    float x = unit.getPositionX();
+    float y = unit.getPositionY();
+    UnitTemplate template = unit.getTemplate();
+    unit.removeNow();
+    if (!owner.getUnitCountContainer().isSupplyFull()) {
+      Unit new_unit = new Unit(owner, x, y, null, template);
+      getViewer().getPicker().getRespondManager().addResponder(new_unit);
+      return new_unit;
+    } else return null;
+  }
 
-    protected final void insertGuardTower(Player owner, UnitType warrior_type, int grid_x,
-            int grid_y) {
-        owner.buildBuilding(BuildingType.TOWER, grid_x, grid_y).ifPresent(tower -> {
-            Unit unit = new Unit(owner,
-                    UnitGrid.coordinateFromGrid(grid_x),
-                    UnitGrid.coordinateFromGrid(grid_y),
-                    null,
-                    owner.getRaceInfo().getUnitTemplate(warrior_type));
-            unit.setTarget(tower, Action.DEFAULT, false);
+  protected final void insertGuardTower(Player owner, UnitType warrior_type, int grid_x, int grid_y) {
+    owner
+        .buildBuilding(BuildingType.TOWER, grid_x, grid_y)
+        .ifPresent(tower -> {
+          Unit unit =
+              new Unit(
+                  owner,
+                  UnitGrid.coordinateFromGrid(grid_x),
+                  UnitGrid.coordinateFromGrid(grid_y),
+                  null,
+                  owner.getRaceInfo().getUnitTemplate(warrior_type));
+          unit.setTarget(tower, Action.DEFAULT, false);
         });
-    }
+  }
 
-    protected final void placePrisoners(Player captive, Player enemy, int peons, int rock_warriors,
-            int iron_warriors, int rubber_warriors, boolean chieftain) {
-        int ox = UnitGrid.toGridCoordinate(enemy.getStartX());
-        int oy = UnitGrid.toGridCoordinate(enemy.getStartY());
-        int center = captive.getWorld().getHeightMap().getGridUnitsPerWorld() / 2;
-        int dx = center - ox;
-        int dy = center - oy;
-        float inv_dist = 1f / (float) Math.hypot(dx, dy);
-        int tx = (int) (ox - 5f * dx * inv_dist);
-        int ty = (int) (oy - 5f * dy * inv_dist);
-        for (int i = 0; i < peons; i++) {
-            new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(ty),
-                    null, captive.getRaceInfo().getUnitTemplate(UnitType.PEON));
-        }
-        for (int i = 0; i < rock_warriors; i++) {
-            new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(ty),
-                    null, captive.getRaceInfo().getUnitTemplate(UnitType.PEON));
-        }
-        for (int i = 0; i < iron_warriors; i++) {
-            new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(ty),
-                    null, captive.getRaceInfo().getUnitTemplate(UnitType.PEON));
-        }
-        for (int i = 0; i < rubber_warriors; i++) {
-            new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(ty),
-                    null, captive.getRaceInfo().getUnitTemplate(UnitType.PEON));
-        }
-        if (chieftain) {
-            captive.setActiveChieftain(new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(
-                    ty),
-                    null, captive.getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN)));
-        }
+  protected final void placePrisoners(
+      Player captive,
+      Player enemy,
+      int peons,
+      int rock_warriors,
+      int iron_warriors,
+      int rubber_warriors,
+      boolean chieftain) {
+    int ox = UnitGrid.toGridCoordinate(enemy.getStartX());
+    int oy = UnitGrid.toGridCoordinate(enemy.getStartY());
+    int center = captive.getWorld().getHeightMap().getGridUnitsPerWorld() / 2;
+    int dx = center - ox;
+    int dy = center - oy;
+    float inv_dist = 1f / (float) Math.hypot(dx, dy);
+    int tx = (int) (ox - 5f * dx * inv_dist);
+    int ty = (int) (oy - 5f * dy * inv_dist);
+    for (int i = 0; i < peons; i++) {
+      new Unit(
+          captive,
+          UnitGrid.coordinateFromGrid(tx),
+          UnitGrid.coordinateFromGrid(ty),
+          null,
+          captive.getRaceInfo().getUnitTemplate(UnitType.PEON));
     }
+    for (int i = 0; i < rock_warriors; i++) {
+      new Unit(
+          captive,
+          UnitGrid.coordinateFromGrid(tx),
+          UnitGrid.coordinateFromGrid(ty),
+          null,
+          captive.getRaceInfo().getUnitTemplate(UnitType.PEON));
+    }
+    for (int i = 0; i < iron_warriors; i++) {
+      new Unit(
+          captive,
+          UnitGrid.coordinateFromGrid(tx),
+          UnitGrid.coordinateFromGrid(ty),
+          null,
+          captive.getRaceInfo().getUnitTemplate(UnitType.PEON));
+    }
+    for (int i = 0; i < rubber_warriors; i++) {
+      new Unit(
+          captive,
+          UnitGrid.coordinateFromGrid(tx),
+          UnitGrid.coordinateFromGrid(ty),
+          null,
+          captive.getRaceInfo().getUnitTemplate(UnitType.PEON));
+    }
+    if (chieftain) {
+      captive.setActiveChieftain(
+          new Unit(
+              captive,
+              UnitGrid.coordinateFromGrid(tx),
+              UnitGrid.coordinateFromGrid(ty),
+              null,
+              captive.getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN)));
+    }
+  }
 
-    protected final void deploy(Player enemy, int num_units) {
-        enemy.getArmory().ifPresent(armory -> {
-            if (!armory.isDead()) {
-                enemy.deployUnits(armory, DeployType.IRON_WARRIOR, num_units);
-            }
+  protected final void deploy(Player enemy, int num_units) {
+    enemy
+        .getArmory()
+        .ifPresent(armory -> {
+          if (!armory.isDead()) {
+            enemy.deployUnits(armory, DeployType.IRON_WARRIOR, num_units);
+          }
         });
-    }
+  }
 
-    protected final void attack(Player enemy, Target target, int num_units) {
-        AI.attackLandscape(enemy, target, num_units);
-    }
+  protected final void attack(Player enemy, Target target, int num_units) {
+    AI.attackLandscape(enemy, target, num_units);
+  }
 
-    protected final @Nullable Unit getWarrior(Player player) {
-        return AI.getWarrior(player);
-    }
+  protected final @Nullable Unit getWarrior(Player player) {
+    return AI.getWarrior(player);
+  }
 
-    protected final void refillArmory(Player enemy) {
-        enemy.getQuarters().ifPresent(quarters -> {
-            enemy.getArmory().ifPresent(armory -> {
+  protected final void refillArmory(Player enemy) {
+    enemy
+        .getQuarters()
+        .ifPresent(quarters -> {
+          enemy
+              .getArmory()
+              .ifPresent(armory -> {
                 quarters.removeUnits();
-                armory.fillUnits(enemy.getWorld().getMaxUnitCount() - enemy.getUnitCountContainer()
-                        .getNumSupplies());
+                armory.fillUnits(enemy.getWorld().getMaxUnitCount() - enemy.getUnitCountContainer().getNumSupplies());
                 armory.fillWeapons(WeaponTier.IRON, Integer.MAX_VALUE);
-            });
+              });
         });
+  }
+
+  /// Placement specification for a campaign statue scenery object.
+  public record StatuePlacement(float x, float y, float dirX, float dirY, int treasureIndex, float shadowDiameter) {
+    public static final float DEFAULT_SHADOW_DIAMETER = 2.6f;
+    public static final float LARGE_SHADOW_DIAMETER = 4.5f;
+
+    public StatuePlacement(float x, float y, float dirX, float dirY, int treasureIndex) {
+      this(x, y, dirX, dirY, treasureIndex, DEFAULT_SHADOW_DIAMETER);
     }
 
-    /**
-     * Placement specification for a campaign statue scenery object.
-     */
-    public record StatuePlacement(float x, float y, float dirX, float dirY, int treasureIndex, float shadowDiameter) {
-        public static final float DEFAULT_SHADOW_DIAMETER = 2.6f;
-        public static final float LARGE_SHADOW_DIAMETER = 4.5f;
-
-        public StatuePlacement(float x, float y, float dirX, float dirY, int treasureIndex) {
-            this(x, y, dirX, dirY, treasureIndex, DEFAULT_SHADOW_DIAMETER);
-        }
-
-        public static StatuePlacement atGrid(int gridX, int gridY, float dirX, float dirY, int treasureIndex) {
-            float offset = HeightMap.METERS_PER_UNIT_GRID * 0.5f;
-            return new StatuePlacement(gridX * 2 + offset, gridY * 2 + offset, dirX, dirY, treasureIndex,
-                    DEFAULT_SHADOW_DIAMETER);
-        }
-
-        public static StatuePlacement atGrid(int gridX, int gridY, float dirX, float dirY, int treasureIndex,
-                float shadowDiameter) {
-            float offset = HeightMap.METERS_PER_UNIT_GRID * 0.5f;
-            return new StatuePlacement(gridX * 2 + offset, gridY * 2 + offset, dirX, dirY, treasureIndex,
-                    shadowDiameter);
-        }
+    public static StatuePlacement atGrid(int gridX, int gridY, float dirX, float dirY, int treasureIndex) {
+      float offset = HeightMap.METERS_PER_UNIT_GRID * 0.5f;
+      return new StatuePlacement(
+          gridX * 2 + offset, gridY * 2 + offset, dirX, dirY, treasureIndex, DEFAULT_SHADOW_DIAMETER);
     }
 
-    /**
-     * Instantiates and registers statue scenery objects according to the given placement specifications.
-     */
-    protected final StatueScenery[] placeStatues(String name, StatuePlacement... placements) {
-        var treasures = AssetRegistry.getInstance().getTreasures();
-        var world = getViewer().getWorld();
-        return Arrays.stream(placements)
-                .map(p -> new StatueScenery(world, p.x(), p.y(), p.dirX(), p.dirY(),
-                        p.treasureIndex(), treasures[p.treasureIndex()].bounds(), p.shadowDiameter(), true, name))
-                .toArray(StatueScenery[]::new);
+    public static StatuePlacement atGrid(
+        int gridX, int gridY, float dirX, float dirY, int treasureIndex, float shadowDiameter) {
+      float offset = HeightMap.METERS_PER_UNIT_GRID * 0.5f;
+      return new StatuePlacement(gridX * 2 + offset, gridY * 2 + offset, dirX, dirY, treasureIndex, shadowDiameter);
     }
+  }
 
-    public final void updateChecksum(StateChecksum checksum) {
-    }
+  /// Instantiates and registers statue scenery objects according to the given placement specifications.
+  protected final StatueScenery[] placeStatues(String name, StatuePlacement... placements) {
+    var treasures = AssetRegistry.getInstance().getTreasures();
+    var world = getViewer().getWorld();
+    return Arrays.stream(placements)
+        .map(p ->
+            new StatueScenery(
+                world,
+                p.x(),
+                p.y(),
+                p.dirX(),
+                p.dirY(),
+                p.treasureIndex(),
+                treasures[p.treasureIndex()].bounds(),
+                p.shadowDiameter(),
+                true,
+                name))
+        .toArray(StatueScenery[]::new);
+  }
+
+  public final void updateChecksum(StateChecksum checksum) {}
 }

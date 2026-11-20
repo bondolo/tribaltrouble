@@ -1,5 +1,9 @@
 package com.oddlabs.tt.content.form;
 
+import static com.oddlabs.tt.gui.Origin.AT_END;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
+
 import com.oddlabs.matchmaking.Profile;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.gui.FocusDirection;
@@ -10,95 +14,88 @@ import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.OKButton;
 import com.oddlabs.tt.gui.OKListener;
-
 import java.util.ResourceBundle;
 
-import static com.oddlabs.tt.gui.Origin.AT_END;
-import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
-
-/**
- * Modal dialog showing statistics and rating for a user profile.
- */
+/// Modal dialog showing statistics and rating for a user profile.
 public final class InfoForm extends Form {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(InfoForm.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(InfoForm.class.getName());
 
-    private String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  private final HorizButton ok_button;
+
+  public InfoForm(GUIRoot guiRoot, Profile profile) {
+    super(guiRoot, "");
+    var editFont = skin.getEditFont();
+    String profile_str = i18n("profile");
+    Label label_headline = new Label(profile_str, skin.getHeadlineFont());
+    addChild(label_headline);
+
+    Group types = new Group(guiRoot);
+    Group values = new Group(guiRoot);
+
+    Label label_name = new Label(i18n("name"), editFont);
+    Label label_name_value = new Label(profile.getNick(), editFont);
+    types.addChild(label_name);
+    values.addChild(label_name_value);
+
+    Label label_rating = new Label(i18n("rating"), editFont);
+    Label label_rating_value = new Label("" + profile.getRating(), editFont);
+    types.addChild(label_rating);
+    values.addChild(label_rating_value);
+
+    Label label_wins = new Label(i18n("wins"), editFont);
+    Label label_wins_value = new Label("" + profile.getWins(), editFont);
+    types.addChild(label_wins);
+    values.addChild(label_wins_value);
+
+    Label label_losses = new Label(i18n("losses"), editFont);
+    Label label_losses_value = new Label("" + profile.getLosses(), editFont);
+    types.addChild(label_losses);
+    values.addChild(label_losses_value);
+
+    Label label_invalid = new Label(i18n("invalid"), editFont);
+    Label label_invalid_value = new Label("" + profile.getInvalid(), editFont);
+    types.addChild(label_invalid);
+    values.addChild(label_invalid_value);
+
+    label_name.place();
+    label_rating.place(label_name, BOTTOM_LEFT);
+    label_wins.place(label_rating, BOTTOM_LEFT);
+    label_losses.place(label_wins, BOTTOM_LEFT);
+    label_invalid.place(label_losses, BOTTOM_LEFT);
+    types.compileCanvas();
+    addChild(types);
+
+    label_name_value.place();
+    label_rating_value.place(label_name_value, BOTTOM_LEFT);
+    label_wins_value.place(label_rating_value, BOTTOM_LEFT);
+    label_losses_value.place(label_wins_value, BOTTOM_LEFT);
+    label_invalid_value.place(label_losses_value, BOTTOM_LEFT);
+    values.compileCanvas();
+    addChild(values);
+
+    ok_button = new OKButton(guiRoot, 100);
+    addChild(ok_button);
+    ok_button.addMouseClickListener(new OKListener(this));
+
+    label_headline.place();
+    types.place(label_headline, BOTTOM_LEFT);
+    values.place(types, RIGHT_TOP);
+
+    ok_button.place(AT_END);
+    compileCanvas();
+    centerPos();
+  }
+
+  @Override
+  public void setFocus(FocusDirection direction) {
+    if (direction == FocusDirection.BACKWARD) {
+      super.setFocus(direction);
+    } else {
+      ok_button.setFocus(direction);
     }
-
-    private final HorizButton ok_button;
-
-    public InfoForm(GUIRoot guiRoot, Profile profile) {
-        super(guiRoot, "");
-        var editFont = skin.getEditFont();
-        String profile_str = i18n("profile");
-        Label label_headline = new Label(profile_str, skin.getHeadlineFont());
-        addChild(label_headline);
-
-        Group types = new Group(guiRoot);
-        Group values = new Group(guiRoot);
-
-        Label label_name = new Label(i18n("name"), editFont);
-        Label label_name_value = new Label(profile.getNick(), editFont);
-        types.addChild(label_name);
-        values.addChild(label_name_value);
-
-        Label label_rating = new Label(i18n("rating"), editFont);
-        Label label_rating_value = new Label("" + profile.getRating(), editFont);
-        types.addChild(label_rating);
-        values.addChild(label_rating_value);
-
-        Label label_wins = new Label(i18n("wins"), editFont);
-        Label label_wins_value = new Label("" + profile.getWins(), editFont);
-        types.addChild(label_wins);
-        values.addChild(label_wins_value);
-
-        Label label_losses = new Label(i18n("losses"), editFont);
-        Label label_losses_value = new Label("" + profile.getLosses(), editFont);
-        types.addChild(label_losses);
-        values.addChild(label_losses_value);
-
-        Label label_invalid = new Label(i18n("invalid"), editFont);
-        Label label_invalid_value = new Label("" + profile.getInvalid(), editFont);
-        types.addChild(label_invalid);
-        values.addChild(label_invalid_value);
-
-        label_name.place();
-        label_rating.place(label_name, BOTTOM_LEFT);
-        label_wins.place(label_rating, BOTTOM_LEFT);
-        label_losses.place(label_wins, BOTTOM_LEFT);
-        label_invalid.place(label_losses, BOTTOM_LEFT);
-        types.compileCanvas();
-        addChild(types);
-
-        label_name_value.place();
-        label_rating_value.place(label_name_value, BOTTOM_LEFT);
-        label_wins_value.place(label_rating_value, BOTTOM_LEFT);
-        label_losses_value.place(label_wins_value, BOTTOM_LEFT);
-        label_invalid_value.place(label_losses_value, BOTTOM_LEFT);
-        values.compileCanvas();
-        addChild(values);
-
-        ok_button = new OKButton(guiRoot, 100);
-        addChild(ok_button);
-        ok_button.addMouseClickListener(new OKListener(this));
-
-        label_headline.place();
-        types.place(label_headline, BOTTOM_LEFT);
-        values.place(types, RIGHT_TOP);
-
-        ok_button.place(AT_END);
-        compileCanvas();
-        centerPos();
-    }
-
-    @Override
-    public void setFocus(FocusDirection direction) {
-        if (direction == FocusDirection.BACKWARD) {
-            super.setFocus(direction);
-        } else {
-            ok_button.setFocus(direction);
-        }
-    }
+  }
 }

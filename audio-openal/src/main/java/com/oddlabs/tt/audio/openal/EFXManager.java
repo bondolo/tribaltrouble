@@ -1,12 +1,5 @@
 package com.oddlabs.tt.audio.openal;
 
-import com.oddlabs.tt.audio.ReverbType;
-import org.lwjgl.openal.ALC;
-import org.lwjgl.openal.ALC10;
-import org.lwjgl.openal.ALCCapabilities;
-
-import java.util.logging.Logger;
-
 import static org.lwjgl.openal.EXTEfx.AL_EAXREVERB_AIR_ABSORPTION_GAINHF;
 import static org.lwjgl.openal.EXTEfx.AL_EAXREVERB_DECAY_TIME;
 import static org.lwjgl.openal.EXTEfx.AL_EAXREVERB_DENSITY;
@@ -29,171 +22,170 @@ import static org.lwjgl.openal.EXTEfx.alEffecti;
 import static org.lwjgl.openal.EXTEfx.alGenAuxiliaryEffectSlots;
 import static org.lwjgl.openal.EXTEfx.alGenEffects;
 
-/**
- * Manages OpenAL EFX extension features, including environmental reverb effects.
- * Handles initialization, blending between reverb presets, and cleanup of EFX resources.
- */
+import com.oddlabs.tt.audio.ReverbType;
+import java.util.logging.Logger;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC10;
+import org.lwjgl.openal.ALCCapabilities;
+
+/// Manages OpenAL EFX extension features, including environmental reverb effects. Handles initialization, blending
+/// between reverb presets, and cleanup of EFX resources.
 final class EFXManager implements AutoCloseable {
-    private static final Logger logger = Logger.getLogger(EFXManager.class.getSimpleName());
+  private static final Logger logger = Logger.getLogger(EFXManager.class.getSimpleName());
 
-    private int effectSlot;
-    private int reverbEffect;
-    private boolean supported = false;
+  private int effectSlot;
+  private int reverbEffect;
+  private boolean supported = false;
 
+  // Reverb Snapshot record for parameter interpolation
+  private record ReverbSnapshot(
+      float density,
+      float diffusion,
+      float gain,
+      float gainHF,
+      float decayTime,
+      float reflectionsGain,
+      float reflectionsDelay,
+      float lateReverbDelay,
+      float airAbsorption) {
+    static final ReverbSnapshot NONE = new ReverbSnapshot(0f, 0f, 0f, 0f, 0.1f, 0f, 0f, 0f, 0.994f);
+    static final ReverbSnapshot GENERIC = new ReverbSnapshot(0.1f, 0.1f, 0.05f, 0.1f, 0.3f, 0.05f, 0.02f, 0.0f, 0.994f);
+    static final ReverbSnapshot FOREST = new ReverbSnapshot(0.1f, 0.1f, 0.15f, 0.2f, 0.4f, 0.1f, 0.02f, 0.0f, 0.9f);
+    static final ReverbSnapshot VALLEY = new ReverbSnapshot(0.2f, 0.3f, 0.4f, 0.5f, 1.2f, 0.3f, 0.1f, 0.1f, 0.994f);
+    static final ReverbSnapshot UNDERWATER = new ReverbSnapshot(1.0f, 0.1f, 0.8f, 0.1f, 1.2f, 0.01f, 0.01f, 0.0f, 0.9f);
 
-    // Reverb Snapshot record for parameter interpolation
-    private record ReverbSnapshot(
-                                  float density,
-                                  float diffusion,
-                                  float gain,
-                                  float gainHF,
-                                  float decayTime,
-                                  float reflectionsGain,
-                                  float reflectionsDelay,
-                                  float lateReverbDelay,
-                                  float airAbsorption
-    ) {
-        static final ReverbSnapshot NONE = new ReverbSnapshot(0f, 0f, 0f, 0f, 0.1f, 0f, 0f, 0f, 0.994f);
-        static final ReverbSnapshot GENERIC = new ReverbSnapshot(0.1f, 0.1f, 0.05f, 0.1f, 0.3f, 0.05f, 0.02f, 0.0f,
-                0.994f);
-        static final ReverbSnapshot FOREST = new ReverbSnapshot(0.1f, 0.1f, 0.15f, 0.2f, 0.4f, 0.1f, 0.02f, 0.0f, 0.9f);
-        static final ReverbSnapshot VALLEY = new ReverbSnapshot(0.2f, 0.3f, 0.4f, 0.5f, 1.2f, 0.3f, 0.1f, 0.1f, 0.994f);
-        static final ReverbSnapshot UNDERWATER = new ReverbSnapshot(1.0f, 0.1f, 0.8f, 0.1f, 1.2f, 0.01f, 0.01f, 0.0f,
-                0.9f);
-
-        static ReverbSnapshot get(ReverbType type) {
-            return switch (type) {
-                case NONE -> NONE;
-                case GENERIC -> GENERIC;
-                case FOREST -> FOREST;
-                case VALLEY -> VALLEY;
-                case UNDERWATER -> UNDERWATER;
-            };
-        }
-
-        static ReverbSnapshot blend(ReverbSnapshot a, ReverbSnapshot b, float factor) {
-            float f = Math.clamp(factor, 0f, 1f);
-            return new ReverbSnapshot(
-                    lerp(a.density, b.density, f),
-                    lerp(a.diffusion, b.diffusion, f),
-                    lerp(a.gain, b.gain, f),
-                    lerp(a.gainHF, b.gainHF, f),
-                    lerp(a.decayTime, b.decayTime, f),
-                    lerp(a.reflectionsGain, b.reflectionsGain, f),
-                    lerp(a.reflectionsDelay, b.reflectionsDelay, f),
-                    lerp(a.lateReverbDelay, b.lateReverbDelay, f),
-                    lerp(a.airAbsorption, b.airAbsorption, f)
-            );
-        }
-
-        private static float lerp(float a, float b, float f) {
-            return a + (b - a) * f;
-        }
+    static ReverbSnapshot get(ReverbType type) {
+      return switch (type) {
+        case NONE -> NONE;
+        case GENERIC -> GENERIC;
+        case FOREST -> FOREST;
+        case VALLEY -> VALLEY;
+        case UNDERWATER -> UNDERWATER;
+      };
     }
 
-    private ReverbType currentFrom = ReverbType.NONE;
-    private ReverbType currentTo = ReverbType.NONE;
-    private float currentFactor = -1f;
-
-    public void init(long device) {
-        if (!EFXManager.isEfxSupported(device)) {
-            logger.warning("OpenAL EFX extension not supported. Environmental audio disabled.");
-            supported = false;
-            return;
-        }
-
-        try {
-            // Create Auxiliary Effect Slot
-            effectSlot = alGenAuxiliaryEffectSlots();
-
-            // Create Effect
-            reverbEffect = alGenEffects();
-
-            // Configure slot
-            alAuxiliaryEffectSloti(effectSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, 1);
-
-            supported = true;
-            logger.info("OpenAL EFX initialized successfully.");
-        } catch (Exception e) {
-            logger.severe("Failed to initialize OpenAL EFX: " + e.getMessage());
-            supported = false;
-        }
+    static ReverbSnapshot blend(ReverbSnapshot a, ReverbSnapshot b, float factor) {
+      float f = Math.clamp(factor, 0f, 1f);
+      return new ReverbSnapshot(
+          lerp(a.density, b.density, f),
+          lerp(a.diffusion, b.diffusion, f),
+          lerp(a.gain, b.gain, f),
+          lerp(a.gainHF, b.gainHF, f),
+          lerp(a.decayTime, b.decayTime, f),
+          lerp(a.reflectionsGain, b.reflectionsGain, f),
+          lerp(a.reflectionsDelay, b.reflectionsDelay, f),
+          lerp(a.lateReverbDelay, b.lateReverbDelay, f),
+          lerp(a.airAbsorption, b.airAbsorption, f));
     }
 
-    public void setReverb(ReverbType type) {
-        setReverb(type, type, 1.0f);
+    private static float lerp(float a, float b, float f) {
+      return a + (b - a) * f;
+    }
+  }
+
+  private ReverbType currentFrom = ReverbType.NONE;
+  private ReverbType currentTo = ReverbType.NONE;
+  private float currentFactor = -1f;
+
+  public void init(long device) {
+    if (!EFXManager.isEfxSupported(device)) {
+      logger.warning("OpenAL EFX extension not supported. Environmental audio disabled.");
+      supported = false;
+      return;
     }
 
-    /**
-     * Blends between two reverb environments.
-     *
-     * @param from The source reverb environment.
-     * @param to The target reverb environment.
-     * @param factor Blending factor [0.0 - 1.0]. 0.0 is fully 'from', 1.0 is fully 'to'.
-     */
-    public void setReverb(ReverbType from, ReverbType to, float factor) {
-        if (!supported || ALC10.alcGetCurrentContext() == 0) return;
-        // Small epsilon for factor comparison to avoid redundant GL updates
-        if (from == currentFrom && to == currentTo && Math.abs(factor - currentFactor) < 0.005f) return;
+    try {
+      // Create Auxiliary Effect Slot
+      effectSlot = alGenAuxiliaryEffectSlots();
 
-        currentFrom = from;
-        currentTo = to;
-        currentFactor = factor;
+      // Create Effect
+      reverbEffect = alGenEffects();
 
-        if (from == ReverbType.NONE && to == ReverbType.NONE) {
-            alAuxiliaryEffectSloti(effectSlot, AL_EFFECTSLOT_EFFECT, AL_EFFECT_NULL);
-            return;
-        }
+      // Configure slot
+      alAuxiliaryEffectSloti(effectSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, 1);
 
-        alEffecti(reverbEffect, AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
+      supported = true;
+      logger.info("OpenAL EFX initialized successfully.");
+    } catch (Exception e) {
+      logger.severe("Failed to initialize OpenAL EFX: " + e.getMessage());
+      supported = false;
+    }
+  }
 
-        ReverbSnapshot sFrom = ReverbSnapshot.get(from);
-        ReverbSnapshot sTo = ReverbSnapshot.get(to);
-        ReverbSnapshot blended = ReverbSnapshot.blend(sFrom, sTo, factor);
+  public void setReverb(ReverbType type) {
+    setReverb(type, type, 1.0f);
+  }
 
-        applySnapshot(blended);
+  /**
+   * Blends between two reverb environments.
+   *
+   * @param `from` The source reverb environment.
+   * @param `to` The target reverb environment.
+   * @param `factor` Blending factor [0.0 - 1.0]. 0.0 is fully 'from', 1.0 is fully 'to'.
+   */
+  public void setReverb(ReverbType from, ReverbType to, float factor) {
+    if (!supported || ALC10.alcGetCurrentContext() == 0) return;
+    // Small epsilon for factor comparison to avoid redundant GL updates
+    if (from == currentFrom && to == currentTo && Math.abs(factor - currentFactor) < 0.005f) return;
 
-        // Bind effect to slot
-        alAuxiliaryEffectSloti(effectSlot, AL_EFFECTSLOT_EFFECT, reverbEffect);
+    currentFrom = from;
+    currentTo = to;
+    currentFactor = factor;
+
+    if (from == ReverbType.NONE && to == ReverbType.NONE) {
+      alAuxiliaryEffectSloti(effectSlot, AL_EFFECTSLOT_EFFECT, AL_EFFECT_NULL);
+      return;
     }
 
-    private void applySnapshot(ReverbSnapshot s) {
-        if (ALC10.alcGetCurrentContext() == 0) return;
-        alEffectf(reverbEffect, AL_EAXREVERB_DENSITY, s.density);
-        alEffectf(reverbEffect, AL_EAXREVERB_DIFFUSION, s.diffusion);
-        alEffectf(reverbEffect, AL_EAXREVERB_GAIN, s.gain);
-        alEffectf(reverbEffect, AL_EAXREVERB_GAINHF, s.gainHF);
-        alEffectf(reverbEffect, AL_EAXREVERB_DECAY_TIME, s.decayTime);
-        alEffectf(reverbEffect, AL_EAXREVERB_REFLECTIONS_GAIN, s.reflectionsGain);
-        alEffectf(reverbEffect, AL_EAXREVERB_REFLECTIONS_DELAY, s.reflectionsDelay);
-        alEffectf(reverbEffect, AL_EAXREVERB_LATE_REVERB_DELAY, s.lateReverbDelay);
-        alEffectf(reverbEffect, AL_EAXREVERB_AIR_ABSORPTION_GAINHF, s.airAbsorption);
-    }
+    alEffecti(reverbEffect, AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
 
-    public int getEffectSlot() {
-        return effectSlot;
-    }
+    ReverbSnapshot sFrom = ReverbSnapshot.get(from);
+    ReverbSnapshot sTo = ReverbSnapshot.get(to);
+    ReverbSnapshot blended = ReverbSnapshot.blend(sFrom, sTo, factor);
 
-    public boolean isSupported() {
-        return supported;
-    }
+    applySnapshot(blended);
 
-    @Override
-    public void close() {
-        if (supported && ALC10.alcGetCurrentContext() != 0) {
-            alDeleteEffects(reverbEffect);
-            alDeleteAuxiliaryEffectSlots(effectSlot);
-        }
-    }
+    // Bind effect to slot
+    alAuxiliaryEffectSloti(effectSlot, AL_EFFECTSLOT_EFFECT, reverbEffect);
+  }
 
-    /**
-     * Checks if the OpenAL EFX extension is supported.
-     *
-     * @param device The OpenAL device.
-     * @return True if EFX is supported, false otherwise.
-     */
-    public static boolean isEfxSupported(long device) {
-        ALCCapabilities caps = ALC.createCapabilities(device);
-        return caps.ALC_EXT_EFX;
+  private void applySnapshot(ReverbSnapshot s) {
+    if (ALC10.alcGetCurrentContext() == 0) return;
+    alEffectf(reverbEffect, AL_EAXREVERB_DENSITY, s.density);
+    alEffectf(reverbEffect, AL_EAXREVERB_DIFFUSION, s.diffusion);
+    alEffectf(reverbEffect, AL_EAXREVERB_GAIN, s.gain);
+    alEffectf(reverbEffect, AL_EAXREVERB_GAINHF, s.gainHF);
+    alEffectf(reverbEffect, AL_EAXREVERB_DECAY_TIME, s.decayTime);
+    alEffectf(reverbEffect, AL_EAXREVERB_REFLECTIONS_GAIN, s.reflectionsGain);
+    alEffectf(reverbEffect, AL_EAXREVERB_REFLECTIONS_DELAY, s.reflectionsDelay);
+    alEffectf(reverbEffect, AL_EAXREVERB_LATE_REVERB_DELAY, s.lateReverbDelay);
+    alEffectf(reverbEffect, AL_EAXREVERB_AIR_ABSORPTION_GAINHF, s.airAbsorption);
+  }
+
+  public int getEffectSlot() {
+    return effectSlot;
+  }
+
+  public boolean isSupported() {
+    return supported;
+  }
+
+  @Override
+  public void close() {
+    if (supported && ALC10.alcGetCurrentContext() != 0) {
+      alDeleteEffects(reverbEffect);
+      alDeleteAuxiliaryEffectSlots(effectSlot);
     }
+  }
+
+  /**
+   * Checks if the OpenAL EFX extension is supported.
+   *
+   * @param `device` The OpenAL device.
+   * @return True if EFX is supported, false otherwise.
+   */
+  public static boolean isEfxSupported(long device) {
+    ALCCapabilities caps = ALC.createCapabilities(device);
+    return caps.ALC_EXT_EFX;
+  }
 }

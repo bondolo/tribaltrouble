@@ -1,130 +1,128 @@
 package com.oddlabs.tt.client.gui;
 
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
+import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.DeployContainer;
 import com.oddlabs.tt.simulation.model.DeployType;
 import com.oddlabs.tt.simulation.model.SupplyContainer;
-import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
-import com.oddlabs.tt.client.viewer.WorldViewer;
+import java.util.List;
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
-
-/**
- * A spinner GUI control for queuing and deploying units and resources from buildings.
- */
+/// A spinner GUI control for queuing and deploying units and resources from buildings.
 public final class DeploySpinner extends IconSpinner {
-    private final PlayerInterface player_interface;
-    private final DeployType deploy_type;
-    private @Nullable Building current_building;
-    private int num_orders = 0;
-    private int order_size = 0;
+  private final PlayerInterface player_interface;
+  private final DeployType deploy_type;
+  private @Nullable Building current_building;
+  private int num_orders = 0;
+  private int order_size = 0;
 
-    public DeploySpinner(WorldViewer viewer, PlayerInterface player_interface,
-            ModeIconQuads icon_quad, String tool_tip, @Nullable List<
-                    IconQuad> tool_tip_icons,
-            GameAction action, GameAction dec_action, DeployType deploy_type) {
-        super(viewer, icon_quad, tool_tip, tool_tip_icons, action, dec_action);
-        this.player_interface = player_interface;
-        this.deploy_type = deploy_type;
+  public DeploySpinner(
+      WorldViewer viewer,
+      PlayerInterface player_interface,
+      ModeIconQuads icon_quad,
+      String tool_tip,
+      @Nullable List<IconQuad> tool_tip_icons,
+      GameAction action,
+      GameAction dec_action,
+      DeployType deploy_type) {
+    super(viewer, icon_quad, tool_tip, tool_tip_icons, action, dec_action);
+    this.player_interface = player_interface;
+    this.deploy_type = deploy_type;
+  }
+
+  public void setBuilding(@Nullable Building current_building) {
+    this.current_building = current_building;
+    if (current_building != null && !current_building.isDead()) {
+      num_orders = current_building.getDeployContainer(deploy_type).getNumOrders();
+    } else {
+      num_orders = 0;
     }
+  }
 
-    public void setBuilding(@Nullable Building current_building) {
-        this.current_building = current_building;
-        if (current_building != null && !current_building.isDead()) {
-            num_orders = current_building.getDeployContainer(deploy_type).getNumOrders();
-        } else {
-            num_orders = 0;
+  @Override
+  public int computeCount() {
+    if (current_building != null && !current_building.isDead()) {
+      DeployContainer deploy_container = current_building.getDeployContainer(deploy_type);
+      return Math.max(0, deploy_container.getNumSupplies() + getOrderDiff());
+    } else return 0;
+  }
+
+  @Override
+  public boolean renderInfinite() {
+    return false;
+  }
+
+  public int getOrderDiff() {
+    if (current_building != null && !current_building.isDead()) {
+      return num_orders - current_building.getDeployContainer(deploy_type).getNumOrders();
+    } else {
+      return 0;
+    }
+  }
+
+  private void order(int num) {
+    if (!current_building.isDead()) player_interface.deployUnits(current_building, deploy_type, num);
+  }
+
+  @Override
+  protected void increase(int amount) {
+    if (!current_building.isDead()) {
+      int num_units = current_building.getUnitContainer().map(SupplyContainer::getNumSupplies).orElse(0);
+      DeployContainer deploy_container = current_building.getDeployContainer(deploy_type);
+      SupplyContainer req = deploy_container.getRequiredSupply();
+      int num_supplies = req != null ? req.getNumSupplies() : Integer.MAX_VALUE;
+
+      if (num_units > getOrderDiff() && num_supplies > getOrderDiff()) {
+        if (amount > num_units - getOrderDiff()) {
+          amount = num_units - getOrderDiff();
         }
-    }
-
-    @Override
-    public int computeCount() {
-        if (current_building != null && !current_building.isDead()) {
-            DeployContainer deploy_container = current_building.getDeployContainer(deploy_type);
-            return Math.max(0, deploy_container.getNumSupplies() + getOrderDiff());
-        } else
-            return 0;
-    }
-
-    @Override
-    public boolean renderInfinite() {
-        return false;
-    }
-
-    public int getOrderDiff() {
-        if (current_building != null && !current_building.isDead()) {
-            return num_orders - current_building.getDeployContainer(deploy_type).getNumOrders();
-        } else {
-            return 0;
+        if (req != null && amount > num_supplies - getOrderDiff()) {
+          amount = num_supplies - getOrderDiff();
         }
+        order_size += amount;
+        num_orders += amount;
+      }
     }
+  }
 
-    private void order(int num) {
-        if (!current_building.isDead())
-            player_interface.deployUnits(current_building, deploy_type, num);
-    }
+  @Override
+  protected void decrease(int amount) {
+    if (!current_building.isDead() && computeCount() > 0) {
+      int num_units = current_building.getDeployContainer(deploy_type).getNumSupplies();
 
-    @Override
-    protected void increase(int amount) {
-        if (!current_building.isDead()) {
-            int num_units = current_building.getUnitContainer().map(SupplyContainer::getNumSupplies).orElse(0);
-            DeployContainer deploy_container = current_building.getDeployContainer(deploy_type);
-            SupplyContainer req = deploy_container.getRequiredSupply();
-            int num_supplies = req != null ? req.getNumSupplies() : Integer.MAX_VALUE;
-
-            if (num_units > getOrderDiff() && num_supplies > getOrderDiff()) {
-                if (amount > num_units - getOrderDiff()) {
-                    amount = num_units - getOrderDiff();
-                }
-                if (req != null && amount > num_supplies - getOrderDiff()) {
-                    amount = num_supplies - getOrderDiff();
-                }
-                order_size += amount;
-                num_orders += amount;
-            }
+      if (num_units > -getOrderDiff() /* && num_supplies > -getOrderDiff()*/) {
+        if (amount > num_units + getOrderDiff()) {
+          amount = num_units + getOrderDiff();
         }
-    }
-
-    @Override
-    protected void decrease(int amount) {
-        if (!current_building.isDead() && computeCount() > 0) {
-            int num_units = current_building.getDeployContainer(deploy_type).getNumSupplies();
-
-            if (num_units > -getOrderDiff()/* && num_supplies > -getOrderDiff()*/) {
-                if (amount > num_units + getOrderDiff()) {
-                    amount = num_units + getOrderDiff();
-                }
-                /*
-                if (supply_type != null && amount > num_supplies + getOrderDiff()) {
-                	amount = num_supplies + getOrderDiff();
-                }
-                */
-                order_size -= amount;
-                num_orders -= amount;
-            }
+        /*
+        if (supply_type != null && amount > num_supplies + getOrderDiff()) {
+        	amount = num_supplies + getOrderDiff();
         }
+        */
+        order_size -= amount;
+        num_orders -= amount;
+      }
     }
+  }
 
-    @Override
-    protected void release() {
-        order(order_size);
-        order_size = 0;
-    }
+  @Override
+  protected void release() {
+    order(order_size);
+    order_size = 0;
+  }
 
-    @Override
-    protected int getOrderSize() {
-        return order_size;
-    }
+  @Override
+  protected int getOrderSize() {
+    return order_size;
+  }
 
-    @Override
-    protected float getProgress() {
-        if (!current_building.isDead())
-            return current_building.getDeployContainer(deploy_type).getBuildProgress();
-        else
-            return 0;
-    }
+  @Override
+  protected float getProgress() {
+    if (!current_building.isDead()) return current_building.getDeployContainer(deploy_type).getBuildProgress();
+    else return 0;
+  }
 }

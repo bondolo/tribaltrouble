@@ -1,18 +1,9 @@
 package com.oddlabs.converter;
 
 import com.oddlabs.geometry.AnimationInfo;
+import com.oddlabs.geometry.BoundsData;
 import com.oddlabs.geometry.SkeletonData;
 import com.oddlabs.geometry.SpriteInfo;
-import com.oddlabs.geometry.BoundsData;
-import org.joml.Matrix4f;
-import org.joml.Vector4f;
-import org.jspecify.annotations.Nullable;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -23,307 +14,321 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.IntStream;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
+import org.jspecify.annotations.Nullable;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-/**
- * CLI tool for parsing XML geometry definitions and converting them to binary sprite format.
- */
+/// CLI tool for parsing XML geometry definitions and converting them to binary sprite format.
 public final class ConvertToBinary {
-    void main(String... args) {
-        if (args.length != 3)
-            throw new IllegalArgumentException("Invalid number of arguments : <xml_file> <src_dir> <build_dir>");
-        Path xml_file = Path.of(args[0]);
-        Path src_dir = Path.of(args[1]);
-        Path build_dir = Path.of(args[2]);
+  void main(String... args) {
+    if (args.length != 3)
+      throw new IllegalArgumentException("Invalid number of arguments : <xml_file> <src_dir> <build_dir>");
+    Path xml_file = Path.of(args[0]);
+    Path src_dir = Path.of(args[1]);
+    Path build_dir = Path.of(args[2]);
 
-        Path full_xml_path = src_dir.resolve(xml_file);
-        try (var input_stream = Files.newInputStream(full_xml_path)) {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setValidating(true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            builder.setErrorHandler(new GeometryErrorHandler());
-            Document document = builder.parse(input_stream);
-            org.w3c.dom.Element root = document.getDocumentElement();
-            parseGeometry(root, src_dir, build_dir, full_xml_path);
-        } catch (Exception e) {
-            System.err.println("Error processing " + xml_file);
-            e.printStackTrace(System.err);
-            System.exit(1);
-        }
+    Path full_xml_path = src_dir.resolve(xml_file);
+    try (var input_stream = Files.newInputStream(full_xml_path)) {
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setValidating(true);
+      DocumentBuilder builder = factory.newDocumentBuilder();
+      builder.setErrorHandler(new GeometryErrorHandler());
+      Document document = builder.parse(input_stream);
+      org.w3c.dom.Element root = document.getDocumentElement();
+      parseGeometry(root, src_dir, build_dir, full_xml_path);
+    } catch (Exception e) {
+      System.err.println("Error processing " + xml_file);
+      e.printStackTrace(System.err);
+      System.exit(1);
     }
+  }
 
-    private static void parseGeometry(Node n, Path src_dir, Path build_dir,
-            Path xml_file) {
-        if (n.hasChildNodes()) {
-            NodeList nl = n.getChildNodes();
-            for (int i = 0; i < nl.getLength(); i++) {
-                if (nl.item(i).getNodeType() == Node.ELEMENT_NODE)
-                    parseGroup(nl.item(i), src_dir, build_dir, xml_file);
-            }
-        }
+  private static void parseGeometry(Node n, Path src_dir, Path build_dir, Path xml_file) {
+    if (n.hasChildNodes()) {
+      NodeList nl = n.getChildNodes();
+      for (int i = 0; i < nl.getLength(); i++) {
+        if (nl.item(i).getNodeType() == Node.ELEMENT_NODE) parseGroup(nl.item(i), src_dir, build_dir, xml_file);
+      }
     }
+  }
 
-    private static void parseGroup(Node n, Path src_dir, Path build_dir,
-            Path xml_file) {
-        if (n.hasChildNodes()) {
-            Path new_build_dir = build_dir.resolve(getName(n));
-            NodeList nl = n.getChildNodes();
-            for (int i = 0; i < nl.getLength(); i++) {
-                Node child = nl.item(i);
-                if (child.getNodeType() == Node.ELEMENT_NODE) {
-                    String name = child.getNodeName();
-                    if (name.equals("sprite"))
-                        parseSprite(child, src_dir, new_build_dir, xml_file);
-                }
-            }
+  private static void parseGroup(Node n, Path src_dir, Path build_dir, Path xml_file) {
+    if (n.hasChildNodes()) {
+      Path new_build_dir = build_dir.resolve(getName(n));
+      NodeList nl = n.getChildNodes();
+      for (int i = 0; i < nl.getLength(); i++) {
+        Node child = nl.item(i);
+        if (child.getNodeType() == Node.ELEMENT_NODE) {
+          String name = child.getNodeName();
+          if (name.equals("sprite")) parseSprite(child, src_dir, new_build_dir, xml_file);
         }
+      }
     }
+  }
 
-    private static boolean isModified(Path src, Path dest) {
-        try {
-            return !Files.exists(dest) || Files.getLastModifiedTime(dest).compareTo(Files.getLastModifiedTime(src))
-                    <= 0;
-        } catch (IOException e) {
-            return true;
-        }
+  private static boolean isModified(Path src, Path dest) {
+    try {
+      return !Files.exists(dest) || Files.getLastModifiedTime(dest).compareTo(Files.getLastModifiedTime(src)) <= 0;
+    } catch (IOException e) {
+      return true;
     }
+  }
 
-    private static ModelObjectInfo getModelObjectInfo(Node n, Path src_dir) {
-        NodeList nl = n.getChildNodes();
-        for (int i = 0; i < nl.getLength(); i++) {
-            Node item = nl.item(i);
-            if (item.getNodeName().equals("model")) {
-                float r = getInt(item, "r") / 255f;
-                float g = getInt(item, "g") / 255f;
-                float b = getInt(item, "b") / 255f;
-                String[][] textures = getTextureInfos(item, src_dir);
-                return new ModelObjectInfo(src_dir.resolve(getText(item)), textures, new float[]{r, g, b});
-            }
-        }
-        throw new NoSuchElementException("Missing model node in sprite: " + getName(n));
+  private static ModelObjectInfo getModelObjectInfo(Node n, Path src_dir) {
+    NodeList nl = n.getChildNodes();
+    for (int i = 0; i < nl.getLength(); i++) {
+      Node item = nl.item(i);
+      if (item.getNodeName().equals("model")) {
+        float r = getInt(item, "r") / 255f;
+        float g = getInt(item, "g") / 255f;
+        float b = getInt(item, "b") / 255f;
+        String[][] textures = getTextureInfos(item, src_dir);
+        return new ModelObjectInfo(src_dir.resolve(getText(item)), textures, new float[] {r, g, b});
+      }
     }
+    throw new NoSuchElementException("Missing model node in sprite: " + getName(n));
+  }
 
-    private static AnimObjectInfo[] getAnimObjectInfos(Node n, Path src_dir) {
-        NodeList nl = n.getChildNodes();
-        List<AnimObjectInfo> object_infos = new ArrayList<>();
-        for (int i = 0; i < nl.getLength(); i++) {
-            Node item = nl.item(i);
-            if (item.getNodeName().equals("animation")) {
-                float wpc = Float.parseFloat(item.getAttributes().getNamedItem("wpc").getNodeValue());
-                assert wpc != 0f;
-                String type_str = item.getAttributes().getNamedItem("type").getNodeValue();
-                AnimationInfo.AnimationType type = getTypeFromString(type_str);
-                String animName = item.getAttributes().getNamedItem("name").getNodeValue();
-                object_infos.add(new AnimObjectInfo(src_dir.resolve(getText(item)), wpc, type, animName));
-            }
-        }
-        AnimObjectInfo[] infos = new AnimObjectInfo[object_infos.size()];
-        return object_infos.toArray(infos);
+  private static AnimObjectInfo[] getAnimObjectInfos(Node n, Path src_dir) {
+    NodeList nl = n.getChildNodes();
+    List<AnimObjectInfo> object_infos = new ArrayList<>();
+    for (int i = 0; i < nl.getLength(); i++) {
+      Node item = nl.item(i);
+      if (item.getNodeName().equals("animation")) {
+        float wpc = Float.parseFloat(item.getAttributes().getNamedItem("wpc").getNodeValue());
+        assert wpc != 0f;
+        String type_str = item.getAttributes().getNamedItem("type").getNodeValue();
+        AnimationInfo.AnimationType type = getTypeFromString(type_str);
+        String animName = item.getAttributes().getNamedItem("name").getNodeValue();
+        object_infos.add(new AnimObjectInfo(src_dir.resolve(getText(item)), wpc, type, animName));
+      }
     }
+    AnimObjectInfo[] infos = new AnimObjectInfo[object_infos.size()];
+    return object_infos.toArray(infos);
+  }
 
-    private static String[][] getTextureInfos(Node n, Path src_dir) {
-        NodeList nl = n.getChildNodes();
-        List<String[]> object_infos = new ArrayList<>();
-        for (int i = 0; i < nl.getLength(); i++) {
-            Node item = nl.item(i);
-            if (item.getNodeName().equals("texture")) {
-                String name = item.getAttributes().getNamedItem("name").getNodeValue();
-                Node team_node = item.getAttributes().getNamedItem("team");
-                String team_name;
-                if (team_node != null)
-                    team_name = team_node.getNodeValue();
-                else
-                    team_name = null;
-                object_infos.add(new String[]{name, team_name});
-            }
-        }
-        String[][] infos = new String[object_infos.size()][];
-        return object_infos.toArray(infos);
+  private static String[][] getTextureInfos(Node n, Path src_dir) {
+    NodeList nl = n.getChildNodes();
+    List<String[]> object_infos = new ArrayList<>();
+    for (int i = 0; i < nl.getLength(); i++) {
+      Node item = nl.item(i);
+      if (item.getNodeName().equals("texture")) {
+        String name = item.getAttributes().getNamedItem("name").getNodeValue();
+        Node team_node = item.getAttributes().getNamedItem("team");
+        String team_name;
+        if (team_node != null) team_name = team_node.getNodeValue();
+        else team_name = null;
+        object_infos.add(new String[] {name, team_name});
+      }
     }
+    String[][] infos = new String[object_infos.size()][];
+    return object_infos.toArray(infos);
+  }
 
-    private static void parseSprite(Node n, Path src_dir, Path build_dir,
-            Path xml_file) {
-        String name = getName(n);
-        AnimObjectInfo[] anim_object_infos = getAnimObjectInfos(n, src_dir);
-        ModelObjectInfo model_object_info = getModelObjectInfo(n, src_dir);
-        Path build_file = build_dir.resolve(name + ".binsprite");
+  private static void parseSprite(Node n, Path src_dir, Path build_dir, Path xml_file) {
+    String name = getName(n);
+    AnimObjectInfo[] anim_object_infos = getAnimObjectInfos(n, src_dir);
+    ModelObjectInfo model_object_info = getModelObjectInfo(n, src_dir);
+    Path build_file = build_dir.resolve(name + ".binsprite");
 
-        ObjectInfo skeleton_info = getSkeletonObjectInfo(n, src_dir);
-        boolean modified = isModified(xml_file, build_file)
-                || (skeleton_info != null && isModified(skeleton_info.getFile(), build_file))
-                || isModified(model_object_info.getFile(), build_file);
-        if (!modified) {
-            for (AnimObjectInfo anim_object_info : anim_object_infos) {
-                if (isModified(anim_object_info.getFile(), build_file)) {
-                    modified = true;
-                    break;
-                }
-            }
+    ObjectInfo skeleton_info = getSkeletonObjectInfo(n, src_dir);
+    boolean modified =
+        isModified(xml_file, build_file)
+            || (skeleton_info != null && isModified(skeleton_info.getFile(), build_file))
+            || isModified(model_object_info.getFile(), build_file);
+    if (!modified) {
+      for (AnimObjectInfo anim_object_info : anim_object_infos) {
+        if (isModified(anim_object_info.getFile(), build_file)) {
+          modified = true;
+          break;
         }
-        if (modified) {
-            float scale;
-            Node scale_node = n.getAttributes().getNamedItem("scale");
-            if (scale_node != null)
-                scale = Float.parseFloat(scale_node.getNodeValue());
-            else
-                scale = 1f;
-            AnimationInfo[] animations;
-            Map<String, Bone> name_to_bone_map;
-            SkeletonData skeleton_data;
-            if (skeleton_info != null) {
-                Skeleton skeleton = SkeletonLoader.loadSkeleton(skeleton_info.getFile());
-                name_to_bone_map = skeleton.getNameToBoneMap();
-                animations = new AnimationInfo[anim_object_infos.length];
-                for (int i = 0; i < anim_object_infos.length; i++) {
-                    AnimObjectInfo current = anim_object_infos[i];
-                    Map<String, float[]>[] animation_map = AnimationLoader.loadAnimation(current.getFile());
-                    assert animations[i] == null;
-                    animations[i] = Optimizer.convertToAnimation(skeleton.getBoneRoot(), skeleton.getInitialPose(),
-                            animation_map, current.getType(), current.getWPC(), current.getName());
-                }
-                String[] bone_names = new String[name_to_bone_map.size()];
-                for (Bone b : name_to_bone_map.values()) {
-                    bone_names[b.index() & 0xFF] = b.name();
-                }
-                skeleton_data = new SkeletonData(bone_names, skeleton.getInitialPose());
+      }
+    }
+    if (modified) {
+      float scale;
+      Node scale_node = n.getAttributes().getNamedItem("scale");
+      if (scale_node != null) scale = Float.parseFloat(scale_node.getNodeValue());
+      else scale = 1f;
+      AnimationInfo[] animations;
+      Map<String, Bone> name_to_bone_map;
+      SkeletonData skeleton_data;
+      if (skeleton_info != null) {
+        Skeleton skeleton = SkeletonLoader.loadSkeleton(skeleton_info.getFile());
+        name_to_bone_map = skeleton.getNameToBoneMap();
+        animations = new AnimationInfo[anim_object_infos.length];
+        for (int i = 0; i < anim_object_infos.length; i++) {
+          AnimObjectInfo current = anim_object_infos[i];
+          Map<String, float[]>[] animation_map = AnimationLoader.loadAnimation(current.getFile());
+          assert animations[i] == null;
+          animations[i] =
+              Optimizer.convertToAnimation(
+                  skeleton.getBoneRoot(),
+                  skeleton.getInitialPose(),
+                  animation_map,
+                  current.getType(),
+                  current.getWPC(),
+                  current.getName());
+        }
+        String[] bone_names = new String[name_to_bone_map.size()];
+        for (Bone b : name_to_bone_map.values()) {
+          bone_names[b.index() & 0xFF] = b.name();
+        }
+        skeleton_data = new SkeletonData(bone_names, skeleton.getInitialPose());
+      } else {
+        float[][] identity_frame = {{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0}};
+        animations =
+            new AnimationInfo[] {new AnimationInfo(identity_frame, AnimationInfo.AnimationType.LOOP, 1f, "identity")};
+        name_to_bone_map = null;
+        skeleton_data = null;
+      }
+      ModelInfo model_info = MeshLoader.loadMesh(model_object_info.getFile(), name_to_bone_map, scale);
+      SpriteInfo sprite_model =
+          Optimizer.convertToSprite(model_object_info.getTextures(), model_info, model_object_info.getClearColor());
+      BoundsData[] bounds_data = computeBounds(sprite_model, animations);
+      write(new Object[] {sprite_model, animations, skeleton_data, bounds_data}, build_file);
+    }
+  }
+
+  private static BoundsData[] computeBounds(SpriteInfo sprite, AnimationInfo[] animations) {
+    BoundsData[] bounds = new BoundsData[animations.length];
+    Vector4f v = new Vector4f();
+    Vector4f temp = new Vector4f();
+
+    for (int anim = 0; anim < animations.length; anim++) {
+      float minX = Float.POSITIVE_INFINITY;
+      float maxX = Float.NEGATIVE_INFINITY;
+      float minY = Float.POSITIVE_INFINITY;
+      float maxY = Float.NEGATIVE_INFINITY;
+      float minZ = Float.POSITIVE_INFINITY;
+      float maxZ = Float.NEGATIVE_INFINITY;
+
+      float[][] frames = animations[anim].getFrames();
+      for (float[] frame : frames) {
+        int numBones = frame.length / 12;
+        Matrix4f[] frameBones = new Matrix4f[numBones];
+        for (int b = 0; b < numBones; b++) {
+          int offset = b * 12;
+          frameBones[b] =
+              new Matrix4f()
+                  .set(
+                      frame[offset + 0],
+                      frame[offset + 4],
+                      frame[offset + 8],
+                      0.0f,
+                      frame[offset + 1],
+                      frame[offset + 5],
+                      frame[offset + 9],
+                      0.0f,
+                      frame[offset + 2],
+                      frame[offset + 6],
+                      frame[offset + 10],
+                      0.0f,
+                      frame[offset + 3],
+                      frame[offset + 7],
+                      frame[offset + 11],
+                      1.0f);
+        }
+
+        float[] vertices = sprite.getVertices();
+        byte[][] skinNames = sprite.getSkinNames();
+        float[][] skinWeights = sprite.getSkinWeights();
+        int numVertices = vertices.length / 3;
+
+        for (int vert = 0; vert < numVertices; vert++) {
+          float vx = vertices[vert * 3 + 0];
+          float vy = vertices[vert * 3 + 1];
+          float vz = vertices[vert * 3 + 2];
+          v.set(vx, vy, vz, 1.0f);
+
+          byte[] vertSkinNames = skinNames[vert];
+          float[] vertSkinWeights = skinWeights[vert];
+
+          float rx = 0f;
+          float ry = 0f;
+          float rz = 0f;
+
+          for (int b = 0; b < vertSkinNames.length; b++) {
+            float weight = vertSkinWeights[b];
+            int boneIdx = vertSkinNames[b] & 0xFF;
+            if (boneIdx < frameBones.length) {
+              frameBones[boneIdx].transform(v, temp);
+              rx += temp.x * weight;
+              ry += temp.y * weight;
+              rz += temp.z * weight;
             } else {
-                float[][] identity_frame = {{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0}};
-                animations = new AnimationInfo[]{new AnimationInfo(identity_frame, AnimationInfo.AnimationType.LOOP, 1f,
-                        "identity")};
-                name_to_bone_map = null;
-                skeleton_data = null;
+              rx += vx * weight;
+              ry += vy * weight;
+              rz += vz * weight;
             }
-            ModelInfo model_info = MeshLoader.loadMesh(model_object_info.getFile(), name_to_bone_map, scale);
-            SpriteInfo sprite_model = Optimizer.convertToSprite(model_object_info.getTextures(), model_info,
-                    model_object_info.getClearColor());
-            BoundsData[] bounds_data = computeBounds(sprite_model, animations);
-            write(new Object[]{sprite_model, animations, skeleton_data, bounds_data}, build_file);
+          }
+
+          if (rx < minX) minX = rx;
+          if (rx > maxX) maxX = rx;
+          if (ry < minY) minY = ry;
+          if (ry > maxY) maxY = ry;
+          if (rz < minZ) minZ = rz;
+          if (rz > maxZ) maxZ = rz;
         }
+      }
+      bounds[anim] = new BoundsData(minX, maxX, minY, maxY, minZ, maxZ);
     }
+    return bounds;
+  }
 
-    private static BoundsData[] computeBounds(SpriteInfo sprite, AnimationInfo[] animations) {
-        BoundsData[] bounds = new BoundsData[animations.length];
-        Vector4f v = new Vector4f();
-        Vector4f temp = new Vector4f();
+  private static @Nullable ObjectInfo getSkeletonObjectInfo(Node n, Path src_dir) {
+    NodeList nl = n.getChildNodes();
+    return IntStream.range(0, nl.getLength())
+        .mapToObj(nl::item)
+        .filter(item -> item.getNodeName().equals("skeleton"))
+        .findFirst()
+        .map(item -> new ObjectInfo(src_dir.resolve(getText(item))))
+        .orElse(null);
+  }
 
-        for (int anim = 0; anim < animations.length; anim++) {
-            float minX = Float.POSITIVE_INFINITY;
-            float maxX = Float.NEGATIVE_INFINITY;
-            float minY = Float.POSITIVE_INFINITY;
-            float maxY = Float.NEGATIVE_INFINITY;
-            float minZ = Float.POSITIVE_INFINITY;
-            float maxZ = Float.NEGATIVE_INFINITY;
-
-            float[][] frames = animations[anim].getFrames();
-            for (float[] frame : frames) {
-                int numBones = frame.length / 12;
-                Matrix4f[] frameBones = new Matrix4f[numBones];
-                for (int b = 0; b < numBones; b++) {
-                    int offset = b * 12;
-                    frameBones[b] = new Matrix4f().set(
-                            frame[offset + 0], frame[offset + 4], frame[offset + 8], 0.0f,
-                            frame[offset + 1], frame[offset + 5], frame[offset + 9], 0.0f,
-                            frame[offset + 2], frame[offset + 6], frame[offset + 10], 0.0f,
-                            frame[offset + 3], frame[offset + 7], frame[offset + 11], 1.0f
-                    );
-                }
-
-                float[] vertices = sprite.getVertices();
-                byte[][] skinNames = sprite.getSkinNames();
-                float[][] skinWeights = sprite.getSkinWeights();
-                int numVertices = vertices.length / 3;
-
-                for (int vert = 0; vert < numVertices; vert++) {
-                    float vx = vertices[vert * 3 + 0];
-                    float vy = vertices[vert * 3 + 1];
-                    float vz = vertices[vert * 3 + 2];
-                    v.set(vx, vy, vz, 1.0f);
-
-                    byte[] vertSkinNames = skinNames[vert];
-                    float[] vertSkinWeights = skinWeights[vert];
-
-                    float rx = 0f;
-                    float ry = 0f;
-                    float rz = 0f;
-
-                    for (int b = 0; b < vertSkinNames.length; b++) {
-                        float weight = vertSkinWeights[b];
-                        int boneIdx = vertSkinNames[b] & 0xFF;
-                        if (boneIdx < frameBones.length) {
-                            frameBones[boneIdx].transform(v, temp);
-                            rx += temp.x * weight;
-                            ry += temp.y * weight;
-                            rz += temp.z * weight;
-                        } else {
-                            rx += vx * weight;
-                            ry += vy * weight;
-                            rz += vz * weight;
-                        }
-                    }
-
-                    if (rx < minX) minX = rx;
-                    if (rx > maxX) maxX = rx;
-                    if (ry < minY) minY = ry;
-                    if (ry > maxY) maxY = ry;
-                    if (rz < minZ) minZ = rz;
-                    if (rz > maxZ) maxZ = rz;
-                }
-            }
-            bounds[anim] = new BoundsData(minX, maxX, minY, maxY, minZ, maxZ);
-        }
-        return bounds;
+  public static Node getNodeByName(String name, Node n) {
+    NodeList nl = n.getChildNodes();
+    for (int i = 0; i < nl.getLength(); i++) {
+      if (nl.item(i).getNodeName().equals(name)) return nl.item(i);
     }
+    throw new NoSuchElementException("Missing node: " + name);
+  }
 
-    private static @Nullable ObjectInfo getSkeletonObjectInfo(Node n, Path src_dir) {
-        NodeList nl = n.getChildNodes();
-        return IntStream.range(0, nl.getLength())
-                .mapToObj(nl::item)
-                .filter(item -> item.getNodeName().equals("skeleton"))
-                .findFirst()
-                .map(item -> new ObjectInfo(src_dir.resolve(getText(item))))
-                .orElse(null);
+  private static String getName(Node n) {
+    return n.getAttributes().getNamedItem("name").getNodeValue();
+  }
+
+  private static int getInt(Node n, String key) {
+    String string = n.getAttributes().getNamedItem(key).getNodeValue();
+    return Integer.parseInt(string);
+  }
+
+  private static AnimationInfo.AnimationType getTypeFromString(String str) {
+    return switch (str) {
+      case "loop" -> AnimationInfo.AnimationType.LOOP;
+      case "plain" -> AnimationInfo.AnimationType.PLAIN;
+      default -> throw new IllegalArgumentException("Unknown animation type: " + str);
+    };
+  }
+
+  private static String getText(Node n) {
+    return n.getFirstChild().getNodeValue().trim();
+  }
+
+  private static void write(Object output, Path file) {
+    System.err.println("Saving to " + file);
+
+    try {
+      Files.createDirectories(file.getParent());
+      try (var obj_stream = new ObjectOutputStream(new BufferedOutputStream(Files.newOutputStream(file)))) {
+        obj_stream.writeObject(output);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
-
-    public static Node getNodeByName(String name, Node n) {
-        NodeList nl = n.getChildNodes();
-        for (int i = 0; i < nl.getLength(); i++) {
-            if (nl.item(i).getNodeName().equals(name))
-                return nl.item(i);
-        }
-        throw new NoSuchElementException("Missing node: " + name);
-    }
-
-    private static String getName(Node n) {
-        return n.getAttributes().getNamedItem("name").getNodeValue();
-    }
-
-    private static int getInt(Node n, String key) {
-        String string = n.getAttributes().getNamedItem(key).getNodeValue();
-        return Integer.parseInt(string);
-    }
-
-    private static AnimationInfo.AnimationType getTypeFromString(String str) {
-        return switch (str) {
-            case "loop" -> AnimationInfo.AnimationType.LOOP;
-            case "plain" -> AnimationInfo.AnimationType.PLAIN;
-            default -> throw new IllegalArgumentException("Unknown animation type: " + str);
-        };
-    }
-
-    private static String getText(Node n) {
-        return n.getFirstChild().getNodeValue().trim();
-    }
-
-    private static void write(Object output, Path file) {
-        System.err.println("Saving to " + file);
-
-        try {
-            Files.createDirectories(file.getParent());
-            try (var obj_stream = new ObjectOutputStream(new BufferedOutputStream(Files.newOutputStream(file)))) {
-                obj_stream.writeObject(output);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-    }
+  }
 }

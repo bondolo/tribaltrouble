@@ -11,7 +11,7 @@ import com.oddlabs.util.Color;
  */
 record BlendOcclusion(Channel alphaChannel, Color.Linear color) implements BlendInfo {
 
-    BlendOcclusion(Channel alphaChannel, Color color) {
-        this(alphaChannel, color instanceof Color.Linear linear ? linear : new Color.Linear(color));
-    }
+  BlendOcclusion(Channel alphaChannel, Color color) {
+    this(alphaChannel, color instanceof Color.Linear linear ? linear : new Color.Linear(color));
+  }
 }

@@ -5,96 +5,105 @@ import com.oddlabs.tt.engine.font.TextLayout;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
 import com.oddlabs.util.Quad;
-
 import java.text.BreakIterator;
 
-/**
- * Utility class for rendering single or multiple lines of text with clipping.
- */
+/// Utility class for rendering single or multiple lines of text with clipping.
 public final class TextLineRenderer {
 
-    private TextLineRenderer() {
-        // private constructor for utility class
-    }
+  private TextLineRenderer() {
+    // private constructor for utility class
+  }
 
-    public static void render(GUIRenderer renderer, TextLayout layout, float x, float y,
-            Color color) {
-        render(renderer, layout, x, y, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, color);
-    }
+  public static void render(GUIRenderer renderer, TextLayout layout, float x, float y, Color color) {
+    render(renderer, layout, x, y, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, color);
+  }
 
-    public static void render(GUIRenderer renderer, TextLayout layout, float x, float y,
-            float clipLeft, float clipRight, Color color) {
-        float currentY = y;
-        for (TextLayout.Line line : layout.getLines()) {
-            render(renderer, layout.getFont(), line.content(), x, currentY, clipLeft, clipRight, color);
-            currentY -= layout.getFont().getHeight();
+  public static void render(
+      GUIRenderer renderer, TextLayout layout, float x, float y, float clipLeft, float clipRight, Color color) {
+    float currentY = y;
+    for (TextLayout.Line line : layout.getLines()) {
+      render(renderer, layout.getFont(), line.content(), x, currentY, clipLeft, clipRight, color);
+      currentY -= layout.getFont().getHeight();
+    }
+  }
+
+  /// Render a single line of text with the provided renderer using the provided font, location, and color. The text
+  /// will be clipped to the specified left and right bounds.
+  public static float render(
+      GUIRenderer renderer,
+      Font font,
+      CharSequence text,
+      float x,
+      float y,
+      float clipLeft,
+      float clipRight,
+      Color color) {
+    var linearColor = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
+
+    float currentX = x;
+    BreakIterator iterator = BreakIterator.getCharacterInstance();
+    iterator.setText(text.toString());
+    int start = iterator.first();
+    for (int end = iterator.next(); end != BreakIterator.DONE; start = end, end = iterator.next()) {
+      String grapheme = text.subSequence(start, end).toString();
+      if (grapheme.equals("\n")) {
+        // This renderer doesn't handle newlines, that's the layout's job
+        continue;
+      }
+
+      Quad quad = font.getQuad(grapheme);
+      if (quad != null) {
+        float quadWidth = quad.getWidth();
+        float charAdvance = quadWidth - font.getXBorder();
+
+        // Check if the character is completely outside the clipping region
+        if (currentX + quadWidth < clipLeft || currentX > clipRight) {
+          currentX += charAdvance;
+          continue;
         }
-    }
 
-    /**
-     * Render a single line of text with the provided renderer using the provided font, location, and color. The text
-     * will be clipped to the specified left and right bounds.
-     */
-    public static float render(GUIRenderer renderer, Font font, CharSequence text,
-            float x, float y, float clipLeft, float clipRight,
-            Color color) {
-        var linearColor = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
+        // By this point, we know at least part of the character is visible.
+        // We need to calculate the visible portion and adjust texture coordinates.
 
-        float currentX = x;
-        BreakIterator iterator = BreakIterator.getCharacterInstance();
-        iterator.setText(text.toString());
-        int start = iterator.first();
-        for (int end = iterator.next(); end != BreakIterator.DONE; start = end, end = iterator.next()) {
-            String grapheme = text.subSequence(start, end).toString();
-            if (grapheme.equals("\n")) {
-                // This renderer doesn't handle newlines, that's the layout's job
-                continue;
-            }
+        float renderX = currentX;
+        float renderWidth = quadWidth;
+        float u1 = quad.getU1();
+        float u2 = quad.getU2();
+        float textureUWidth = u2 - u1;
 
-            Quad quad = font.getQuad(grapheme);
-            if (quad != null) {
-                float quadWidth = quad.getWidth();
-                float charAdvance = quadWidth - font.getXBorder();
-
-                // Check if the character is completely outside the clipping region
-                if (currentX + quadWidth < clipLeft || currentX > clipRight) {
-                    currentX += charAdvance;
-                    continue;
-                }
-
-                // By this point, we know at least part of the character is visible.
-                // We need to calculate the visible portion and adjust texture coordinates.
-
-                float renderX = currentX;
-                float renderWidth = quadWidth;
-                float u1 = quad.getU1();
-                float u2 = quad.getU2();
-                float textureUWidth = u2 - u1;
-
-                // Handle left clipping
-                if (renderX < clipLeft) {
-                    float leftClipPixels = clipLeft - renderX;
-                    float leftClipRatio = leftClipPixels / quadWidth;
-                    u1 += textureUWidth * leftClipRatio;
-                    renderWidth -= leftClipPixels;
-                    renderX = clipLeft;
-                }
-
-                // Handle right clipping
-                if (renderX + renderWidth > clipRight) {
-                    float rightClipPixels = (renderX + renderWidth) - clipRight;
-                    float rightClipRatio = rightClipPixels / quadWidth;
-                    u2 -= textureUWidth * rightClipRatio;
-                    renderWidth -= rightClipPixels;
-                }
-
-                if (renderWidth > 0) {
-                    renderer.drawTexture(font.getTexture(), renderX, y, renderWidth, quad.getHeight(), u1, quad.getV1(),
-                            u2, quad.getV2(), linearColor);
-                }
-                currentX += charAdvance;
-            }
+        // Handle left clipping
+        if (renderX < clipLeft) {
+          float leftClipPixels = clipLeft - renderX;
+          float leftClipRatio = leftClipPixels / quadWidth;
+          u1 += textureUWidth * leftClipRatio;
+          renderWidth -= leftClipPixels;
+          renderX = clipLeft;
         }
-        return currentX;
+
+        // Handle right clipping
+        if (renderX + renderWidth > clipRight) {
+          float rightClipPixels = (renderX + renderWidth) - clipRight;
+          float rightClipRatio = rightClipPixels / quadWidth;
+          u2 -= textureUWidth * rightClipRatio;
+          renderWidth -= rightClipPixels;
+        }
+
+        if (renderWidth > 0) {
+          renderer.drawTexture(
+              font.getTexture(),
+              renderX,
+              y,
+              renderWidth,
+              quad.getHeight(),
+              u1,
+              quad.getV1(),
+              u2,
+              quad.getV2(),
+              linearColor);
+        }
+        currentX += charAdvance;
+      }
     }
+    return currentX;
+  }
 }

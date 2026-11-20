@@ -11,239 +11,230 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Viewport camera managing position, orientation, smoothing, and terrain collision avoidance.
- */
+/// Viewport camera managing position, orientation, smoothing, and terrain collision avoidance.
 public abstract class Camera implements Animated {
-    /**
-     * The distance to project outwards from the screen corners when checking for landscape collisions.
-     * This ensures the camera pulls up before the terrain goes off-screen.
-     */
-    private static final float LANDSCAPE_OFFSET = 5f;
+  /// The distance to project outwards from the screen corners when checking for landscape collisions. This ensures the
+  /// camera pulls up before the terrain goes off-screen.
+  private static final float LANDSCAPE_OFFSET = 5f;
 
-    /**
-     * Controls the interpolation speed for camera movements. A higher value results in faster, more responsive
-     * movement, while a lower value provides a smoother, more dampened feel.
-     */
-    private static final float SMOOTHNESS_FACTOR = 15;
-    /**
-     * Minimum vertical distance to maintain between the camera's center and the ground below it.
-     * This prevents the camera from sinking into the terrain.
-     */
-    private static final float GROUND_CLEARANCE = 1.0f;
+  /// Controls the interpolation speed for camera movements. A higher value results in faster, more responsive movement,
+  /// while a lower value provides a smoother, more dampened feel.
+  private static final float SMOOTHNESS_FACTOR = 15;
 
-    private final Matrix4f proj = new Matrix4f();
-    private final Matrix4f combinedMatrix = new Matrix4f();
-    private final CameraState tmp_camera = new CameraState();
-    private final int[] viewport = new int[4];
-    private final Vector3f hit_result = new Vector3f();
+  /// Minimum vertical distance to maintain between the camera's center and the ground below it. This prevents the
+  /// camera from sinking into the terrain.
+  private static final float GROUND_CLEARANCE = 1.0f;
 
-    private final @Nullable LandscapeEnvironment landscapeEnvironment;
-    private final @Nullable AnimationManager animation_manager;
+  private final Matrix4f proj = new Matrix4f();
+  private final Matrix4f combinedMatrix = new Matrix4f();
+  private final CameraState tmp_camera = new CameraState();
+  private final int[] viewport = new int[4];
+  private final Vector3f hit_result = new Vector3f();
 
-    private final CameraState state;
-    private float smoothness_factor = SMOOTHNESS_FACTOR;
+  private final @Nullable LandscapeEnvironment landscapeEnvironment;
+  private final @Nullable AnimationManager animation_manager;
 
-    public Camera(@Nullable LandscapeEnvironment landscapeEnvironment, CameraState state,
-            @Nullable AnimationManager animation_manager) {
-        this.landscapeEnvironment = landscapeEnvironment;
-        this.state = state;
-        this.animation_manager = animation_manager;
+  private final CameraState state;
+  private float smoothness_factor = SMOOTHNESS_FACTOR;
+
+  public Camera(
+      @Nullable LandscapeEnvironment landscapeEnvironment,
+      CameraState state,
+      @Nullable AnimationManager animation_manager) {
+    this.landscapeEnvironment = landscapeEnvironment;
+    this.state = state;
+    this.animation_manager = animation_manager;
+  }
+
+  public Camera(@Nullable LandscapeEnvironment landscapeEnvironment, CameraState state) {
+    this(landscapeEnvironment, state, null);
+  }
+
+  protected final @Nullable LandscapeEnvironment getLandscapeEnvironment() {
+    return landscapeEnvironment;
+  }
+
+  protected final void setSmoothnessFactor(float f) {
+    smoothness_factor = f;
+  }
+
+  @Override
+  public final void updateChecksum(StateChecksum checksum) {
+    // System.out.println("camera_x = " + camera_x + " | camera_y = " + camera_y + " | camera_z = " + camera_z + " |
+    // dir_x = " + dir_x + " | dir_y = " + dir_y + " | dir_z = " + dir_z);
+    state.updateChecksum(checksum);
+  }
+
+  @Override
+  public final void animate(float dt) {
+    doAnimate(dt);
+    state.animate(dt, smoothness_factor);
+  }
+
+  protected abstract void doAnimate(float dt);
+
+  protected final void checkPosition() {
+    assert landscapeEnvironment != null;
+    int mid = landscapeEnvironment.getMetersPerWorld() / 2;
+    float dx = (state.getTargetX() - mid);
+    float dy = (state.getTargetY() - mid);
+    float squared_dist = dx * dx + dy * dy;
+    if (squared_dist > landscapeEnvironment.getMetersPerWorld() * landscapeEnvironment.getMetersPerWorld()) {
+      float scale = landscapeEnvironment.getMetersPerWorld() / (float) Math.sqrt(squared_dist);
+      state.setTargetX(dx * scale + mid);
+      state.setTargetY(dy * scale + mid);
     }
-
-    public Camera(@Nullable LandscapeEnvironment landscapeEnvironment, CameraState state) {
-        this(landscapeEnvironment, state, null);
+    if (!bounce(state.getTargetX(), state.getTargetY(), state.getTargetZ(), state.getWidth(), state.getHeight())) {
+      if (state.getTargetZ() > GameCamera.MAX_Z) state.setTargetZ(GameCamera.MAX_Z);
     }
+  }
 
-    protected final @Nullable LandscapeEnvironment getLandscapeEnvironment() {
-        return landscapeEnvironment;
+  /**
+   * Applies perspective projection transformation for this camera at the specified altitude and dimensions.
+   *
+   * @param `matrix` the target matrix to transform
+   * @param `z` the camera altitude in meters
+   * @param `width` the viewport width in pixels
+   * @param `height` the viewport height in pixels
+   * @return the transformed matrix
+   */
+  public Matrix4f applyPerspective(Matrix4f matrix, float z, int width, int height) {
+    if (height > 0) {
+      float aspect = (float) width / height;
+      float fovy = calculateDynamicFOV(z, aspect, FOVMode.DIAGONAL);
+      float zNear = RenderConfig.VIEW_MIN;
+      float zFar = RenderConfig.VIEW_MAX;
+      return matrix.perspective((float) Math.toRadians(fovy), aspect, zNear, zFar);
     }
+    return matrix;
+  }
 
-    protected final void setSmoothnessFactor(float f) {
-        smoothness_factor = f;
+  /**
+   * Applies perspective projection transformation for this camera using its current altitude.
+   *
+   * @param `matrix` the target matrix to transform
+   * @param `width` the viewport width in pixels
+   * @param `height` the viewport height in pixels
+   * @return the transformed matrix
+   */
+  public Matrix4f applyPerspective(Matrix4f matrix, int width, int height) {
+    return applyPerspective(matrix, state.getCurrentZ(), width, height);
+  }
+
+  public void updateView(int width, int height) {
+    state.setView(applyPerspective(proj.identity(), width, height), width, height);
+  }
+
+  protected final boolean bounce(float x, float y, float z, int width, int height) {
+    if (width <= 0 || height <= 0) {
+      return false;
     }
+    boolean bounced = false;
 
-    @Override
-    public final void updateChecksum(StateChecksum checksum) {
-//System.out.println("camera_x = " + camera_x + " | camera_y = " + camera_y + " | camera_z = " + camera_z + " | dir_x = " + dir_x + " | dir_y = " + dir_y + " | dir_z = " + dir_z);
-        state.updateChecksum(checksum);
-    }
+    viewport[0] = 0;
+    viewport[1] = 0;
+    viewport[2] = width;
+    viewport[3] = height;
 
-    @Override
-    public final void animate(float dt) {
-        doAnimate(dt);
-        state.animate(dt, smoothness_factor);
-    }
+    applyPerspective(proj.identity(), z, width, height);
+    tmp_camera.set(state);
+    tmp_camera.setTargetView(proj);
+    combinedMatrix.set(proj).mul(tmp_camera.getModelView());
 
-    protected abstract void doAnimate(float dt);
+    for (int i = 0; i < 2; i++) {
+      for (int j = 0; j < 2; j++) {
+        combinedMatrix.unproject(i * width, j * height, 0f, viewport, hit_result);
+        float hit_x = hit_result.x();
+        float hit_y = hit_result.y();
+        float hit_z = hit_result.z();
 
-    protected final void checkPosition() {
-        assert landscapeEnvironment != null;
-        int mid = landscapeEnvironment.getMetersPerWorld() / 2;
-        float dx = (state.getTargetX() - mid);
-        float dy = (state.getTargetY() - mid);
-        float squared_dist = dx * dx + dy * dy;
-        if (squared_dist > landscapeEnvironment.getMetersPerWorld() * landscapeEnvironment.getMetersPerWorld()) {
-            float scale = landscapeEnvironment.getMetersPerWorld() / (float) Math.sqrt(squared_dist);
-            state.setTargetX(dx * scale + mid);
-            state.setTargetY(dy * scale + mid);
+        float dx1 = hit_x - x;
+        float dy1 = hit_y - y;
+        float dz1 = hit_z - z;
+        float inv_length = LANDSCAPE_OFFSET / (float) Math.sqrt(dx1 * dx1 + dy1 * dy1 + dz1 * dz1);
+        dx1 *= inv_length;
+        dy1 *= inv_length;
+        dz1 *= inv_length;
+
+        float min_height =
+            Math.max(
+                getLandscapeEnvironment().getHeight(x + dx1, y + dy1), getLandscapeEnvironment().getSeaLevelMeters());
+        hit_z = z + dz1;
+        if (hit_z < min_height) {
+          bounced = true;
+          z = z + min_height - hit_z;
         }
-        if (!bounce(state.getTargetX(), state.getTargetY(), state.getTargetZ(), state.getWidth(), state.getHeight())) {
-            if (state.getTargetZ() > GameCamera.MAX_Z)
-                state.setTargetZ(GameCamera.MAX_Z);
-        }
+      }
     }
-
-    /**
-     * Applies perspective projection transformation for this camera at the specified altitude and dimensions.
-     *
-     * @param matrix the target matrix to transform
-     * @param z the camera altitude in meters
-     * @param width the viewport width in pixels
-     * @param height the viewport height in pixels
-     * @return the transformed matrix
-     */
-    public Matrix4f applyPerspective(Matrix4f matrix, float z, int width, int height) {
-        if (height > 0) {
-            float aspect = (float) width / height;
-            float fovy = calculateDynamicFOV(z, aspect, FOVMode.DIAGONAL);
-            float zNear = RenderConfig.VIEW_MIN;
-            float zFar = RenderConfig.VIEW_MAX;
-            return matrix.perspective((float) Math.toRadians(fovy), aspect, zNear, zFar);
-        }
-        return matrix;
+    float min_height = getLandscapeEnvironment().getHeight(x, y) + GROUND_CLEARANCE;
+    if (z < min_height) {
+      bounced = true;
+      z = min_height;
     }
+    if (bounced) state.setTargetZ(z);
+    return bounced;
+  }
 
-    /**
-     * Applies perspective projection transformation for this camera using its current altitude.
-     *
-     * @param matrix the target matrix to transform
-     * @param width the viewport width in pixels
-     * @param height the viewport height in pixels
-     * @return the transformed matrix
-     */
-    public Matrix4f applyPerspective(Matrix4f matrix, int width, int height) {
-        return applyPerspective(matrix, state.getCurrentZ(), width, height);
+  public final CameraState getState() {
+    return state;
+  }
+
+  public final @Nullable AnimationManager getAnimationManager() {
+    return animation_manager;
+  }
+
+  public final void disable() {
+    if (animation_manager != null) {
+      animation_manager.removeAnimation(this);
     }
+  }
 
-    public void updateView(int width, int height) {
-        state.setView(applyPerspective(proj.identity(), width, height), width, height);
+  public void enable() {
+    if (animation_manager != null) {
+      animation_manager.registerAnimation(this);
     }
+  }
 
-    protected final boolean bounce(float x, float y, float z, int width, int height) {
-        if (width <= 0 || height <= 0) {
-            return false;
-        }
-        boolean bounced = false;
+  public void handleInput(InputEvent event) {}
 
-        viewport[0] = 0;
-        viewport[1] = 0;
-        viewport[2] = width;
-        viewport[3] = height;
+  public void mouseScrolled(int amount) {}
 
-        applyPerspective(proj.identity(), z, width, height);
-        tmp_camera.set(state);
-        tmp_camera.setTargetView(proj);
-        combinedMatrix.set(proj).mul(tmp_camera.getModelView());
+  public void rotate(int amount) {}
 
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 2; j++) {
-                combinedMatrix.unproject(i * width, j * height, 0f, viewport, hit_result);
-                float hit_x = hit_result.x();
-                float hit_y = hit_result.y();
-                float hit_z = hit_result.z();
+  public void mouseMoved(int x, int y) {}
 
-                float dx1 = hit_x - x;
-                float dy1 = hit_y - y;
-                float dz1 = hit_z - z;
-                float inv_length = LANDSCAPE_OFFSET / (float) Math.sqrt(dx1 * dx1 + dy1 * dy1 + dz1 * dz1);
-                dx1 *= inv_length;
-                dy1 *= inv_length;
-                dz1 *= inv_length;
+  public enum FOVMode {
+    FIXED,
+    DIAGONAL,
+    ADAPTIVE
+  }
 
-                float min_height = Math.max(getLandscapeEnvironment().getHeight(x + dx1, y + dy1),
-                        getLandscapeEnvironment().getSeaLevelMeters());
-                hit_z = z + dz1;
-                if (hit_z < min_height) {
-                    bounced = true;
-                    z = z + min_height - hit_z;
-                }
-            }
-        }
-        float min_height = getLandscapeEnvironment().getHeight(x, y) + GROUND_CLEARANCE;
-        if (z < min_height) {
-            bounced = true;
-            z = min_height;
-        }
-        if (bounced)
-            state.setTargetZ(z);
-        return bounced;
-    }
+  public static float calculateDynamicFOV(float z, float aspect, FOVMode mode) {
+    return switch (mode) {
+      case ADAPTIVE -> {
+        float zMin = 15.0f;
+        float zMax = 100.0f;
+        float t = Math.clamp((z - zMin) / (zMax - zMin), 0.0f, 1.0f);
 
-    public final CameraState getState() {
-        return state;
-    }
+        float fovWideRad = (float) Math.toRadians(68.0);
+        float fovNarrowRad = (float) Math.toRadians(18.0);
 
-    public final @Nullable AnimationManager getAnimationManager() {
-        return animation_manager;
-    }
+        float tanWide = (float) Math.tan(fovWideRad / 2.0f);
+        float tanNarrow = (float) Math.tan(fovNarrowRad / 2.0f);
 
-    public final void disable() {
-        if (animation_manager != null) {
-            animation_manager.removeAnimation(this);
-        }
-    }
+        float interpolatedTan = (1.0f - t) * tanWide + t * tanNarrow;
+        float fovyRad = 2.0f * (float) Math.atan(interpolatedTan);
 
-    public void enable() {
-        if (animation_manager != null) {
-            animation_manager.registerAnimation(this);
-        }
-    }
+        yield (float) Math.toDegrees(fovyRad);
+      }
+      case DIAGONAL -> {
+        float tanDiagHalf = (float) (Math.tan(Math.toRadians(22.5)) * 5.0 / 3.0);
+        float tanVertHalf = tanDiagHalf / (float) Math.sqrt(1.0f + aspect * aspect);
+        float fovyRad = 2.0f * (float) Math.atan(tanVertHalf);
 
-    public void handleInput(InputEvent event) {
-    }
-
-    public void mouseScrolled(int amount) {
-    }
-
-    public void rotate(int amount) {
-    }
-
-    public void mouseMoved(int x, int y) {
-    }
-
-    public enum FOVMode {
-        FIXED,
-        DIAGONAL,
-        ADAPTIVE
-    }
-
-    public static float calculateDynamicFOV(float z, float aspect, FOVMode mode) {
-        return switch (mode) {
-            case ADAPTIVE -> {
-                float zMin = 15.0f;
-                float zMax = 100.0f;
-                float t = Math.clamp((z - zMin) / (zMax - zMin), 0.0f, 1.0f);
-
-                float fovWideRad = (float) Math.toRadians(68.0);
-                float fovNarrowRad = (float) Math.toRadians(18.0);
-
-                float tanWide = (float) Math.tan(fovWideRad / 2.0f);
-                float tanNarrow = (float) Math.tan(fovNarrowRad / 2.0f);
-
-                float interpolatedTan = (1.0f - t) * tanWide + t * tanNarrow;
-                float fovyRad = 2.0f * (float) Math.atan(interpolatedTan);
-
-                yield (float) Math.toDegrees(fovyRad);
-            }
-            case DIAGONAL -> {
-                float tanDiagHalf = (float) (Math.tan(Math.toRadians(22.5)) * 5.0 / 3.0);
-                float tanVertHalf = tanDiagHalf / (float) Math.sqrt(1.0f + aspect * aspect);
-                float fovyRad = 2.0f * (float) Math.atan(tanVertHalf);
-
-                yield (float) Math.toDegrees(fovyRad);
-            }
-            case FIXED -> RenderConfig.FOV;
-        };
-    }
+        yield (float) Math.toDegrees(fovyRad);
+      }
+      case FIXED -> RenderConfig.FOV;
+    };
+  }
 }

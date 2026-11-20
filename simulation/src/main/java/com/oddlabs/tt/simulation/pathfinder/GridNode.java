@@ -4,109 +4,103 @@ import com.oddlabs.tt.simulation.landscape.HeightMap;
 import org.jspecify.annotations.Nullable;
 
 final class GridNode extends Node {
-    private static final DirectionNode[][] dir_node_grid = makeDirectionNodeGrid();
+  private static final DirectionNode[][] dir_node_grid = makeDirectionNodeGrid();
 
-    private final int local_grid_x;
-    private final int local_grid_y;
-    private @Nullable Offset offset;
+  private final int local_grid_x;
+  private final int local_grid_y;
+  private @Nullable Offset offset;
 
-    private static DirectionNode[][] makeDirectionNodeGrid() {
-        int unit = HeightMap.METERS_PER_UNIT_GRID;
-        float inv_unit = 1f / HeightMap.METERS_PER_UNIT_GRID;
-        float inv_sqrt_2 = 1f / (float) Math.sqrt(unit * unit + unit * unit);
-        var grid = new DirectionNode[3][3];
-        grid[0][0] = new DirectionNode(inv_sqrt_2, -1, -1);
-        grid[0][1] = new DirectionNode(inv_unit, -1, 0);
-        grid[0][2] = new DirectionNode(inv_sqrt_2, -1, 1);
-        grid[1][0] = new DirectionNode(inv_unit, 0, -1);
-        grid[1][1] = new DirectionNode(0, 0, 0);
-        grid[1][2] = new DirectionNode(inv_unit, 0, 1);
-        grid[2][0] = new DirectionNode(inv_sqrt_2, 1, -1);
-        grid[2][1] = new DirectionNode(inv_unit, 1, 0);
-        grid[2][2] = new DirectionNode(inv_sqrt_2, 1, 1);
+  private static DirectionNode[][] makeDirectionNodeGrid() {
+    int unit = HeightMap.METERS_PER_UNIT_GRID;
+    float inv_unit = 1f / HeightMap.METERS_PER_UNIT_GRID;
+    float inv_sqrt_2 = 1f / (float) Math.sqrt(unit * unit + unit * unit);
+    var grid = new DirectionNode[3][3];
+    grid[0][0] = new DirectionNode(inv_sqrt_2, -1, -1);
+    grid[0][1] = new DirectionNode(inv_unit, -1, 0);
+    grid[0][2] = new DirectionNode(inv_sqrt_2, -1, 1);
+    grid[1][0] = new DirectionNode(inv_unit, 0, -1);
+    grid[1][1] = new DirectionNode(0, 0, 0);
+    grid[1][2] = new DirectionNode(inv_unit, 0, 1);
+    grid[2][0] = new DirectionNode(inv_sqrt_2, 1, -1);
+    grid[2][1] = new DirectionNode(inv_unit, 1, 0);
+    grid[2][2] = new DirectionNode(inv_sqrt_2, 1, 1);
 
-        return grid;
+    return grid;
+  }
+
+  private static DirectionNode lookupDirectionNode(int dx, int dy) {
+    return dir_node_grid[dx + 1][dy + 1];
+  }
+
+  @Override
+  public @Nullable GridPathNode newPath() {
+    Node graph_node = this;
+    GridPathNode current_node = null;
+    while (graph_node.getParent() != null) {
+      Node parent = graph_node.getParent();
+      int dx = graph_node.getGridX() - parent.getGridX();
+      int dy = graph_node.getGridY() - parent.getGridY();
+      graph_node = parent;
+      DirectionNode dir = lookupDirectionNode(dx, dy);
+      current_node = new GridPathNode(current_node, dir);
     }
+    return current_node;
+  }
 
-    private static DirectionNode lookupDirectionNode(int dx, int dy) {
-        return dir_node_grid[dx + 1][dy + 1];
-    }
+  public GridNode(int x, int y) {
+    this.local_grid_x = x;
+    this.local_grid_y = y;
+  }
 
-    @Override
-    public @Nullable GridPathNode newPath() {
-        Node graph_node = this;
-        GridPathNode current_node = null;
-        while (graph_node.getParent() != null) {
-            Node parent = graph_node.getParent();
-            int dx = graph_node.getGridX() - parent.getGridX();
-            int dy = graph_node.getGridY() - parent.getGridY();
-            graph_node = parent;
-            DirectionNode dir = lookupDirectionNode(dx, dy);
-            current_node = new GridPathNode(current_node, dir);
-        }
-        return current_node;
-    }
+  @Override
+  public int getGridX() {
+    return local_grid_x + offset.offset_x;
+  }
 
-    public GridNode(int x, int y) {
-        this.local_grid_x = x;
-        this.local_grid_y = y;
-    }
+  @Override
+  public int getGridY() {
+    return local_grid_y + offset.offset_y;
+  }
 
-    @Override
-    public int getGridX() {
-        return local_grid_x + offset.offset_x;
-    }
+  void setOffset(Offset offset) {
+    this.offset = offset;
+  }
 
-    @Override
-    public int getGridY() {
-        return local_grid_y + offset.offset_y;
-    }
+  public static @Nullable Offset setupPathFinding(int src_grid_x, int src_grid_y, int dst_grid_x, int dst_grid_y) {
+    if (Math.abs(dst_grid_x - src_grid_x) >= RegionBuilder.GRID_SIZE
+        && Math.abs(dst_grid_y - src_grid_y) >= RegionBuilder.GRID_SIZE) return null;
+    int path_offset_x = (dst_grid_x + src_grid_x - RegionBuilder.GRID_SIZE) / 2;
+    int path_offset_y = (dst_grid_y + src_grid_y - RegionBuilder.GRID_SIZE) / 2;
+    return new Offset(path_offset_x, path_offset_y);
+  }
 
-    void setOffset(Offset offset) {
-        this.offset = offset;
+  private boolean addNeighbour(PathFinderAlgorithm finder, UnitGrid unit_grid, int x, int y, int cost) {
+    GridNode node = unit_grid.pathFinder().getPathfinderNode(offset, x, y);
+    if (node == null || node.isVisited(unit_grid.pathFinder().getSearchId())) return false;
+    Occupant occupant = unit_grid.getOccupant(node.getGridX(), node.getGridY());
+    if (occupant != null) {
+      if (finder.touchNeighbour(occupant)) return true;
+      int penalty = occupant.getPenalty();
+      if (penalty >= Occupant.STATIC) return false;
+      cost += penalty;
     }
+    unit_grid.pathFinder().addToOpenList(finder, node, this, cost);
+    return false;
+  }
 
-    public static @Nullable Offset setupPathFinding(int src_grid_x, int src_grid_y, int dst_grid_x, int dst_grid_y) {
-        if (Math.abs(dst_grid_x - src_grid_x) >= RegionBuilder.GRID_SIZE &&
-                Math.abs(dst_grid_y - src_grid_y) >= RegionBuilder.GRID_SIZE)
-            return null;
-        int path_offset_x = (dst_grid_x + src_grid_x - RegionBuilder.GRID_SIZE) / 2;
-        int path_offset_y = (dst_grid_y + src_grid_y - RegionBuilder.GRID_SIZE) / 2;
-        return new Offset(path_offset_x, path_offset_y);
-    }
+  @Override
+  public boolean addNeighbours(PathFinderAlgorithm finder, UnitGrid unit_grid) {
+    int x = getGridX();
+    int y = getGridY();
+    return addNeighbour(finder, unit_grid, x, y - 1, RegionBuilder.STRAIGHT)
+        || addNeighbour(finder, unit_grid, x - 1, y, RegionBuilder.STRAIGHT)
+        || addNeighbour(finder, unit_grid, x + 1, y, RegionBuilder.STRAIGHT)
+        || addNeighbour(finder, unit_grid, x, y + 1, RegionBuilder.STRAIGHT)
+        || addNeighbour(finder, unit_grid, x - 1, y - 1, RegionBuilder.DIAGONAL)
+        || addNeighbour(finder, unit_grid, x + 1, y - 1, RegionBuilder.DIAGONAL)
+        || addNeighbour(finder, unit_grid, x - 1, y + 1, RegionBuilder.DIAGONAL)
+        || addNeighbour(finder, unit_grid, x + 1, y + 1, RegionBuilder.DIAGONAL);
+  }
 
-    private boolean addNeighbour(PathFinderAlgorithm finder, UnitGrid unit_grid, int x, int y,
-            int cost) {
-        GridNode node = unit_grid.pathFinder().getPathfinderNode(offset, x, y);
-        if (node == null || node.isVisited(unit_grid.pathFinder().getSearchId()))
-            return false;
-        Occupant occupant = unit_grid.getOccupant(node.getGridX(), node.getGridY());
-        if (occupant != null) {
-            if (finder.touchNeighbour(occupant))
-                return true;
-            int penalty = occupant.getPenalty();
-            if (penalty >= Occupant.STATIC)
-                return false;
-            cost += penalty;
-        }
-        unit_grid.pathFinder().addToOpenList(finder, node, this, cost);
-        return false;
-    }
-
-    @Override
-    public boolean addNeighbours(PathFinderAlgorithm finder, UnitGrid unit_grid) {
-        int x = getGridX();
-        int y = getGridY();
-        return addNeighbour(finder, unit_grid, x, y - 1, RegionBuilder.STRAIGHT) ||
-                addNeighbour(finder, unit_grid, x - 1, y, RegionBuilder.STRAIGHT) ||
-                addNeighbour(finder, unit_grid, x + 1, y, RegionBuilder.STRAIGHT) ||
-                addNeighbour(finder, unit_grid, x, y + 1, RegionBuilder.STRAIGHT) ||
-                addNeighbour(finder, unit_grid, x - 1, y - 1, RegionBuilder.DIAGONAL) ||
-                addNeighbour(finder, unit_grid, x + 1, y - 1, RegionBuilder.DIAGONAL) ||
-                addNeighbour(finder, unit_grid, x - 1, y + 1, RegionBuilder.DIAGONAL) ||
-                addNeighbour(finder, unit_grid, x + 1, y + 1, RegionBuilder.DIAGONAL);
-    }
-
-    record Offset(int offset_x, int offset_y) {
-    }
+  record Offset(int offset_x, int offset_y) {}
 }

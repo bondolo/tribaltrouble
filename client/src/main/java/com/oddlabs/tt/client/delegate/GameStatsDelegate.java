@@ -2,8 +2,12 @@ package com.oddlabs.tt.client.delegate;
 
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.StaticCamera;
+import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.engine.font.Font;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Group;
@@ -11,211 +15,202 @@ import com.oddlabs.tt.gui.IntegerLabel;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MultiColumnComboBox;
 import com.oddlabs.tt.gui.Row;
-import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.gui.SortedLabel;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.engine.render.GUIRenderer;
-import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.client.viewer.WorldViewer;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-/**
- * Renders the post-game summary statistics panel, displaying unit, building,
- * and resource metrics for each player in a tabular format.
- */
+/// Renders the post-game summary statistics panel, displaying unit, building, and resource metrics for each player in a
+/// tabular format.
 public final class GameStatsDelegate extends CameraDelegate<StaticCamera> implements Updatable<TimerAnimation> {
-    private static final int PLAYER_COLUMN_WIDTH = 100;
-    private static final int TEXT_OFFSET = -4;
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(GameStatsDelegate.class.getName());
+  private static final int PLAYER_COLUMN_WIDTH = 100;
+  private static final int TEXT_OFFSET = -4;
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(GameStatsDelegate.class.getName());
 
-    public static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  public static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  private final TimerAnimation delay_timer;
+  private final Group group_buttons;
+  private final WorldViewer viewer;
+
+  public GameStatsDelegate(WorldViewer viewer, Camera old_camera, String label_str) {
+    super(viewer.getGUIRoot(), new StaticCamera(old_camera.getState()));
+    this.viewer = viewer;
+    this.delay_timer = new TimerAnimation(viewer.getAnimationManager(), this, .6f);
+    setDim(getGUIRoot().getWidth(), getGUIRoot().getHeight());
+    var skin = getGUIRoot().getSkin();
+    Font comboFont = skin.getMultiColumnComboBoxData().font();
+    Label label = new Label(label_str, skin.getHeadlineFont());
+    addChild(label);
+    label.setPos((getWidth() - label.getWidth()) / 2, (getHeight() - label.getHeight()) * 4 / 5);
+
+    List<Player> players = viewer.getWorld().getPlayers();
+
+    ColumnInfo[] score_infos = new ColumnInfo[players.size() + 1];
+    score_infos[0] = new ColumnInfo(i18n("type"), 160);
+    for (int i = 0; i < players.size(); i++) {
+      score_infos[i + 1] = new ColumnInfo(players.get(i).getPlayerInfo().name(), PLAYER_COLUMN_WIDTH);
     }
 
-    private final TimerAnimation delay_timer;
-    private final Group group_buttons;
-    private final WorldViewer viewer;
+    MultiColumnComboBox<Void> score_box = new MultiColumnComboBox<>(viewer.getGUIRoot(), 200, score_infos);
+    addChild(score_box);
+    score_box.setPos((getWidth() - score_box.getWidth()) / 2, (getHeight() - score_box.getHeight()) / 2);
 
-    public GameStatsDelegate(WorldViewer viewer, Camera old_camera, String label_str) {
-        super(viewer.getGUIRoot(), new StaticCamera(old_camera.getState()));
-        this.viewer = viewer;
-        this.delay_timer = new TimerAnimation(viewer.getAnimationManager(), this, .6f);
-        setDim(getGUIRoot().getWidth(), getGUIRoot().getHeight());
-        var skin = getGUIRoot().getSkin();
-        Font comboFont = skin.getMultiColumnComboBoxData().font();
-        Label label = new Label(label_str, skin.getHeadlineFont());
-        addChild(label);
-        label.setPos((getWidth() - label.getWidth()) / 2, (getHeight() - label.getHeight()) * 4 / 5);
-
-        List<Player> players = viewer.getWorld().getPlayers();
-
-        ColumnInfo[] score_infos = new ColumnInfo[players.size() + 1];
-        score_infos[0] = new ColumnInfo(i18n("type"), 160);
-        for (int i = 0; i < players.size(); i++) {
-            score_infos[i + 1] = new ColumnInfo(players.get(i).getPlayerInfo().name(), PLAYER_COLUMN_WIDTH);
-        }
-
-        MultiColumnComboBox<Void> score_box = new MultiColumnComboBox<>(viewer.getGUIRoot(), 200, score_infos);
-        addChild(score_box);
-        score_box.setPos((getWidth() - score_box.getWidth()) / 2, (getHeight() - score_box.getHeight()) / 2);
-
-        Label[] units_lost_labels = new Label[players.size() + 1];
-        units_lost_labels[0] = new SortedLabel(i18n("units_lost"), 0, comboFont);
-        for (int i = 0; i < players.size(); i++) {
-            units_lost_labels[i + 1] = new IntegerLabel(players.get(i).getUnitsLost(), comboFont, PLAYER_COLUMN_WIDTH
-                    + TEXT_OFFSET);
-        }
-        score_box.addRow(new Row<>(getGUIRoot(), units_lost_labels, null));
-
-        Label[] units_killed_labels = new Label[players.size() + 1];
-        units_killed_labels[0] = new SortedLabel(i18n("units_killed"), 1, comboFont);
-        for (int i = 0; i < players.size(); i++) {
-            units_killed_labels[i + 1] = new IntegerLabel(players.get(i).getUnitsKilled(), comboFont,
-                    PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
-        }
-        score_box.addRow(new Row<>(getGUIRoot(), units_killed_labels, null));
-
-        Label[] buildings_lost_labels = new Label[players.size() + 1];
-        buildings_lost_labels[0] = new SortedLabel(i18n("buildings_lost"), 2, comboFont);
-        for (int i = 0; i < players.size(); i++) {
-            buildings_lost_labels[i + 1] = new IntegerLabel(players.get(i).getBuildingsLost(), comboFont,
-                    PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
-        }
-        score_box.addRow(new Row<>(getGUIRoot(), buildings_lost_labels, null));
-
-        Label[] buildings_destroyed_labels = new Label[players.size() + 1];
-        buildings_destroyed_labels[0] = new SortedLabel(i18n("buildings_wrecked"), 3, comboFont);
-        for (int i = 0; i < players.size(); i++) {
-            buildings_destroyed_labels[i + 1] = new IntegerLabel(players.get(i).getBuildingsDestroyed(), comboFont,
-                    PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
-        }
-        score_box.addRow(new Row<>(getGUIRoot(), buildings_destroyed_labels, null));
-
-        Label[] tree_harvested_labels = new Label[players.size() + 1];
-        tree_harvested_labels[0] = new SortedLabel(i18n("tree_resources"), 3, comboFont);
-        for (int i = 0; i < players.size(); i++) {
-            tree_harvested_labels[i + 1] = new IntegerLabel(players.get(i).getTreeHarvested(), comboFont,
-                    PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
-        }
-        score_box.addRow(new Row<>(getGUIRoot(), tree_harvested_labels, null));
-
-        Label[] rock_harvested_labels = new Label[players.size() + 1];
-        rock_harvested_labels[0] = new SortedLabel(i18n("rock_resources"), 4, comboFont);
-        for (int i = 0; i < players.size(); i++) {
-            rock_harvested_labels[i + 1] = new IntegerLabel(players.get(i).getRockHarvested(), comboFont,
-                    PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
-        }
-        score_box.addRow(new Row<>(getGUIRoot(), rock_harvested_labels, null));
-
-        Label[] iron_harvested_labels = new Label[players.size() + 1];
-        iron_harvested_labels[0] = new SortedLabel(i18n("iron_resources"), 5, comboFont);
-        for (int i = 0; i < players.size(); i++) {
-            iron_harvested_labels[i + 1] = new IntegerLabel(players.get(i).getIronHarvested(), comboFont,
-                    PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
-        }
-        score_box.addRow(new Row<>(getGUIRoot(), iron_harvested_labels, null));
-
-        Label[] rubber_harvested_labels = new Label[players.size() + 1];
-        rubber_harvested_labels[0] = new SortedLabel(i18n("chicken_resources"), 6, comboFont);
-        for (int i = 0; i < players.size(); i++) {
-            rubber_harvested_labels[i + 1] = new IntegerLabel(players.get(i).getRubberHarvested(), comboFont,
-                    PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
-        }
-        score_box.addRow(new Row<>(getGUIRoot(), rubber_harvested_labels, null));
-
-        Label[] walked_labels = new Label[players.size() + 1];
-        walked_labels[0] = new SortedLabel(i18n("meters_walked"), 7, comboFont);
-        for (int i = 0; i < players.size(); i++) {
-            walked_labels[i + 1] = new IntegerLabel(players.get(i).getUnitsMoved() * 2, comboFont, PLAYER_COLUMN_WIDTH
-                    + TEXT_OFFSET);
-        }
-        score_box.addRow(new Row<>(getGUIRoot(), walked_labels, null));
-
-        Label[] weapons_labels = new Label[players.size() + 1];
-        weapons_labels[0] = new SortedLabel(i18n("weapons_thrown"), 8, comboFont);
-        for (int i = 0; i < players.size(); i++) {
-            weapons_labels[i + 1] = new IntegerLabel(players.get(i).getWeaponsThrown(), comboFont, PLAYER_COLUMN_WIDTH
-                    + TEXT_OFFSET);
-        }
-        score_box.addRow(new Row<>(getGUIRoot(), weapons_labels, null));
-
-        Label[] magics_labels = new Label[players.size() + 1];
-        magics_labels[0] = new SortedLabel(i18n("magics_used"), 9, comboFont);
-        for (int i = 0; i < players.size(); i++) {
-            magics_labels[i + 1] = new IntegerLabel(players.get(i).getMagics(), comboFont, PLAYER_COLUMN_WIDTH
-                    + TEXT_OFFSET);
-        }
-        score_box.addRow(new Row<>(getGUIRoot(), magics_labels, null));
-
-        List<Label> total_labels = new ArrayList<>(players.size() + 1);
-        total_labels.add(new SortedLabel(i18n("total"), 10, comboFont));
-        for (Player player : players) {
-            int unit_killed = player.getUnitsKilled();
-            int buildings_wrecked = player.getBuildingsDestroyed();
-            int tree = player.getTreeHarvested();
-            int rock = player.getRockHarvested();
-            int iron = player.getIronHarvested();
-            int chicken = player.getRubberHarvested();
-
-            int total_score = unit_killed * 10 + buildings_wrecked * 100 + tree + rock + iron * 2 + chicken * 4;
-
-            total_labels.add(new IntegerLabel(total_score, comboFont,
-                    PLAYER_COLUMN_WIDTH + TEXT_OFFSET));
-        }
-        score_box.addRow(new Row<>(getGUIRoot(), total_labels.toArray(Label[]::new), null));
-
-        group_buttons = new Group(getGUIRoot());
-
-        viewer.addGameOverGUI(this, score_box.getY(), group_buttons);
-        group_buttons.compileCanvas();
-        addChild(group_buttons);
-        group_buttons.setPos((getWidth() - group_buttons.getWidth()) / 2, (getHeight() - group_buttons.getHeight()) * 1
-                / 5);
-
-        setFocusCycle(true);
-        delay_timer.start();
+    Label[] units_lost_labels = new Label[players.size() + 1];
+    units_lost_labels[0] = new SortedLabel(i18n("units_lost"), 0, comboFont);
+    for (int i = 0; i < players.size(); i++) {
+      units_lost_labels[i + 1] =
+          new IntegerLabel(players.get(i).getUnitsLost(), comboFont, PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
     }
+    score_box.addRow(new Row<>(getGUIRoot(), units_lost_labels, null));
 
-    @Override
-    public void update(TimerAnimation anim) {
-        addChild(group_buttons);
-        delay_timer.stop();
+    Label[] units_killed_labels = new Label[players.size() + 1];
+    units_killed_labels[0] = new SortedLabel(i18n("units_killed"), 1, comboFont);
+    for (int i = 0; i < players.size(); i++) {
+      units_killed_labels[i + 1] =
+          new IntegerLabel(players.get(i).getUnitsKilled(), comboFont, PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
     }
+    score_box.addRow(new Row<>(getGUIRoot(), units_killed_labels, null));
 
-    @Override
-    protected void renderGeometry(GUIRenderer renderer) {
-        renderBackgroundAlpha(renderer);
+    Label[] buildings_lost_labels = new Label[players.size() + 1];
+    buildings_lost_labels[0] = new SortedLabel(i18n("buildings_lost"), 2, comboFont);
+    for (int i = 0; i < players.size(); i++) {
+      buildings_lost_labels[i + 1] =
+          new IntegerLabel(players.get(i).getBuildingsLost(), comboFont, PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
     }
+    score_box.addRow(new Row<>(getGUIRoot(), buildings_lost_labels, null));
 
-    @Override
-    public void handleInput(InputEvent event) {
-        if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
-            if (event.consumeAction(GameAction.UI_FOCUS_NEXT)) {
-                switchFocus(FocusDirection.FORWARD);
-                event.consume();
-                return;
-            }
-            if (event.consumeAction(GameAction.UI_FOCUS_PREV)) {
-                switchFocus(FocusDirection.BACKWARD);
-                event.consume();
-                return;
-            }
-        }
-        super.handleInput(event);
+    Label[] buildings_destroyed_labels = new Label[players.size() + 1];
+    buildings_destroyed_labels[0] = new SortedLabel(i18n("buildings_wrecked"), 3, comboFont);
+    for (int i = 0; i < players.size(); i++) {
+      buildings_destroyed_labels[i + 1] =
+          new IntegerLabel(players.get(i).getBuildingsDestroyed(), comboFont, PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
     }
+    score_box.addRow(new Row<>(getGUIRoot(), buildings_destroyed_labels, null));
 
-    public void startMenu() {
-        viewer.close();
-        setDisabled(true);
+    Label[] tree_harvested_labels = new Label[players.size() + 1];
+    tree_harvested_labels[0] = new SortedLabel(i18n("tree_resources"), 3, comboFont);
+    for (int i = 0; i < players.size(); i++) {
+      tree_harvested_labels[i + 1] =
+          new IntegerLabel(players.get(i).getTreeHarvested(), comboFont, PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
     }
+    score_box.addRow(new Row<>(getGUIRoot(), tree_harvested_labels, null));
 
-    public WorldViewer getViewer() {
-        return viewer;
+    Label[] rock_harvested_labels = new Label[players.size() + 1];
+    rock_harvested_labels[0] = new SortedLabel(i18n("rock_resources"), 4, comboFont);
+    for (int i = 0; i < players.size(); i++) {
+      rock_harvested_labels[i + 1] =
+          new IntegerLabel(players.get(i).getRockHarvested(), comboFont, PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
     }
+    score_box.addRow(new Row<>(getGUIRoot(), rock_harvested_labels, null));
+
+    Label[] iron_harvested_labels = new Label[players.size() + 1];
+    iron_harvested_labels[0] = new SortedLabel(i18n("iron_resources"), 5, comboFont);
+    for (int i = 0; i < players.size(); i++) {
+      iron_harvested_labels[i + 1] =
+          new IntegerLabel(players.get(i).getIronHarvested(), comboFont, PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
+    }
+    score_box.addRow(new Row<>(getGUIRoot(), iron_harvested_labels, null));
+
+    Label[] rubber_harvested_labels = new Label[players.size() + 1];
+    rubber_harvested_labels[0] = new SortedLabel(i18n("chicken_resources"), 6, comboFont);
+    for (int i = 0; i < players.size(); i++) {
+      rubber_harvested_labels[i + 1] =
+          new IntegerLabel(players.get(i).getRubberHarvested(), comboFont, PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
+    }
+    score_box.addRow(new Row<>(getGUIRoot(), rubber_harvested_labels, null));
+
+    Label[] walked_labels = new Label[players.size() + 1];
+    walked_labels[0] = new SortedLabel(i18n("meters_walked"), 7, comboFont);
+    for (int i = 0; i < players.size(); i++) {
+      walked_labels[i + 1] =
+          new IntegerLabel(players.get(i).getUnitsMoved() * 2, comboFont, PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
+    }
+    score_box.addRow(new Row<>(getGUIRoot(), walked_labels, null));
+
+    Label[] weapons_labels = new Label[players.size() + 1];
+    weapons_labels[0] = new SortedLabel(i18n("weapons_thrown"), 8, comboFont);
+    for (int i = 0; i < players.size(); i++) {
+      weapons_labels[i + 1] =
+          new IntegerLabel(players.get(i).getWeaponsThrown(), comboFont, PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
+    }
+    score_box.addRow(new Row<>(getGUIRoot(), weapons_labels, null));
+
+    Label[] magics_labels = new Label[players.size() + 1];
+    magics_labels[0] = new SortedLabel(i18n("magics_used"), 9, comboFont);
+    for (int i = 0; i < players.size(); i++) {
+      magics_labels[i + 1] = new IntegerLabel(players.get(i).getMagics(), comboFont, PLAYER_COLUMN_WIDTH + TEXT_OFFSET);
+    }
+    score_box.addRow(new Row<>(getGUIRoot(), magics_labels, null));
+
+    List<Label> total_labels = new ArrayList<>(players.size() + 1);
+    total_labels.add(new SortedLabel(i18n("total"), 10, comboFont));
+    for (Player player : players) {
+      int unit_killed = player.getUnitsKilled();
+      int buildings_wrecked = player.getBuildingsDestroyed();
+      int tree = player.getTreeHarvested();
+      int rock = player.getRockHarvested();
+      int iron = player.getIronHarvested();
+      int chicken = player.getRubberHarvested();
+
+      int total_score = unit_killed * 10 + buildings_wrecked * 100 + tree + rock + iron * 2 + chicken * 4;
+
+      total_labels.add(new IntegerLabel(total_score, comboFont, PLAYER_COLUMN_WIDTH + TEXT_OFFSET));
+    }
+    score_box.addRow(new Row<>(getGUIRoot(), total_labels.toArray(Label[]::new), null));
+
+    group_buttons = new Group(getGUIRoot());
+
+    viewer.addGameOverGUI(this, score_box.getY(), group_buttons);
+    group_buttons.compileCanvas();
+    addChild(group_buttons);
+    group_buttons.setPos(
+        (getWidth() - group_buttons.getWidth()) / 2, (getHeight() - group_buttons.getHeight()) * 1 / 5);
+
+    setFocusCycle(true);
+    delay_timer.start();
+  }
+
+  @Override
+  public void update(TimerAnimation anim) {
+    addChild(group_buttons);
+    delay_timer.stop();
+  }
+
+  @Override
+  protected void renderGeometry(GUIRenderer renderer) {
+    renderBackgroundAlpha(renderer);
+  }
+
+  @Override
+  public void handleInput(InputEvent event) {
+    if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
+      if (event.consumeAction(GameAction.UI_FOCUS_NEXT)) {
+        switchFocus(FocusDirection.FORWARD);
+        event.consume();
+        return;
+      }
+      if (event.consumeAction(GameAction.UI_FOCUS_PREV)) {
+        switchFocus(FocusDirection.BACKWARD);
+        event.consume();
+        return;
+      }
+    }
+    super.handleInput(event);
+  }
+
+  public void startMenu() {
+    viewer.close();
+    setDisabled(true);
+  }
+
+  public WorldViewer getViewer() {
+    return viewer;
+  }
 }

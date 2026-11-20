@@ -1,234 +1,232 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.gui.event.ItemChosenListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.jspecify.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Dropdown menu containing selectable list items.
- */
+/// Dropdown menu containing selectable list items.
 public final class PulldownMenu<T> extends Group {
-    private final Set<ItemChosenListener<T>> chosen_listeners = new CopyOnWriteArraySet<>();
+  private final Set<ItemChosenListener<T>> chosen_listeners = new CopyOnWriteArraySet<>();
 
-    private final List<PulldownItem<T>> items = new ArrayList<>();
-    private int chosen_item_index = -1;
-    private @Nullable GUIObject returnFocusTarget = null;
+  private final List<PulldownItem<T>> items = new ArrayList<>();
+  private int chosen_item_index = -1;
+  private @Nullable GUIObject returnFocusTarget = null;
 
-    public PulldownMenu(GUIRoot guiRoot) {
-        super(guiRoot);
-        setCanFocus(true);
-        setFocusCycle(true);
+  public PulldownMenu(GUIRoot guiRoot) {
+    super(guiRoot);
+    setCanFocus(true);
+    setFocusCycle(true);
+  }
+
+  public Optional<PulldownItem<T>> getItem(int index) {
+    return index >= 0 && index < items.size() ? Optional.of(items.get(index)) : Optional.empty();
+  }
+
+  public int getSize() {
+    return items.size();
+  }
+
+  boolean hasHoveredItem() {
+    for (int i = 0; i < items.size(); i++) {
+      if (items.get(i).isHovered()) {
+        return true;
+      }
     }
+    return false;
+  }
 
-    public Optional<PulldownItem<T>> getItem(int index) {
-        return index >= 0 && index < items.size() ? Optional.of(items.get(index)) : Optional.empty();
+  boolean hasActiveItem() {
+    for (int i = 0; i < items.size(); i++) {
+      if (items.get(i).isActive()) {
+        return true;
+      }
     }
+    return false;
+  }
 
-    public int getSize() {
-        return items.size();
-    }
+  @Override
+  protected void renderGeometry(GUIRenderer renderer) {
+    var pulldownData = skin.getPulldownData();
 
-    boolean hasHoveredItem() {
-        for (int i = 0; i < items.size(); i++) {
-            if (items.get(i).isHovered()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    boolean hasActiveItem() {
-        for (int i = 0; i < items.size(); i++) {
-            if (items.get(i).isActive()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    protected void renderGeometry(GUIRenderer renderer) {
-        var pulldownData = skin.getPulldownData();
-
-        ModeIconQuads.Mode botMode = isDisabled()
-                ? ModeIconQuads.Mode.DISABLED
-                : (!items.isEmpty() && items.getLast().isHighlighted())
-                        ? ModeIconQuads.Mode.ACTIVE
+    ModeIconQuads.Mode botMode =
+        isDisabled()
+            ? ModeIconQuads.Mode.DISABLED
+            : (!items.isEmpty() && items.getLast().isHighlighted())
+                ? ModeIconQuads.Mode.ACTIVE
                 : ModeIconQuads.Mode.NORMAL;
 
-        // Render bottom edge
-        Horizontal bot = pulldownData.pulldownBottom();
-        bot.render(renderer, 0, 0, getWidth(), botMode);
+    // Render bottom edge
+    Horizontal bot = pulldownData.pulldownBottom();
+    bot.render(renderer, 0, 0, getWidth(), botMode);
 
-        ModeIconQuads.Mode topMode = isDisabled()
-                ? ModeIconQuads.Mode.DISABLED
-                : (!items.isEmpty() && items.getFirst().isHighlighted())
-                        ? ModeIconQuads.Mode.ACTIVE
+    ModeIconQuads.Mode topMode =
+        isDisabled()
+            ? ModeIconQuads.Mode.DISABLED
+            : (!items.isEmpty() && items.getFirst().isHighlighted())
+                ? ModeIconQuads.Mode.ACTIVE
                 : ModeIconQuads.Mode.NORMAL;
 
-        // Render top edge
-        Horizontal top = pulldownData.pulldownTop();
-        top.render(renderer, 0, getHeight() - top.getHeight(), getWidth(), topMode);
-    }
+    // Render top edge
+    Horizontal top = pulldownData.pulldownTop();
+    top.render(renderer, 0, getHeight() - top.getHeight(), getWidth(), topMode);
+  }
 
-    public void addItem(PulldownItem<T> item) {
-        items.add(item);
-        addChild(item);
-        item.setMenu(this);
-        setDim(getWidth(), getHeight());
-    }
+  public void addItem(PulldownItem<T> item) {
+    items.add(item);
+    addChild(item);
+    item.setMenu(this);
+    setDim(getWidth(), getHeight());
+  }
 
-    public void clear() {
-        for (PulldownItem<T> item : items) {
-            item.setMenu(null);
+  public void clear() {
+    for (PulldownItem<T> item : items) {
+      item.setMenu(null);
+    }
+    items.clear();
+    clearChildren();
+    chosen_item_index = -1;
+    setDim(getWidth(), getHeight());
+  }
+
+  @Override
+  public PulldownMenu<T> setDim(int width, int height) {
+    int min_width = 0;
+    var pulldownData = skin.getPulldownData();
+    Box item_box = pulldownData.pulldownItem();
+    for (PulldownItem<T> item : items) {
+      if (item.getTextWidth() > min_width) min_width = item.getTextWidth();
+    }
+    int item_pos_count = pulldownData.pulldownBottom().getHeight();
+    min_width = Math.max(width, item_box.getLeftOffset() + min_width + item_box.getRightOffset());
+    for (int i = 0; i < items.size(); i++) {
+      PulldownItem<T> item = items.get(items.size() - 1 - i);
+      int item_height = item_box.getBottomOffset() + item.getTextHeight() + item_box.getTopOffset();
+      item.setDim(min_width, item_height);
+      item.setPos(0, item_pos_count);
+      item_pos_count += item_height;
+    }
+    int min_height = Math.max(height, item_pos_count + pulldownData.pulldownTop().getHeight());
+    super.setDim(min_width, min_height);
+    return this;
+  }
+
+  public Optional<PulldownItem<T>> getChosenItem() {
+    return -1 != chosen_item_index ? Optional.of(items.get(chosen_item_index)) : Optional.empty();
+  }
+
+  boolean isItemChosen(PulldownItem<T> item) {
+    return chosen_item_index >= 0 && chosen_item_index < items.size() && items.get(chosen_item_index) == item;
+  }
+
+  /// {@return index of the chosen item, or -1 if no item is chosen}
+  public int getChosenItemIndex() {
+    return chosen_item_index;
+  }
+
+  /**
+   * Chooses an item by its index.
+   *
+   * @param `index` index of the item to choose or -1 to clear the chosen item
+   */
+  public void chooseItem(int index) {
+    chosen_item_index = index;
+    itemChosenAll();
+  }
+
+  /**
+   * Chooses an item by its instance.
+   *
+   * @param `item` the item to choose, or null to clear the chosen item
+   */
+  public void chooseItem(@Nullable PulldownItem<T> item) {
+    chooseItem(item != null ? items.indexOf(item) : -1);
+  }
+
+  @Override
+  public void setFocus(FocusDirection direction) {
+    if (getChosenItem().isPresent()) {
+      getChosenItem().get().setFocus(direction);
+    } else {
+      super.setFocus(direction);
+    }
+  }
+
+  void setReturnFocusTarget(@Nullable GUIObject target) {
+    this.returnFocusTarget = target;
+  }
+
+  @Override
+  protected void doRemove() {
+    super.doRemove();
+    returnFocusTarget = null;
+  }
+
+  @Override
+  protected void focusNotify(boolean focus) {
+    if (!focus) {
+      remove();
+    }
+  }
+
+  @Override
+  protected void handleInput(InputEvent event) {
+    if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
+      if (event.consumeAction(GameAction.UI_NAV_UP)) {
+        focusPrior();
+        event.consume();
+        return;
+      }
+      if (event.consumeAction(GameAction.UI_NAV_DOWN)) {
+        focusNext();
+        event.consume();
+        return;
+      }
+      if (event.consumeAction(GameAction.UI_CANCEL)) {
+        GUIObject target = returnFocusTarget;
+        remove();
+        if (target != null) {
+          target.setFocus();
         }
-        items.clear();
-        clearChildren();
-        chosen_item_index = -1;
-        setDim(getWidth(), getHeight());
+        event.consume();
+        return;
+      }
     }
+    super.handleInput(event);
+  }
 
-    @Override
-    public PulldownMenu<T> setDim(int width, int height) {
-        int min_width = 0;
-        var pulldownData = skin.getPulldownData();
-        Box item_box = pulldownData.pulldownItem();
-        for (PulldownItem<T> item : items) {
-            if (item.getTextWidth() > min_width)
-                min_width = item.getTextWidth();
-        }
-        int item_pos_count = pulldownData.pulldownBottom().getHeight();
-        min_width = Math.max(width, item_box.getLeftOffset() + min_width + item_box.getRightOffset());
-        for (int i = 0; i < items.size(); i++) {
-            PulldownItem<T> item = items.get(items.size() - 1 - i);
-            int item_height = item_box.getBottomOffset() + item.getTextHeight() + item_box.getTopOffset();
-            item.setDim(min_width, item_height);
-            item.setPos(0, item_pos_count);
-            item_pos_count += item_height;
-        }
-        int min_height = Math.max(height, item_pos_count + pulldownData.pulldownTop().getHeight());
-        super.setDim(min_width, min_height);
-        return this;
-    }
+  // Sending click on to appropriate item when PulldownButton has been pressed and released on an item
+  void clickItem(MouseButton button, int x, int y, int clicks) {
+    clickItemExcept(button, x, y, clicks, null);
+  }
 
-    public Optional<PulldownItem<T>> getChosenItem() {
-        return -1 != chosen_item_index ? Optional.of(items.get(chosen_item_index)) : Optional.empty();
+  void clickItemExcept(MouseButton button, int x, int y, int clicks, @Nullable PulldownItem<T> except) {
+    for (PulldownItem<T> item : items) {
+      if (item != except && item.isHovered()) {
+        item.mouseClickedAll(button, x, y, clicks);
+      }
     }
+  }
 
-    boolean isItemChosen(PulldownItem<T> item) {
-        return chosen_item_index >= 0 && chosen_item_index < items.size() && items.get(chosen_item_index) == item;
+  public void itemChosenAll() {
+    for (ItemChosenListener<T> listener : chosen_listeners) {
+      listener.itemChosen(this, chosen_item_index);
     }
+  }
 
-    /** {@return index of the chosen item, or -1 if no item is chosen} */
-    public int getChosenItemIndex() {
-        return chosen_item_index;
-    }
+  public void addItemChosenListener(ItemChosenListener<T> listener) {
+    chosen_listeners.add(listener);
+  }
 
-    /**
-     * Chooses an item by its index.
-     *
-     * @param index index of the item to choose or -1 to clear the chosen item
-     */
-    public void chooseItem(int index) {
-        chosen_item_index = index;
-        itemChosenAll();
-    }
-
-    /**
-     * Chooses an item by its instance.
-     *
-     * @param item the item to choose, or null to clear the chosen item
-     */
-    public void chooseItem(@Nullable PulldownItem<T> item) {
-        chooseItem(item != null ? items.indexOf(item) : -1);
-    }
-
-    @Override
-    public void setFocus(FocusDirection direction) {
-        if (getChosenItem().isPresent()) {
-            getChosenItem().get().setFocus(direction);
-        } else {
-            super.setFocus(direction);
-        }
-    }
-
-    void setReturnFocusTarget(@Nullable GUIObject target) {
-        this.returnFocusTarget = target;
-    }
-
-    @Override
-    protected void doRemove() {
-        super.doRemove();
-        returnFocusTarget = null;
-    }
-
-    @Override
-    protected void focusNotify(boolean focus) {
-        if (!focus) {
-            remove();
-        }
-    }
-
-    @Override
-    protected void handleInput(InputEvent event) {
-        if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
-            if (event.consumeAction(GameAction.UI_NAV_UP)) {
-                focusPrior();
-                event.consume();
-                return;
-            }
-            if (event.consumeAction(GameAction.UI_NAV_DOWN)) {
-                focusNext();
-                event.consume();
-                return;
-            }
-            if (event.consumeAction(GameAction.UI_CANCEL)) {
-                GUIObject target = returnFocusTarget;
-                remove();
-                if (target != null) {
-                    target.setFocus();
-                }
-                event.consume();
-                return;
-            }
-        }
-        super.handleInput(event);
-    }
-
-    // Sending click on to appropriate item when PulldownButton has been pressed and released on an item
-    void clickItem(MouseButton button, int x, int y, int clicks) {
-        clickItemExcept(button, x, y, clicks, null);
-    }
-
-    void clickItemExcept(MouseButton button, int x, int y, int clicks, @Nullable PulldownItem<T> except) {
-        for (PulldownItem<T> item : items) {
-            if (item != except && item.isHovered()) {
-                item.mouseClickedAll(button, x, y, clicks);
-            }
-        }
-    }
-
-    public void itemChosenAll() {
-        for (ItemChosenListener<T> listener : chosen_listeners) {
-            listener.itemChosen(this, chosen_item_index);
-        }
-    }
-
-    public void addItemChosenListener(ItemChosenListener<T> listener) {
-        chosen_listeners.add(listener);
-    }
-
-    public void removeItemChosenListener(ItemChosenListener<T> listener) {
-        chosen_listeners.remove(listener);
-    }
+  public void removeItemChosenListener(ItemChosenListener<T> listener) {
+    chosen_listeners.remove(listener);
+  }
 }

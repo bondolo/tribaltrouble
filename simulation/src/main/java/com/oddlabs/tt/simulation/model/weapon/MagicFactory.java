@@ -3,13 +3,13 @@ package com.oddlabs.tt.simulation.model.weapon;
 import com.oddlabs.tt.simulation.model.Unit;
 
 public interface MagicFactory {
-    float getHitRadius();
+  float getHitRadius();
 
-    float getSecondsPerAnim();
+  float getSecondsPerAnim();
 
-    float getSecondsPerInit();
+  float getSecondsPerInit();
 
-    float getSecondsPerRelease();
+  float getSecondsPerRelease();
 
-    Magic execute(Unit src);
+  Magic execute(Unit src);
 }

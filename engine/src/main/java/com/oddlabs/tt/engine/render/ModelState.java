@@ -1,71 +1,67 @@
 package com.oddlabs.tt.engine.render;
 
-
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Unified interface for accessing the visual state of renderable world objects.
- */
+/// Unified interface for accessing the visual state of renderable world objects.
 public interface ModelState<M extends Model> {
-    Matrix4f getTransform(Matrix4f dest);
+  Matrix4f getTransform(Matrix4f dest);
 
-    int getAnimation();
+  int getAnimation();
 
-    float getAnimationTicks();
+  float getAnimationTicks();
 
-    Color getTeamColor();
+  Color getTeamColor();
 
-    default float getTeamColorR() {
-        return getTeamColor().r();
-    }
+  default float getTeamColorR() {
+    return getTeamColor().r();
+  }
 
-    default float getTeamColorG() {
-        return getTeamColor().g();
-    }
+  default float getTeamColorG() {
+    return getTeamColor().g();
+  }
 
-    default float getTeamColorB() {
-        return getTeamColor().b();
-    }
+  default float getTeamColorB() {
+    return getTeamColor().b();
+  }
 
-    default float getTeamColorA() {
-        return getTeamColor().a();
-    }
+  default float getTeamColorA() {
+    return getTeamColor().a();
+  }
 
-    Color getSelectionColor();
+  Color getSelectionColor();
 
-    Color getColor();
+  Color getColor();
 
-    default float getColorR() {
-        return getColor().r();
-    }
+  default float getColorR() {
+    return getColor().r();
+  }
 
-    default float getColorG() {
-        return getColor().g();
-    }
+  default float getColorG() {
+    return getColor().g();
+  }
 
-    default float getColorB() {
-        return getColor().b();
-    }
+  default float getColorB() {
+    return getColor().b();
+  }
 
-    default float getColorA() {
-        return getColor().a();
-    }
+  default float getColorA() {
+    return getColor().a();
+  }
 
-    VisualPattern getPattern();
+  VisualPattern getPattern();
 
-    float getNoDetailSize();
+  float getNoDetailSize();
 
-    @Nullable
-    M getModel();
+  @Nullable M getModel();
 
-    default @Nullable SpriteList getSpriteList() {
-        return null;
-    }
+  default @Nullable SpriteList getSpriteList() {
+    return null;
+  }
 
-    default float getInterpolationAlpha() {
-        return 1.0f;
-    }
+  default float getInterpolationAlpha() {
+    return 1.0f;
+  }
 }

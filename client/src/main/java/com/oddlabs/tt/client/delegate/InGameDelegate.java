@@ -1,9 +1,14 @@
 package com.oddlabs.tt.client.delegate;
 
+import com.oddlabs.tt.ai.AI;
 import com.oddlabs.tt.base.global.AppConfig;
-import com.oddlabs.tt.simulation.model.UnitType;
-
+import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.GameplaySettings;
 import com.oddlabs.tt.client.camera.Camera;
+import com.oddlabs.tt.client.viewer.Cheat;
+import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.engine.render.DebugFlags;
+import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
@@ -12,217 +17,233 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.engine.render.state.FogInfo;
-import com.oddlabs.tt.client.viewer.Cheat;
-import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.ai.AI;
-
 import java.util.ResourceBundle;
 import java.util.Set;
-import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.client.GameplaySettings;
 
-/**
- * Base class for all delegates active during actual gameplay. Provides common functionality
- * such as cheat code handling and opening the in-game main menu.
- */
+/// Base class for all delegates active during actual gameplay. Provides common functionality such as cheat code
+/// handling and opening the in-game main menu.
 public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C> {
-    private final WorldViewer viewer;
+  private final WorldViewer viewer;
 
-    protected InGameDelegate(WorldViewer viewer, C camera) {
-        super(viewer.getGUIRoot(), camera);
-        this.viewer = viewer;
+  protected InGameDelegate(WorldViewer viewer, C camera) {
+    super(viewer.getGUIRoot(), camera);
+    this.viewer = viewer;
+  }
+
+  private boolean cheat(Set<GameAction> actions) {
+    // cheats
+    Cheat cheat = viewer.getCheat();
+    if (!cheat.isEnabled()) return false;
+
+    var pickLocation = viewer.getPicker().pickLocation(getCamera().getState());
+
+    if (actions.contains(GameAction.CHEAT_1)) {
+      // F1 creates a peon at the center of the view unless the player already has maximum units.
+      if (pickLocation.isPresent()
+          && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies()
+              != viewer.getParameters().maxUnitCount()) {
+        var location = pickLocation.get();
+        new Unit(
+            viewer.getLocalPlayer(),
+            location.x(),
+            location.y(),
+            null,
+            viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.PEON));
+        return true;
+      }
+    }
+    if (actions.contains(GameAction.CHEAT_2)) {
+      // F2 creates a rock warrior at the center of the view unless the player already has maximum units.
+      if (pickLocation.isPresent()
+          && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies()
+              != viewer.getParameters().maxUnitCount()) {
+        var location = pickLocation.get();
+        new Unit(
+            viewer.getLocalPlayer(),
+            location.x(),
+            location.y(),
+            null,
+            viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        return true;
+      }
+    }
+    if (actions.contains(GameAction.CHEAT_3)) {
+      // F3 creates an iron warrior at the center of the view unless the player already has maximum units.
+      if (pickLocation.isPresent()
+          && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies()
+              != viewer.getParameters().maxUnitCount()) {
+        var location = pickLocation.get();
+        new Unit(
+            viewer.getLocalPlayer(),
+            location.x(),
+            location.y(),
+            null,
+            viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
+        return true;
+      }
+    }
+    if (actions.contains(GameAction.CHEAT_4)) {
+      // F4 creates a chicken warrior at the center of the view unless the player already has maximum units.
+      if (pickLocation.isPresent()
+          && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies()
+              != viewer.getParameters().maxUnitCount()) {
+        var location = pickLocation.get();
+        new Unit(
+            viewer.getLocalPlayer(),
+            location.x(),
+            location.y(),
+            null,
+            viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        return true;
+      }
+    }
+    if (actions.contains(GameAction.CHEAT_5)) {
+      // F5 creates a chieftain at the center of the view unless the player already has one or is training one
+      if (pickLocation.isPresent()
+          && !viewer.getLocalPlayer().hasActiveChieftain()
+          && !viewer.getLocalPlayer().isTrainingChieftain()) {
+        var location = pickLocation.get();
+        Unit chieftain =
+            new Unit(
+                viewer.getLocalPlayer(),
+                location.x(),
+                location.y(),
+                null,
+                viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN));
+        viewer.getLocalPlayer().setActiveChieftain(chieftain);
+        return true;
+      }
+    }
+    if (actions.contains(GameAction.CHEAT_6)) {
+      // F6 does massive damage on whatever is selected.
+      viewer.getLocalPlayer().killSelection(viewer.getSelection().getCurrentSelection().filter(Abilities.NONE));
+      return true;
+    }
+    if (actions.contains(GameAction.CHEAT_7)) {
+      // F7 hides and shows trees
+      cheat.draw_trees = !cheat.draw_trees;
+      return true;
+    }
+    if (actions.contains(GameAction.CHEAT_8)) {
+      // F8 hides and shows terrain grid.
+      cheat.line_mode = !cheat.line_mode;
+      return true;
+    }
+    if (actions.contains(GameAction.CHEAT_9)) {
+      // F9 toggles fog
+      FogInfo fog_info = getCamera().getState().getFog();
+      fog_info.setEnabled(!fog_info.isEnabled());
+      return true;
+    }
+    if (actions.contains(GameAction.CHEAT_10)) {
+      // Option-F7 toggles shadows
+      cheat.draw_shadows = !cheat.draw_shadows;
+      DebugFlags.process_shadows = cheat.draw_shadows;
+      DebugFlags.draw_shadows = cheat.draw_shadows;
+      return true;
     }
 
-    private boolean cheat(Set<GameAction> actions) {
-        // cheats
-        Cheat cheat = viewer.getCheat();
-        if (!cheat.isEnabled())
-            return false;
-
-        var pickLocation = viewer.getPicker().pickLocation(getCamera().getState());
-
-        if (actions.contains(GameAction.CHEAT_1)) {
-            // F1 creates a peon at the center of the view unless the player already has maximum units.
-            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer
-                    .getParameters().maxUnitCount()) {
-                var location = pickLocation.get();
-                new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
-                        viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.PEON));
-                return true;
-            }
+    if (actions.contains(GameAction.CHEAT_11)) {
+      // ALT-F11 spawns a rock
+      if (pickLocation.isPresent()) {
+        var loc = pickLocation.get();
+        int gx = UnitGrid.toGridCoordinate(loc.x());
+        int gy = UnitGrid.toGridCoordinate(loc.y());
+        var world = viewer.getWorld();
+        if (!world.getUnitGrid().isGridOccupied(gx, gy)) {
+          new RockSupply(world, gx, gy, loc.x(), loc.y(), false);
+          return true;
         }
-        if (actions.contains(GameAction.CHEAT_2)) {
-            // F2 creates a rock warrior at the center of the view unless the player already has maximum units.
-            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer
-                    .getParameters().maxUnitCount()) {
-                var location = pickLocation.get();
-                new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
-                        viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
-                return true;
-            }
+      }
+    }
+    if (actions.contains(GameAction.CHEAT_12)) {
+      // ALT-F12 spawns a meteor
+      if (pickLocation.isPresent()) {
+        var loc = pickLocation.get();
+        int gx = UnitGrid.toGridCoordinate(loc.x());
+        int gy = UnitGrid.toGridCoordinate(loc.y());
+        var world = viewer.getWorld();
+        if (!world.getUnitGrid().isGridOccupied(gx, gy)) {
+          new IronSupply(world, gx, gy, loc.x(), loc.y(), false);
+          return true;
         }
-        if (actions.contains(GameAction.CHEAT_3)) {
-            // F3 creates an iron warrior at the center of the view unless the player already has maximum units.
-            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer
-                    .getParameters().maxUnitCount()) {
-                var location = pickLocation.get();
-                new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
-                        viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
-                return true;
-            }
+      }
+    }
+    if (actions.contains(GameAction.CHEAT_13)) {
+      // ALT-F10 spawns a tree
+      if (pickLocation.isPresent()) {
+        var loc = pickLocation.get();
+        int gx = UnitGrid.toGridCoordinate(loc.x());
+        int gy = UnitGrid.toGridCoordinate(loc.y());
+        var world = viewer.getWorld();
+        if (!world.getUnitGrid().isGridOccupied(gx, gy)) {
+          world.spawnTree(loc.x(), loc.y());
+          return true;
         }
-        if (actions.contains(GameAction.CHEAT_4)) {
-            // F4 creates a chicken warrior at the center of the view unless the player already has maximum units.
-            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer
-                    .getParameters().maxUnitCount()) {
-                var location = pickLocation.get();
-                new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
-                        viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
-                return true;
-            }
-        }
-        if (actions.contains(GameAction.CHEAT_5)) {
-            // F5 creates a chieftain at the center of the view unless the player already has one or is training one
-            if (pickLocation.isPresent() && !viewer.getLocalPlayer().hasActiveChieftain() && !viewer.getLocalPlayer()
-                    .isTrainingChieftain()) {
-                var location = pickLocation.get();
-                Unit chieftain = new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
-                        viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN));
-                viewer.getLocalPlayer().setActiveChieftain(chieftain);
-                return true;
-            }
-        }
-        if (actions.contains(GameAction.CHEAT_6)) {
-            // F6 does massive damage on whatever is selected.
-            viewer.getLocalPlayer().killSelection(viewer.getSelection().getCurrentSelection().filter(Abilities.NONE));
-            return true;
-        }
-        if (actions.contains(GameAction.CHEAT_7)) {
-            // F7 hides and shows trees
-            cheat.draw_trees = !cheat.draw_trees;
-            return true;
-        }
-        if (actions.contains(GameAction.CHEAT_8)) {
-            // F8 hides and shows terrain grid.
-            cheat.line_mode = !cheat.line_mode;
-            return true;
-        }
-        if (actions.contains(GameAction.CHEAT_9)) {
-            // F9 toggles fog
-            FogInfo fog_info = getCamera().getState().getFog();
-            fog_info.setEnabled(!fog_info.isEnabled());
-            return true;
-        }
-        if (actions.contains(GameAction.CHEAT_10)) {
-            // Option-F7 toggles shadows
-            cheat.draw_shadows = !cheat.draw_shadows;
-            DebugFlags.process_shadows = cheat.draw_shadows;
-            DebugFlags.draw_shadows = cheat.draw_shadows;
-            return true;
-        }
-
-        if (actions.contains(GameAction.CHEAT_11)) {
-            // ALT-F11 spawns a rock
-            if (pickLocation.isPresent()) {
-                var loc = pickLocation.get();
-                int gx = UnitGrid.toGridCoordinate(loc.x());
-                int gy = UnitGrid.toGridCoordinate(loc.y());
-                var world = viewer.getWorld();
-                if (!world.getUnitGrid().isGridOccupied(gx, gy)) {
-                    new RockSupply(world, gx, gy, loc.x(), loc.y(), false);
-                    return true;
-                }
-            }
-        }
-        if (actions.contains(GameAction.CHEAT_12)) {
-            // ALT-F12 spawns a meteor
-            if (pickLocation.isPresent()) {
-                var loc = pickLocation.get();
-                int gx = UnitGrid.toGridCoordinate(loc.x());
-                int gy = UnitGrid.toGridCoordinate(loc.y());
-                var world = viewer.getWorld();
-                if (!world.getUnitGrid().isGridOccupied(gx, gy)) {
-                    new IronSupply(world, gx, gy, loc.x(), loc.y(), false);
-                    return true;
-                }
-            }
-        }
-        if (actions.contains(GameAction.CHEAT_13)) {
-            // ALT-F10 spawns a tree
-            if (pickLocation.isPresent()) {
-                var loc = pickLocation.get();
-                int gx = UnitGrid.toGridCoordinate(loc.x());
-                int gy = UnitGrid.toGridCoordinate(loc.y());
-                var world = viewer.getWorld();
-                if (!world.getUnitGrid().isGridOccupied(gx, gy)) {
-                    world.spawnTree(loc.x(), loc.y());
-                    return true;
-                }
-            }
-        }
-
-        // If in developer mode
-        if (!AppConfig.DEVELOPER_MODE)
-            return false;
-
-        if (actions.contains(GameAction.DEBUG_PRINT_INFO)) {
-            // Ctrl-I prints building or unit info
-            var set = viewer.getSelection().getCurrentSelection().getSet();
-            if (!set.isEmpty()) {
-                var s = set.iterator().next();
-                if (s instanceof Building building) {
-                    if (!building.isDead() && !building.getAbilities().hasAbilities(Abilities.ATTACK))
-                        building.printDebugInfo();
-                } else if (s instanceof Unit unit) {
-                    if (!unit.isDead())
-                        unit.printDebugInfo();
-                }
-            }
-            return true;
-        }
-        return false;
+      }
     }
 
-    @Override
-    public void handleInput(InputEvent event) {
-        super.handleInput(event);
-        if (event.isConsumed()) return;
+    // If in developer mode
+    if (!AppConfig.DEVELOPER_MODE) return false;
 
-        if (event.getPhase() == InputPhase.PRESSED) {
-            if (event.consumeAction(GameAction.DEBUG_TOGGLE_AI)) {
-                AI.setRunAI(!AI.isRunAI());
-                event.consume();
-                return;
-            }
-
-            if (event.consumeAction(GameAction.GLOBAL_MENU)) {
-                viewer.getInGameInfo().openInGameMenu(viewer, getCamera());
-                event.consume();
-                return;
-            }
-
-            if (event.consumeAction(GameAction.GLOBAL_AGGRESSIVE_UNITS)) {
-                var gameplay = GameplaySettings.from(viewer.getGUIRoot().getGUI().getSettings());
-                gameplay.aggressive_units = !gameplay.aggressive_units;
-                ResourceBundle bundle = ResourceBundle.getBundle("com.oddlabs.tt.gui.GUIRoot");
-                viewer.getGUIRoot().getInfoPrinter().print(
-                        Utils.getBundleString(bundle, gameplay.aggressive_units
-                                ? "aggressive_unites_on" : "aggressive_unites_off"));
-                event.consume();
-                return;
-            }
-
-            if (cheat(event.getActions())) {
-                event.consume();
-                return;
-            }
+    if (actions.contains(GameAction.DEBUG_PRINT_INFO)) {
+      // Ctrl-I prints building or unit info
+      var set = viewer.getSelection().getCurrentSelection().getSet();
+      if (!set.isEmpty()) {
+        var s = set.iterator().next();
+        if (s instanceof Building building) {
+          if (!building.isDead() && !building.getAbilities().hasAbilities(Abilities.ATTACK)) building.printDebugInfo();
+        } else if (s instanceof Unit unit) {
+          if (!unit.isDead()) unit.printDebugInfo();
         }
+      }
+      return true;
     }
+    return false;
+  }
 
-    public final WorldViewer getViewer() {
-        return viewer;
+  @Override
+  public void handleInput(InputEvent event) {
+    super.handleInput(event);
+    if (event.isConsumed()) return;
+
+    if (event.getPhase() == InputPhase.PRESSED) {
+      if (event.consumeAction(GameAction.DEBUG_TOGGLE_AI)) {
+        AI.setRunAI(!AI.isRunAI());
+        event.consume();
+        return;
+      }
+
+      if (event.consumeAction(GameAction.GLOBAL_MENU)) {
+        viewer.getInGameInfo().openInGameMenu(viewer, getCamera());
+        event.consume();
+        return;
+      }
+
+      if (event.consumeAction(GameAction.GLOBAL_AGGRESSIVE_UNITS)) {
+        var gameplay = GameplaySettings.from(viewer.getGUIRoot().getGUI().getSettings());
+        gameplay.aggressive_units = !gameplay.aggressive_units;
+        ResourceBundle bundle = ResourceBundle.getBundle("com.oddlabs.tt.gui.GUIRoot");
+        viewer
+            .getGUIRoot()
+            .getInfoPrinter()
+            .print(
+                Utils.getBundleString(
+                    bundle, gameplay.aggressive_units ? "aggressive_unites_on" : "aggressive_unites_off"));
+        event.consume();
+        return;
+      }
+
+      if (cheat(event.getActions())) {
+        event.consume();
+        return;
+      }
     }
+  }
+
+  public final WorldViewer getViewer() {
+    return viewer;
+  }
 }

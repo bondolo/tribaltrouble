@@ -3,265 +3,268 @@ package com.oddlabs.converter;
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.geometry.SpriteInfo;
 import com.oddlabs.util.IndexListOptimizer;
-import org.joml.Matrix4f;
-
 import java.nio.ShortBuffer;
 import java.util.Arrays;
 import java.util.Map;
+import org.joml.Matrix4f;
 
-/**
- * Optimizes vertex indices, geometry arrays, and skeleton animations for asset compilation.
- */
+/// Optimizes vertex indices, geometry arrays, and skeleton animations for asset compilation.
 final class Optimizer {
-    private static final float VERTEX_THRESHOLD = 0.000001f;
-    private static final int MAX_BONE_INFLUENCES = 4;
+  private static final float VERTEX_THRESHOLD = 0.000001f;
+  private static final int MAX_BONE_INFLUENCES = 4;
 
-    private Optimizer() {
+  private Optimizer() {}
+
+  private static boolean floatsEquals(int index1, int index2, int size, float[] array1, float[] array2) {
+    for (int i = 0; i < size; i++) {
+      if (Math.abs(array1[index1 * size + i] - array2[index2 * size + i]) > VERTEX_THRESHOLD) return false;
+    }
+    return true;
+  }
+
+  private static boolean bytesEquals(int index1, int index2, int size, byte[] array1, byte[] array2) {
+    for (int i = 0; i < size; i++) {
+      if (array1[index1 * size + i] != array2[index2 * size + i]) return false;
+    }
+    return true;
+  }
+
+  private static void copyFloats(int index1, int index2, int size, float[] array1, float[] array2) {
+    if (size >= 0) System.arraycopy(array1, index1 * size, array2, index2 * size, size);
+  }
+
+  private static void copyObjects(int index1, int index2, int size, Object[] array1, Object[] array2) {
+    if (size >= 0) System.arraycopy(array1, index1 * size, array2, index2 * size, size);
+  }
+
+  private static boolean floatArrayEquals(int index1, int index2, float[][] array1, float[][] array2) {
+    if (array1[index1].length != array2[index2].length) {
+      return false;
+    }
+    for (int i = 0; i < array1[index1].length; i++) {
+      if (Math.abs(array1[index1][i] - array2[index2][i]) > VERTEX_THRESHOLD) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean byteArrayEquals(int index1, int index2, byte[][] array1, byte[][] array2) {
+    if (array1[index1].length != array2[index2].length) {
+      return false;
+    }
+    for (int i = 0; i < array1[index1].length; i++) {
+      if (array1[index1][i] != array2[index2][i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static void clampAndNormalizeSkin(byte[][] skin_names, float[][] skin_weights, int vertexIndex) {
+    byte[] names = skin_names[vertexIndex];
+    float[] weights = skin_weights[vertexIndex];
+    int count = names.length;
+    if (count == 0) {
+      return;
+    }
+    if (count == 1) {
+      weights[0] = 1.0f;
+      return;
     }
 
-    private static boolean floatsEquals(int index1, int index2, int size, float[] array1, float[] array2) {
-        for (int i = 0; i < size; i++) {
-            if (Math.abs(array1[index1 * size + i] - array2[index2 * size + i]) > VERTEX_THRESHOLD)
-                return false;
+    for (int i = 0; i < count - 1; i++) {
+      int maxIdx = i;
+      for (int j = i + 1; j < count; j++) {
+        if (weights[j] > weights[maxIdx] || (weights[j] == weights[maxIdx] && names[j] < names[maxIdx])) {
+          maxIdx = j;
         }
-        return true;
+      }
+      if (maxIdx != i) {
+        float tmpWeight = weights[i];
+        weights[i] = weights[maxIdx];
+        weights[maxIdx] = tmpWeight;
+
+        byte tmpName = names[i];
+        names[i] = names[maxIdx];
+        names[maxIdx] = tmpName;
+      }
     }
 
-    private static boolean bytesEquals(int index1, int index2, int size, byte[] array1, byte[] array2) {
-        for (int i = 0; i < size; i++) {
-            if (array1[index1 * size + i] != array2[index2 * size + i])
-                return false;
-        }
-        return true;
+    int newCount = Math.min(count, MAX_BONE_INFLUENCES);
+    byte[] newNames = names.length == newCount ? names : new byte[newCount];
+    float[] newWeights = weights.length == newCount ? weights : new float[newCount];
+    float sum = 0f;
+    for (int i = 0; i < newCount; i++) {
+      newNames[i] = names[i];
+      newWeights[i] = weights[i];
+      sum += newWeights[i];
     }
 
-    private static void copyFloats(int index1, int index2, int size, float[] array1,
-            float[] array2) {
-        if (size >= 0) System.arraycopy(array1, index1 * size, array2, index2 * size, size);
+    if (sum > 0f) {
+      float invSum = 1f / sum;
+      for (int i = 0; i < newCount; i++) {
+        newWeights[i] *= invSum;
+      }
+    } else {
+      newWeights[0] = 1.0f;
+      for (int i = 1; i < newCount; i++) {
+        newWeights[i] = 0f;
+      }
     }
 
-    private static void copyObjects(int index1, int index2, int size, Object[] array1,
-            Object[] array2) {
-        if (size >= 0) System.arraycopy(array1, index1 * size, array2, index2 * size, size);
+    skin_names[vertexIndex] = newNames;
+    skin_weights[vertexIndex] = newWeights;
+  }
+
+  static ModelInfo optimize(
+      int num_vertices,
+      float[] vertices,
+      float[] normals,
+      float[] colors,
+      float[] uvs,
+      float[] uvs2,
+      byte[][] skin_names,
+      float[][] skin_weights) {
+    for (int i = 0; i < num_vertices; i++) {
+      clampAndNormalizeSkin(skin_names, skin_weights, i);
     }
 
-    private static boolean floatArrayEquals(int index1, int index2, float[][] array1,
-            float[][] array2) {
-        if (array1[index1].length != array2[index2].length) {
-            return false;
-        }
-        for (int i = 0; i < array1[index1].length; i++) {
-            if (Math.abs(array1[index1][i] - array2[index2][i]) > VERTEX_THRESHOLD) {
-                return false;
-            }
-        }
-        return true;
+    short[] indices = new short[num_vertices];
+    float[] r_vertices = new float[vertices.length];
+    float[] r_colors = new float[colors.length];
+    float[] r_normals = new float[normals.length];
+    float[] r_uvs = new float[uvs.length];
+    float[] r_uvs2 = new float[uvs2.length];
+    byte[][] r_skin_names = new byte[skin_names.length][];
+    float[][] r_skin_weights = new float[skin_weights.length][];
+
+    int index = 0;
+
+    for (int i = 0; i < num_vertices; i++) {
+      int j;
+      for (j = 0; j < index; j++) {
+        boolean equals =
+            floatsEquals(i, j, 3, vertices, r_vertices)
+                && floatsEquals(i, j, 3, normals, r_normals)
+                && floatsEquals(i, j, 3, colors, r_colors)
+                && floatsEquals(i, j, 2, uvs, r_uvs)
+                && floatsEquals(i, j, 2, uvs2, r_uvs2)
+                && floatArrayEquals(i, j, skin_weights, r_skin_weights)
+                && byteArrayEquals(i, j, skin_names, r_skin_names);
+        if (equals) break;
+      }
+      if (j == index) {
+        copyFloats(i, index, 3, vertices, r_vertices);
+        copyFloats(i, index, 3, normals, r_normals);
+        copyFloats(i, index, 3, colors, r_colors);
+        copyFloats(i, index, 2, uvs, r_uvs);
+        copyFloats(i, index, 2, uvs2, r_uvs2);
+        copyObjects(i, index, 1, skin_names, r_skin_names);
+        copyObjects(i, index, 1, skin_weights, r_skin_weights);
+        indices[i] = (short) index;
+        index++;
+      } else {
+        indices[i] = (short) j;
+      }
     }
+    r_vertices = stripArray(index * 3, r_vertices);
+    r_normals = stripArray(index * 3, r_normals);
+    r_colors = stripArray(index * 3, r_colors);
+    r_uvs = stripArray(index * 2, r_uvs);
+    r_uvs2 = stripArray(index * 2, r_uvs2);
+    r_skin_names = stripArray(index, r_skin_names);
+    r_skin_weights = stripArray(index, r_skin_weights);
 
-    private static boolean byteArrayEquals(int index1, int index2, byte[][] array1,
-            byte[][] array2) {
-        if (array1[index1].length != array2[index2].length) {
-            return false;
-        }
-        for (int i = 0; i < array1[index1].length; i++) {
-            if (array1[index1][i] != array2[index2][i]) {
-                return false;
-            }
-        }
-        return true;
+    boolean using_texture_coords2 = false;
+    for (float v : r_uvs2) {
+      if (v != 0f) {
+        using_texture_coords2 = true;
+        break;
+      }
     }
+    if (!using_texture_coords2) r_uvs2 = null;
 
-    private static void clampAndNormalizeSkin(byte[][] skin_names, float[][] skin_weights, int vertexIndex) {
-        byte[] names = skin_names[vertexIndex];
-        float[] weights = skin_weights[vertexIndex];
-        int count = names.length;
-        if (count == 0) {
-            return;
-        }
-        if (count == 1) {
-            weights[0] = 1.0f;
-            return;
-        }
+    ShortBuffer index_buffer = ShortBuffer.wrap(indices);
+    IndexListOptimizer.optimize(index_buffer);
+    return new ModelInfo(indices, r_vertices, r_normals, r_colors, r_uvs, r_uvs2, r_skin_names, r_skin_weights);
+  }
 
-        for (int i = 0; i < count - 1; i++) {
-            int maxIdx = i;
-            for (int j = i + 1; j < count; j++) {
-                if (weights[j] > weights[maxIdx] || (weights[j] == weights[maxIdx] && names[j] < names[maxIdx])) {
-                    maxIdx = j;
-                }
-            }
-            if (maxIdx != i) {
-                float tmpWeight = weights[i];
-                weights[i] = weights[maxIdx];
-                weights[maxIdx] = tmpWeight;
+  private static float[][] stripArray(int length, float[][] array) {
+    return Arrays.copyOf(array, length);
+  }
 
-                byte tmpName = names[i];
-                names[i] = names[maxIdx];
-                names[maxIdx] = tmpName;
-            }
-        }
+  private static byte[][] stripArray(int length, byte[][] array) {
+    return Arrays.copyOf(array, length);
+  }
 
-        int newCount = Math.min(count, MAX_BONE_INFLUENCES);
-        byte[] newNames = names.length == newCount ? names : new byte[newCount];
-        float[] newWeights = weights.length == newCount ? weights : new float[newCount];
-        float sum = 0f;
-        for (int i = 0; i < newCount; i++) {
-            newNames[i] = names[i];
-            newWeights[i] = weights[i];
-            sum += newWeights[i];
-        }
+  private static float[] stripArray(int length, float[] array) {
+    return Arrays.copyOf(array, length);
+  }
 
-        if (sum > 0f) {
-            float invSum = 1f / sum;
-            for (int i = 0; i < newCount; i++) {
-                newWeights[i] *= invSum;
-            }
-        } else {
-            newWeights[0] = 1.0f;
-            for (int i = 1; i < newCount; i++) {
-                newWeights[i] = 0f;
-            }
-        }
+  static SpriteInfo convertToSprite(String[][] textures, ModelInfo model_info, float[] clear_color) {
+    return new SpriteInfo(
+        textures,
+        model_info.indices(),
+        model_info.vertices(),
+        model_info.normals(),
+        model_info.texcoords(),
+        model_info.texcoords2(),
+        model_info.skin_names(),
+        model_info.skin_weights(),
+        clear_color);
+  }
 
-        skin_names[vertexIndex] = newNames;
-        skin_weights[vertexIndex] = newWeights;
+  static AnimationInfo convertToAnimation(
+      Bone skeleton,
+      Map<String, float[]> initial_pose,
+      Map<String, float[]>[] anim_map,
+      AnimationInfo.AnimationType type,
+      float wpc,
+      String name) {
+    // animations format: [frames] [bones] [matrix]
+    int num_frames = anim_map.length;
+    float[][] frames = new float[num_frames][];
+    for (int frame_index = 0; frame_index < num_frames; frame_index++) {
+      float[] bones = new float[initial_pose.size() * 12];
+      frames[frame_index] = bones;
+      normalizeSkeleton(bones, skeleton, initial_pose, anim_map[frame_index]);
     }
+    return new AnimationInfo(frames, type, wpc, name);
+  }
 
-    static ModelInfo optimize(int num_vertices, float[] vertices,
-            float[] normals, float[] colors, float[] uvs, float[] uvs2,
-            byte[][] skin_names, float[][] skin_weights) {
-        for (int i = 0; i < num_vertices; i++) {
-            clampAndNormalizeSkin(skin_names, skin_weights, i);
-        }
+  private static void normalizeSkeleton(
+      float[] bones, Bone current_bone, Map<String, float[]> initial_pose_map, Map<String, float[]> frame_map) {
+    assert initial_pose_map.size() == bones.length / 12;
+    assert frame_map.size() == bones.length / 12;
+    String bone_name = current_bone.name();
+    float[] ipd = initial_pose_map.get(bone_name);
+    float[] fd = frame_map.get(bone_name);
+    Matrix4f absolute_initial_pose_matrix = new Matrix4f().set(ipd);
+    Matrix4f absolute_frame_matrix = new Matrix4f().set(fd);
 
-        short[] indices = new short[num_vertices];
-        float[] r_vertices = new float[vertices.length];
-        float[] r_colors = new float[colors.length];
-        float[] r_normals = new float[normals.length];
-        float[] r_uvs = new float[uvs.length];
-        float[] r_uvs2 = new float[uvs2.length];
-        byte[][] r_skin_names = new byte[skin_names.length][];
-        float[][] r_skin_weights = new float[skin_weights.length][];
+    Matrix4f inverted_absolute_initial_pose_matrix = new Matrix4f(absolute_initial_pose_matrix);
+    inverted_absolute_initial_pose_matrix.invert();
+    Matrix4f resulting_matrix = absolute_frame_matrix.mul(inverted_absolute_initial_pose_matrix, new Matrix4f());
+    int offset = current_bone.index() * 12;
 
-        int index = 0;
+    // Store logical matrix R = I_inv * F in row-major 3x4 format
+    // This corresponds to the first 3 columns of the transposed JOML matrix
+    bones[offset++] = resulting_matrix.m00();
+    bones[offset++] = resulting_matrix.m10();
+    bones[offset++] = resulting_matrix.m20();
+    bones[offset++] = resulting_matrix.m30();
+    bones[offset++] = resulting_matrix.m01();
+    bones[offset++] = resulting_matrix.m11();
+    bones[offset++] = resulting_matrix.m21();
+    bones[offset++] = resulting_matrix.m31();
+    bones[offset++] = resulting_matrix.m02();
+    bones[offset++] = resulting_matrix.m12();
+    bones[offset++] = resulting_matrix.m22();
+    bones[offset++] = resulting_matrix.m32();
 
-        for (int i = 0; i < num_vertices; i++) {
-            int j;
-            for (j = 0; j < index; j++) {
-                boolean equals = floatsEquals(i, j, 3, vertices, r_vertices) &&
-                        floatsEquals(i, j, 3, normals, r_normals) &&
-                        floatsEquals(i, j, 3, colors, r_colors) &&
-                        floatsEquals(i, j, 2, uvs, r_uvs) &&
-                        floatsEquals(i, j, 2, uvs2, r_uvs2) &&
-                        floatArrayEquals(i, j, skin_weights, r_skin_weights) &&
-                        byteArrayEquals(i, j, skin_names, r_skin_names);
-                if (equals)
-                    break;
-            }
-            if (j == index) {
-                copyFloats(i, index, 3, vertices, r_vertices);
-                copyFloats(i, index, 3, normals, r_normals);
-                copyFloats(i, index, 3, colors, r_colors);
-                copyFloats(i, index, 2, uvs, r_uvs);
-                copyFloats(i, index, 2, uvs2, r_uvs2);
-                copyObjects(i, index, 1, skin_names, r_skin_names);
-                copyObjects(i, index, 1, skin_weights, r_skin_weights);
-                indices[i] = (short) index;
-                index++;
-            } else {
-                indices[i] = (short) j;
-            }
-        }
-        r_vertices = stripArray(index * 3, r_vertices);
-        r_normals = stripArray(index * 3, r_normals);
-        r_colors = stripArray(index * 3, r_colors);
-        r_uvs = stripArray(index * 2, r_uvs);
-        r_uvs2 = stripArray(index * 2, r_uvs2);
-        r_skin_names = stripArray(index, r_skin_names);
-        r_skin_weights = stripArray(index, r_skin_weights);
-
-        boolean using_texture_coords2 = false;
-        for (float v : r_uvs2) {
-            if (v != 0f) {
-                using_texture_coords2 = true;
-                break;
-            }
-        }
-        if (!using_texture_coords2)
-            r_uvs2 = null;
-
-        ShortBuffer index_buffer = ShortBuffer.wrap(indices);
-        IndexListOptimizer.optimize(index_buffer);
-        return new ModelInfo(indices, r_vertices, r_normals, r_colors, r_uvs, r_uvs2, r_skin_names,
-                r_skin_weights);
+    for (Bone child_bone : current_bone.children()) {
+      normalizeSkeleton(bones, child_bone, initial_pose_map, frame_map);
     }
-
-    private static float[][] stripArray(int length, float[][] array) {
-        return Arrays.copyOf(array, length);
-    }
-
-    private static byte[][] stripArray(int length, byte[][] array) {
-        return Arrays.copyOf(array, length);
-    }
-
-    private static float[] stripArray(int length, float[] array) {
-        return Arrays.copyOf(array, length);
-    }
-
-    static SpriteInfo convertToSprite(String[][] textures, ModelInfo model_info,
-            float[] clear_color) {
-        return new SpriteInfo(textures, model_info.indices(), model_info.vertices(), model_info.normals(), model_info
-                .texcoords(), model_info.texcoords2(), model_info.skin_names(), model_info.skin_weights(), clear_color);
-    }
-
-    static AnimationInfo convertToAnimation(Bone skeleton,
-            Map<String, float[]> initial_pose, Map<String, float[]>[] anim_map,
-            AnimationInfo.AnimationType type, float wpc, String name) {
-        // animations format: [frames] [bones] [matrix]
-        int num_frames = anim_map.length;
-        float[][] frames = new float[num_frames][];
-        for (int frame_index = 0; frame_index < num_frames; frame_index++) {
-            float[] bones = new float[initial_pose.size() * 12];
-            frames[frame_index] = bones;
-            normalizeSkeleton(bones, skeleton, initial_pose, anim_map[frame_index]);
-        }
-        return new AnimationInfo(frames, type, wpc, name);
-    }
-
-    private static void normalizeSkeleton(
-            float[] bones,
-            Bone current_bone, Map<String, float[]> initial_pose_map, Map<String,
-                    float[]> frame_map) {
-        assert initial_pose_map.size() == bones.length / 12;
-        assert frame_map.size() == bones.length / 12;
-        String bone_name = current_bone.name();
-        float[] ipd = initial_pose_map.get(bone_name);
-        float[] fd = frame_map.get(bone_name);
-        Matrix4f absolute_initial_pose_matrix = new Matrix4f().set(ipd);
-        Matrix4f absolute_frame_matrix = new Matrix4f().set(fd);
-
-        Matrix4f inverted_absolute_initial_pose_matrix = new Matrix4f(absolute_initial_pose_matrix);
-        inverted_absolute_initial_pose_matrix.invert();
-        Matrix4f resulting_matrix = absolute_frame_matrix.mul(inverted_absolute_initial_pose_matrix, new Matrix4f());
-        int offset = current_bone.index() * 12;
-
-        // Store logical matrix R = I_inv * F in row-major 3x4 format
-        // This corresponds to the first 3 columns of the transposed JOML matrix
-        bones[offset++] = resulting_matrix.m00();
-        bones[offset++] = resulting_matrix.m10();
-        bones[offset++] = resulting_matrix.m20();
-        bones[offset++] = resulting_matrix.m30();
-        bones[offset++] = resulting_matrix.m01();
-        bones[offset++] = resulting_matrix.m11();
-        bones[offset++] = resulting_matrix.m21();
-        bones[offset++] = resulting_matrix.m31();
-        bones[offset++] = resulting_matrix.m02();
-        bones[offset++] = resulting_matrix.m12();
-        bones[offset++] = resulting_matrix.m22();
-        bones[offset++] = resulting_matrix.m32();
-
-        for (Bone child_bone : current_bone.children()) {
-            normalizeSkeleton(bones, child_bone, initial_pose_map, frame_map);
-        }
-    }
+  }
 }

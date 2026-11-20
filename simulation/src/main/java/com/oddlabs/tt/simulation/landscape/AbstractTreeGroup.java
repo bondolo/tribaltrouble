@@ -3,159 +3,209 @@ package com.oddlabs.tt.simulation.landscape;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
+import java.util.List;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
-
-/**
- * Base class representing hierarchical groupings of trees and individual tree supplies.
- */
+/// Base class representing hierarchical groupings of trees and individual tree supplies.
 public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeGroup, TreeLeaf, TreeSupply {
 
-    public enum TreeType {
-        JUNGLE(6.8f, 16.0f),
-        PALM(7.0f, 20.0f),
-        OAK(7.0f, 20.0f),
-        PINE(5.0f, 12.0f);
+  public enum TreeType {
+    JUNGLE(6.8f, 16.0f),
+    PALM(7.0f, 20.0f),
+    OAK(7.0f, 20.0f),
+    PINE(5.0f, 12.0f);
 
-        private final float canopyRadius;
-        private final float nominalHeight;
+    private final float canopyRadius;
+    private final float nominalHeight;
 
-        TreeType(float canopyRadius, float nominalHeight) {
-            this.canopyRadius = canopyRadius;
-            this.nominalHeight = nominalHeight;
-        }
-
-        public float canopyRadius() {
-            return canopyRadius;
-        }
-
-        public float nominalHeight() {
-            return nominalHeight;
-        }
+    TreeType(float canopyRadius, float nominalHeight) {
+      this.canopyRadius = canopyRadius;
+      this.nominalHeight = nominalHeight;
     }
 
-    private final @Nullable AbstractTreeGroup parent;
-
-    public AbstractTreeGroup(@Nullable AbstractTreeGroup parent) {
-        this.parent = parent;
+    public float canopyRadius() {
+      return canopyRadius;
     }
 
-    protected final @Nullable AbstractTreeGroup getParent() {
-        return parent;
+    public float nominalHeight() {
+      return nominalHeight;
+    }
+  }
+
+  private final @Nullable AbstractTreeGroup parent;
+
+  public AbstractTreeGroup(@Nullable AbstractTreeGroup parent) {
+    this.parent = parent;
+  }
+
+  protected final @Nullable AbstractTreeGroup getParent() {
+    return parent;
+  }
+
+  public static AbstractTreeGroup newRoot(
+      World world, List<TreePlacement> treePositions, List<TreePlacement> palmTreePositions, Terrain terrain) {
+    AbstractTreeGroup root = new TreeGroup(null, 0);
+
+    switch (terrain) {
+      case NATIVE -> {
+        root.buildTrees(world, TreeType.JUNGLE, 3, 2.3f, treePositions, 0.25f, 0.75f);
+        root.buildTrees(world, TreeType.PALM, 1, 1.6f, palmTreePositions, 0.5f, 1f);
+      }
+      case VIKING -> {
+        root.buildTrees(world, TreeType.OAK, 3, 2.3f, treePositions, 0.5f, 1f);
+        root.buildTrees(world, TreeType.PINE, 1, 1.6f, palmTreePositions, 0.5f, 1f);
+      }
     }
 
-    public static AbstractTreeGroup newRoot(World world, List<TreePlacement> treePositions,
-            List<TreePlacement> palmTreePositions, Terrain terrain) {
-        AbstractTreeGroup root = new TreeGroup(null, 0);
+    root.initBounds();
+    return root;
+  }
 
-        switch (terrain) {
-            case NATIVE -> {
-                root.buildTrees(world, TreeType.JUNGLE, 3, 2.3f, treePositions, 0.25f, 0.75f);
-                root.buildTrees(world, TreeType.PALM, 1, 1.6f, palmTreePositions, 0.5f, 1f);
-            }
-            case VIKING -> {
-                root.buildTrees(world, TreeType.OAK, 3, 2.3f, treePositions, 0.5f, 1f);
-                root.buildTrees(world, TreeType.PINE, 1, 1.6f, palmTreePositions, 0.5f, 1f);
-            }
-        }
+  private void buildTrees(
+      final World world,
+      final TreeType tree_type,
+      final int grid_size,
+      final float radius,
+      List<TreePlacement> treePositions,
+      float scale_factor,
+      float min_size) {
+    Matrix4f matrix2 = new Matrix4f();
+    Vector3f vector = new Vector3f();
+    for (TreePlacement placement : treePositions) {
+      final Matrix4f matrix = new Matrix4f();
+      final int center_grid_x = placement.x();
+      final int center_grid_y = placement.y();
+      final float tree_x = UnitGrid.coordinateFromGrid(center_grid_x);
+      final float tree_y = UnitGrid.coordinateFromGrid(center_grid_y);
+      float rotation = world.getRandom().nextFloat(0f, 360f);
+      float scale_base = scale_factor > 0f ? world.getRandom().nextFloat(min_size, min_size + scale_factor) : min_size;
+      float scale_x = scale_base + world.getRandom().nextFloat(-0.1f, 0.1f);
+      float scale_y = scale_base + world.getRandom().nextFloat(-0.1f, 0.1f);
+      float scale_z = scale_base + world.getRandom().nextFloat(-0.1f, 0.1f);
+      matrix.identity();
+      matrix.scale(scale_x, scale_y, scale_z);
+      vector.set(0f, 0f, 1f);
+      matrix.rotate((float) Math.toRadians(rotation), vector);
+      matrix2.identity();
+      matrix2.translate(tree_x, tree_y, world.getHeightMap().getNearestHeight(tree_x, tree_y));
+      matrix2.mul(matrix, matrix);
 
-        root.initBounds();
-        return root;
+      insertTreeRecursive(
+          this,
+          world,
+          tree_type,
+          grid_size,
+          radius,
+          matrix,
+          tree_x,
+          tree_y,
+          center_grid_x,
+          center_grid_y,
+          world.getHeightMap().getMetersPerWorld(),
+          0,
+          0);
     }
+  }
 
-    private void buildTrees(final World world, final TreeType tree_type, final int grid_size,
-            final float radius, List<TreePlacement> treePositions, float scale_factor, float min_size) {
-        Matrix4f matrix2 = new Matrix4f();
-        Vector3f vector = new Vector3f();
-        for (TreePlacement placement : treePositions) {
-            final Matrix4f matrix = new Matrix4f();
-            final int center_grid_x = placement.x();
-            final int center_grid_y = placement.y();
-            final float tree_x = UnitGrid.coordinateFromGrid(center_grid_x);
-            final float tree_y = UnitGrid.coordinateFromGrid(center_grid_y);
-            float rotation = world.getRandom().nextFloat(0f, 360f);
-            float scale_base = scale_factor > 0f ? world.getRandom().nextFloat(min_size, min_size + scale_factor)
-                    : min_size;
-            float scale_x = scale_base + world.getRandom().nextFloat(-0.1f, 0.1f);
-            float scale_y = scale_base + world.getRandom().nextFloat(-0.1f, 0.1f);
-            float scale_z = scale_base + world.getRandom().nextFloat(-0.1f, 0.1f);
-            matrix.identity();
-            matrix.scale(scale_x, scale_y, scale_z);
-            vector.set(0f, 0f, 1f);
-            matrix.rotate((float) Math.toRadians(rotation), vector);
-            matrix2.identity();
-            matrix2.translate(tree_x, tree_y, world.getHeightMap().getNearestHeight(tree_x, tree_y));
-            matrix2.mul(matrix, matrix);
+  public final TreeSupply spawnTree(World world, TreeType tree_type, float tree_x, float tree_y) {
+    int center_grid_x = UnitGrid.toGridCoordinate(tree_x);
+    int center_grid_y = UnitGrid.toGridCoordinate(tree_y);
+    float actual_x = UnitGrid.coordinateFromGrid(center_grid_x);
+    float actual_y = UnitGrid.coordinateFromGrid(center_grid_y);
+    int grid_size = (tree_type == TreeType.PALM || tree_type == TreeType.PINE) ? 1 : 3;
+    float radius = grid_size == 1 ? 1.6f : 2.3f;
 
-            insertTreeRecursive(this, world, tree_type, grid_size, radius, matrix, tree_x, tree_y,
-                    center_grid_x, center_grid_y, world.getHeightMap().getMetersPerWorld(), 0, 0);
-        }
+    Matrix4f matrix = new Matrix4f();
+    float rotation = world.getRandom().nextFloat(0f, 360f);
+    matrix.identity();
+    matrix.rotate((float) Math.toRadians(rotation), 0f, 0f, 1f);
+    Matrix4f matrix2 = new Matrix4f();
+    matrix2.identity();
+    matrix2.translate(actual_x, actual_y, world.getHeightMap().getNearestHeight(actual_x, actual_y));
+    matrix2.mul(matrix, matrix);
+
+    TreeSupply tree =
+        insertTreeRecursive(
+            this,
+            world,
+            tree_type,
+            grid_size,
+            radius,
+            matrix,
+            actual_x,
+            actual_y,
+            center_grid_x,
+            center_grid_y,
+            world.getHeightMap().getMetersPerWorld(),
+            0,
+            0);
+    tree.propagateBoundsUp();
+    return tree;
+  }
+
+  private TreeSupply insertTreeRecursive(
+      AbstractTreeGroup node,
+      World world,
+      TreeType tree_type,
+      int grid_size,
+      float radius,
+      Matrix4f matrix,
+      float tree_x,
+      float tree_y,
+      int center_grid_x,
+      int center_grid_y,
+      int size,
+      int x,
+      int y) {
+    return switch (node) {
+      case TreeLeaf leaf -> {
+        TreeSupply tree =
+            new TreeSupply(
+                world, leaf, tree_x, tree_y, center_grid_x, center_grid_y, grid_size, radius, matrix, tree_type);
+        leaf.insertTree(tree);
+        yield tree;
+      }
+      case TreeGroup group -> {
+        int child_size = size >> 1;
+        int child_index = (tree_x < x + child_size ? 0 : 1) | (tree_y < y + child_size ? 0 : 2);
+        int next_x = x + (child_index & 1) * child_size;
+        int next_y = y + ((child_index >> 1) & 1) * child_size;
+        yield insertTreeRecursive(
+            group.child(child_index),
+            world,
+            tree_type,
+            grid_size,
+            radius,
+            matrix,
+            tree_x,
+            tree_y,
+            center_grid_x,
+            center_grid_y,
+            child_size,
+            next_x,
+            next_y);
+      }
+      case TreeSupply _ -> throw new IllegalStateException("Unexpected TreeSupply node in tree hierarchy");
+    };
+  }
+
+  @Override
+  public final void expandBounds(BoundingBox box) {
+    super.expandBounds(box);
+    if (parent != null) {
+      parent.expandBounds(box);
     }
+  }
 
-    public final TreeSupply spawnTree(World world, TreeType tree_type, float tree_x, float tree_y) {
-        int center_grid_x = UnitGrid.toGridCoordinate(tree_x);
-        int center_grid_y = UnitGrid.toGridCoordinate(tree_y);
-        float actual_x = UnitGrid.coordinateFromGrid(center_grid_x);
-        float actual_y = UnitGrid.coordinateFromGrid(center_grid_y);
-        int grid_size = (tree_type == TreeType.PALM || tree_type == TreeType.PINE) ? 1 : 3;
-        float radius = grid_size == 1 ? 1.6f : 2.3f;
-
-        Matrix4f matrix = new Matrix4f();
-        float rotation = world.getRandom().nextFloat(0f, 360f);
-        matrix.identity();
-        matrix.rotate((float) Math.toRadians(rotation), 0f, 0f, 1f);
-        Matrix4f matrix2 = new Matrix4f();
-        matrix2.identity();
-        matrix2.translate(actual_x, actual_y, world.getHeightMap().getNearestHeight(actual_x, actual_y));
-        matrix2.mul(matrix, matrix);
-
-        TreeSupply tree = insertTreeRecursive(this, world, tree_type, grid_size, radius, matrix,
-                actual_x, actual_y, center_grid_x, center_grid_y,
-                world.getHeightMap().getMetersPerWorld(), 0, 0);
-        tree.propagateBoundsUp();
-        return tree;
+  public final void propagateBoundsUp() {
+    if (parent != null) {
+      parent.expandBounds(this);
     }
+  }
 
-    private TreeSupply insertTreeRecursive(AbstractTreeGroup node, World world, TreeType tree_type,
-            int grid_size, float radius, Matrix4f matrix, float tree_x,
-            float tree_y, int center_grid_x, int center_grid_y, int size, int x, int y) {
-        return switch (node) {
-            case TreeLeaf leaf -> {
-                TreeSupply tree = new TreeSupply(world, leaf, tree_x, tree_y, center_grid_x, center_grid_y, grid_size,
-                        radius, matrix, tree_type);
-                leaf.insertTree(tree);
-                yield tree;
-            }
-            case TreeGroup group -> {
-                int child_size = size >> 1;
-                int child_index = (tree_x < x + child_size ? 0 : 1) | (tree_y < y + child_size ? 0 : 2);
-                int next_x = x + (child_index & 1) * child_size;
-                int next_y = y + ((child_index >> 1) & 1) * child_size;
-                yield insertTreeRecursive(group.child(child_index), world, tree_type, grid_size, radius, matrix,
-                        tree_x, tree_y, center_grid_x, center_grid_y, child_size, next_x, next_y);
-            }
-            case TreeSupply _ -> throw new IllegalStateException("Unexpected TreeSupply node in tree hierarchy");
-        };
-    }
-
-    @Override
-    public final void expandBounds(BoundingBox box) {
-        super.expandBounds(box);
-        if (parent != null) {
-            parent.expandBounds(box);
-        }
-    }
-
-    public final void propagateBoundsUp() {
-        if (parent != null) {
-            parent.expandBounds(this);
-        }
-    }
-
-    public boolean initBounds() {
-        return true;
-    }
+  public boolean initBounds() {
+    return true;
+  }
 }

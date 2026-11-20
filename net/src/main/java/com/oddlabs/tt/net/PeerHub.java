@@ -11,499 +11,541 @@ import com.oddlabs.router.SessionInfo;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.SimulationClock;
+import com.oddlabs.tt.base.event.StateChecksum;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.model.DistributableTable;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
-import com.oddlabs.tt.base.event.StateChecksum;
-import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Manages networking connections, peers, message routing, and synchronization
- * between players in a multiplayer session.
- */
+/// Manages networking connections, peers, message routing, and synchronization between players in a multiplayer
+/// session.
 public final class PeerHub implements Animated, RouterHandler, ChatSender {
-    private static final String ROUTER_ADDRESS = "127.0.0.1";
-    public static final ResourceBundle bundle = ResourceBundle.getBundle(PeerHub.class.getName());
+  private static final String ROUTER_ADDRESS = "127.0.0.1";
+  public static final ResourceBundle bundle = ResourceBundle.getBundle(PeerHub.class.getName());
 
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  public static final String SYSTEM_NAME = i18n("system_name");
+
+  private static final int MILLISECONDS_PER_HEARTBEAT = 60;
+  private static final int CLIENT_MAX_DELAY_MILLIS = 60;
+  private static final int MAX_CATCHUP_TICKS_PER_STEP = 8;
+  private static final float FREE_QUIT_TIME = 120f;
+  public static final int DEFAULT_TICKS_PER_CHECKSUM = (int) (10 / AnimationManager.ANIMATION_SECONDS_PER_TICK);
+  private static final int TICKS_PER_STATUS_UPDATE = (int) (20 / AnimationManager.ANIMATION_SECONDS_PER_TICK);
+
+  public static final ScopedValue<PeerHub> CURRENT = ScopedValue.newInstance();
+  private boolean waiting_for_ack;
+
+  private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(PeerHubInterface.class);
+  private final StateChecksum checksum = new StateChecksum();
+  private final PeerHubInterface peerhubs_interface;
+  private final PlayerInterface player_interface;
+  private final int num_participants;
+  private final Peer[] peer_index_to_peer;
+  private final Map<Player, Peer> player_to_peer = new LinkedHashMap<>();
+  private final Map<Peer, Player> peer_to_player = new LinkedHashMap<>();
+  private final Set<Player> nonhuman_players = new HashSet<>();
+  private final RouterClient router_client;
+  private final @Nullable Router router;
+  private final @Nullable BeaconListener beacon_listener;
+  private final @Nullable MatchmakingClient matchmaking_client;
+  private final @Nullable ChatHub chat_hub;
+  private final Player local_player;
+  private final AnimationManager manager;
+  private final boolean is_multiplayer;
+  private final boolean is_rated;
+  private final StallHandler stall_handler;
+  private final int ticks_per_checksum;
+  private @Nullable Predicate<String> ignore_filter;
+
+  private int pause_ticks;
+  private int server_millis;
+  private int paused;
+  private boolean is_synchronized;
+
+  public PeerHub(
+      AnimationManager manager,
+      boolean is_multiplayer,
+      boolean is_rated,
+      Player local_player,
+      List<PlayerSlot> player_slots,
+      NetworkSelector network,
+      @Nullable BeaconListener beacon_listener,
+      @Nullable MatchmakingClient matchmaking_client,
+      @Nullable ChatHub chat_hub,
+      DistributableTable distributable_table,
+      SessionID session_id,
+      StallHandler stall_handler) {
+    this(
+        manager,
+        is_multiplayer,
+        is_rated,
+        local_player,
+        player_slots,
+        network,
+        beacon_listener,
+        matchmaking_client,
+        chat_hub,
+        distributable_table,
+        session_id,
+        stall_handler,
+        null,
+        -1,
+        DEFAULT_TICKS_PER_CHECKSUM);
+  }
+
+  public PeerHub(
+      AnimationManager manager,
+      boolean is_multiplayer,
+      boolean is_rated,
+      Player local_player,
+      List<PlayerSlot> player_slots,
+      NetworkSelector network,
+      @Nullable BeaconListener beacon_listener,
+      @Nullable MatchmakingClient matchmaking_client,
+      @Nullable ChatHub chat_hub,
+      DistributableTable distributable_table,
+      SessionID session_id,
+      StallHandler stall_handler,
+      @Nullable String router_address,
+      int router_port) {
+    this(
+        manager,
+        is_multiplayer,
+        is_rated,
+        local_player,
+        player_slots,
+        network,
+        beacon_listener,
+        matchmaking_client,
+        chat_hub,
+        distributable_table,
+        session_id,
+        stall_handler,
+        router_address,
+        router_port,
+        DEFAULT_TICKS_PER_CHECKSUM);
+  }
+
+  public PeerHub(
+      AnimationManager manager,
+      boolean is_multiplayer,
+      boolean is_rated,
+      Player local_player,
+      List<PlayerSlot> player_slots,
+      NetworkSelector network,
+      @Nullable BeaconListener beacon_listener,
+      @Nullable MatchmakingClient matchmaking_client,
+      @Nullable ChatHub chat_hub,
+      DistributableTable distributable_table,
+      SessionID session_id,
+      StallHandler stall_handler,
+      @Nullable String router_address,
+      int router_port,
+      int ticks_per_checksum) {
+    if (ticks_per_checksum < 1) {
+      throw new IllegalArgumentException("ticks_per_checksum must be >= 1: " + ticks_per_checksum);
     }
-
-    public static final String SYSTEM_NAME = i18n("system_name");
-
-    private static final int MILLISECONDS_PER_HEARTBEAT = 60;
-    private static final int CLIENT_MAX_DELAY_MILLIS = 60;
-    private static final int MAX_CATCHUP_TICKS_PER_STEP = 8;
-    private static final float FREE_QUIT_TIME = 120f;
-    public static final int DEFAULT_TICKS_PER_CHECKSUM = (int) (10 / AnimationManager.ANIMATION_SECONDS_PER_TICK);
-    private static final int TICKS_PER_STATUS_UPDATE = (int) (20 / AnimationManager.ANIMATION_SECONDS_PER_TICK);
-
-    public static final ScopedValue<PeerHub> CURRENT = ScopedValue.newInstance();
-    private boolean waiting_for_ack;
-
-    private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(PeerHubInterface.class);
-    private final StateChecksum checksum = new StateChecksum();
-    private final PeerHubInterface peerhubs_interface;
-    private final PlayerInterface player_interface;
-    private final int num_participants;
-    private final Peer[] peer_index_to_peer;
-    private final Map<Player, Peer> player_to_peer = new LinkedHashMap<>();
-    private final Map<Peer, Player> peer_to_player = new LinkedHashMap<>();
-    private final Set<Player> nonhuman_players = new HashSet<>();
-    private final RouterClient router_client;
-    private final @Nullable Router router;
-    private final @Nullable BeaconListener beacon_listener;
-    private final @Nullable MatchmakingClient matchmaking_client;
-    private final @Nullable ChatHub chat_hub;
-    private final Player local_player;
-    private final AnimationManager manager;
-    private final boolean is_multiplayer;
-    private final boolean is_rated;
-    private final StallHandler stall_handler;
-    private final int ticks_per_checksum;
-    private @Nullable Predicate<String> ignore_filter;
-
-    private int pause_ticks;
-    private int server_millis;
-    private int paused;
-    private boolean is_synchronized;
-
-    public PeerHub(AnimationManager manager, boolean is_multiplayer, boolean is_rated,
-            Player local_player, List<PlayerSlot> player_slots, NetworkSelector network,
-            @Nullable BeaconListener beacon_listener, @Nullable MatchmakingClient matchmaking_client,
-            @Nullable ChatHub chat_hub, DistributableTable distributable_table, SessionID session_id,
-            StallHandler stall_handler) {
-        this(manager, is_multiplayer, is_rated, local_player, player_slots, network,
-                beacon_listener, matchmaking_client, chat_hub, distributable_table, session_id,
-                stall_handler, null, -1, DEFAULT_TICKS_PER_CHECKSUM);
+    this.ticks_per_checksum = ticks_per_checksum;
+    this.stall_handler = stall_handler;
+    this.is_rated = is_rated;
+    this.local_player = local_player;
+    if (matchmaking_client != null) {
+      matchmaking_client.setGameWonAckListener(this::receivedAck);
     }
+    this.beacon_listener = beacon_listener;
+    this.matchmaking_client = matchmaking_client;
+    this.chat_hub = chat_hub;
+    this.is_multiplayer = is_multiplayer;
+    this.manager = manager;
 
-    public PeerHub(AnimationManager manager, boolean is_multiplayer, boolean is_rated,
-            Player local_player, List<PlayerSlot> player_slots, NetworkSelector network,
-            @Nullable BeaconListener beacon_listener, @Nullable MatchmakingClient matchmaking_client,
-            @Nullable ChatHub chat_hub, DistributableTable distributable_table, SessionID session_id,
-            StallHandler stall_handler, @Nullable String router_address, int router_port) {
-        this(manager, is_multiplayer, is_rated, local_player, player_slots, network,
-                beacon_listener, matchmaking_client, chat_hub, distributable_table, session_id,
-                stall_handler, router_address, router_port, DEFAULT_TICKS_PER_CHECKSUM);
+    GameArgumentReader argument_reader = new GameArgumentReader(distributable_table);
+    List<Peer> peer_index_to_peer_list = new ArrayList<>();
+    List<Player> players = local_player.getWorld().getPlayers();
+    int local_peer_index = -1;
+    if (router_port > 0) {
+      this.router = null;
+      String host = router_address != null ? router_address : ROUTER_ADDRESS;
+      this.router_client = new RouterClient(network, host, router_port, this);
+    } else if (!is_multiplayer) {
+      this.router =
+          new Router(
+              network,
+              com.oddlabs.util.Utils.getLoopbackAddress(),
+              0,
+              Logger.getAnonymousLogger(),
+              (IOException e) -> {
+                throw new IllegalStateException("Local router failed", e);
+              });
+      this.router_client = new RouterClient(network, this, router.getPort());
+    } else {
+      this.router = null;
+      this.router_client = new RouterClient(network, ROUTER_ADDRESS, this);
     }
-
-    public PeerHub(AnimationManager manager, boolean is_multiplayer, boolean is_rated,
-            Player local_player, List<PlayerSlot> player_slots, NetworkSelector network,
-            @Nullable BeaconListener beacon_listener, @Nullable MatchmakingClient matchmaking_client,
-            @Nullable ChatHub chat_hub, DistributableTable distributable_table, SessionID session_id,
-            StallHandler stall_handler, @Nullable String router_address, int router_port,
-            int ticks_per_checksum) {
-        if (ticks_per_checksum < 1) {
-            throw new IllegalArgumentException("ticks_per_checksum must be >= 1: " + ticks_per_checksum);
-        }
-        this.ticks_per_checksum = ticks_per_checksum;
-        this.stall_handler = stall_handler;
-        this.is_rated = is_rated;
-        this.local_player = local_player;
-        if (matchmaking_client != null) {
-            matchmaking_client.setGameWonAckListener(this::receivedAck);
-        }
-        this.beacon_listener = beacon_listener;
-        this.matchmaking_client = matchmaking_client;
-        this.chat_hub = chat_hub;
-        this.is_multiplayer = is_multiplayer;
-        this.manager = manager;
-
-        GameArgumentReader argument_reader = new GameArgumentReader(distributable_table);
-        List<Peer> peer_index_to_peer_list = new ArrayList<>();
-        List<Player> players = local_player.getWorld().getPlayers();
-        int local_peer_index = -1;
-        if (router_port > 0) {
-            this.router = null;
-            String host = router_address != null ? router_address : ROUTER_ADDRESS;
-            this.router_client = new RouterClient(network, host, router_port, this);
-        } else if (!is_multiplayer) {
-            this.router = new Router(network, com.oddlabs.util.Utils.getLoopbackAddress(), 0, Logger
-                    .getAnonymousLogger(), (IOException e) -> {
-                        throw new IllegalStateException("Local router failed", e);
-                    });
-            this.router_client = new RouterClient(network, this, router.getPort());
-        } else {
-            this.router = null;
-            this.router_client = new RouterClient(network, ROUTER_ADDRESS, this);
-        }
-        for (short i = 0; i < players.size(); i++) {
-            Player player = players.get(i);
-            boolean is_peer = player_slots.get(i).isNetworkPeer();
-            if (!is_peer) {
-                nonhuman_players.add(player);
-                continue;
-            }
-            System.out.println("index " + i + " contains player " + player);
-            final int peer_index = peer_index_to_peer_list.size();
-            ARMIEventWriter router_handler = (ARMIEvent event) -> router_client.getInterface().relayEventTo(peer_index,
-                    event);
-            PeerHubInterface peer_interface = (PeerHubInterface) ARMIEvent.createProxy(router_handler,
-                    PeerHubInterface.class);
-            Peer peer = new Peer(this, peer_index, player, argument_reader, peer_interface);
-            if (player == local_player) {
-                local_peer_index = peer_index;
-            }
-            peer_index_to_peer_list.add(peer);
-            peer_to_player.put(peer, player);
-            player_to_peer.put(player, peer);
-        }
-        this.peer_index_to_peer = peer_index_to_peer_list.toArray(Peer[]::new);
-        this.num_participants = peer_index_to_peer.length;
-        ARMIEventWriter game_router_handler = router_client.getInterface()::relayGameStateEvent;
-        this.player_interface = (PlayerInterface) ARMIEvent.createProxy(game_router_handler, new GameArgumentWriter(
-                distributable_table), PlayerInterface.class);
-        ARMIEventWriter hub_router_handler = router_client.getInterface()::relayEvent;
-        this.peerhubs_interface = (PeerHubInterface) ARMIEvent.createProxy(hub_router_handler, PeerHubInterface.class);
-        manager.registerAnimation(this);
-        router_client.connect(session_id, new SessionInfo(num_participants, MILLISECONDS_PER_HEARTBEAT),
-                local_peer_index);
+    for (short i = 0; i < players.size(); i++) {
+      Player player = players.get(i);
+      boolean is_peer = player_slots.get(i).isNetworkPeer();
+      if (!is_peer) {
+        nonhuman_players.add(player);
+        continue;
+      }
+      System.out.println("index " + i + " contains player " + player);
+      final int peer_index = peer_index_to_peer_list.size();
+      ARMIEventWriter router_handler =
+          (ARMIEvent event) -> router_client.getInterface().relayEventTo(peer_index, event);
+      PeerHubInterface peer_interface =
+          (PeerHubInterface) ARMIEvent.createProxy(router_handler, PeerHubInterface.class);
+      Peer peer = new Peer(this, peer_index, player, argument_reader, peer_interface);
+      if (player == local_player) {
+        local_peer_index = peer_index;
+      }
+      peer_index_to_peer_list.add(peer);
+      peer_to_player.put(peer, player);
+      player_to_peer.put(player, peer);
     }
+    this.peer_index_to_peer = peer_index_to_peer_list.toArray(Peer[]::new);
+    this.num_participants = peer_index_to_peer.length;
+    ARMIEventWriter game_router_handler = router_client.getInterface()::relayGameStateEvent;
+    this.player_interface =
+        (PlayerInterface)
+            ARMIEvent.createProxy(
+                game_router_handler, new GameArgumentWriter(distributable_table), PlayerInterface.class);
+    ARMIEventWriter hub_router_handler = router_client.getInterface()::relayEvent;
+    this.peerhubs_interface = (PeerHubInterface) ARMIEvent.createProxy(hub_router_handler, PeerHubInterface.class);
+    manager.registerAnimation(this);
+    router_client.connect(session_id, new SessionInfo(num_participants, MILLISECONDS_PER_HEARTBEAT), local_peer_index);
+  }
 
-    @Override
-    public void routerFailed(Exception e) {
-        System.out.println("Router failed with exception: " + e);
-        closeNetwork();
-        stall_handler.peerhubFailed();
+  @Override
+  public void routerFailed(Exception e) {
+    System.out.println("Router failed with exception: " + e);
+    closeNetwork();
+    stall_handler.peerhubFailed();
+  }
+
+  @Override
+  public void heartbeat(int millis) {
+    if (millis < server_millis) {
+      routerFailed(new IOException("Invalid time received: " + millis + " (tick currently at " + getTick() + ")"));
+      return;
     }
+    server_millis = millis;
+  }
 
-    @Override
-    public void heartbeat(int millis) {
-        if (millis < server_millis) {
-            routerFailed(new IOException("Invalid time received: " + millis + " (tick currently at " + getTick()
-                    + ")"));
-            return;
-        }
-        server_millis = millis;
+  @Override
+  public void receiveEvent(int client_id, ARMIEvent event) {
+    Peer peer = getPeerFromClientID(client_id);
+    if (peer == null) {
+      routerFailed(new IOException("Invalid client_id received: " + client_id));
+      return;
     }
+    try {
+      event.execute(interface_methods, peer);
+    } catch (IllegalARMIEventException e) {
+      peerDisconnected(peer, e.getMessage());
+    }
+  }
 
-    @Override
-    public void receiveEvent(int client_id, ARMIEvent event) {
-        Peer peer = getPeerFromClientID(client_id);
-        if (peer == null) {
-            routerFailed(new IOException("Invalid client_id received: " + client_id));
-            return;
+  @Override
+  public void receiveGameStateEvent(int client_id, int millis, ARMIEvent event) {
+    if (millis < server_millis) {
+      routerFailed(
+          new IOException("Invalid time received for event: " + millis + " (tick currently at " + getTick() + ")"));
+      return;
+    }
+    Peer peer = getPeerFromClientID(client_id);
+    if (peer == null) {
+      routerFailed(new IOException("Invalid client_id received: " + client_id));
+      return;
+    }
+    server_millis = millis;
+    peer.addEvent(millisToTickCeil(millis), event);
+  }
+
+  @Override
+  public void playerDisconnected(int client_id, boolean checksum_error) {
+    Peer peer = getPeerFromClientID(client_id);
+    if (checksum_error) peerChecksumError(peer);
+    else peerDisconnected(peer, "Peer disconnected");
+  }
+
+  private void peerChecksumError(Peer peer) {
+    System.out.println("Disconnecting peer because of checksum mismatch: " + peer.getPlayerInfo().name());
+    peerDisconnected(peer, "Checksum error");
+  }
+
+  private @Nullable Peer getPeerFromClientID(int client_id) {
+    if (client_id >= 0 && client_id < peer_index_to_peer.length) return unsafeGetPeerFromClientID(client_id);
+    else return null;
+  }
+
+  private Peer unsafeGetPeerFromClientID(int client_id) {
+    return peer_index_to_peer[client_id];
+  }
+
+  @Override
+  public void start() {
+    is_synchronized = true;
+  }
+
+  public boolean isSynchronized() {
+    return is_synchronized;
+  }
+
+  private Peer locatePeerFromPlayer(Player player) {
+    return player_to_peer.get(player);
+  }
+
+  private boolean isDisconnected(Peer peer) {
+    return getPlayerFromPeer(peer) == null;
+  }
+
+  private Player getPlayerFromPeer(Peer peer) {
+    return peer_to_player.get(peer);
+  }
+
+  public boolean isAlive(Player player) {
+    return (nonhuman_players.contains(player) || locatePeerFromPlayer(player) != null) && player.isAlive();
+  }
+
+  public PlayerInterface getPlayerInterface() {
+    return player_interface;
+  }
+
+  private int millisToTickCeil(int millis) {
+    return millisToTick(millis + (int) AnimationManager.ANIMATION_MILLISECONDS_PER_TICK - 1);
+  }
+
+  private int millisToTick(int millis) {
+    return (int) (millis / AnimationManager.ANIMATION_MILLISECONDS_PER_TICK) - pause_ticks;
+  }
+
+  @Override
+  public void animate(float dt) {
+    ScopedValue.where(CURRENT, this).run(() -> doAnimate(dt));
+  }
+
+  private void doAnimate(float dt) {
+    if (router != null) router.process();
+    int server_tick = millisToTick(server_millis);
+    if (!is_synchronized || getTick() == server_tick) {
+      processStall();
+    } else {
+      if (!isPaused()) {
+        doTick();
+        int min_tick = millisToTick(server_millis - MILLISECONDS_PER_HEARTBEAT - CLIENT_MAX_DELAY_MILLIS);
+        int catchupCount = 0;
+        while (getTick() < min_tick && catchupCount < MAX_CATCHUP_TICKS_PER_STEP) {
+          doTick();
+          catchupCount++;
         }
+      } else pause_ticks++;
+    }
+  }
+
+  private int getTick() {
+    return local_player.getWorld().getTick();
+  }
+
+  private void doTick() {
+    stall_handler.stopStall();
+    if (getFreeQuitTicksLeft(local_player.getWorld()) == 0
+        && matchmaking_client != null
+        && matchmaking_client.isConnected()) matchmaking_client.getInterface().freeQuitStopNotify();
+
+    if (getTick() % TICKS_PER_STATUS_UPDATE == 0 && matchmaking_client != null && matchmaking_client.isConnected())
+      sendStatusUpdate();
+
+    for (Peer peer : peer_index_to_peer) {
+      if (peer != null) {
         try {
-            event.execute(interface_methods, peer);
+          peer.executeEvents(getTick());
         } catch (IllegalARMIEventException e) {
-            peerDisconnected(peer, e.getMessage());
+          peerDisconnected(peer, e.getMessage());
         }
+      }
     }
+    local_player.getWorld().tick();
+    if (getTick() % ticks_per_checksum == 0) sendChecksum();
+  }
 
-    @Override
-    public void receiveGameStateEvent(int client_id, int millis, ARMIEvent event) {
-        if (millis < server_millis) {
-            routerFailed(new IOException("Invalid time received for event: " + millis + " (tick currently at "
-                    + getTick() + ")"));
-            return;
-        }
-        Peer peer = getPeerFromClientID(client_id);
-        if (peer == null) {
-            routerFailed(new IOException("Invalid client_id received: " + client_id));
-            return;
-        }
-        server_millis = millis;
-        peer.addEvent(millisToTickCeil(millis), event);
+  /// {@return the number of simulation ticks between router checksum submissions}
+  public int getTicksPerChecksum() {
+    return ticks_per_checksum;
+  }
+
+  private void sendChecksum() {
+    checksum.update(getTick());
+    checksum.update(local_player.getWorld().getChecksum());
+    local_player.getWorld().getAnimationManagerGameTime().updateChecksum(checksum);
+    local_player.getWorld().getAnimationManagerRealTime().updateChecksum(checksum);
+    router_client.getInterface().checksum(checksum.getValue());
+  }
+
+  public void setPaused(boolean p) {
+    if (!is_multiplayer && p) paused++;
+    else if (!is_multiplayer && !p) paused--;
+  }
+
+  public boolean isPaused() {
+    return paused > 0;
+  }
+
+  private void sendStatusUpdate() {
+    int[] status = new int[num_participants];
+    for (int i = 0; i < status.length; i++) {
+      Peer peer = getPeerFromClientID(i);
+      if (peer != null) status[i] = peer.getPlayer().getStatus();
     }
+    if (matchmaking_client != null) matchmaking_client.getInterface().updateGameStatus(getTick(), status);
+  }
 
-    @Override
-    public void playerDisconnected(int client_id, boolean checksum_error) {
-        Peer peer = getPeerFromClientID(client_id);
-        if (checksum_error)
-            peerChecksumError(peer);
-        else
-            peerDisconnected(peer, "Peer disconnected");
+  private Iterator<Peer> getPeerIterator() {
+    return peer_to_player.keySet().iterator();
+  }
+
+  public PeerHubInterface getInterface() {
+    return peerhubs_interface;
+  }
+
+  private void processStall() {
+    stall_handler.processStall(getTick());
+  }
+
+  private void removePeerFromActiveList(Peer peer) {
+    System.out.println("Removing from active list:" + peer);
+    peer_index_to_peer[peer.getPeerIndex()] = null;
+    peer.getPlayer().setPreferredGamespeed(SimulationClock.GAMESPEED_DONTCARE);
+  }
+
+  @Override
+  public void updateChecksum(StateChecksum sum) {
+    sum.update(getTick());
+    sum.update(checksum.getValue());
+  }
+
+  public void peerDisconnected(Peer peer, String reason) {
+    Player player = getPlayerFromPeer(peer);
+    if (player == null) return;
+    peer_to_player.remove(peer);
+    player_to_peer.remove(player);
+    int peer_index = peer.getPeerIndex();
+    removePeerFromActiveList(peer);
+    String left_game_message = i18n("left_game", peer.getPlayerInfo().name(), reason);
+    receiveChat(SYSTEM_NAME, left_game_message, false);
+    if (getFreeQuitTicksLeft(local_player.getWorld()) >= 0
+        && matchmaking_client != null
+        && matchmaking_client.isConnected())
+      matchmaking_client.getInterface().gameQuitNotify(peer.getPlayerInfo().name());
+  }
+
+  @Override
+  public void sendChat(String text, ChatMessage.Type type) {
+    sendChat(text, type == ChatMessage.Type.TEAM);
+  }
+
+  public void sendChat(String text, boolean team_only) {
+    Iterator<Peer> it = getPeerIterator();
+    int local_team = local_player.getPlayerInfo().team();
+    while (it.hasNext()) {
+      Peer peer = it.next();
+      int peer_team = peer.getPlayerInfo().team();
+      if (!team_only || local_team == peer_team) peer.getPeerHubInterface().chat(text, team_only);
     }
+  }
 
-    private void peerChecksumError(Peer peer) {
-        System.out.println("Disconnecting peer because of checksum mismatch: " + peer.getPlayerInfo().name());
-        peerDisconnected(peer, "Checksum error");
+  public void sendBeacon(float x, float y) {
+    Iterator<Peer> it = getPeerIterator();
+    int local_team = local_player.getPlayerInfo().team();
+    while (it.hasNext()) {
+      Peer peer = it.next();
+      int peer_team = peer.getPlayerInfo().team();
+      if (local_team == peer_team) peer.getPeerHubInterface().beacon(x, y);
     }
+  }
 
-    private @Nullable Peer getPeerFromClientID(int client_id) {
-        if (client_id >= 0 && client_id < peer_index_to_peer.length)
-            return unsafeGetPeerFromClientID(client_id);
-        else
-            return null;
+  public void receiveChat(String name, String text, boolean team) {
+    if (chat_hub != null) {
+      chat_hub.chat(new ChatMessage(name, text, team ? ChatMessage.Type.TEAM : ChatMessage.Type.NORMAL));
     }
+  }
 
-    private Peer unsafeGetPeerFromClientID(int client_id) {
-        return peer_index_to_peer[client_id];
+  public void setIgnoreFilter(@Nullable Predicate<String> ignore_filter) {
+    this.ignore_filter = ignore_filter;
+  }
+
+  public void receiveBeacon(float x, float y, String owner) {
+    if ((ignore_filter == null || !ignore_filter.test(owner)) && beacon_listener != null)
+      beacon_listener.newBeacon(manager, local_player, x, y);
+  }
+
+  private void closeNetwork() {
+    router_client.close();
+    if (router != null) router.close();
+    Object[] peers = peer_to_player.keySet().toArray();
+    for (Object peer1 : peers) {
+      Peer peer = (Peer) peer1;
+      if (peer.getPlayer() != local_player) {
+        peerDisconnected(peer, "Synchronization failed");
+      }
     }
+    stall_handler.stopStall();
+    leaveGame();
+  }
 
-    @Override
-    public void start() {
-        is_synchronized = true;
+  public void close() {
+    closeNetwork();
+    manager.removeAnimation(this);
+    System.out.println("PeerHub closed");
+  }
+
+  private static int getFreeQuitTicksLeft(SimulationClock clock) {
+    return (int) (FREE_QUIT_TIME / clock.getSecondsPerTick()) - clock.getTick();
+  }
+
+  public static float getFreeQuitTimeLeft(SimulationClock clock) {
+    int left = getFreeQuitTicksLeft(clock);
+    return left * AnimationManager.ANIMATION_SECONDS_PER_TICK;
+  }
+
+  public void leaveGame() {
+    if (matchmaking_client != null && matchmaking_client.isConnected()) {
+      if (getFreeQuitTicksLeft(local_player.getWorld()) >= 0) {
+        matchmaking_client.getInterface().gameQuitNotify(local_player.getPlayerInfo().name());
+      } else {
+        matchmaking_client.getInterface().gameLostNotify();
+      }
     }
+  }
 
-    public boolean isSynchronized() {
-        return is_synchronized;
+  public void gameWon() {
+    if (matchmaking_client != null && matchmaking_client.isConnected()) {
+      matchmaking_client.getInterface().gameWonNotify();
+      waiting_for_ack = true;
     }
+  }
 
-    private Peer locatePeerFromPlayer(Player player) {
-        return player_to_peer.get(player);
-    }
+  public void receivedAck() {
+    waiting_for_ack = false;
+  }
 
-    private boolean isDisconnected(Peer peer) {
-        return getPlayerFromPeer(peer) == null;
-    }
-
-    private Player getPlayerFromPeer(Peer peer) {
-        return peer_to_player.get(peer);
-    }
-
-    public boolean isAlive(Player player) {
-        return (nonhuman_players.contains(player) || locatePeerFromPlayer(player) != null) && player.isAlive();
-    }
-
-    public PlayerInterface getPlayerInterface() {
-        return player_interface;
-    }
-
-    private int millisToTickCeil(int millis) {
-        return millisToTick(millis + (int) AnimationManager.ANIMATION_MILLISECONDS_PER_TICK - 1);
-    }
-
-    private int millisToTick(int millis) {
-        return (int) (millis / AnimationManager.ANIMATION_MILLISECONDS_PER_TICK) - pause_ticks;
-    }
-
-    @Override
-    public void animate(float dt) {
-        ScopedValue.where(CURRENT, this).run(() -> doAnimate(dt));
-    }
-
-    private void doAnimate(float dt) {
-        if (router != null)
-            router.process();
-        int server_tick = millisToTick(server_millis);
-        if (!is_synchronized || getTick() == server_tick) {
-            processStall();
-        } else {
-            if (!isPaused()) {
-                doTick();
-                int min_tick = millisToTick(server_millis - MILLISECONDS_PER_HEARTBEAT - CLIENT_MAX_DELAY_MILLIS);
-                int catchupCount = 0;
-                while (getTick() < min_tick && catchupCount < MAX_CATCHUP_TICKS_PER_STEP) {
-                    doTick();
-                    catchupCount++;
-                }
-            } else
-                pause_ticks++;
-        }
-    }
-
-    private int getTick() {
-        return local_player.getWorld().getTick();
-    }
-
-    private void doTick() {
-        stall_handler.stopStall();
-        if (getFreeQuitTicksLeft(local_player.getWorld()) == 0 && matchmaking_client != null && matchmaking_client
-                .isConnected())
-            matchmaking_client.getInterface().freeQuitStopNotify();
-
-        if (getTick() % TICKS_PER_STATUS_UPDATE == 0 && matchmaking_client != null && matchmaking_client.isConnected())
-            sendStatusUpdate();
-
-        for (Peer peer : peer_index_to_peer) {
-            if (peer != null) {
-                try {
-                    peer.executeEvents(getTick());
-                } catch (IllegalARMIEventException e) {
-                    peerDisconnected(peer, e.getMessage());
-                }
-            }
-        }
-        local_player.getWorld().tick();
-        if (getTick() % ticks_per_checksum == 0)
-            sendChecksum();
-    }
-
-    /** {@return the number of simulation ticks between router checksum submissions} */
-    public int getTicksPerChecksum() {
-        return ticks_per_checksum;
-    }
-
-    private void sendChecksum() {
-        checksum.update(getTick());
-        checksum.update(local_player.getWorld().getChecksum());
-        local_player.getWorld().getAnimationManagerGameTime().updateChecksum(checksum);
-        local_player.getWorld().getAnimationManagerRealTime().updateChecksum(checksum);
-        router_client.getInterface().checksum(checksum.getValue());
-    }
-
-    public void setPaused(boolean p) {
-        if (!is_multiplayer && p)
-            paused++;
-        else if (!is_multiplayer && !p)
-            paused--;
-    }
-
-    public boolean isPaused() {
-        return paused > 0;
-    }
-
-    private void sendStatusUpdate() {
-        int[] status = new int[num_participants];
-        for (int i = 0; i < status.length; i++) {
-            Peer peer = getPeerFromClientID(i);
-            if (peer != null)
-                status[i] = peer.getPlayer().getStatus();
-        }
-        if (matchmaking_client != null)
-            matchmaking_client.getInterface().updateGameStatus(getTick(), status);
-    }
-
-    private Iterator<Peer> getPeerIterator() {
-        return peer_to_player.keySet().iterator();
-    }
-
-    public PeerHubInterface getInterface() {
-        return peerhubs_interface;
-    }
-
-    private void processStall() {
-        stall_handler.processStall(getTick());
-    }
-
-    private void removePeerFromActiveList(Peer peer) {
-        System.out.println("Removing from active list:" + peer);
-        peer_index_to_peer[peer.getPeerIndex()] = null;
-        peer.getPlayer().setPreferredGamespeed(SimulationClock.GAMESPEED_DONTCARE);
-    }
-
-    @Override
-    public void updateChecksum(StateChecksum sum) {
-        sum.update(getTick());
-        sum.update(checksum.getValue());
-    }
-
-    public void peerDisconnected(Peer peer, String reason) {
-        Player player = getPlayerFromPeer(peer);
-        if (player == null)
-            return;
-        peer_to_player.remove(peer);
-        player_to_peer.remove(player);
-        int peer_index = peer.getPeerIndex();
-        removePeerFromActiveList(peer);
-        String left_game_message = i18n("left_game", peer.getPlayerInfo().name(), reason);
-        receiveChat(SYSTEM_NAME, left_game_message, false);
-        if (getFreeQuitTicksLeft(local_player.getWorld()) >= 0 && matchmaking_client != null && matchmaking_client
-                .isConnected())
-            matchmaking_client.getInterface().gameQuitNotify(peer.getPlayerInfo().name());
-    }
-
-    @Override
-    public void sendChat(String text, ChatMessage.Type type) {
-        sendChat(text, type == ChatMessage.Type.TEAM);
-    }
-
-    public void sendChat(String text, boolean team_only) {
-        Iterator<Peer> it = getPeerIterator();
-        int local_team = local_player.getPlayerInfo().team();
-        while (it.hasNext()) {
-            Peer peer = it.next();
-            int peer_team = peer.getPlayerInfo().team();
-            if (!team_only || local_team == peer_team)
-                peer.getPeerHubInterface().chat(text, team_only);
-        }
-    }
-
-    public void sendBeacon(float x, float y) {
-        Iterator<Peer> it = getPeerIterator();
-        int local_team = local_player.getPlayerInfo().team();
-        while (it.hasNext()) {
-            Peer peer = it.next();
-            int peer_team = peer.getPlayerInfo().team();
-            if (local_team == peer_team)
-                peer.getPeerHubInterface().beacon(x, y);
-        }
-    }
-
-    public void receiveChat(String name, String text, boolean team) {
-        if (chat_hub != null) {
-            chat_hub.chat(new ChatMessage(name, text, team ? ChatMessage.Type.TEAM : ChatMessage.Type.NORMAL));
-        }
-    }
-
-    public void setIgnoreFilter(@Nullable Predicate<String> ignore_filter) {
-        this.ignore_filter = ignore_filter;
-    }
-
-    public void receiveBeacon(float x, float y, String owner) {
-        if ((ignore_filter == null || !ignore_filter.test(owner)) && beacon_listener != null)
-            beacon_listener.newBeacon(manager, local_player, x, y);
-    }
-
-    private void closeNetwork() {
-        router_client.close();
-        if (router != null)
-            router.close();
-        Object[] peers = peer_to_player.keySet().toArray();
-        for (Object peer1 : peers) {
-            Peer peer = (Peer) peer1;
-            if (peer.getPlayer() != local_player) {
-                peerDisconnected(peer, "Synchronization failed");
-            }
-        }
-        stall_handler.stopStall();
-        leaveGame();
-    }
-
-    public void close() {
-        closeNetwork();
-        manager.removeAnimation(this);
-        System.out.println("PeerHub closed");
-    }
-
-    private static int getFreeQuitTicksLeft(SimulationClock clock) {
-        return (int) (FREE_QUIT_TIME / clock.getSecondsPerTick()) - clock.getTick();
-    }
-
-    public static float getFreeQuitTimeLeft(SimulationClock clock) {
-        int left = getFreeQuitTicksLeft(clock);
-        return left * AnimationManager.ANIMATION_SECONDS_PER_TICK;
-    }
-
-    public void leaveGame() {
-        if (matchmaking_client != null && matchmaking_client.isConnected()) {
-            if (getFreeQuitTicksLeft(local_player.getWorld()) >= 0) {
-                matchmaking_client.getInterface().gameQuitNotify(local_player.getPlayerInfo().name());
-            } else {
-                matchmaking_client.getInterface().gameLostNotify();
-            }
-        }
-    }
-
-    public void gameWon() {
-        if (matchmaking_client != null && matchmaking_client.isConnected()) {
-            matchmaking_client.getInterface().gameWonNotify();
-            waiting_for_ack = true;
-        }
-    }
-
-    public void receivedAck() {
-        waiting_for_ack = false;
-    }
-
-    public static boolean isWaitingForAck() {
-        return CURRENT.isBound() && CURRENT.get().waiting_for_ack;
-    }
+  public static boolean isWaitingForAck() {
+    return CURRENT.isBound() && CURRENT.get().waiting_for_ack;
+  }
 }

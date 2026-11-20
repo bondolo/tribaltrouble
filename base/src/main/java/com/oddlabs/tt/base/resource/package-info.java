@@ -1,6 +1,4 @@
-/**
- * Base native resource tracking and cleanup lifecycle abstractions.
- */
+/** Base native resource tracking and cleanup lifecycle abstractions. */
 @NullMarked
 package com.oddlabs.tt.base.resource;
 

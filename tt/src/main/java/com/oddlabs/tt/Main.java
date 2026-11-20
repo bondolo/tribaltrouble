@@ -1,5 +1,7 @@
 package com.oddlabs.tt;
 
+import static org.lwjgl.sdl.SDLMessageBox.SDL_MESSAGEBOX_ERROR;
+
 import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.GamePaths;
@@ -9,83 +11,78 @@ import com.oddlabs.tt.client.ClientSessionBuilder;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.window.LWJGL3Window;
-import org.lwjgl.sdl.SDLMessageBox;
-
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.lwjgl.sdl.SDLMessageBox;
 
-import static org.lwjgl.sdl.SDLMessageBox.SDL_MESSAGEBOX_ERROR;
-
-/**
- * Main application entry point for Tribal Trouble.
- */
+/// Main application entry point for Tribal Trouble.
 public final class Main {
-    private static final Logger logger = Logger.getLogger(Main.class.getName());
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(Main.class.getName());
+  private static final Logger logger = Logger.getLogger(Main.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(Main.class.getName());
 
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  public static void fail(Throwable t) {
+    logger.log(Level.SEVERE, "Critical Failure", t);
+
+    if (!AppConfig.DEVELOPER_MODE) {
+      while (t.getCause() != null) {
+        t = t.getCause();
+      }
+      String error = i18n("error");
+      String error_msg;
+      try {
+        error_msg = i18n("error_message", t);
+      } catch (IllegalArgumentException e) {
+        // Fallback if message formatting fails (e.g. quotes in the exception message)
+        error_msg = "Error: " + t;
+      }
+      logger.log(Level.SEVERE, error + ": " + error_msg);
+      SDLMessageBox.SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, error, error_msg, org.lwjgl.system.MemoryUtil.NULL);
     }
+  }
 
-    public static void fail(Throwable t) {
-        logger.log(Level.SEVERE, "Critical Failure", t);
+  public static void shutdown(int status) {
+    logger.info("Exiting");
+    System.exit(status);
+  }
 
-        if (!AppConfig.DEVELOPER_MODE) {
-            while (t.getCause() != null) {
-                t = t.getCause();
-            }
-            String error = i18n("error");
-            String error_msg;
-            try {
-                error_msg = i18n("error_message", t);
-            } catch (IllegalArgumentException e) {
-                // Fallback if message formatting fails (e.g. quotes in the exception message)
-                error_msg = "Error: " + t;
-            }
-            logger.log(Level.SEVERE, error + ": " + error_msg);
-            SDLMessageBox.SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, error, error_msg,
-                    org.lwjgl.system.MemoryUtil.NULL);
-        }
+  static void main(String... args) {
+    logger.info("DEVELOPER mode = " + AppConfig.DEVELOPER_MODE);
+    String os_name = System.getProperty("os.name");
+    logger.info("os.name = '" + os_name + "'");
+    String os_arch = System.getProperty("os.arch");
+    logger.info("os.arch = '" + os_arch + "'");
+    String os_version = System.getProperty("os.version");
+    logger.info("os.version = '" + os_version + "'");
+    String java_version = System.getProperty("java.version");
+    logger.info("java.version = '" + java_version + "'");
+    String java_vendor = System.getProperty("java.vendor");
+    logger.info("java.vendor = '" + java_vendor + "'");
+    long total_mem = Runtime.getRuntime().maxMemory();
+    logger.info("maxMemory = '" + total_mem + "'");
+
+    int status = 1;
+    try {
+      logger.info("Starting game....");
+      GamePaths gamePaths = new GamePaths();
+      Settings settings = new Settings(gamePaths.dataDir());
+      settings.load();
+      boolean previousRunCrashed = settings.armCrashTripwire(gamePaths.logDir());
+      try (var window = new LWJGL3Window();
+          var eventQueue = new LocalEventQueue();
+          var peer = new Peer(gamePaths, settings, window, eventQueue, previousRunCrashed)) {
+        peer.run(ClientSessionBuilder.create(Menu::setupMainMenu), args);
+      }
+      settings.disarmCrashTripwire();
+      status = 0;
+    } catch (Throwable t) {
+      fail(t);
+    } finally {
+      shutdown(status);
     }
-
-    public static void shutdown(int status) {
-        logger.info("Exiting");
-        System.exit(status);
-    }
-
-    static void main(String... args) {
-        logger.info("DEVELOPER mode = " + AppConfig.DEVELOPER_MODE);
-        String os_name = System.getProperty("os.name");
-        logger.info("os.name = '" + os_name + "'");
-        String os_arch = System.getProperty("os.arch");
-        logger.info("os.arch = '" + os_arch + "'");
-        String os_version = System.getProperty("os.version");
-        logger.info("os.version = '" + os_version + "'");
-        String java_version = System.getProperty("java.version");
-        logger.info("java.version = '" + java_version + "'");
-        String java_vendor = System.getProperty("java.vendor");
-        logger.info("java.vendor = '" + java_vendor + "'");
-        long total_mem = Runtime.getRuntime().maxMemory();
-        logger.info("maxMemory = '" + total_mem + "'");
-
-        int status = 1;
-        try {
-            logger.info("Starting game....");
-            GamePaths gamePaths = new GamePaths();
-            Settings settings = new Settings(gamePaths.dataDir());
-            settings.load();
-            boolean previousRunCrashed = settings.armCrashTripwire(gamePaths.logDir());
-            try (var window = new LWJGL3Window(); var eventQueue = new LocalEventQueue(); var peer = new Peer(gamePaths,
-                    settings, window, eventQueue, previousRunCrashed)) {
-                peer.run(ClientSessionBuilder.create(Menu::setupMainMenu), args);
-            }
-            settings.disarmCrashTripwire();
-            status = 0;
-        } catch (Throwable t) {
-            fail(t);
-        } finally {
-            shutdown(status);
-        }
-    }
+  }
 }

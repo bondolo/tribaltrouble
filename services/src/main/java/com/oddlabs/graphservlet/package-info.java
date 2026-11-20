@@ -1,6 +1,4 @@
-/**
- * Game session telemetry graph rendering controllers and image generators.
- */
+/** Game session telemetry graph rendering controllers and image generators. */
 @NullMarked
 package com.oddlabs.graphservlet;
 

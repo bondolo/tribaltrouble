@@ -1,14 +1,14 @@
 module com.oddlabs.tt.input {
-    requires com.oddlabs.common;
-    requires com.oddlabs.tt.base;
-    requires transitive com.oddlabs.tt.window;
-    requires static org.jspecify;
-    requires java.logging;
-    requires org.lwjgl;
-    requires org.lwjgl.sdl;
+  requires com.oddlabs.common;
+  requires com.oddlabs.tt.base;
+  requires transitive com.oddlabs.tt.window;
+  requires static org.jspecify;
+  requires java.logging;
+  requires org.lwjgl;
+  requires org.lwjgl.sdl;
 
-    exports com.oddlabs.tt.input;
+  exports com.oddlabs.tt.input;
 
-    provides com.oddlabs.tt.base.global.PropertiesSerializer with
-            com.oddlabs.tt.input.InputBindingSettings;
+  provides com.oddlabs.tt.base.global.PropertiesSerializer with
+      com.oddlabs.tt.input.InputBindingSettings;
 }

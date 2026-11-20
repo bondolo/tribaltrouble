@@ -1,7 +1,10 @@
 package com.oddlabs.tt.content.form;
 
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
+import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
+
 import com.oddlabs.matchmaking.ChatRoomUser;
-import com.oddlabs.tt.net.MatchmakingClient;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.ChatCommand;
 import com.oddlabs.tt.gui.Box;
@@ -25,212 +28,216 @@ import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.net.ChatRoomInfo;
-import org.jspecify.annotations.Nullable;
-
+import com.oddlabs.tt.net.MatchmakingClient;
 import java.util.List;
 import java.util.ResourceBundle;
+import org.jspecify.annotations.Nullable;
 
-import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
-import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
-
-/** UI component displaying live chat room messages and user lists. */
+/// UI component displaying live chat room messages and user lists.
 public final class ChatPanel extends Panel implements ChatListener {
-    private static final int PULLDOWN_INDEX_MESSAGE = 0;
-    private static final int PULLDOWN_INDEX_INFO = 1;
-    private static final int PULLDOWN_INDEX_IGNORE = 2;
+  private static final int PULLDOWN_INDEX_MESSAGE = 0;
+  private static final int PULLDOWN_INDEX_INFO = 1;
+  private static final int PULLDOWN_INDEX_IGNORE = 2;
 
-    private final MultiColumnComboBox<ChatRoomUser> lobby_users_list_box;
-    private final MultiColumnComboBox<ChatRoomUser> playing_users_list_box;
-    private final TextBox chat_box;
-    private final EditLine chat_line;
-    private final GUIRoot gui_root;
-    private final MatchmakingClient matchmakingClient;
+  private final MultiColumnComboBox<ChatRoomUser> lobby_users_list_box;
+  private final MultiColumnComboBox<ChatRoomUser> playing_users_list_box;
+  private final TextBox chat_box;
+  private final EditLine chat_line;
+  private final GUIRoot gui_root;
+  private final MatchmakingClient matchmakingClient;
 
-    private final int user_list_width;
+  private final int user_list_width;
 
-    private @Nullable PrivateMessageForm private_message_form;
+  private @Nullable PrivateMessageForm private_message_form;
 
-    private static ResourceBundle getBundle() {
-        return ResourceBundle.getBundle(ChatPanel.class.getName());
+  private static ResourceBundle getBundle() {
+    return ResourceBundle.getBundle(ChatPanel.class.getName());
+  }
+
+  private static String getI18N(String key) {
+    return Utils.getBundleString(getBundle(), key);
+  }
+
+  public ChatPanel(
+      GUIRoot gui_root,
+      MatchmakingClient matchmakingClient,
+      ChatRoomInfo info,
+      int compare_width,
+      int compare_height,
+      int button_width,
+      EnterListener chat_listener,
+      MouseClickListener leave_listener) {
+    super(gui_root, getI18N("chat"));
+    this.gui_root = gui_root;
+    this.matchmakingClient = matchmakingClient;
+    FormData fdata = skin.getFormData();
+    Box pdata = skin.getPanelData().box();
+    Box edata = skin.getEditBox();
+    var editFont = skin.getEditFont();
+    int scrollBarWidth = skin.getScrollBarData().scrollBar().getWidth();
+
+    Label label_headline = new Label(info.name(), skin.getHeadlineFont());
+    addChild(label_headline);
+
+    int edit_line_height = edata.getBottomOffset() + edata.getTopOffset() + editFont.getHeight();
+    int height =
+        compare_height
+            - pdata.getTopOffset()
+            - pdata.getBottomOffset()
+            - edit_line_height
+            - label_headline.getHeight()
+            - 2 * fdata.objectSpacing();
+    int user_list_height = (height - fdata.objectSpacing()) / 2;
+    user_list_width = 2 * button_width + 2 * fdata.objectSpacing() - scrollBarWidth;
+
+    lobby_users_list_box =
+        new MultiColumnComboBox<>(gui_root, user_list_height, true, new ColumnInfo(getI18N("lobby"), user_list_width));
+
+    playing_users_list_box =
+        new MultiColumnComboBox<>(
+            gui_root, user_list_height, true, new ColumnInfo(getI18N("playing"), user_list_width));
+
+    PulldownMenu<ChatRoomUser> lobby_pulldown_menu = new PulldownMenu<>(gui_root);
+    lobby_pulldown_menu.addItem(new PulldownItem<>(gui_root, getI18N("message")));
+    lobby_pulldown_menu.addItem(new PulldownItem<>(gui_root, getI18N("info")));
+    lobby_pulldown_menu.addItem(new PulldownItem<>(gui_root, ""));
+    lobby_pulldown_menu.addItemChosenListener(new PulldownListener(lobby_users_list_box));
+    lobby_users_list_box.setPulldownMenu(lobby_pulldown_menu);
+
+    ChatRoomUserDoubleClickedListener lobby_double_clicked = new ChatRoomUserDoubleClickedListener(lobby_pulldown_menu);
+    lobby_users_list_box.addRowListener(lobby_double_clicked);
+    addChild(lobby_users_list_box);
+
+    PulldownMenu<ChatRoomUser> playing_pulldown_menu = new PulldownMenu<>(gui_root);
+    playing_pulldown_menu.addItem(new PulldownItem<>(gui_root, getI18N("message")));
+    playing_pulldown_menu.addItem(new PulldownItem<>(gui_root, getI18N("info")));
+    playing_pulldown_menu.addItem(new PulldownItem<>(gui_root, ""));
+    playing_pulldown_menu.addItemChosenListener(new PulldownListener(playing_users_list_box));
+    playing_users_list_box.setPulldownMenu(playing_pulldown_menu);
+
+    ChatRoomUserDoubleClickedListener playing_double_clicked =
+        new ChatRoomUserDoubleClickedListener(playing_pulldown_menu);
+    playing_users_list_box.addRowListener(playing_double_clicked);
+    addChild(playing_users_list_box);
+
+    chat_box =
+        new TextBox(
+            gui_root,
+            compare_width - user_list_width - fdata.objectSpacing() - scrollBarWidth,
+            height,
+            editFont,
+            Integer.MAX_VALUE);
+    addChild(chat_box);
+
+    chat_line = new EditLine(gui_root, compare_width - button_width - fdata.objectSpacing(), 256);
+    chat_line.addEnterListener(chat_listener);
+    addChild(chat_line);
+
+    HorizButton button_send = new HorizButton(gui_root, getI18N("send"), button_width);
+    button_send.addMouseClickListener((_, _, _, _) -> chat_line.enterPressedAll());
+    addChild(button_send);
+
+    HorizButton button_leave = new HorizButton(gui_root, getI18N("leave"), button_width);
+    button_leave.addMouseClickListener(leave_listener);
+    addChild(button_leave);
+
+    // Place objects
+    label_headline.place();
+    chat_box.place(label_headline, BOTTOM_LEFT);
+    lobby_users_list_box.place(chat_box, RIGHT_TOP);
+    playing_users_list_box.place(lobby_users_list_box, BOTTOM_LEFT);
+    chat_line.place(chat_box, BOTTOM_LEFT);
+    button_send.place(chat_line, RIGHT_MID);
+    button_leave.place(playing_users_list_box, BOTTOM_LEFT);
+    compileCanvas();
+
+    update(info);
+  }
+
+  public final void update(ChatRoomInfo info) {
+    lobby_users_list_box.clear();
+    playing_users_list_box.clear();
+    var font = skin.getMultiColumnComboBoxData().font();
+    for (ChatRoomUser user : info.users()) {
+      Row<ChatRoomUser, Label> row =
+          new Row<>(gui_root, List.of(new Label(user.getNick(), font, user_list_width)), user);
+      if (user.isPlaying()) {
+        playing_users_list_box.addRow(row);
+      } else {
+        lobby_users_list_box.addRow(row);
+      }
     }
+  }
 
-    private static String getI18N(String key) {
-        return Utils.getBundleString(getBundle(), key);
+  @Override
+  public void chat(ChatMessage message) {
+    if (message.type() != ChatMessage.Type.PRIVATE && message.type() != ChatMessage.Type.CHATROOM) return;
+    if (message.type() != ChatMessage.Type.PRIVATE) {
+      getTab().updateNotify();
     }
+    refreshMessages();
+  }
 
-    public ChatPanel(GUIRoot gui_root, MatchmakingClient matchmakingClient, ChatRoomInfo info, int compare_width,
-            int compare_height,
-            int button_width, EnterListener chat_listener, MouseClickListener leave_listener) {
-        super(gui_root, getI18N("chat"));
-        this.gui_root = gui_root;
-        this.matchmakingClient = matchmakingClient;
-        FormData fdata = skin.getFormData();
-        Box pdata = skin.getPanelData().box();
-        Box edata = skin.getEditBox();
-        var editFont = skin.getEditFont();
-        int scrollBarWidth = skin.getScrollBarData().scrollBar().getWidth();
+  private void refreshMessages() {
+    var messages = matchmakingClient.getChatRoomHistory();
+    chat_box.setText(String.join("\n", messages));
+    chat_box.setOffsetY(Integer.MAX_VALUE);
+  }
 
-        Label label_headline = new Label(info.name(), skin.getHeadlineFont());
-        addChild(label_headline);
-
-        int edit_line_height = edata.getBottomOffset() + edata.getTopOffset() + editFont.getHeight();
-        int height = compare_height - pdata.getTopOffset() - pdata.getBottomOffset() - edit_line_height - label_headline
-                .getHeight() - 2 * fdata.objectSpacing();
-        int user_list_height = (height - fdata.objectSpacing()) / 2;
-        user_list_width = 2 * button_width + 2 * fdata.objectSpacing() - scrollBarWidth;
-
-        lobby_users_list_box = new MultiColumnComboBox<>(gui_root, user_list_height, true,
-                new ColumnInfo(getI18N("lobby"), user_list_width));
-
-        playing_users_list_box = new MultiColumnComboBox<>(gui_root, user_list_height, true,
-                new ColumnInfo(getI18N("playing"), user_list_width));
-
-        PulldownMenu<ChatRoomUser> lobby_pulldown_menu = new PulldownMenu<>(gui_root);
-        lobby_pulldown_menu.addItem(new PulldownItem<>(gui_root, getI18N("message")));
-        lobby_pulldown_menu.addItem(new PulldownItem<>(gui_root, getI18N("info")));
-        lobby_pulldown_menu.addItem(new PulldownItem<>(gui_root, ""));
-        lobby_pulldown_menu.addItemChosenListener(new PulldownListener(lobby_users_list_box));
-        lobby_users_list_box.setPulldownMenu(lobby_pulldown_menu);
-
-        ChatRoomUserDoubleClickedListener lobby_double_clicked = new ChatRoomUserDoubleClickedListener(
-                lobby_pulldown_menu);
-        lobby_users_list_box.addRowListener(lobby_double_clicked);
-        addChild(lobby_users_list_box);
-
-        PulldownMenu<ChatRoomUser> playing_pulldown_menu = new PulldownMenu<>(gui_root);
-        playing_pulldown_menu.addItem(new PulldownItem<>(gui_root, getI18N("message")));
-        playing_pulldown_menu.addItem(new PulldownItem<>(gui_root, getI18N("info")));
-        playing_pulldown_menu.addItem(new PulldownItem<>(gui_root, ""));
-        playing_pulldown_menu.addItemChosenListener(new PulldownListener(playing_users_list_box));
-        playing_users_list_box.setPulldownMenu(playing_pulldown_menu);
-
-        ChatRoomUserDoubleClickedListener playing_double_clicked = new ChatRoomUserDoubleClickedListener(
-                playing_pulldown_menu);
-        playing_users_list_box.addRowListener(playing_double_clicked);
-        addChild(playing_users_list_box);
-
-        chat_box = new TextBox(gui_root, compare_width - user_list_width - fdata.objectSpacing() - scrollBarWidth,
-                height, editFont, Integer.MAX_VALUE);
-        addChild(chat_box);
-
-        chat_line = new EditLine(gui_root, compare_width - button_width - fdata.objectSpacing(), 256);
-        chat_line.addEnterListener(chat_listener);
-        addChild(chat_line);
-
-        HorizButton button_send = new HorizButton(gui_root, getI18N("send"), button_width);
-        button_send.addMouseClickListener((_, _, _, _) -> chat_line.enterPressedAll());
-        addChild(button_send);
-
-        HorizButton button_leave = new HorizButton(gui_root, getI18N("leave"), button_width);
-        button_leave.addMouseClickListener(leave_listener);
-        addChild(button_leave);
-
-        // Place objects
-        label_headline.place();
-        chat_box.place(label_headline, BOTTOM_LEFT);
-        lobby_users_list_box.place(chat_box, RIGHT_TOP);
-        playing_users_list_box.place(lobby_users_list_box, BOTTOM_LEFT);
-        chat_line.place(chat_box, BOTTOM_LEFT);
-        button_send.place(chat_line, RIGHT_MID);
-        button_leave.place(playing_users_list_box, BOTTOM_LEFT);
-        compileCanvas();
-
-        update(info);
+  @Override
+  public void setFocus(FocusDirection direction) {
+    if (direction == FocusDirection.BACKWARD) {
+      super.setFocus(direction);
+    } else {
+      chat_line.setFocus(direction);
     }
+  }
 
-    public final void update(ChatRoomInfo info) {
-        lobby_users_list_box.clear();
-        playing_users_list_box.clear();
-        var font = skin.getMultiColumnComboBoxData().font();
-        for (ChatRoomUser user : info.users()) {
-            Row<ChatRoomUser, Label> row = new Row<>(gui_root, List.of(
-                    new Label(user.getNick(), font, user_list_width)),
-                    user);
-            if (user.isPlaying()) {
-                playing_users_list_box.addRow(row);
-            } else {
-                lobby_users_list_box.addRow(row);
-            }
-        }
+  public final void connectionLost() {
+    if (private_message_form != null) private_message_form.remove();
+  }
+
+  private final class PulldownListener implements ItemChosenListener<ChatRoomUser> {
+    private final MultiColumnComboBox<ChatRoomUser> box;
+
+    PulldownListener(MultiColumnComboBox<ChatRoomUser> box) {
+      this.box = box;
     }
 
     @Override
-    public void chat(ChatMessage message) {
-        if (message.type() != ChatMessage.Type.PRIVATE && message.type() != ChatMessage.Type.CHATROOM)
-            return;
-        if (message.type() != ChatMessage.Type.PRIVATE) {
-            getTab().updateNotify();
+    public void itemChosen(PulldownMenu<ChatRoomUser> menu, int item_index) {
+      ChatRoomUser user = box.getRightClickedRowData();
+      String nick = user.getNick();
+      switch (item_index) {
+        case PULLDOWN_INDEX_MESSAGE -> gui_root.addModalForm(new PrivateMessageForm(gui_root, matchmakingClient, nick));
+        case PULLDOWN_INDEX_INFO -> matchmakingClient.requestInfo(nick);
+        case PULLDOWN_INDEX_IGNORE -> {
+          if (ChatCommand.isIgnoring(nick)) ChatCommand.unignore(gui_root.getInfoPrinter(), nick);
+          else ChatCommand.ignore(gui_root.getInfoPrinter(), nick);
         }
-        refreshMessages();
+        default -> throw new IllegalArgumentException("Unexpected pulldown index");
+      }
+      box.setFocus();
     }
+  }
 
-    private void refreshMessages() {
-        var messages = matchmakingClient.getChatRoomHistory();
-        chat_box.setText(String.join("\n", messages));
-        chat_box.setOffsetY(Integer.MAX_VALUE);
+  private final class ChatRoomUserDoubleClickedListener implements RowListener<ChatRoomUser> {
+    private final PulldownMenu<ChatRoomUser> menu;
+
+    ChatRoomUserDoubleClickedListener(PulldownMenu<ChatRoomUser> menu) {
+      this.menu = menu;
     }
 
     @Override
-    public void setFocus(FocusDirection direction) {
-        if (direction == FocusDirection.BACKWARD) {
-            super.setFocus(direction);
-        } else {
-            chat_line.setFocus(direction);
-        }
+    public void rowDoubleClicked(ChatRoomUser user) {
+      private_message_form = new PrivateMessageForm(gui_root, matchmakingClient, user.getNick());
+      gui_root.addModalForm(private_message_form);
     }
 
-    public final void connectionLost() {
-        if (private_message_form != null)
-            private_message_form.remove();
+    @Override
+    public void rowChosen(ChatRoomUser user) {
+      String item_text = ChatCommand.isIgnoring(user.getNick()) ? getI18N("unignore") : getI18N("ignore");
+      menu.getItem(PULLDOWN_INDEX_IGNORE).ifPresent(pi -> pi.setLabelString(item_text));
     }
-
-    private final class PulldownListener implements ItemChosenListener<ChatRoomUser> {
-        private final MultiColumnComboBox<ChatRoomUser> box;
-
-        PulldownListener(MultiColumnComboBox<ChatRoomUser> box) {
-            this.box = box;
-        }
-
-        @Override
-        public void itemChosen(PulldownMenu<ChatRoomUser> menu, int item_index) {
-            ChatRoomUser user = box.getRightClickedRowData();
-            String nick = user.getNick();
-            switch (item_index) {
-                case PULLDOWN_INDEX_MESSAGE -> gui_root.addModalForm(new PrivateMessageForm(gui_root, matchmakingClient,
-                        nick));
-                case PULLDOWN_INDEX_INFO -> matchmakingClient.requestInfo(nick);
-                case PULLDOWN_INDEX_IGNORE -> {
-                    if (ChatCommand.isIgnoring(nick))
-                        ChatCommand.unignore(gui_root.getInfoPrinter(), nick);
-                    else
-                        ChatCommand.ignore(gui_root.getInfoPrinter(), nick);
-                }
-                default -> throw new IllegalArgumentException("Unexpected pulldown index");
-            }
-            box.setFocus();
-        }
-    }
-
-    private final class ChatRoomUserDoubleClickedListener implements RowListener<ChatRoomUser> {
-        private final PulldownMenu<ChatRoomUser> menu;
-
-        ChatRoomUserDoubleClickedListener(PulldownMenu<ChatRoomUser> menu) {
-            this.menu = menu;
-        }
-
-        @Override
-        public void rowDoubleClicked(ChatRoomUser user) {
-            private_message_form = new PrivateMessageForm(gui_root, matchmakingClient, user.getNick());
-            gui_root.addModalForm(private_message_form);
-        }
-
-        @Override
-        public void rowChosen(ChatRoomUser user) {
-            String item_text = ChatCommand.isIgnoring(user.getNick())
-                    ? getI18N("unignore") : getI18N("ignore");
-            menu.getItem(PULLDOWN_INDEX_IGNORE).ifPresent(pi -> pi.setLabelString(item_text));
-        }
-    }
-
+  }
 }

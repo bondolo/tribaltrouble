@@ -14,327 +14,319 @@ import com.oddlabs.tt.engine.render.SubSceneRenderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.WaveAnimation;
 import com.oddlabs.tt.engine.render.state.ScenePassContext;
+import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.model.Shadowable;
-import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.util.Color;
-import org.joml.Matrix4f;
-import org.jspecify.annotations.Nullable;
-
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.joml.Matrix4f;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Specialized renderer for forest elements, coordinating the efficient
- * drawing of crown and trunk sprite lists using hardware instancing.
- */
+/// Specialized renderer for forest elements, coordinating the efficient drawing of crown and trunk sprite lists using
+/// hardware instancing.
 final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoCloseable, Animated {
-    private static final float TREE_FALL_DURATION = 3f;
-    private static final float TREE_SPAWN_DURATION = 3f;
-    private static final float TREE_WAVE_SCALE = 0.035f;
+  private static final float TREE_FALL_DURATION = 3f;
+  private static final float TREE_SPAWN_DURATION = 3f;
+  private static final float TREE_WAVE_SCALE = 0.035f;
 
-    private final InstancedSpriteRenderer instancedSpriteRenderer;
-    private final WaveAnimation wave_animation = new WaveAnimation(TREE_WAVE_SCALE);
-    private final @Nullable Cheat cheat;
-    private final Matrix4f tempMatrix = new Matrix4f();
-    private final AnimationManager animationManager;
-    private final @Nullable LandscapeRenderer landscapeRenderer;
-    private final Map<AbstractTreeGroup.TreeType, TreeRenderBatches> treeBatches;
-    private final Map<TreeSupply, Float> fallingTrees = new HashMap<>();
-    private final Map<TreeSupply, Float> spawningTrees = new HashMap<>();
-    private int lastRenderedTreeCount;
+  private final InstancedSpriteRenderer instancedSpriteRenderer;
+  private final WaveAnimation wave_animation = new WaveAnimation(TREE_WAVE_SCALE);
+  private final @Nullable Cheat cheat;
+  private final Matrix4f tempMatrix = new Matrix4f();
+  private final AnimationManager animationManager;
+  private final @Nullable LandscapeRenderer landscapeRenderer;
+  private final Map<AbstractTreeGroup.TreeType, TreeRenderBatches> treeBatches;
+  private final Map<TreeSupply, Float> fallingTrees = new HashMap<>();
+  private final Map<TreeSupply, Float> spawningTrees = new HashMap<>();
+  private int lastRenderedTreeCount;
 
-    private record TreeRenderBatches(
-                                     InstancedSpriteRenderer.RenderBatch crownBatch,
-                                     InstancedSpriteRenderer.RenderBatch trunkBatch,
-                                     InstancedSpriteRenderer.RenderBatch respondCrownBatch,
-                                     InstancedSpriteRenderer.RenderBatch respondTrunkBatch
-    ) {
+  private record TreeRenderBatches(
+      InstancedSpriteRenderer.RenderBatch crownBatch,
+      InstancedSpriteRenderer.RenderBatch trunkBatch,
+      InstancedSpriteRenderer.RenderBatch respondCrownBatch,
+      InstancedSpriteRenderer.RenderBatch respondTrunkBatch) {}
+
+  TreeRenderer(
+      @Nullable Cheat cheat,
+      RespondManager respond_manager,
+      InstancedSpriteRenderer instancedSpriteRenderer,
+      AnimationManager animationManager,
+      @Nullable LandscapeRenderer landscapeRenderer) {
+    super(respond_manager);
+    this.cheat = cheat;
+    this.instancedSpriteRenderer = instancedSpriteRenderer;
+    this.animationManager = animationManager;
+    this.landscapeRenderer = landscapeRenderer;
+    this.treeBatches = createTreeBatches(instancedSpriteRenderer);
+    animationManager.registerAnimation(this);
+  }
+
+  private Map<AbstractTreeGroup.TreeType, TreeRenderBatches> createTreeBatches(InstancedSpriteRenderer renderer) {
+    var map = new EnumMap<AbstractTreeGroup.TreeType, TreeRenderBatches>(AbstractTreeGroup.TreeType.class);
+    for (var entry : getTrees().entrySet()) {
+      Tree tree = entry.getValue();
+      SpriteList crownList = tree.crown();
+      SpriteList trunkList = tree.trunk();
+
+      Sprite crownSprite = crownList.getSprite();
+      Texture crownTexture = crownSprite.textures[0][Sprite.TEXTURE_NORMAL];
+      Texture crownTeam = crownSprite.textures[0][Sprite.TEXTURE_TEAM];
+
+      Sprite trunkSprite = trunkList.getSprite();
+      Texture trunkTexture = trunkSprite.textures[0][Sprite.TEXTURE_NORMAL];
+      Texture trunkTeam = trunkSprite.textures[0][Sprite.TEXTURE_TEAM];
+      Texture trunkBump = trunkSprite.hasBumpMap(0) ? trunkSprite.textures[0][Sprite.TEXTURE_BUMP] : null;
+
+      var crownBatch = renderer.getBatch(crownList, crownTexture, crownTeam, null, false, false, true, true);
+      var trunkBatch = renderer.getBatch(trunkList, trunkTexture, trunkTeam, trunkBump, false, false, true, true);
+      var respondCrownBatch = renderer.getBatch(crownList, crownTexture, crownTeam, null, true, false, true, true);
+      var respondTrunkBatch = renderer.getBatch(trunkList, trunkTexture, trunkTeam, trunkBump, true, false, true, true);
+
+      map.put(entry.getKey(), new TreeRenderBatches(crownBatch, trunkBatch, respondCrownBatch, respondTrunkBatch));
     }
+    return Collections.unmodifiableMap(map);
+  }
 
-    TreeRenderer(@Nullable Cheat cheat,
-            RespondManager respond_manager,
-            InstancedSpriteRenderer instancedSpriteRenderer,
-            AnimationManager animationManager,
-            @Nullable LandscapeRenderer landscapeRenderer
-    ) {
-        super(respond_manager);
-        this.cheat = cheat;
-        this.instancedSpriteRenderer = instancedSpriteRenderer;
-        this.animationManager = animationManager;
-        this.landscapeRenderer = landscapeRenderer;
-        this.treeBatches = createTreeBatches(instancedSpriteRenderer);
-        animationManager.registerAnimation(this);
+  void onTreeFelled(TreeSupply tree) {
+    spawningTrees.remove(tree);
+    fallingTrees.put(tree, 0f);
+    if (landscapeRenderer != null) {
+      landscapeRenderer.onTreeFelled(tree);
     }
+  }
 
-    private Map<AbstractTreeGroup.TreeType, TreeRenderBatches> createTreeBatches(
-            InstancedSpriteRenderer renderer) {
-        var map = new EnumMap<AbstractTreeGroup.TreeType, TreeRenderBatches>(AbstractTreeGroup.TreeType.class);
-        for (var entry : getTrees().entrySet()) {
-            Tree tree = entry.getValue();
-            SpriteList crownList = tree.crown();
-            SpriteList trunkList = tree.trunk();
+  void onTreeSpawned(TreeSupply tree) {
+    getOrCreateState(tree);
+    fallingTrees.remove(tree);
+    spawningTrees.put(tree, 0f);
+  }
 
-            Sprite crownSprite = crownList.getSprite();
-            Texture crownTexture = crownSprite.textures[0][Sprite.TEXTURE_NORMAL];
-            Texture crownTeam = crownSprite.textures[0][Sprite.TEXTURE_TEAM];
+  @Override
+  protected boolean isFalling(TreeSupply tree_supply) {
+    return fallingTrees.containsKey(tree_supply);
+  }
 
-            Sprite trunkSprite = trunkList.getSprite();
-            Texture trunkTexture = trunkSprite.textures[0][Sprite.TEXTURE_NORMAL];
-            Texture trunkTeam = trunkSprite.textures[0][Sprite.TEXTURE_TEAM];
-            Texture trunkBump = trunkSprite.hasBumpMap(0) ? trunkSprite.textures[0][Sprite.TEXTURE_BUMP] : null;
-
-            var crownBatch = renderer.getBatch(crownList, crownTexture, crownTeam, null, false, false, true, true);
-            var trunkBatch = renderer.getBatch(trunkList, trunkTexture, trunkTeam, trunkBump, false, false, true, true);
-            var respondCrownBatch = renderer.getBatch(crownList, crownTexture, crownTeam, null, true, false, true,
-                    true);
-            var respondTrunkBatch = renderer.getBatch(trunkList, trunkTexture, trunkTeam, trunkBump, true, false, true,
-                    true);
-
-            map.put(entry.getKey(), new TreeRenderBatches(crownBatch, trunkBatch, respondCrownBatch,
-                    respondTrunkBatch));
-        }
-        return Collections.unmodifiableMap(map);
-    }
-
-    void onTreeFelled(TreeSupply tree) {
-        spawningTrees.remove(tree);
-        fallingTrees.put(tree, 0f);
-        if (landscapeRenderer != null) {
-            landscapeRenderer.onTreeFelled(tree);
-        }
-    }
-
-    void onTreeSpawned(TreeSupply tree) {
-        getOrCreateState(tree);
-        fallingTrees.remove(tree);
-        spawningTrees.put(tree, 0f);
-    }
-
-    @Override
-    protected boolean isFalling(TreeSupply tree_supply) {
-        return fallingTrees.containsKey(tree_supply);
-    }
-
-    @Override
-    public void animate(float dt) {
-        if (!fallingTrees.isEmpty()) {
-            var eachFalling = fallingTrees.entrySet().iterator();
-            while (eachFalling.hasNext()) {
-                var entry = eachFalling.next();
-                float progress = entry.getValue() + dt / TREE_FALL_DURATION;
-                if (!entry.getKey().isEmpty() || progress >= 1.0f) {
-                    eachFalling.remove();
-                } else {
-                    entry.setValue(progress);
-                }
-            }
-        }
-        if (!spawningTrees.isEmpty()) {
-            var eachSpawning = spawningTrees.entrySet().iterator();
-            while (eachSpawning.hasNext()) {
-                var entry = eachSpawning.next();
-                float progress = entry.getValue() + dt / TREE_SPAWN_DURATION;
-                if (entry.getKey().isEmpty() || progress >= 1.0f) {
-                    if (progress >= 1.0f && !entry.getKey().isEmpty() && landscapeRenderer != null) {
-                        landscapeRenderer.onTreeSpawned(entry.getKey());
-                    }
-                    eachSpawning.remove();
-                } else {
-                    entry.setValue(progress);
-                }
-            }
-        }
-    }
-
-    void renderShadows(SelectableShadowRenderer shadowRenderer, float currentTime) {
-        if (!DebugFlags.draw_trees || (cheat != null && !cheat.draw_trees)) {
-            return;
-        }
-        float windX = 0.28f * (float) Math.cos(currentTime);
-        float windY = 0.56f * (float) Math.sin(currentTime);
-        for (var entry : fallingTrees.entrySet()) {
-            TreeSupply tree = entry.getKey();
-            float p = entry.getValue();
-            Tree visual = getTrees().get(tree.getTreeType());
-            float scale;
-            float opacity;
-            final float pHit = 0.65f;
-            if (p <= pHit) {
-                float u = p / pHit;
-                float ramp = 1.0f - (1.0f - u) * (1.0f - u);
-                opacity = 1.0f + 0.35f * ramp;
-                scale = 1.0f - 0.15f * ramp;
-            } else {
-                float v = Math.min(1.0f, (p - pHit) / (1.0f - pHit));
-                float fade = (1.0f - v) * (1.0f - v);
-                opacity = 1.35f * fade;
-                scale = 0.85f * fade;
-            }
-            if (scale > 0.001f && opacity > 0.001f) {
-                shadowRenderer.addToShadowList(new TreeShadow(tree, visual, scale, opacity, windX, windY));
-            }
-        }
-        for (var entry : spawningTrees.entrySet()) {
-            TreeSupply tree = entry.getKey();
-            if (!tree.isEmpty()) {
-                float spawnProgress = entry.getValue();
-                Tree visual = getTrees().get(tree.getTreeType());
-                float inv = 1f - spawnProgress;
-                float scale = 1f - inv * inv * inv * inv * inv * inv;
-                shadowRenderer.addToShadowList(new TreeShadow(tree, visual, scale, 1.0f, windX, windY));
-            }
-        }
-    }
-
-    private record TreeShadow(TreeSupply tree, Tree visual, float scale, float opacityMultiplier,
-                              float windX, float windY) implements Shadowable {
-        @Override
-        public float getPositionX() {
-            return tree.getPositionX() + windX;
-        }
-
-        @Override
-        public float getPositionY() {
-            return tree.getPositionY() + windY;
-        }
-
-        @Override
-        public float getShadowDiameter() {
-            return visual.shadowDiameter() * scale;
-        }
-
-        @Override
-        public float getShadowVerticalCenter() {
-            return visual.shadowVerticalCenter();
-        }
-
-        @Override
-        public float getShadowOpacity() {
-            return visual.shadowOpacity() * opacityMultiplier;
-        }
-    }
-
-    @Override
-    public void render(ScenePassContext pass) {
-        if (!pass.inNoDetailMode()) {
-            wave_animation.setTime(pass.time());
-        }
-
-        if (!DebugFlags.draw_trees || (cheat != null && !cheat.draw_trees)) {
-            debugRender();
-            // Just clear lists if not drawing
-            clearLists();
-            lastRenderedTreeCount = 0;
-            return;
-        }
-
-        debugRender();
-
-        int count = 0;
-        for (var entry : getRenderLists().entrySet()) {
-            List<TreeSupply> list = entry.getValue();
-            if (!list.isEmpty()) {
-                count += list.size();
-                renderList(entry.getKey(), list, false);
-            }
-        }
-        for (var entry : getRespondRenderLists().entrySet()) {
-            List<TreeSupply> list = entry.getValue();
-            if (!list.isEmpty()) {
-                count += list.size();
-                renderList(entry.getKey(), list, true);
-            }
-        }
-        lastRenderedTreeCount = count;
-    }
-
-    int getLastRenderedTreeCount() {
-        return lastRenderedTreeCount;
-    }
-
-    private void clearLists() {
-        for (List<TreeSupply> list : getRenderLists().values()) {
-            list.clear();
-        }
-        for (List<TreeSupply> list : getRespondRenderLists().values()) {
-            list.clear();
-        }
-    }
-
-    private void prepareMatrix(TreeSupply tree) {
-        tempMatrix.set(getOrCreateState(tree).matrix());
-        Float fallProgress = fallingTrees.get(tree);
-        if (fallProgress != null) {
-            float time = fallProgress;
-            tempMatrix.translate(0f, 0f, -13f * (time * time * time * time * time * time));
-            tempMatrix.rotate((float) Math.toRadians(90f * time * time), 1f, 0f, 0f);
+  @Override
+  public void animate(float dt) {
+    if (!fallingTrees.isEmpty()) {
+      var eachFalling = fallingTrees.entrySet().iterator();
+      while (eachFalling.hasNext()) {
+        var entry = eachFalling.next();
+        float progress = entry.getValue() + dt / TREE_FALL_DURATION;
+        if (!entry.getKey().isEmpty() || progress >= 1.0f) {
+          eachFalling.remove();
         } else {
-            Float spawnProgress = spawningTrees.get(tree);
-            if (spawnProgress != null) {
-                float inv = 1f - spawnProgress;
-                float scale = 1f - inv * inv * inv * inv * inv * inv;
-                float zScale = (float) Math.log(scale * (Math.E - 1.0) + 1.0);
-                tempMatrix.scale(scale, scale, zScale);
-            }
-            wave_animation.mulRotation(tempMatrix);
+          entry.setValue(progress);
         }
+      }
     }
-
-    private void renderList(AbstractTreeGroup.TreeType type, List<TreeSupply> render_list, boolean respond) {
-        CameraState camera = getCamera();
-        if (camera != null && render_list.size() > 1) {
-            float camX = camera.getCurrentX();
-            float camY = camera.getCurrentY();
-            float camZ = camera.getCurrentZ();
-            render_list.sort((a, b) -> Float.compare(
-                    RenderTools.getEyeDistanceSquared(a, camX, camY, camZ),
-                    RenderTools.getEyeDistanceSquared(b, camX, camY, camZ)
-            ));
+    if (!spawningTrees.isEmpty()) {
+      var eachSpawning = spawningTrees.entrySet().iterator();
+      while (eachSpawning.hasNext()) {
+        var entry = eachSpawning.next();
+        float progress = entry.getValue() + dt / TREE_SPAWN_DURATION;
+        if (entry.getKey().isEmpty() || progress >= 1.0f) {
+          if (progress >= 1.0f && !entry.getKey().isEmpty() && landscapeRenderer != null) {
+            landscapeRenderer.onTreeSpawned(entry.getKey());
+          }
+          eachSpawning.remove();
+        } else {
+          entry.setValue(progress);
         }
-
-        TreeRenderBatches batches = treeBatches.get(type);
-        var crownBatch = respond ? batches.respondCrownBatch() : batches.crownBatch();
-        var trunkBatch = respond ? batches.respondTrunkBatch() : batches.trunkBatch();
-
-        for (TreeSupply supply : render_list) {
-            prepareMatrix(supply);
-            // Render Crown. Blend = false, DepthWrite = true for opaque trees.
-            crownBatch.addInstance(tempMatrix, Color.Standard.WHITE, Color.Standard.TRANSPARENT);
-            // Render Trunk. Blend = false, DepthWrite = true.
-            trunkBatch.addInstance(tempMatrix, Color.Standard.WHITE, Color.Standard.TRANSPARENT);
-        }
-        render_list.clear();
+      }
     }
+  }
 
-    void debugRender() {
-        if (DebugFlags.isBoundsEnabled(BoundingMode.TREES)) {
-            for (List<TreeSupply> list : getRenderLists().values()) {
-                for (TreeSupply tree : list) {
-                    RenderTools.draw(getOrCreateState(tree).visualBounds(), BoundingMode.TREES, Color.Linear.GREEN);
-                }
-            }
-            for (List<TreeSupply> list : getRespondRenderLists().values()) {
-                for (TreeSupply tree : list) {
-                    RenderTools.draw(getOrCreateState(tree).visualBounds(), BoundingMode.TREES, Color.Linear.GREEN);
-                }
-            }
-        }
+  void renderShadows(SelectableShadowRenderer shadowRenderer, float currentTime) {
+    if (!DebugFlags.draw_trees || (cheat != null && !cheat.draw_trees)) {
+      return;
+    }
+    float windX = 0.28f * (float) Math.cos(currentTime);
+    float windY = 0.56f * (float) Math.sin(currentTime);
+    for (var entry : fallingTrees.entrySet()) {
+      TreeSupply tree = entry.getKey();
+      float p = entry.getValue();
+      Tree visual = getTrees().get(tree.getTreeType());
+      float scale;
+      float opacity;
+      final float pHit = 0.65f;
+      if (p <= pHit) {
+        float u = p / pHit;
+        float ramp = 1.0f - (1.0f - u) * (1.0f - u);
+        opacity = 1.0f + 0.35f * ramp;
+        scale = 1.0f - 0.15f * ramp;
+      } else {
+        float v = Math.min(1.0f, (p - pHit) / (1.0f - pHit));
+        float fade = (1.0f - v) * (1.0f - v);
+        opacity = 1.35f * fade;
+        scale = 0.85f * fade;
+      }
+      if (scale > 0.001f && opacity > 0.001f) {
+        shadowRenderer.addToShadowList(new TreeShadow(tree, visual, scale, opacity, windX, windY));
+      }
+    }
+    for (var entry : spawningTrees.entrySet()) {
+      TreeSupply tree = entry.getKey();
+      if (!tree.isEmpty()) {
+        float spawnProgress = entry.getValue();
+        Tree visual = getTrees().get(tree.getTreeType());
+        float inv = 1f - spawnProgress;
+        float scale = 1f - inv * inv * inv * inv * inv * inv;
+        shadowRenderer.addToShadowList(new TreeShadow(tree, visual, scale, 1.0f, windX, windY));
+      }
+    }
+  }
+
+  private record TreeShadow(
+      TreeSupply tree, Tree visual, float scale, float opacityMultiplier, float windX, float windY)
+      implements Shadowable {
+    @Override
+    public float getPositionX() {
+      return tree.getPositionX() + windX;
     }
 
     @Override
-    boolean isPicking() {
-        return false;
+    public float getPositionY() {
+      return tree.getPositionY() + windY;
     }
 
     @Override
-    public void close() {
-        animationManager.removeAnimation(this);
-        fallingTrees.clear();
-        spawningTrees.clear();
+    public float getShadowDiameter() {
+      return visual.shadowDiameter() * scale;
     }
+
+    @Override
+    public float getShadowVerticalCenter() {
+      return visual.shadowVerticalCenter();
+    }
+
+    @Override
+    public float getShadowOpacity() {
+      return visual.shadowOpacity() * opacityMultiplier;
+    }
+  }
+
+  @Override
+  public void render(ScenePassContext pass) {
+    if (!pass.inNoDetailMode()) {
+      wave_animation.setTime(pass.time());
+    }
+
+    if (!DebugFlags.draw_trees || (cheat != null && !cheat.draw_trees)) {
+      debugRender();
+      // Just clear lists if not drawing
+      clearLists();
+      lastRenderedTreeCount = 0;
+      return;
+    }
+
+    debugRender();
+
+    int count = 0;
+    for (var entry : getRenderLists().entrySet()) {
+      List<TreeSupply> list = entry.getValue();
+      if (!list.isEmpty()) {
+        count += list.size();
+        renderList(entry.getKey(), list, false);
+      }
+    }
+    for (var entry : getRespondRenderLists().entrySet()) {
+      List<TreeSupply> list = entry.getValue();
+      if (!list.isEmpty()) {
+        count += list.size();
+        renderList(entry.getKey(), list, true);
+      }
+    }
+    lastRenderedTreeCount = count;
+  }
+
+  int getLastRenderedTreeCount() {
+    return lastRenderedTreeCount;
+  }
+
+  private void clearLists() {
+    for (List<TreeSupply> list : getRenderLists().values()) {
+      list.clear();
+    }
+    for (List<TreeSupply> list : getRespondRenderLists().values()) {
+      list.clear();
+    }
+  }
+
+  private void prepareMatrix(TreeSupply tree) {
+    tempMatrix.set(getOrCreateState(tree).matrix());
+    Float fallProgress = fallingTrees.get(tree);
+    if (fallProgress != null) {
+      float time = fallProgress;
+      tempMatrix.translate(0f, 0f, -13f * (time * time * time * time * time * time));
+      tempMatrix.rotate((float) Math.toRadians(90f * time * time), 1f, 0f, 0f);
+    } else {
+      Float spawnProgress = spawningTrees.get(tree);
+      if (spawnProgress != null) {
+        float inv = 1f - spawnProgress;
+        float scale = 1f - inv * inv * inv * inv * inv * inv;
+        float zScale = (float) Math.log(scale * (Math.E - 1.0) + 1.0);
+        tempMatrix.scale(scale, scale, zScale);
+      }
+      wave_animation.mulRotation(tempMatrix);
+    }
+  }
+
+  private void renderList(AbstractTreeGroup.TreeType type, List<TreeSupply> render_list, boolean respond) {
+    CameraState camera = getCamera();
+    if (camera != null && render_list.size() > 1) {
+      float camX = camera.getCurrentX();
+      float camY = camera.getCurrentY();
+      float camZ = camera.getCurrentZ();
+      render_list.sort((a, b) ->
+          Float.compare(
+              RenderTools.getEyeDistanceSquared(a, camX, camY, camZ),
+              RenderTools.getEyeDistanceSquared(b, camX, camY, camZ)));
+    }
+
+    TreeRenderBatches batches = treeBatches.get(type);
+    var crownBatch = respond ? batches.respondCrownBatch() : batches.crownBatch();
+    var trunkBatch = respond ? batches.respondTrunkBatch() : batches.trunkBatch();
+
+    for (TreeSupply supply : render_list) {
+      prepareMatrix(supply);
+      // Render Crown. Blend = false, DepthWrite = true for opaque trees.
+      crownBatch.addInstance(tempMatrix, Color.Standard.WHITE, Color.Standard.TRANSPARENT);
+      // Render Trunk. Blend = false, DepthWrite = true.
+      trunkBatch.addInstance(tempMatrix, Color.Standard.WHITE, Color.Standard.TRANSPARENT);
+    }
+    render_list.clear();
+  }
+
+  void debugRender() {
+    if (DebugFlags.isBoundsEnabled(BoundingMode.TREES)) {
+      for (List<TreeSupply> list : getRenderLists().values()) {
+        for (TreeSupply tree : list) {
+          RenderTools.draw(getOrCreateState(tree).visualBounds(), BoundingMode.TREES, Color.Linear.GREEN);
+        }
+      }
+      for (List<TreeSupply> list : getRespondRenderLists().values()) {
+        for (TreeSupply tree : list) {
+          RenderTools.draw(getOrCreateState(tree).visualBounds(), BoundingMode.TREES, Color.Linear.GREEN);
+        }
+      }
+    }
+  }
+
+  @Override
+  boolean isPicking() {
+    return false;
+  }
+
+  @Override
+  public void close() {
+    animationManager.removeAnimation(this);
+    fallingTrees.clear();
+    spawningTrees.clear();
+  }
 }

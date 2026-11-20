@@ -4,800 +4,754 @@ import com.oddlabs.tt.gui.delegate.ModalDelegate;
 import com.oddlabs.tt.gui.event.EventListener;
 import com.oddlabs.tt.gui.event.FocusListener;
 import com.oddlabs.tt.gui.event.InputListener;
-import com.oddlabs.tt.gui.event.MouseHorizontalWheelListener;
 import com.oddlabs.tt.gui.event.MouseButtonListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
+import com.oddlabs.tt.gui.event.MouseHorizontalWheelListener;
 import com.oddlabs.tt.gui.event.MouseMotionListener;
 import com.oddlabs.tt.gui.event.MouseWheelListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import org.jspecify.annotations.Nullable;
-
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Base class for all visual components and user input receivers in the GUI tree.
- */
+/// Base class for all visual components and user input receivers in the GUI tree.
 public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip {
-    private static final Logger logger = Logger.getLogger(GUIObject.class.getName());
-    private static final int ROW_TOLERANCE = 5;
+  private static final Logger logger = Logger.getLogger(GUIObject.class.getName());
+  private static final int ROW_TOLERANCE = 5;
 
-    /**
-     * If true then control is disabled otherwise false
-     */
-    private boolean disabled;
-    /**
-     * if true then mouse is currently over control
-     */
-    private boolean hovered;
-    /**
-     * If true then focus is this control or a child
-     */
-    private boolean active;
+  /// If true then control is disabled otherwise false
+  private boolean disabled;
 
-    private boolean focus_cycle;
-    /**
-     * if true then control can be focused
-     */
-    private boolean can_focus;
-    /**
-     * if true then control is in tab order
-     */
-    private boolean tab_stop = true;
+  /// if true then mouse is currently over control
+  private boolean hovered;
 
-    /**
-     * The child who is currently in focus chain or null if no child is focused
-     */
-    private @Nullable GUIObject focused_child = null;
+  /// If true then focus is this control or a child
+  private boolean active;
 
-    protected final void setTabStop(boolean tab_stop) {
-        this.tab_stop = tab_stop;
+  private boolean focus_cycle;
+
+  /// if true then control can be focused
+  private boolean can_focus;
+
+  /// if true then control is in tab order
+  private boolean tab_stop = true;
+
+  /// The child who is currently in focus chain or null if no child is focused
+  private @Nullable GUIObject focused_child = null;
+
+  protected final void setTabStop(boolean tab_stop) {
+    this.tab_stop = tab_stop;
+  }
+
+  public final boolean isTabStop() {
+    return tab_stop;
+  }
+
+  private @Nullable GUIObject next_hover = null;
+
+  protected final Set<EventListener> listeners = new CopyOnWriteArraySet<>();
+
+  /// If true then object has been placed in the layout
+  private boolean placed = false;
+
+  /// placement "gravity" for this control
+  private Origin origin = Origin.AT_START;
+
+  private final @Nullable Supplier<String> tool_tip;
+  private @Nullable String cached_tool_tip = null;
+
+  public GUIObject() {
+    this(null);
+  }
+
+  public GUIObject(@Nullable Supplier<String> tool_tip) {
+    this.tool_tip = tool_tip;
+  }
+
+  @Override
+  protected GUIObject self() {
+    return this;
+  }
+
+  public @Nullable GUIRoot getParentGUIRoot() {
+    return null != parent ? parent.getParentGUIRoot() : null;
+  }
+
+  protected Skin getSkin() {
+    if (parent != null) {
+      return parent.getSkin();
     }
-
-    public final boolean isTabStop() {
-        return tab_stop;
+    GUIRoot root = getParentGUIRoot();
+    if (root != null) {
+      return root.getSkin();
     }
+    throw new IllegalStateException("GUIObject has no parent with a skin: " + getClass().getSimpleName());
+  }
 
-    private @Nullable GUIObject next_hover = null;
+  @Override
+  public boolean hasToolTip() {
+    return getToolTipText().isPresent();
+  }
 
-    protected final Set<EventListener> listeners = new CopyOnWriteArraySet<>();
+  @Override
+  public void appendToolTip(ToolTipBox tool_tip_box) {
+    getToolTipText().ifPresent(tool_tip_box::append);
+  }
 
-    /**
-     * If true then object has been placed in the layout
-     */
-    private boolean placed = false;
-    /**
-     * placement "gravity" for this control
-     */
-    private Origin origin = Origin.AT_START;
-
-    private final @Nullable Supplier<String> tool_tip;
-    private @Nullable String cached_tool_tip = null;
-
-    public GUIObject() {
-        this(null);
+  private Optional<String> getToolTipText() {
+    if (cached_tool_tip == null && tool_tip != null) {
+      cached_tool_tip = tool_tip.get();
     }
+    return cached_tool_tip != null && !cached_tool_tip.isEmpty() ? Optional.of(cached_tool_tip) : Optional.empty();
+  }
 
-    public GUIObject(@Nullable Supplier<String> tool_tip) {
-        this.tool_tip = tool_tip;
+  @Override
+  void addTree() {
+    if (getParentGUIRoot() != null) {
+      super.addTree();
     }
+  }
 
-    @Override
-    protected GUIObject self() {
-        return this;
+  @Override
+  public void remove() {
+    boolean notify_remove = getParentGUIRoot() != null && parent != null;
+    super.remove();
+    if (notify_remove) {
+      removeTree();
     }
+  }
 
-    public @Nullable GUIRoot getParentGUIRoot() {
-        return null != parent ? parent.getParentGUIRoot() : null;
-    }
+  public int translateXToLocal(int x) {
+    GUIObject parent = getParent();
+    return parent == null ? x - getX() : parent.translateXToLocal(x) - getX();
+  }
 
-    protected Skin getSkin() {
-        if (parent != null) {
-            return parent.getSkin();
+  int translateYToLocal(int y) {
+    GUIObject parent = getParent();
+    return parent == null ? y - getY() : parent.translateYToLocal(y) - getY();
+  }
+
+  void correctPos(int dx, int dy) {
+    setPos(getX() + dx, getY() + dy);
+  }
+
+  public final void place() {
+    place(origin);
+  }
+
+  public final void place(Origin origin) {
+    assert !placed : "Object already placed";
+    this.origin = origin;
+    setPos(0, 0);
+    placed = true;
+  }
+
+  public void place(GUIObject neighbor, Placement direction) {
+    Skin s = parent != null ? getSkin() : neighbor.getSkin();
+    place(neighbor, direction, s.getFormData().objectSpacing());
+  }
+
+  public final void place(GUIObject neighbor, Placement direction, int spacing) {
+    assert !placed : "Object already placed";
+    int new_x = getXFromDirection(direction, spacing, neighbor.getX(), neighbor.getWidth());
+    int new_y = getYFromDirection(direction, spacing, neighbor.getY(), neighbor.getHeight());
+
+    origin = neighbor.origin;
+    setPos(new_x, new_y);
+    placed = true;
+  }
+
+  private int getXFromDirection(Placement direction, int spacing, int neighbour_x, int neighbour_width) {
+    return switch (direction) {
+      case BOTTOM_LEFT, TOP_LEFT -> neighbour_x;
+      case BOTTOM_MID, TOP_MID -> neighbour_x + (neighbour_width - getWidth()) / 2;
+      case BOTTOM_RIGHT, TOP_RIGHT -> neighbour_x + neighbour_width - getWidth();
+      case RIGHT_BOTTOM, RIGHT_MID, RIGHT_TOP -> neighbour_x + neighbour_width + spacing;
+      case LEFT_BOTTOM, LEFT_MID, LEFT_TOP -> neighbour_x - getWidth() - spacing;
+    };
+  }
+
+  private int getYFromDirection(Placement direction, int spacing, int neighbour_y, int neighbour_height) {
+    return switch (direction) {
+      case BOTTOM_LEFT, BOTTOM_MID, BOTTOM_RIGHT -> neighbour_y - getHeight() - spacing;
+      case TOP_LEFT, TOP_RIGHT, TOP_MID -> neighbour_y + neighbour_height + spacing;
+      case RIGHT_BOTTOM, LEFT_BOTTOM -> neighbour_y;
+      case RIGHT_TOP, LEFT_TOP -> neighbour_y + neighbour_height - getHeight();
+      case LEFT_MID, RIGHT_MID -> neighbour_y + (neighbour_height - getHeight()) / 2;
+    };
+  }
+
+  public final Origin getOrigin() {
+    assert placed : "Object " + this + " compiled before being placed";
+    return origin;
+  }
+
+  protected final void setFocusCycle(boolean cycle) {
+    focus_cycle = cycle;
+  }
+
+  protected final void setCanFocus(boolean can_focus) {
+    this.can_focus = can_focus;
+  }
+
+  public void setDisabled(boolean disabled) {
+    if (this.disabled != disabled) {
+      this.disabled = disabled;
+      if (disabled && isActive()) {
+        // we have to move focus out of the disabled control
+        var parent = getParent();
+        if (null != parent) {
+          parent.focusNext();
         }
-        GUIRoot root = getParentGUIRoot();
-        if (root != null) {
-            return root.getSkin();
+      }
+    }
+  }
+
+  public final boolean isActive() {
+    return active;
+  }
+
+  /// Set the GUI focus to this control
+  private void setGlobalFocus() {
+    GUIRoot gui_root = getParentGUIRoot();
+    if (gui_root != null) gui_root.setGlobalFocus(this);
+  }
+
+  /// {@return the currently focused control in the hierarchy or null if not inserted}
+  private @Nullable GUIObject getGlobalFocus() {
+    GUIRoot gui_root = getParentGUIRoot();
+    return gui_root != null ? gui_root.getGlobalFocus() : null;
+  }
+
+  private boolean isFocused() {
+    return this == getGlobalFocus();
+  }
+
+  /// {@return true if control is focusable}
+  @Override
+  public final boolean isFocusable() {
+    return can_focus;
+  }
+
+  /// {@return true if control is focusable and not disabled}
+  private boolean canFocus() {
+    return can_focus && !isDisabled();
+  }
+
+  public final boolean isDisabled() {
+    GUIObject parent = getParent();
+    return disabled || (parent != null && parent.isDisabled());
+  }
+
+  public final boolean isHovered() {
+    return hovered;
+  }
+
+  public final @Nullable GUIObject getNextHover() {
+    return next_hover;
+  }
+
+  protected final void setNextHover(@Nullable GUIObject next_hover) {
+    this.next_hover = next_hover;
+  }
+
+  protected final @Nullable GUIObject getFocusedChild() {
+    return focused_child;
+  }
+
+  protected final void setGlobalFocused(@Nullable GUIObject gui_object) {
+    if (gui_object != null && gui_object != focused_child) {
+      putFirst(gui_object);
+    }
+    focused_child = gui_object;
+  }
+
+  @Override
+  public void addChild(GUIObject child) {
+    super.addChild(child);
+  }
+
+  @Override
+  public final void removeChild(GUIObject child) {
+    GUIObject current;
+    if (child == focused_child) {
+      focused_child = null;
+      // If child is in the current focused path, select new current focus
+      current = child;
+      while (current.getFocusedChild() != null) {
+        current = current.getFocusedChild();
+      }
+      if (current.isFocused()) setGlobalFocus();
+    }
+    super.removeChild(child);
+  }
+
+  private void switchFocusToFirstChild(FocusDirection dirEnum, boolean bubble) {
+    GUIObject bestCandidate = findNextFocusable(null, dirEnum);
+
+    if (bestCandidate != null) {
+      switchFocusToObject(bestCandidate, dirEnum);
+    } else if (bubble && !focus_cycle) {
+      GUIObject parent = getParent();
+      if (parent != null) parent.switchFocusToNextChild(dirEnum);
+    }
+  }
+
+  private void switchFocusToNextChild(FocusDirection dirEnum) {
+    GUIObject bestCandidate = findNextFocusable(focused_child, dirEnum);
+
+    if (bestCandidate != null) {
+      switchFocusToObject(bestCandidate, dirEnum);
+    } else if (focus_cycle) {
+      // Wrap around: find the "first" element again
+      GUIObject first = findNextFocusable(null, dirEnum);
+      if (first != null) {
+        switchFocusToObject(first, dirEnum);
+      } else {
+      }
+    } else {
+      GUIObject parent = getParent();
+      if (parent != null) {
+        parent.switchFocusToNextChild(dirEnum);
+      } else {
+        // We are at the root (or detached) and not a cycle, but we should wrap if the global cycle is desired
+        // or just stay put. GUIRoot usually has focus_cycle=true so this else-block is for detached items.
+        GUIObject first = findNextFocusable(null, dirEnum);
+        if (first != null) {
+          switchFocusToObject(first, dirEnum);
         }
-        throw new IllegalStateException("GUIObject has no parent with a skin: " + getClass().getSimpleName());
+      }
     }
+  }
 
-    @Override
-    public boolean hasToolTip() {
-        return getToolTipText().isPresent();
-    }
-
-    @Override
-    public void appendToolTip(ToolTipBox tool_tip_box) {
-        getToolTipText().ifPresent(tool_tip_box::append);
-    }
-
-    private Optional<String> getToolTipText() {
-        if (cached_tool_tip == null && tool_tip != null) {
-            cached_tool_tip = tool_tip.get();
+  private @Nullable GUIObject findNextFocusable(@Nullable GUIObject current, FocusDirection dir) {
+    GUIObject bestCandidate = null;
+    GUIObject child = getFirstChild();
+    while (child != null) {
+      if (child.canFocus() && child.isTabStop()) {
+        if (isBetterCandidate(current, child, bestCandidate, dir)) {
+          bestCandidate = child;
         }
-        return cached_tool_tip != null && !cached_tool_tip.isEmpty() ? Optional.of(cached_tool_tip) : Optional.empty();
+      } else {
+        // logger.info("  Skipping child: " + child + " canFocus=" + child.canFocus() + " tabStop=" +
+        // child.isTabStop());
+      }
+      child = child.getNext();
     }
+    return bestCandidate;
+  }
 
-    @Override
-    void addTree() {
-        if (getParentGUIRoot() != null) {
-            super.addTree();
+  private boolean isBetterCandidate(
+      @Nullable GUIObject current, GUIObject candidate, @Nullable GUIObject bestSoFar, FocusDirection dir) {
+    if (current == candidate) return false;
+
+    return switch (dir) {
+      case FORWARD -> {
+        // Candidate must be "after" current (if current exists)
+        if (current != null && compareSpatial(candidate, current) <= 0) {
+          yield false;
         }
-    }
-
-    @Override
-    public void remove() {
-        boolean notify_remove = getParentGUIRoot() != null && parent != null;
-        super.remove();
-        if (notify_remove) {
-            removeTree();
+        // Candidate must be "before" bestSoFar (if bestSoFar exists)
+        yield bestSoFar == null || compareSpatial(candidate, bestSoFar) < 0;
+      }
+      case BACKWARD -> {
+        // Candidate must be "before" current (if current exists)
+        if (current != null && compareSpatial(candidate, current) >= 0) {
+          yield false;
         }
+        // Candidate must be "after" bestSoFar (if bestSoFar exists)
+        yield bestSoFar == null || compareSpatial(candidate, bestSoFar) > 0;
+      }
+      default -> isBetterDirectionalCandidate(current, candidate, bestSoFar, dir);
+    };
+  }
+
+  private boolean isBetterDirectionalCandidate(
+      @Nullable GUIObject current, GUIObject candidate, @Nullable GUIObject bestSoFar, FocusDirection dir) {
+    if (current == null) {
+      //  default to reading order first element.
+      return isBetterCandidate(null, candidate, bestSoFar, FocusDirection.FORWARD);
     }
 
-    public int translateXToLocal(int x) {
-        GUIObject parent = getParent();
-        return parent == null ? x - getX() : parent.translateXToLocal(x) - getX();
-    }
+    int dx = candidate.getX() - current.getX();
+    int dy = candidate.getY() - current.getY();
 
-    int translateYToLocal(int y) {
-        GUIObject parent = getParent();
-        return parent == null ? y - getY() : parent.translateYToLocal(y) - getY();
-    }
-
-    void correctPos(int dx, int dy) {
-        setPos(getX() + dx, getY() + dy);
-    }
-
-    public final void place() {
-        place(origin);
-    }
-
-    public final void place(Origin origin) {
-        assert !placed : "Object already placed";
-        this.origin = origin;
-        setPos(0, 0);
-        placed = true;
-    }
-
-    public void place(GUIObject neighbor, Placement direction) {
-        Skin s = parent != null ? getSkin() : neighbor.getSkin();
-        place(neighbor, direction, s.getFormData().objectSpacing());
-    }
-
-    public final void place(GUIObject neighbor, Placement direction, int spacing) {
-        assert !placed : "Object already placed";
-        int new_x = getXFromDirection(direction, spacing, neighbor.getX(), neighbor.getWidth());
-        int new_y = getYFromDirection(direction, spacing, neighbor.getY(), neighbor.getHeight());
-
-        origin = neighbor.origin;
-        setPos(new_x, new_y);
-        placed = true;
-    }
-
-    private int getXFromDirection(Placement direction, int spacing, int neighbour_x, int neighbour_width) {
-        return switch (direction) {
-            case BOTTOM_LEFT, TOP_LEFT -> neighbour_x;
-            case BOTTOM_MID, TOP_MID -> neighbour_x + (neighbour_width - getWidth()) / 2;
-            case BOTTOM_RIGHT, TOP_RIGHT -> neighbour_x + neighbour_width - getWidth();
-            case RIGHT_BOTTOM, RIGHT_MID, RIGHT_TOP -> neighbour_x + neighbour_width + spacing;
-            case LEFT_BOTTOM, LEFT_MID, LEFT_TOP -> neighbour_x - getWidth() - spacing;
-        };
-    }
-
-    private int getYFromDirection(Placement direction, int spacing, int neighbour_y, int neighbour_height) {
-        return switch (direction) {
-            case BOTTOM_LEFT, BOTTOM_MID, BOTTOM_RIGHT -> neighbour_y - getHeight() - spacing;
-            case TOP_LEFT, TOP_RIGHT, TOP_MID -> neighbour_y + neighbour_height + spacing;
-            case RIGHT_BOTTOM, LEFT_BOTTOM -> neighbour_y;
-            case RIGHT_TOP, LEFT_TOP -> neighbour_y + neighbour_height - getHeight();
-            case LEFT_MID, RIGHT_MID -> neighbour_y + (neighbour_height - getHeight()) / 2;
-        };
-    }
-
-    public final Origin getOrigin() {
-        assert placed : "Object " + this + " compiled before being placed";
-        return origin;
-    }
-
-    protected final void setFocusCycle(boolean cycle) {
-        focus_cycle = cycle;
-    }
-
-    protected final void setCanFocus(boolean can_focus) {
-        this.can_focus = can_focus;
-    }
-
-    public void setDisabled(boolean disabled) {
-        if (this.disabled != disabled) {
-            this.disabled = disabled;
-            if (disabled && isActive()) {
-                // we have to move focus out of the disabled control
-                var parent = getParent();
-                if (null != parent) {
-                    parent.focusNext();
-                }
-            }
-        }
-    }
-
-    public final boolean isActive() {
-        return active;
-    }
-
-    /**
-     * Set the GUI focus to this control
-     */
-    private void setGlobalFocus() {
-        GUIRoot gui_root = getParentGUIRoot();
-        if (gui_root != null)
-            gui_root.setGlobalFocus(this);
-    }
-
-    /**
-     * {@return the currently focused control in the hierarchy or null if not inserted}
-     */
-    private @Nullable GUIObject getGlobalFocus() {
-        GUIRoot gui_root = getParentGUIRoot();
-        return gui_root != null ? gui_root.getGlobalFocus() : null;
-    }
-
-    private boolean isFocused() {
-        return this == getGlobalFocus();
-    }
-
-    /**
-     * {@return true if control is focusable}
-     */
-    @Override
-    public final boolean isFocusable() {
-        return can_focus;
-    }
-
-    /**
-     * {@return true if control is focusable and not disabled}
-     */
-    private boolean canFocus() {
-        return can_focus && !isDisabled();
-    }
-
-    public final boolean isDisabled() {
-        GUIObject parent = getParent();
-        return disabled || (parent != null && parent.isDisabled());
-    }
-
-    public final boolean isHovered() {
-        return hovered;
-    }
-
-    public final @Nullable GUIObject getNextHover() {
-        return next_hover;
-    }
-
-    protected final void setNextHover(@Nullable GUIObject next_hover) {
-        this.next_hover = next_hover;
-    }
-
-    protected final @Nullable GUIObject getFocusedChild() {
-        return focused_child;
-    }
-
-    protected final void setGlobalFocused(@Nullable GUIObject gui_object) {
-        if (gui_object != null && gui_object != focused_child) {
-            putFirst(gui_object);
-        }
-        focused_child = gui_object;
-    }
-
-    @Override
-    public void addChild(GUIObject child) {
-        super.addChild(child);
-    }
-
-    @Override
-    public final void removeChild(GUIObject child) {
-        GUIObject current;
-        if (child == focused_child) {
-            focused_child = null;
-            // If child is in the current focused path, select new current focus
-            current = child;
-            while (current.getFocusedChild() != null) {
-                current = current.getFocusedChild();
-            }
-            if (current.isFocused())
-                setGlobalFocus();
-        }
-        super.removeChild(child);
-    }
-
-    private void switchFocusToFirstChild(FocusDirection dirEnum, boolean bubble) {
-        GUIObject bestCandidate = findNextFocusable(null, dirEnum);
-
-        if (bestCandidate != null) {
-            switchFocusToObject(bestCandidate, dirEnum);
-        } else if (bubble && !focus_cycle) {
-            GUIObject parent = getParent();
-            if (parent != null)
-                parent.switchFocusToNextChild(dirEnum);
-        }
-    }
-
-    private void switchFocusToNextChild(FocusDirection dirEnum) {
-        GUIObject bestCandidate = findNextFocusable(focused_child, dirEnum);
-
-        if (bestCandidate != null) {
-            switchFocusToObject(bestCandidate, dirEnum);
-        } else if (focus_cycle) {
-            // Wrap around: find the "first" element again
-            GUIObject first = findNextFocusable(null, dirEnum);
-            if (first != null) {
-                switchFocusToObject(first, dirEnum);
-            } else {
-            }
-        } else {
-            GUIObject parent = getParent();
-            if (parent != null) {
-                parent.switchFocusToNextChild(dirEnum);
-            } else {
-                // We are at the root (or detached) and not a cycle, but we should wrap if the global cycle is desired
-                // or just stay put. GUIRoot usually has focus_cycle=true so this else-block is for detached items.
-                GUIObject first = findNextFocusable(null, dirEnum);
-                if (first != null) {
-                    switchFocusToObject(first, dirEnum);
-                }
-            }
-        }
-    }
-
-    private @Nullable GUIObject findNextFocusable(@Nullable GUIObject current, FocusDirection dir) {
-        GUIObject bestCandidate = null;
-        GUIObject child = getFirstChild();
-        while (child != null) {
-            if (child.canFocus() && child.isTabStop()) {
-                if (isBetterCandidate(current, child, bestCandidate, dir)) {
-                    bestCandidate = child;
-                }
-            } else {
-                // logger.info("  Skipping child: " + child + " canFocus=" + child.canFocus() + " tabStop=" + child.isTabStop());
-            }
-            child = child.getNext();
-        }
-        return bestCandidate;
-    }
-
-    private boolean isBetterCandidate(@Nullable GUIObject current, GUIObject candidate,
-            @Nullable GUIObject bestSoFar, FocusDirection dir) {
-        if (current == candidate) return false;
-
-        return switch (dir) {
-            case FORWARD -> {
-                // Candidate must be "after" current (if current exists)
-                if (current != null && compareSpatial(candidate, current) <= 0) {
-                    yield false;
-                }
-                // Candidate must be "before" bestSoFar (if bestSoFar exists)
-                yield bestSoFar == null || compareSpatial(candidate, bestSoFar) < 0;
-            }
-            case BACKWARD -> {
-                // Candidate must be "before" current (if current exists)
-                if (current != null && compareSpatial(candidate, current) >= 0) {
-                    yield false;
-                }
-                // Candidate must be "after" bestSoFar (if bestSoFar exists)
-                yield bestSoFar == null || compareSpatial(candidate, bestSoFar) > 0;
-            }
-            default -> isBetterDirectionalCandidate(current, candidate, bestSoFar, dir);
-        };
-    }
-
-    private boolean isBetterDirectionalCandidate(@Nullable GUIObject current, GUIObject candidate,
-            @Nullable GUIObject bestSoFar, FocusDirection dir) {
-        if (current == null) {
-            //  default to reading order first element.
-            return isBetterCandidate(null, candidate, bestSoFar, FocusDirection.FORWARD);
-        }
-
-        int dx = candidate.getX() - current.getX();
-        int dy = candidate.getY() - current.getY();
-
-        boolean validDirection = switch (dir) {
-            case RIGHT -> dx > 0;
-            case LEFT -> dx < 0;
-            case UP -> dy > 0; // Y grows UP (0 is bottom)
-            case DOWN -> dy < 0;
-            default -> false;
+    boolean validDirection =
+        switch (dir) {
+          case RIGHT -> dx > 0;
+          case LEFT -> dx < 0;
+          case UP -> dy > 0; // Y grows UP (0 is bottom)
+          case DOWN -> dy < 0;
+          default -> false;
         };
 
-        if (!validDirection) return false;
+    if (!validDirection) return false;
 
-        int distSq = dx * dx + dy * dy;
-        int bestDistSq = Integer.MAX_VALUE;
+    int distSq = dx * dx + dy * dy;
+    int bestDistSq = Integer.MAX_VALUE;
 
-        if (bestSoFar != null) {
-            int bdx = bestSoFar.getX() - current.getX();
-            int bdy = bestSoFar.getY() - current.getY();
-            bestDistSq = bdx * bdx + bdy * bdy;
-        }
-
-        return distSq < bestDistSq;
+    if (bestSoFar != null) {
+      int bdx = bestSoFar.getX() - current.getX();
+      int bdy = bestSoFar.getY() - current.getY();
+      bestDistSq = bdx * bdx + bdy * bdy;
     }
 
-    /**
-     * Compares two GUIObjects spatially based on reading order (Top-Left to Bottom-Right).
-     *
-     * @return negative if a comes before b, positive if a comes after b, 0 if equal.
-     */
-    private int compareSpatial(GUIObject a, GUIObject b) {
-        // Primary Sort: Y (Descending) - because Y grows UP in this system (0 is bottom).
-        // Higher Y means "above", which comes first in reading order.
-        int yDiff = b.getY() - a.getY();
+    return distSq < bestDistSq;
+  }
 
-        if (Math.abs(yDiff) > ROW_TOLERANCE) {
-            return yDiff;
-        }
+  /**
+   * Compares two GUIObjects spatially based on reading order (Top-Left to Bottom-Right).
+   *
+   * @return negative if a comes before b, positive if a comes after b, 0 if equal.
+   */
+  private int compareSpatial(GUIObject a, GUIObject b) {
+    // Primary Sort: Y (Descending) - because Y grows UP in this system (0 is bottom).
+    // Higher Y means "above", which comes first in reading order.
+    int yDiff = b.getY() - a.getY();
 
-        // Secondary Sort: X (Ascending)
-        return Integer.compare(a.getX(), b.getX());
+    if (Math.abs(yDiff) > ROW_TOLERANCE) {
+      return yDiff;
     }
 
-    private static void switchFocusToObject(GUIObject obj, FocusDirection dir) {
-        obj.setFocus(dir);
+    // Secondary Sort: X (Ascending)
+    return Integer.compare(a.getX(), b.getX());
+  }
+
+  private static void switchFocusToObject(GUIObject obj, FocusDirection dir) {
+    obj.setFocus(dir);
+  }
+
+  protected final void switchFocus(FocusDirection direction) {
+    switchFocus(direction, true);
+  }
+
+  protected final void switchFocus(FocusDirection direction, boolean bubble) {
+    // find any GUIObject to focus
+    if (focused_child == null) {
+      switchFocusToFirstChild(direction, bubble);
+      return;
+    }
+    // Find next GUIObject in tab_order
+    switchFocusToNextChild(direction);
+  }
+
+  protected final void focusNext() {
+    switchFocus(FocusDirection.FORWARD);
+  }
+
+  protected final void focusPrior() {
+    switchFocus(FocusDirection.BACKWARD);
+  }
+
+  private void defocusBranch() {
+    if (getFocusedChild() != null) getFocusedChild().defocusBranch();
+    focusNotifyAll(false);
+    focused_child = null;
+  }
+
+  private void refocusTree(GUIObject caller_child) {
+    GUIObject parent = getParent();
+    if (parent != null) {
+      parent.refocusTree(this);
+    }
+    if (getFocusedChild() != null && getFocusedChild() != caller_child) {
+      getFocusedChild().defocusBranch();
     }
 
-    protected final void switchFocus(FocusDirection direction) {
-        switchFocus(direction, true);
+    if (!active) focusNotifyAll(true);
+    focused_child = caller_child;
+  }
+
+  public void restoreFocus() {
+    if (focused_child != null) {
+      focused_child.restoreFocus();
+    } else {
+      setFocus();
     }
+  }
 
-    protected final void switchFocus(FocusDirection direction, boolean bubble) {
-        // find any GUIObject to focus
-        if (focused_child == null) {
-            switchFocusToFirstChild(direction, bubble);
-            return;
-        }
-        // Find next GUIObject in tab_order
-        switchFocusToNextChild(direction);
+  public void setFocus() {
+    setFocus(FocusDirection.FORWARD);
+  }
+
+  public void setFocus(FocusDirection direction) {
+    GUIRoot gui_root = getParentGUIRoot();
+    // Make sure we are linked to the root
+    if (gui_root == null) return;
+    if (isFocused() || !canFocus() || modalBlocked(gui_root)) {
+      if (modalBlocked(gui_root)) {
+        gui_root.swapFocusBackup(this);
+      }
+      return;
     }
+    refocusTree(null);
+    setGlobalFocus();
+  }
 
-    protected final void focusNext() {
-        switchFocus(FocusDirection.FORWARD);
+  final void focusNotifyAll(boolean focus) {
+    active = focus;
+    focusNotify(focus);
+    for (var listener : listeners) {
+      if (listener instanceof FocusListener l) {
+        l.activated(focus);
+      }
     }
+  }
 
-    protected final void focusPrior() {
-        switchFocus(FocusDirection.BACKWARD);
+  protected void focusNotify(boolean focus) {}
+
+  private boolean modalBlocked(GUIRoot gui_root) {
+    ModalDelegate modal_delegate = gui_root.getModalDelegate();
+    return modal_delegate != null && !modalRelative(modal_delegate);
+  }
+
+  private boolean modalRelative(ModalDelegate modal_delegate) {
+    return this == modal_delegate
+        || (getParent() != null && (getParent() == modal_delegate || getParent().modalRelative(modal_delegate)));
+  }
+
+  protected CursorType getCursorType() {
+    return CursorType.NORMAL;
+  }
+
+  public boolean canHoverBehind() {
+    return false;
+  }
+
+  final void mouseScrolledAll(int amount) {
+    if (disabled) return;
+    mouseScrolled(amount);
+    for (var listener : listeners) {
+      if (listener instanceof MouseWheelListener l) {
+        l.mouseScrolled(amount);
+      }
     }
+  }
 
-    private void defocusBranch() {
-        if (getFocusedChild() != null)
-            getFocusedChild().defocusBranch();
-        focusNotifyAll(false);
-        focused_child = null;
+  final void mouseScrolledHorizontallyAll(int amount) {
+    if (disabled) return;
+    mouseScrolledHorizontally(amount);
+    for (var listener : listeners) {
+      if (listener instanceof MouseHorizontalWheelListener l) {
+        l.mouseScrolledHorizontally(amount);
+      }
     }
+  }
 
-    private void refocusTree(GUIObject caller_child) {
-        GUIObject parent = getParent();
-        if (parent != null) {
-            parent.refocusTree(this);
-        }
-        if (getFocusedChild() != null && getFocusedChild() != caller_child) {
-            getFocusedChild().defocusBranch();
-        }
+  protected void mouseScrolled(int amount) {
+    GUIObject parent = getParent();
+    if (parent != null) parent.mouseScrolledAll(amount);
+  }
 
-        if (!active)
-            focusNotifyAll(true);
-        focused_child = caller_child;
+  protected void mouseScrolledHorizontally(int amount) {
+    GUIObject parent = getParent();
+    if (parent != null) parent.mouseScrolledHorizontallyAll(amount);
+  }
+
+  public final void mouseDraggedAll(
+      MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x, int absolute_y) {
+    if (disabled) return;
+    mouseDragged(button, x, y, relative_x, relative_y, absolute_x, absolute_y);
+    for (var listener : listeners) {
+      if (listener instanceof MouseMotionListener l) {
+        l.mouseDragged(button, x, y, relative_x, relative_y, absolute_x, absolute_y);
+      }
     }
+  }
 
-    public void restoreFocus() {
-        if (focused_child != null) {
-            focused_child.restoreFocus();
-        } else {
-            setFocus();
-        }
+  protected void mouseDragged(
+      MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x, int absolute_y) {
+    // do not send this to parents, because it would move the form if unstopped
+  }
+
+  public final void mouseMovedAll(int x, int y) {
+    if (disabled) return;
+    mouseMoved(x, y);
+    for (var listener : listeners) {
+      if (listener instanceof MouseMotionListener l) {
+        l.mouseMoved(x, y);
+      }
     }
+  }
 
-    public void setFocus() {
-        setFocus(FocusDirection.FORWARD);
+  protected void mouseMoved(int x, int y) {
+    GUIObject parent = getParent();
+    if (parent != null) parent.mouseMovedAll(x, y);
+  }
+
+  public final void mouseExitedAll() {
+    hovered = false;
+    mouseExited();
+    for (var listener : listeners) {
+      if (listener instanceof MouseMotionListener l) {
+        l.mouseExited();
+      }
     }
+  }
 
-    public void setFocus(FocusDirection direction) {
-        GUIRoot gui_root = getParentGUIRoot();
-        // Make sure we are linked to the root
-        if (gui_root == null)
-            return;
-        if (isFocused() || !canFocus() || modalBlocked(gui_root)) {
-            if (modalBlocked(gui_root)) {
-                gui_root.swapFocusBackup(this);
-            }
-            return;
-        }
-        refocusTree(null);
-        setGlobalFocus();
+  protected void mouseExited() {
+    cached_tool_tip = null;
+    GUIObject parent = getParent();
+    if (parent != null) parent.mouseExitedAll();
+  }
+
+  public final void mouseEnteredAll() {
+    hovered = true;
+    mouseEntered();
+    for (var listener : listeners) {
+      if (listener instanceof MouseMotionListener l) {
+        l.mouseEntered();
+      }
     }
+  }
 
-    final void focusNotifyAll(boolean focus) {
-        active = focus;
-        focusNotify(focus);
-        for (var listener : listeners) {
-            if (listener instanceof FocusListener l) {
-                l.activated(focus);
-            }
-        }
+  protected void mouseEntered() {
+    GUIObject parent = getParent();
+    if (parent != null) parent.mouseEnteredAll();
+  }
+
+  /// Activates this component, performing its primary action (e.g. as if clicked or triggered by a shortcut).
+  public void activate() {
+    if (disabled) {
+      return;
     }
-
-    protected void focusNotify(boolean focus) {
+    mouseClicked(MouseButton.LEFT, 0, 0, 1);
+    for (var listener : listeners) {
+      if (listener instanceof MouseClickListener l) {
+        l.mouseClicked(MouseButton.LEFT, 0, 0, 1);
+      }
     }
+  }
 
-    private boolean modalBlocked(GUIRoot gui_root) {
-        ModalDelegate modal_delegate = gui_root.getModalDelegate();
-        return modal_delegate != null && !modalRelative(modal_delegate);
+  public final void mouseClickedAll(MouseButton button, int x, int y, int clicks) {
+    if (disabled) return;
+    mouseClicked(button, x, y, clicks);
+    for (var listener : listeners) {
+      if (listener instanceof MouseClickListener l) {
+        l.mouseClicked(button, x, y, clicks);
+      }
     }
+  }
 
-    private boolean modalRelative(ModalDelegate modal_delegate) {
-        return this == modal_delegate ||
-                (getParent() != null && (getParent() == modal_delegate || getParent().modalRelative(modal_delegate)));
+  protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
+    GUIObject parent = getParent();
+    if (parent != null) parent.mouseClickedAll(button, x, y, clicks);
+  }
+
+  public final void mouseReleasedAll(MouseButton button, int x, int y) {
+    if (disabled) return;
+    mouseReleased(button, x, y);
+    for (var listener : listeners) {
+      if (listener instanceof MouseButtonListener l) {
+        l.mouseReleased(button, x, y);
+      }
     }
+  }
 
-    protected CursorType getCursorType() {
-        return CursorType.NORMAL;
+  protected void mouseReleased(MouseButton button, int x, int y) {
+    GUIObject parent = getParent();
+    if (parent != null) parent.mouseReleasedAll(button, x, y);
+  }
+
+  public final void mousePressedAll(MouseButton button, int x, int y) {
+    if (disabled) return;
+    mousePressed(button, x, y);
+    for (var listener : listeners) {
+      if (listener instanceof MouseButtonListener l) {
+        l.mousePressed(button, x, y);
+      }
     }
+  }
 
-    public boolean canHoverBehind() {
-        return false;
+  protected void mousePressed(MouseButton button, int x, int y) {
+    GUIObject parent = getParent();
+    if (parent != null) parent.mousePressedAll(button, x, y);
+  }
+
+  public final void mouseHeldAll(MouseButton button, int x, int y) {
+    if (disabled) return;
+    mouseHeld(button, x, y);
+    for (var listener : listeners) {
+      if (listener instanceof MouseButtonListener l) {
+        l.mouseHeld(button, x, y);
+      }
     }
+  }
 
-    final void mouseScrolledAll(int amount) {
-        if (disabled)
-            return;
-        mouseScrolled(amount);
-        for (var listener : listeners) {
-            if (listener instanceof MouseWheelListener l) {
-                l.mouseScrolled(amount);
-            }
-        }
-    }
+  protected void mouseHeld(MouseButton button, int x, int y) {
+    GUIObject parent = getParent();
+    if (parent != null) parent.mouseHeldAll(button, x, y);
+  }
 
-    final void mouseScrolledHorizontallyAll(int amount) {
-        if (disabled)
-            return;
-        mouseScrolledHorizontally(amount);
-        for (var listener : listeners) {
-            if (listener instanceof MouseHorizontalWheelListener l) {
-                l.mouseScrolledHorizontally(amount);
-            }
-        }
-    }
+  public final void handleInputAll(InputEvent event) {
+    if (event.isConsumed()) return;
+    handleInput(event);
+    if (event.isConsumed()) return;
 
-    protected void mouseScrolled(int amount) {
-        GUIObject parent = getParent();
-        if (parent != null)
-            parent.mouseScrolledAll(amount);
-    }
-
-    protected void mouseScrolledHorizontally(int amount) {
-        GUIObject parent = getParent();
-        if (parent != null)
-            parent.mouseScrolledHorizontallyAll(amount);
-    }
-
-    public final void mouseDraggedAll(MouseButton button, int x, int y, int relative_x, int relative_y,
-            int absolute_x, int absolute_y) {
-        if (disabled)
-            return;
-        mouseDragged(button, x, y, relative_x, relative_y, absolute_x, absolute_y);
-        for (var listener : listeners) {
-            if (listener instanceof MouseMotionListener l) {
-                l.mouseDragged(button, x, y, relative_x, relative_y, absolute_x, absolute_y);
-            }
-        }
-    }
-
-    protected void mouseDragged(MouseButton button, int x, int y, int relative_x, int relative_y,
-            int absolute_x, int absolute_y) {
-        // do not send this to parents, because it would move the form if unstopped
-    }
-
-    public final void mouseMovedAll(int x, int y) {
-        if (disabled)
-            return;
-        mouseMoved(x, y);
-        for (var listener : listeners) {
-            if (listener instanceof MouseMotionListener l) {
-                l.mouseMoved(x, y);
-            }
-        }
-    }
-
-    protected void mouseMoved(int x, int y) {
-        GUIObject parent = getParent();
-        if (parent != null)
-            parent.mouseMovedAll(x, y);
-    }
-
-    public final void mouseExitedAll() {
-        hovered = false;
-        mouseExited();
-        for (var listener : listeners) {
-            if (listener instanceof MouseMotionListener l) {
-                l.mouseExited();
-            }
-        }
-    }
-
-    protected void mouseExited() {
-        cached_tool_tip = null;
-        GUIObject parent = getParent();
-        if (parent != null)
-            parent.mouseExitedAll();
-    }
-
-    public final void mouseEnteredAll() {
-        hovered = true;
-        mouseEntered();
-        for (var listener : listeners) {
-            if (listener instanceof MouseMotionListener l) {
-                l.mouseEntered();
-            }
-        }
-    }
-
-    protected void mouseEntered() {
-        GUIObject parent = getParent();
-        if (parent != null)
-            parent.mouseEnteredAll();
-    }
-
-    /**
-     * Activates this component, performing its primary action (e.g. as if clicked or triggered by a shortcut).
-     */
-    public void activate() {
-        if (disabled) {
-            return;
-        }
-        mouseClicked(MouseButton.LEFT, 0, 0, 1);
-        for (var listener : listeners) {
-            if (listener instanceof MouseClickListener l) {
-                l.mouseClicked(MouseButton.LEFT, 0, 0, 1);
-            }
-        }
-    }
-
-    public final void mouseClickedAll(MouseButton button, int x, int y, int clicks) {
-        if (disabled)
-            return;
-        mouseClicked(button, x, y, clicks);
-        for (var listener : listeners) {
-            if (listener instanceof MouseClickListener l) {
-                l.mouseClicked(button, x, y, clicks);
-            }
-        }
-    }
-
-    protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
-        GUIObject parent = getParent();
-        if (parent != null)
-            parent.mouseClickedAll(button, x, y, clicks);
-    }
-
-    public final void mouseReleasedAll(MouseButton button, int x, int y) {
-        if (disabled)
-            return;
-        mouseReleased(button, x, y);
-        for (var listener : listeners) {
-            if (listener instanceof MouseButtonListener l) {
-                l.mouseReleased(button, x, y);
-            }
-        }
-    }
-
-    protected void mouseReleased(MouseButton button, int x, int y) {
-        GUIObject parent = getParent();
-        if (parent != null)
-            parent.mouseReleasedAll(button, x, y);
-    }
-
-    public final void mousePressedAll(MouseButton button, int x, int y) {
-        if (disabled)
-            return;
-        mousePressed(button, x, y);
-        for (var listener : listeners) {
-            if (listener instanceof MouseButtonListener l) {
-                l.mousePressed(button, x, y);
-            }
-        }
-    }
-
-    protected void mousePressed(MouseButton button, int x, int y) {
-        GUIObject parent = getParent();
-        if (parent != null)
-            parent.mousePressedAll(button, x, y);
-    }
-
-    public final void mouseHeldAll(MouseButton button, int x, int y) {
-        if (disabled)
-            return;
-        mouseHeld(button, x, y);
-        for (var listener : listeners) {
-            if (listener instanceof MouseButtonListener l) {
-                l.mouseHeld(button, x, y);
-            }
-        }
-    }
-
-    protected void mouseHeld(MouseButton button, int x, int y) {
-        GUIObject parent = getParent();
-        if (parent != null)
-            parent.mouseHeldAll(button, x, y);
-    }
-
-    public final void handleInputAll(InputEvent event) {
+    for (var listener : listeners) {
+      if (listener instanceof InputListener l) {
+        l.handleInput(event);
         if (event.isConsumed()) return;
-        handleInput(event);
-        if (event.isConsumed()) return;
-
-        for (var listener : listeners) {
-            if (listener instanceof InputListener l) {
-                l.handleInput(event);
-                if (event.isConsumed()) return;
-            }
-        }
-
-        GUIObject parent = getParent();
-        if (parent != null) {
-            parent.handleInputAll(event);
-        }
+      }
     }
 
-    protected boolean shouldHandleActivate() {
-        return true;
+    GUIObject parent = getParent();
+    if (parent != null) {
+      parent.handleInputAll(event);
     }
+  }
 
-    protected void handleInput(InputEvent event) {
-        if (shouldHandleActivate() && event.consumeAction(GameAction.UI_ACTIVATE)) {
-            if (event.getPhase() == InputPhase.PRESSED) {
-                mousePressedAll(MouseButton.LEFT, 0, 0);
-            } else if (event.getPhase() == InputPhase.RELEASED) {
-                mouseReleasedAll(MouseButton.LEFT, 0, 0);
-                activate();
-            }
-            event.consume();
-        }
-    }
+  protected boolean shouldHandleActivate() {
+    return true;
+  }
 
-    public final void addMouseClickListener(MouseClickListener listener) {
-        listeners.add(listener);
+  protected void handleInput(InputEvent event) {
+    if (shouldHandleActivate() && event.consumeAction(GameAction.UI_ACTIVATE)) {
+      if (event.getPhase() == InputPhase.PRESSED) {
+        mousePressedAll(MouseButton.LEFT, 0, 0);
+      } else if (event.getPhase() == InputPhase.RELEASED) {
+        mouseReleasedAll(MouseButton.LEFT, 0, 0);
+        activate();
+      }
+      event.consume();
     }
+  }
 
-    /**
-     * Registers a listener for mouse button press, release, and hold events.
-     *
-     * @apiNote Your listener will also receive {@link MouseClickListener#mouseClicked} events
-     */
-    public final void addMouseButtonListener(MouseButtonListener listener) {
-        listeners.add(listener);
-    }
+  public final void addMouseClickListener(MouseClickListener listener) {
+    listeners.add(listener);
+  }
 
-    public final void addMouseMotionListener(MouseMotionListener listener) {
-        listeners.add(listener);
-    }
+  /**
+   * Registers a listener for mouse button press, release, and hold events.
+   *
+   * @apiNote Your listener will also receive {@link MouseClickListener#mouseClicked} events
+   */
+  public final void addMouseButtonListener(MouseButtonListener listener) {
+    listeners.add(listener);
+  }
 
-    public final void addMouseWheelListener(MouseWheelListener listener) {
-        listeners.add(listener);
-    }
+  public final void addMouseMotionListener(MouseMotionListener listener) {
+    listeners.add(listener);
+  }
 
-    public final void addMouseHorizontalWheelListener(MouseHorizontalWheelListener listener) {
-        listeners.add(listener);
-    }
+  public final void addMouseWheelListener(MouseWheelListener listener) {
+    listeners.add(listener);
+  }
 
-    public final void addInputListener(InputListener listener) {
-        listeners.add(listener);
-    }
+  public final void addMouseHorizontalWheelListener(MouseHorizontalWheelListener listener) {
+    listeners.add(listener);
+  }
 
-    public final void addFocusListener(FocusListener listener) {
-        listeners.add(listener);
-    }
+  public final void addInputListener(InputListener listener) {
+    listeners.add(listener);
+  }
+
+  public final void addFocusListener(FocusListener listener) {
+    listeners.add(listener);
+  }
 }

@@ -1,6 +1,4 @@
-/**
- * Interactive tutorial system and related logic.
- */
+/** Interactive tutorial system and related logic. */
 @NullMarked
 package com.oddlabs.tt.content.tutorial;
 

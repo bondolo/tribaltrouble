@@ -13,23 +13,19 @@ import java.util.List;
  * @param totalMagicCasts total number of spells cast across all players during the match
  */
 public record HeadlessMatchResult(
-                                  int winningTeam,
-                                  boolean victory,
-                                  int finalTick,
-                                  int finalChecksum,
-                                  List<Integer> survivingPlayerIndices,
-                                  int totalMagicCasts) {
+    int winningTeam,
+    boolean victory,
+    int finalTick,
+    int finalChecksum,
+    List<Integer> survivingPlayerIndices,
+    int totalMagicCasts) {
 
-    public HeadlessMatchResult(
-            int winningTeam,
-            boolean victory,
-            int finalTick,
-            int finalChecksum,
-            List<Integer> survivingPlayerIndices) {
-        this(winningTeam, victory, finalTick, finalChecksum, survivingPlayerIndices, 0);
-    }
+  public HeadlessMatchResult(
+      int winningTeam, boolean victory, int finalTick, int finalChecksum, List<Integer> survivingPlayerIndices) {
+    this(winningTeam, victory, finalTick, finalChecksum, survivingPlayerIndices, 0);
+  }
 
-    public HeadlessMatchResult {
-        survivingPlayerIndices = List.copyOf(survivingPlayerIndices);
-    }
+  public HeadlessMatchResult {
+    survivingPlayerIndices = List.copyOf(survivingPlayerIndices);
+  }
 }

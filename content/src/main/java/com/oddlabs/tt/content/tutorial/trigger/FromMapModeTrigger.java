@@ -1,18 +1,16 @@
 package com.oddlabs.tt.content.tutorial.trigger;
 
+import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.content.tutorial.Tutorial;
 
-import com.oddlabs.tt.client.camera.GameCamera;
-
-/** Tutorial trigger waiting for the player to exit map mode back to game camera. */
+/// Tutorial trigger waiting for the player to exit map mode back to game camera.
 final class FromMapModeTrigger extends TutorialTrigger {
-    FromMapModeTrigger() {
-        super(.1f, 1f, "from_map_mode");
-    }
+  FromMapModeTrigger() {
+    super(.1f, 1f, "from_map_mode");
+  }
 
-    @Override
-    public void run(Tutorial tutorial) {
-        if (tutorial.getViewer().getDelegate().getCamera() instanceof GameCamera)
-            tutorial.next(new SelectUnitTrigger());
-    }
+  @Override
+  public void run(Tutorial tutorial) {
+    if (tutorial.getViewer().getDelegate().getCamera() instanceof GameCamera) tutorial.next(new SelectUnitTrigger());
+  }
 }

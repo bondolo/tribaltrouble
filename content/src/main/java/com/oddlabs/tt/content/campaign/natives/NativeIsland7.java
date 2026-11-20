@@ -1,196 +1,208 @@
 package com.oddlabs.tt.content.campaign.natives;
 
+import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.content.campaign.Campaign;
 import com.oddlabs.tt.content.campaign.CampaignDialogForm;
 import com.oddlabs.tt.content.campaign.CampaignState;
 import com.oddlabs.tt.content.campaign.InGameCampaignDialogForm;
 import com.oddlabs.tt.content.campaign.Island;
-import com.oddlabs.tt.simulation.model.Race;
-
-import com.oddlabs.tt.simulation.model.Difficulty;
-
-import com.oddlabs.tt.simulation.model.BuildingType;
-
-import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.simulation.model.UnitType;
-
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.model.BuildingType;
+import com.oddlabs.tt.simulation.model.Difficulty;
+import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.model.Terrain;
+import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.SlotType;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
-import com.oddlabs.tt.client.trigger.VictoryTrigger;
-import com.oddlabs.tt.base.util.Utils;
-
 import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
-/**
- * Campaign level logic for Native Island 7, containing objectives and triggers.
- */
+/// Campaign level logic for Native Island 7, containing objectives and triggers.
 final class NativeIsland7 extends Island {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland7.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland7.class.getName());
 
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
-    }
+  private static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
 
-    NativeIsland7(Campaign campaign) {
-        super(campaign);
-    }
+  NativeIsland7(Campaign campaign) {
+    super(campaign);
+  }
 
-    @Override
-    public void init(GUIRoot gui_root) {
-        String[] ai_names = IntStream.range(0, 6)
-                .mapToObj(i -> i18n("name" + i))
-                .toArray(String[]::new);
-        // gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
-        GameNetwork game_network = startNewGame(gui_root, 512, Terrain.VIKING, .75f, 1f, .75f,
-                925, 7, NativeCampaign.MAX_UNITS, ai_names);
-        game_network.getClient().getServerInterface().setPlayerSlot(0,
-                SlotType.HUMAN,
-                Race.NATIVES,
+  @Override
+  public void init(GUIRoot gui_root) {
+    String[] ai_names = IntStream.range(0, 6).mapToObj(i -> i18n("name" + i)).toArray(String[]::new);
+    // gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
+    GameNetwork game_network =
+        startNewGame(gui_root, 512, Terrain.VIKING, .75f, 1f, .75f, 925, 7, NativeCampaign.MAX_UNITS, ai_names);
+    game_network
+        .getClient()
+        .getServerInterface()
+        .setPlayerSlot(0, SlotType.HUMAN, Race.NATIVES, 0, true, AIDifficulty.NONE);
+    game_network
+        .getClient()
+        .setUnitInfo(
+            0,
+            new UnitInfo(
+                false,
+                false,
                 0,
                 true,
-                AIDifficulty.NONE);
-        game_network.getClient().setUnitInfo(0,
-                new UnitInfo(false, false, 0, true,
-                        getCampaign().getState().getNumPeons(),
-                        getCampaign().getState().getNumRockWarriors(),
-                        getCampaign().getState().getNumIronWarriors(),
-                        getCampaign().getState().getNumRubberWarriors()));
-        int ai_peons = switch (getCampaign().getState().getDifficulty()) {
-            case Difficulty.EASY -> 10;
-            case Difficulty.NORMAL -> 20;
-            case Difficulty.HARD -> 40;
-            default -> throw new IllegalArgumentException();
+                getCampaign().getState().getNumPeons(),
+                getCampaign().getState().getNumRockWarriors(),
+                getCampaign().getState().getNumIronWarriors(),
+                getCampaign().getState().getNumRubberWarriors()));
+    int ai_peons =
+        switch (getCampaign().getState().getDifficulty()) {
+          case Difficulty.EASY -> 10;
+          case Difficulty.NORMAL -> 20;
+          case Difficulty.HARD -> 40;
+          default -> throw new IllegalArgumentException();
         };
-        game_network.getClient().getServerInterface().setPlayerSlot(2,
-                SlotType.AI,
-                Race.VIKINGS,
-                1,
-                true,
-                AIDifficulty.HARD);
-        game_network.getClient().setUnitInfo(2, new UnitInfo(false, false, 0, false, ai_peons, 0, 0, 0));
-        game_network.getClient().getServerInterface().startServer();
-    }
+    game_network
+        .getClient()
+        .getServerInterface()
+        .setPlayerSlot(2, SlotType.AI, Race.VIKINGS, 1, true, AIDifficulty.HARD);
+    game_network.getClient().setUnitInfo(2, new UnitInfo(false, false, 0, false, ai_peons, 0, 0, 0));
+    game_network.getClient().getServerInterface().startServer();
+  }
 
-    @Override
-    protected void start() {
-        Runnable runnable;
-        final Player enemy = getViewer().getWorld().getPlayers().get(1);
+  @Override
+  protected void start() {
+    Runnable runnable;
+    final Player enemy = getViewer().getWorld().getPlayers().get(1);
 
-        // Introduction
-        final Runnable dialog1 = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header1"),
-                    i18n("dialog1"),
-                    getCampaign().getIcons().getFaces()[0],
-                    Origin.AT_START);
-            addModalForm(dialog);
+    // Introduction
+    final Runnable dialog1 =
+        () -> {
+          CampaignDialogForm dialog =
+              new InGameCampaignDialogForm(
+                  getViewer(),
+                  i18n("header1"),
+                  i18n("dialog1"),
+                  getCampaign().getIcons().getFaces()[0],
+                  Origin.AT_START);
+          addModalForm(dialog);
         };
-        final Runnable dialog0 = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header0"),
-                    i18n("dialog0"),
-                    getCampaign().getIcons().getFaces()[5],
-                    Origin.AT_END,
-                    dialog1);
-            addModalForm(dialog);
+    final Runnable dialog0 =
+        () -> {
+          CampaignDialogForm dialog =
+              new InGameCampaignDialogForm(
+                  getViewer(),
+                  i18n("header0"),
+                  i18n("dialog0"),
+                  getCampaign().getIcons().getFaces()[5],
+                  Origin.AT_END,
+                  dialog1);
+          addModalForm(dialog);
         };
-        new GameStartedTrigger(getViewer().getWorld(), dialog0);
+    new GameStartedTrigger(getViewer().getWorld(), dialog0);
 
-        // Winner prize
-        runnable = () -> {
-            getCampaign().getState().setIslandState(7, CampaignState.ISLAND_COMPLETED);
-            getCampaign().victory(getViewer());
+    // Winner prize
+    runnable =
+        () -> {
+          getCampaign().getState().setIslandState(7, CampaignState.ISLAND_COMPLETED);
+          getCampaign().victory(getViewer());
         };
 
-        // Winning condition
-        new VictoryTrigger(getViewer(), runnable);
+    // Winning condition
+    new VictoryTrigger(getViewer(), runnable);
 
-        // Insert vikings
-        ResourceBundle player_bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
-        enemy.setActiveChieftain(new Unit(enemy, 97 * 2, 60 * 2, null, enemy.getRaceInfo().getUnitTemplate(
-                UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
-        enemy.buildBuilding(BuildingType.QUARTERS, 105, 56);
-        enemy.buildBuilding(BuildingType.ARMORY, 108, 79);
-        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 101, 64);
-        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 90, 59);
-        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 87, 70);
-        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 93, 81);
-        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 109, 89);
-        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 115, 90);
-        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 123, 93);
-        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 132, 78);
-        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 106, 118);
-        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 112, 119);
-        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 126, 117);
+    // Insert vikings
+    ResourceBundle player_bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
+    enemy.setActiveChieftain(
+        new Unit(
+            enemy,
+            97 * 2,
+            60 * 2,
+            null,
+            enemy.getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN),
+            Utils.getBundleString(player_bundle, "chieftain_name"),
+            false));
+    enemy.buildBuilding(BuildingType.QUARTERS, 105, 56);
+    enemy.buildBuilding(BuildingType.ARMORY, 108, 79);
+    insertGuardTower(enemy, UnitType.WARRIOR_IRON, 101, 64);
+    insertGuardTower(enemy, UnitType.WARRIOR_IRON, 90, 59);
+    insertGuardTower(enemy, UnitType.WARRIOR_IRON, 87, 70);
+    insertGuardTower(enemy, UnitType.WARRIOR_IRON, 93, 81);
+    insertGuardTower(enemy, UnitType.WARRIOR_IRON, 109, 89);
+    insertGuardTower(enemy, UnitType.WARRIOR_IRON, 115, 90);
+    insertGuardTower(enemy, UnitType.WARRIOR_IRON, 123, 93);
+    insertGuardTower(enemy, UnitType.WARRIOR_IRON, 132, 78);
+    insertGuardTower(enemy, UnitType.WARRIOR_IRON, 106, 118);
+    insertGuardTower(enemy, UnitType.WARRIOR_IRON, 112, 119);
+    insertGuardTower(enemy, UnitType.WARRIOR_IRON, 126, 117);
 
-        // Insert treasures
-        float dir = (float) Math.sin(Math.PI / 4);
-        Random r = new Random(42);
-        float w = HeightMap.METERS_PER_UNIT_GRID;
-        placeStatues(i18n("statue"),
-                // From VikingIsland3
-                new StatuePlacement(98 * 2 + w * r.nextFloat(), 62 * 2 + w * r.nextFloat(), 0, -1, 1),
-                new StatuePlacement(94 * 2 + w * r.nextFloat(), 67 * 2 + w * r.nextFloat(), 0, 1, 3),
-                new StatuePlacement(83 * 2 + w * r.nextFloat(), 58 * 2 + w * r.nextFloat(), 0, 1, 1),
-                new StatuePlacement(93 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), -1, 0, 5),
-                new StatuePlacement(97 * 2 + w * r.nextFloat(), 59 * 2 + w * r.nextFloat(), -dir, -dir, 3),
-                new StatuePlacement(84 * 2 + w * r.nextFloat(), 61 * 2 + w * r.nextFloat(), dir, dir, 4),
-                new StatuePlacement(96 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), 1, 0, 1),
-                new StatuePlacement(100 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), dir, -dir, 4),
+    // Insert treasures
+    float dir = (float) Math.sin(Math.PI / 4);
+    Random r = new Random(42);
+    float w = HeightMap.METERS_PER_UNIT_GRID;
+    placeStatues(
+        i18n("statue"),
+        // From VikingIsland3
+        new StatuePlacement(98 * 2 + w * r.nextFloat(), 62 * 2 + w * r.nextFloat(), 0, -1, 1),
+        new StatuePlacement(94 * 2 + w * r.nextFloat(), 67 * 2 + w * r.nextFloat(), 0, 1, 3),
+        new StatuePlacement(83 * 2 + w * r.nextFloat(), 58 * 2 + w * r.nextFloat(), 0, 1, 1),
+        new StatuePlacement(93 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), -1, 0, 5),
+        new StatuePlacement(97 * 2 + w * r.nextFloat(), 59 * 2 + w * r.nextFloat(), -dir, -dir, 3),
+        new StatuePlacement(84 * 2 + w * r.nextFloat(), 61 * 2 + w * r.nextFloat(), dir, dir, 4),
+        new StatuePlacement(96 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), 1, 0, 1),
+        new StatuePlacement(100 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), dir, -dir, 4),
 
-                // From VikingIsland7
-                new StatuePlacement(84 * 2 + w * r.nextFloat(), 67 * 2 + w * r.nextFloat(), -1, 0, 3),
-                new StatuePlacement(83 * 2 + w * r.nextFloat(), 64 * 2 + w * r.nextFloat(), -1, 0, 4),
-                new StatuePlacement(95 * 2 + w * r.nextFloat(), 50 * 2 + w * r.nextFloat(), 0, 1, 1),
-                new StatuePlacement(91 * 2 + w * r.nextFloat(), 63 * 2 + w * r.nextFloat(), dir, -dir, 3),
-                new StatuePlacement(97 * 2 + w * r.nextFloat(), 50 * 2 + w * r.nextFloat(), dir, dir, 4),
-                new StatuePlacement(93 * 2 + w * r.nextFloat(), 51 * 2 + w * r.nextFloat(), dir, dir, 5),
-                new StatuePlacement(93 * 2 + w * r.nextFloat(), 65 * 2 + w * r.nextFloat(), dir, -dir, 1),
-                new StatuePlacement(98 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir, 1),
-                new StatuePlacement(96 * 2 + w * r.nextFloat(), 51 * 2 + w * r.nextFloat(), 0, 1, 3),
-                new StatuePlacement(96 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), -1, 0, 3),
-                new StatuePlacement(94 * 2 + w * r.nextFloat(), 52 * 2 + w * r.nextFloat(), -dir, dir, 4),
-                new StatuePlacement(97 * 2 + w * r.nextFloat(), 56 * 2 + w * r.nextFloat(), 0, -1, 5),
+        // From VikingIsland7
+        new StatuePlacement(84 * 2 + w * r.nextFloat(), 67 * 2 + w * r.nextFloat(), -1, 0, 3),
+        new StatuePlacement(83 * 2 + w * r.nextFloat(), 64 * 2 + w * r.nextFloat(), -1, 0, 4),
+        new StatuePlacement(95 * 2 + w * r.nextFloat(), 50 * 2 + w * r.nextFloat(), 0, 1, 1),
+        new StatuePlacement(91 * 2 + w * r.nextFloat(), 63 * 2 + w * r.nextFloat(), dir, -dir, 3),
+        new StatuePlacement(97 * 2 + w * r.nextFloat(), 50 * 2 + w * r.nextFloat(), dir, dir, 4),
+        new StatuePlacement(93 * 2 + w * r.nextFloat(), 51 * 2 + w * r.nextFloat(), dir, dir, 5),
+        new StatuePlacement(93 * 2 + w * r.nextFloat(), 65 * 2 + w * r.nextFloat(), dir, -dir, 1),
+        new StatuePlacement(98 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir, 1),
+        new StatuePlacement(96 * 2 + w * r.nextFloat(), 51 * 2 + w * r.nextFloat(), 0, 1, 3),
+        new StatuePlacement(96 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), -1, 0, 3),
+        new StatuePlacement(94 * 2 + w * r.nextFloat(), 52 * 2 + w * r.nextFloat(), -dir, dir, 4),
+        new StatuePlacement(97 * 2 + w * r.nextFloat(), 56 * 2 + w * r.nextFloat(), 0, -1, 5),
 
-                // From VikingIsland14
-                new StatuePlacement(94 * 2 + w * r.nextFloat(), 59 * 2 + w * r.nextFloat(), -dir, -dir, 3),
-                new StatuePlacement(91 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), dir, dir, 1),
-                new StatuePlacement(88 * 2 + w * r.nextFloat(), 57 * 2 + w * r.nextFloat(), 0, 1, 3),
-                new StatuePlacement(93 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), 0, 1, 4),
-                new StatuePlacement(94 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), 0, -1, 1),
-                new StatuePlacement(90 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir, 5),
-                new StatuePlacement(91 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), 0, 1, 1),
-                new StatuePlacement(93 * 2 + w * r.nextFloat(), 61 * 2 + w * r.nextFloat(), -1, 0, 3),
-                new StatuePlacement(93 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir, 5),
-                new StatuePlacement(94 * 2 + w * r.nextFloat(), 63 * 2 + w * r.nextFloat(), 0, 1, 1),
-                new StatuePlacement(90 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), 1, 0, 3),
-                new StatuePlacement(92 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), -dir, dir, 4),
-                new StatuePlacement(94 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), 0, -1, 5),
+        // From VikingIsland14
+        new StatuePlacement(94 * 2 + w * r.nextFloat(), 59 * 2 + w * r.nextFloat(), -dir, -dir, 3),
+        new StatuePlacement(91 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), dir, dir, 1),
+        new StatuePlacement(88 * 2 + w * r.nextFloat(), 57 * 2 + w * r.nextFloat(), 0, 1, 3),
+        new StatuePlacement(93 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), 0, 1, 4),
+        new StatuePlacement(94 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), 0, -1, 1),
+        new StatuePlacement(90 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir, 5),
+        new StatuePlacement(91 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), 0, 1, 1),
+        new StatuePlacement(93 * 2 + w * r.nextFloat(), 61 * 2 + w * r.nextFloat(), -1, 0, 3),
+        new StatuePlacement(93 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir, 5),
+        new StatuePlacement(94 * 2 + w * r.nextFloat(), 63 * 2 + w * r.nextFloat(), 0, 1, 1),
+        new StatuePlacement(90 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), 1, 0, 3),
+        new StatuePlacement(92 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), -dir, dir, 4),
+        new StatuePlacement(94 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), 0, -1, 5),
 
-                // Centerpiece
-                StatuePlacement.atGrid(91, 51, 0, 1, 0, StatuePlacement.LARGE_SHADOW_DIAMETER));
-    }
+        // Centerpiece
+        StatuePlacement.atGrid(91, 51, 0, 1, 0, StatuePlacement.LARGE_SHADOW_DIAMETER));
+  }
 
-    @Override
-    public CharSequence getHeader() {
-        return i18n("header");
-    }
+  @Override
+  public CharSequence getHeader() {
+    return i18n("header");
+  }
 
-    @Override
-    public CharSequence getDescription() {
-        return i18n("description");
-    }
+  @Override
+  public CharSequence getDescription() {
+    return i18n("description");
+  }
 
-    @Override
-    public CharSequence getCurrentObjective() {
-        return i18n("objective");
-    }
+  @Override
+  public CharSequence getCurrentObjective() {
+    return i18n("objective");
+  }
 }

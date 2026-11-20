@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.landscape;
 
-
 import java.io.Serializable;
 
 /**
@@ -10,5 +9,4 @@ import java.io.Serializable;
  * @param initialUnitCount the initial unit count per player
  * @param maxUnitCount the maximum unit count per player
  */
-public record WorldParameters(String mapCode, int initialUnitCount, int maxUnitCount) implements Serializable {
-}
+public record WorldParameters(String mapCode, int initialUnitCount, int maxUnitCount) implements Serializable {}

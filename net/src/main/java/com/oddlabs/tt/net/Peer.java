@@ -6,74 +6,75 @@ import com.oddlabs.net.IllegalARMIEventException;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
-
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-/** Peer endpoint managing tick event queues for a player. */
+/// Peer endpoint managing tick event queues for a player.
 public final class Peer implements PeerHubInterface {
-    private final GameArgumentReader argument_reader;
-    private final int peer_index;
-    private final Player player;
-    private final PeerHub peer_hub;
-    private final Deque<GameEvent> event_queue = new ArrayDeque<>();
-    private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(PlayerInterface.class);
-    private final PeerHubInterface peerhub_interface;
+  private final GameArgumentReader argument_reader;
+  private final int peer_index;
+  private final Player player;
+  private final PeerHub peer_hub;
+  private final Deque<GameEvent> event_queue = new ArrayDeque<>();
+  private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(PlayerInterface.class);
+  private final PeerHubInterface peerhub_interface;
 
-    public Peer(PeerHub peer_hub, int peer_index, Player player, GameArgumentReader argument_reader,
-            PeerHubInterface peerhub_interface) {
-        this.peerhub_interface = peerhub_interface;
-        this.peer_index = peer_index;
-        this.peer_hub = peer_hub;
-        this.player = player;
-        this.argument_reader = argument_reader;
-    }
+  public Peer(
+      PeerHub peer_hub,
+      int peer_index,
+      Player player,
+      GameArgumentReader argument_reader,
+      PeerHubInterface peerhub_interface) {
+    this.peerhub_interface = peerhub_interface;
+    this.peer_index = peer_index;
+    this.peer_hub = peer_hub;
+    this.player = player;
+    this.argument_reader = argument_reader;
+  }
 
-    public int getPeerIndex() {
-        return peer_index;
-    }
+  public int getPeerIndex() {
+    return peer_index;
+  }
 
-    @Override
-    public String toString() {
-        return "player: " + player;
-    }
+  @Override
+  public String toString() {
+    return "player: " + player;
+  }
 
-    public void addEvent(int tick, ARMIEvent event) {
-        event_queue.add(new GameEvent(tick, event));
-    }
+  public void addEvent(int tick, ARMIEvent event) {
+    event_queue.add(new GameEvent(tick, event));
+  }
 
-    public void executeEvents(int tick) throws IllegalARMIEventException {
-        while (!event_queue.isEmpty()) {
-            GameEvent game_event = event_queue.peek();
-            if (game_event.tick > tick)
-                return;
-            event_queue.remove();
-            game_event.event.execute(interface_methods, argument_reader, player);
-        }
+  public void executeEvents(int tick) throws IllegalARMIEventException {
+    while (!event_queue.isEmpty()) {
+      GameEvent game_event = event_queue.peek();
+      if (game_event.tick > tick) return;
+      event_queue.remove();
+      game_event.event.execute(interface_methods, argument_reader, player);
     }
+  }
 
-    @Override
-    public void chat(String text, boolean team) {
-        peer_hub.receiveChat(player.getPlayerInfo().name(), text, team);
-    }
+  @Override
+  public void chat(String text, boolean team) {
+    peer_hub.receiveChat(player.getPlayerInfo().name(), text, team);
+  }
 
-    @Override
-    public void beacon(float x, float y) {
-        peer_hub.receiveBeacon(x, y, player.getPlayerInfo().name());
-    }
+  @Override
+  public void beacon(float x, float y) {
+    peer_hub.receiveBeacon(x, y, player.getPlayerInfo().name());
+  }
 
-    public PeerHubInterface getPeerHubInterface() {
-        return peerhub_interface;
-    }
+  public PeerHubInterface getPeerHubInterface() {
+    return peerhub_interface;
+  }
 
-    public PlayerInfo getPlayerInfo() {
-        return player.getPlayerInfo();
-    }
+  public PlayerInfo getPlayerInfo() {
+    return player.getPlayerInfo();
+  }
 
-    public Player getPlayer() {
-        return player;
-    }
+  public Player getPlayer() {
+    return player;
+  }
 
-    private record GameEvent(int tick, ARMIEvent event) {
-    }
+  private record GameEvent(int tick, ARMIEvent event) {}
 }

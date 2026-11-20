@@ -1,75 +1,74 @@
 package com.oddlabs.tt.content.menu;
 
+import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
+
 import com.oddlabs.matchmaking.MatchmakingClientInterface;
-import com.oddlabs.tt.gui.MessageForm;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.net.ProfileListener;
-import com.oddlabs.tt.base.util.Utils;
-
 import java.util.ResourceBundle;
 
-import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
-
-/** Form displayed while a player profile is being created on the server. */
+/// Form displayed while a player profile is being created on the server.
 public final class CreatingProfileForm extends Form implements ProfileListener {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(CreatingProfileForm.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(CreatingProfileForm.class.getName());
 
-    private String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
-    }
+  private String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
 
-    private final Form profiles_form;
-    private final Menu main_menu;
-    private final GUIRoot gui_root;
+  private final Form profiles_form;
+  private final Menu main_menu;
+  private final GUIRoot gui_root;
 
-    public CreatingProfileForm(Form profiles_form, Menu main_menu, String nick) {
-        super(main_menu.getGUIRoot());
-        this.main_menu = main_menu;
-        this.gui_root = main_menu.getGUIRoot();
-        this.profiles_form = profiles_form;
-        Label info_label = new Label(i18n("creating"), getSkin().getHeadlineFont());
-        addChild(info_label);
-        HorizButton cancel_button = new CancelButton(gui_root, 120);
-        addChild(cancel_button);
-        cancel_button.addMouseClickListener((_, _, _, _) -> this.cancel());
+  public CreatingProfileForm(Form profiles_form, Menu main_menu, String nick) {
+    super(main_menu.getGUIRoot());
+    this.main_menu = main_menu;
+    this.gui_root = main_menu.getGUIRoot();
+    this.profiles_form = profiles_form;
+    Label info_label = new Label(i18n("creating"), getSkin().getHeadlineFont());
+    addChild(info_label);
+    HorizButton cancel_button = new CancelButton(gui_root, 120);
+    addChild(cancel_button);
+    cancel_button.addMouseClickListener((_, _, _, _) -> this.cancel());
 
-        // Place objects
-        info_label.place();
-        cancel_button.place(info_label, BOTTOM_MID);
+    // Place objects
+    info_label.place();
+    cancel_button.place(info_label, BOTTOM_MID);
 
-        // headline
-        compileCanvas();
-        centerPos();
+    // headline
+    compileCanvas();
+    centerPos();
 
-        main_menu.getPeer().getNetwork().getMatchmakingClient().setCreatingProfileListener(this);
-        main_menu.getPeer().getNetwork().getMatchmakingClient().createProfile(nick);
-    }
+    main_menu.getPeer().getNetwork().getMatchmakingClient().setCreatingProfileListener(this);
+    main_menu.getPeer().getNetwork().getMatchmakingClient().createProfile(nick);
+  }
 
-    @Override
-    public void success() {
-        remove();
-        main_menu.setMenuCentered(profiles_form);
-        main_menu.getPeer().getNetwork().getMatchmakingClient().requestProfiles();
-    }
+  @Override
+  public void success() {
+    remove();
+    main_menu.setMenuCentered(profiles_form);
+    main_menu.getPeer().getNetwork().getMatchmakingClient().requestProfiles();
+  }
 
-    @Override
-    public void error(int error_code) {
-        remove();
-        String error_message = switch (error_code) {
-            case MatchmakingClientInterface.USERNAME_ERROR_TOO_MANY -> i18n("username_error_too_many");
-            case MatchmakingClientInterface.PROFILE_ERROR_GUEST -> i18n("profile_error_guest", "Guest");
-            case MatchmakingClientInterface.USERNAME_ERROR_ALREADY_EXISTS -> i18n("username_error_already_exists");
-            case MatchmakingClientInterface.USERNAME_ERROR_INVALID_CHARACTERS ->
-                i18n("username_error_invalid_characters");
-            case MatchmakingClientInterface.USERNAME_ERROR_TOO_LONG -> i18n("username_error_too_long");
-            case MatchmakingClientInterface.USERNAME_ERROR_TOO_SHORT -> i18n("username_error_too_short");
-            default -> throw new IllegalArgumentException("Unknown error code: " + error_code);
+  @Override
+  public void error(int error_code) {
+    remove();
+    String error_message =
+        switch (error_code) {
+          case MatchmakingClientInterface.USERNAME_ERROR_TOO_MANY -> i18n("username_error_too_many");
+          case MatchmakingClientInterface.PROFILE_ERROR_GUEST -> i18n("profile_error_guest", "Guest");
+          case MatchmakingClientInterface.USERNAME_ERROR_ALREADY_EXISTS -> i18n("username_error_already_exists");
+          case MatchmakingClientInterface.USERNAME_ERROR_INVALID_CHARACTERS ->
+              i18n("username_error_invalid_characters");
+          case MatchmakingClientInterface.USERNAME_ERROR_TOO_LONG -> i18n("username_error_too_long");
+          case MatchmakingClientInterface.USERNAME_ERROR_TOO_SHORT -> i18n("username_error_too_short");
+          default -> throw new IllegalArgumentException("Unknown error code: " + error_code);
         };
-        gui_root.addModalForm(new MessageForm(gui_root, error_message));
-    }
-
+    gui_root.addModalForm(new MessageForm(gui_root, error_message));
+  }
 }

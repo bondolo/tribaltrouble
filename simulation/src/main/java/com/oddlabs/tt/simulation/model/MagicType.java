@@ -1,11 +1,9 @@
 package com.oddlabs.tt.simulation.model;
 
-/**
- * Defines the types of chieftain magic spells available in the game.
- */
+/// Defines the types of chieftain magic spells available in the game.
 public enum MagicType {
-    POISON_FOG,
-    LIGHTNING_CLOUD,
-    STUN,
-    SONIC_BLAST
+  POISON_FOG,
+  LIGHTNING_CLOUD,
+  STUN,
+  SONIC_BLAST
 }

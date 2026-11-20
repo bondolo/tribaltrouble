@@ -1,6 +1,4 @@
-/**
- * Projectile and melee weapon implementations and factories.
- */
+/** Projectile and melee weapon implementations and factories. */
 @NullMarked
 package com.oddlabs.tt.simulation.model.weapon;
 

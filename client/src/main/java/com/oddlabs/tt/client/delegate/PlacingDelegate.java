@@ -1,160 +1,168 @@
 package com.oddlabs.tt.client.delegate;
 
-import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.camera.GameCamera;
+import com.oddlabs.tt.client.render.BuildingSiteRenderer;
+import com.oddlabs.tt.client.render.PlacingRenderer;
+import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.engine.render.Sprite;
+import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.render.SpriteRenderer;
+import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
+import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingTemplate;
 import com.oddlabs.tt.simulation.model.BuildingType;
-import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.pathfinder.BuildingSiteScanFilter;
-import com.oddlabs.tt.client.render.BuildingSiteRenderer;
-import com.oddlabs.tt.scenery.LandscapeRenderer;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
-import com.oddlabs.tt.client.render.PlacingRenderer;
-import com.oddlabs.tt.engine.render.RenderQueues;
-import com.oddlabs.tt.engine.render.Sprite;
-import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.engine.render.SpriteRenderer;
-import com.oddlabs.tt.client.resource.AssetRegistry;
-import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.util.Color;
-
 import java.util.List;
 import java.util.logging.Logger;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
-/**
- * Handles the user interaction for placing a new building on the landscape.
- */
+/// Handles the user interaction for placing a new building on the landscape.
 public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera> {
-    private static final Logger logger = Logger.getLogger(PlacingDelegate.class.getName());
-    private static final int GRID_RADIUS = 20;
-    private static final Color.Linear GOOD_PLACEMENT = Color.Linear.WHITE.alpha(0.8f);
-    private static final Color.Linear BAD_PLACEMENT = Color.Linear.RED.alpha(0.8f);
+  private static final Logger logger = Logger.getLogger(PlacingDelegate.class.getName());
+  private static final int GRID_RADIUS = 20;
+  private static final Color.Linear GOOD_PLACEMENT = Color.Linear.WHITE.alpha(0.8f);
+  private static final Color.Linear BAD_PLACEMENT = Color.Linear.RED.alpha(0.8f);
 
-    private final BuildingSiteRenderer site_renderer = new BuildingSiteRenderer();
-    private final PlacingRenderer placingRenderer = new PlacingRenderer();
-    private final Matrix4f ghostMatrix = new Matrix4f();
-    private final BuildingType building_type;
+  private final BuildingSiteRenderer site_renderer = new BuildingSiteRenderer();
+  private final PlacingRenderer placingRenderer = new PlacingRenderer();
+  private final Matrix4f ghostMatrix = new Matrix4f();
+  private final BuildingType building_type;
 
-    public PlacingDelegate(WorldViewer viewer, CameraState old_camera,
-            BuildingType building_type) {
-        super(viewer, new GameCamera(viewer, old_camera));
-        this.building_type = building_type;
-    }
+  public PlacingDelegate(WorldViewer viewer, CameraState old_camera, BuildingType building_type) {
+    super(viewer, new GameCamera(viewer, old_camera));
+    this.building_type = building_type;
+  }
 
-    private BuildingTemplate getTemplate() {
-        return getViewer().getLocalPlayer().getRaceInfo().getBuildingTemplate(building_type);
-    }
+  private BuildingTemplate getTemplate() {
+    return getViewer().getLocalPlayer().getRaceInfo().getBuildingTemplate(building_type);
+  }
 
-    @Override
-    protected void pushZoomDelegate() {
-        getGUIRoot().pushDelegate(new ZoomDelegate(getViewer(), getCamera()));
-    }
+  @Override
+  protected void pushZoomDelegate() {
+    getGUIRoot().pushDelegate(new ZoomDelegate(getViewer(), getCamera()));
+  }
 
-    private void placeObject() {
-        getViewer().getPicker().pickLocation(getCamera().getState()).ifPresentOrElse(landscape_hit -> {
-            int placing_grid_x = landscape_hit.getGridX();
-            int placing_grid_y = landscape_hit.getGridY();
-            if (Building.isPlacingLegal(getViewer().getWorld().getUnitGrid(), getTemplate(), placing_grid_x,
-                    placing_grid_y)) {
+  private void placeObject() {
+    getViewer()
+        .getPicker()
+        .pickLocation(getCamera().getState())
+        .ifPresentOrElse(
+            landscape_hit -> {
+              int placing_grid_x = landscape_hit.getGridX();
+              int placing_grid_y = landscape_hit.getGridY();
+              if (Building.isPlacingLegal(
+                  getViewer().getWorld().getUnitGrid(), getTemplate(), placing_grid_x, placing_grid_y)) {
                 var peons = getViewer().getSelection().getCurrentSelection().filter(Abilities.BUILD);
                 if (!peons.isEmpty()) {
-                    logger.info("placeObject: Placing building at " + placing_grid_x + "," + placing_grid_y);
-                    getViewer().getLocalPlayer().getPlayerInterface().placeBuilding(peons, building_type,
-                            placing_grid_x,
-                            placing_grid_y);
+                  logger.info("placeObject: Placing building at " + placing_grid_x + "," + placing_grid_y);
+                  getViewer()
+                      .getLocalPlayer()
+                      .getPlayerInterface()
+                      .placeBuilding(peons, building_type, placing_grid_x, placing_grid_y);
                 } else {
-                    logger.info("placeObject: No peons selected");
+                  logger.info("placeObject: No peons selected");
                 }
                 logger.info("placeObject: Popping delegate");
                 pop();
-            } else {
+              } else {
                 logger.info("placeObject: Placement illegal");
-            }
-        }, () -> logger.info("placeObject: Pick failed (off map?)"));
+              }
+            },
+            () -> logger.info("placeObject: Pick failed (off map?)"));
+  }
+
+  @Override
+  public void handleInput(InputEvent event) {
+    if (event.consumeAction(GameAction.UI_ACTIVATE)) {
+      if (event.getPhase() == InputPhase.RELEASED) {
+        placeObject();
+      }
+      event.consume();
+      return;
     }
 
-    @Override
-    public void handleInput(InputEvent event) {
-        if (event.consumeAction(GameAction.UI_ACTIVATE)) {
-            if (event.getPhase() == InputPhase.RELEASED) {
-                placeObject();
-            }
-            event.consume();
-            return;
-        }
-
-        if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
-            if (event.consumeAction(GameAction.UI_CANCEL)) {
-                pop();
-                event.consume();
-                return;
-            }
-        }
-
-        super.handleInput(event);
+    if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
+      if (event.consumeAction(GameAction.UI_CANCEL)) {
+        pop();
+        event.consume();
+        return;
+      }
     }
 
-    @Override
-    public void mousePressed(MouseButton button, int x, int y) {
-        switch (button) {
-            case LEFT -> placeObject();
-            case RIGHT -> pop();
-            default -> super.mousePressed(button, x, y);
-        }
+    super.handleInput(event);
+  }
+
+  @Override
+  public void mousePressed(MouseButton button, int x, int y) {
+    switch (button) {
+      case LEFT -> placeObject();
+      case RIGHT -> pop();
+      default -> super.mousePressed(button, x, y);
     }
+  }
 
-    @Override
-    public void render3D(RenderContext context, LandscapeRenderer renderer, RenderQueues queues, CameraState state,
-            Matrix4fc modelView) {
-        var hit = getViewer().getPicker().pickLocation(getCamera().getState());
-        if (hit.isEmpty()) {
-            return;
-        }
-        var landscape_hit = hit.get();
-        int placing_grid_x = landscape_hit.getGridX() - (getTemplate().getPlacingSize() - 1);
-        int placing_grid_y = landscape_hit.getGridY() - (getTemplate().getPlacingSize() - 1);
-        int placing_center_grid_x = landscape_hit.getGridX();
-        int placing_center_grid_y = landscape_hit.getGridY();
-
-        float center_x = HeightMap.METERS_PER_UNIT_GRID * (placing_grid_x + (getTemplate().getPlacingSize() - .5f));
-        float center_y = HeightMap.METERS_PER_UNIT_GRID * (placing_grid_y + (getTemplate().getPlacingSize() - .5f));
-
-        UnitGrid unit_grid = getViewer().getWorld().getUnitGrid();
-        BuildingSiteScanFilter filter = new BuildingSiteScanFilter(unit_grid, getTemplate(), GRID_RADIUS, false);
-        unit_grid.scan(filter, placing_center_grid_x, placing_center_grid_y);
-        List<LandscapeTarget> target_list = filter.getResults();
-
-        site_renderer.renderSites(context, queues, renderer, modelView, target_list, center_x,
-                center_y, 2 * GRID_RADIUS);
-
-        com.oddlabs.tt.engine.util.GLUtils.checkGLError("Placing: After renderSites");
-
-        SpriteKey built_key = AssetRegistry.getInstance().getBuildingVisuals(
-                getViewer().getLocalPlayer().getRaceInfo().getRaceType(),
-                getTemplate().getBuildingType()
-        ).built();
-        SpriteRenderer built_renderer = queues.getRenderer(built_key);
-        Sprite sprite = built_renderer.getSpriteList().getSprite();
-
-        var placeColor = Building.isPlacingLegal(unit_grid, getTemplate(), placing_center_grid_x,
-                placing_center_grid_y)
-                        ? GOOD_PLACEMENT : BAD_PLACEMENT;
-
-        float z = getViewer().getWorld().getHeightMap().getNearestHeight(center_x, center_y);
-
-        ghostMatrix.set(modelView).translate(center_x, center_y, z);
-
-        placingRenderer.renderGhost(context, sprite, built_renderer.getSpriteList(), placeColor,
-                getViewer().getLocalPlayer().getColor(), ghostMatrix);
+  @Override
+  public void render3D(
+      RenderContext context, LandscapeRenderer renderer, RenderQueues queues, CameraState state, Matrix4fc modelView) {
+    var hit = getViewer().getPicker().pickLocation(getCamera().getState());
+    if (hit.isEmpty()) {
+      return;
     }
+    var landscape_hit = hit.get();
+    int placing_grid_x = landscape_hit.getGridX() - (getTemplate().getPlacingSize() - 1);
+    int placing_grid_y = landscape_hit.getGridY() - (getTemplate().getPlacingSize() - 1);
+    int placing_center_grid_x = landscape_hit.getGridX();
+    int placing_center_grid_y = landscape_hit.getGridY();
+
+    float center_x = HeightMap.METERS_PER_UNIT_GRID * (placing_grid_x + (getTemplate().getPlacingSize() - .5f));
+    float center_y = HeightMap.METERS_PER_UNIT_GRID * (placing_grid_y + (getTemplate().getPlacingSize() - .5f));
+
+    UnitGrid unit_grid = getViewer().getWorld().getUnitGrid();
+    BuildingSiteScanFilter filter = new BuildingSiteScanFilter(unit_grid, getTemplate(), GRID_RADIUS, false);
+    unit_grid.scan(filter, placing_center_grid_x, placing_center_grid_y);
+    List<LandscapeTarget> target_list = filter.getResults();
+
+    site_renderer.renderSites(context, queues, renderer, modelView, target_list, center_x, center_y, 2 * GRID_RADIUS);
+
+    com.oddlabs.tt.engine.util.GLUtils.checkGLError("Placing: After renderSites");
+
+    SpriteKey built_key =
+        AssetRegistry.getInstance()
+            .getBuildingVisuals(
+                getViewer().getLocalPlayer().getRaceInfo().getRaceType(), getTemplate().getBuildingType())
+            .built();
+    SpriteRenderer built_renderer = queues.getRenderer(built_key);
+    Sprite sprite = built_renderer.getSpriteList().getSprite();
+
+    var placeColor =
+        Building.isPlacingLegal(unit_grid, getTemplate(), placing_center_grid_x, placing_center_grid_y)
+            ? GOOD_PLACEMENT
+            : BAD_PLACEMENT;
+
+    float z = getViewer().getWorld().getHeightMap().getNearestHeight(center_x, center_y);
+
+    ghostMatrix.set(modelView).translate(center_x, center_y, z);
+
+    placingRenderer.renderGhost(
+        context,
+        sprite,
+        built_renderer.getSpriteList(),
+        placeColor,
+        getViewer().getLocalPlayer().getColor(),
+        ghostMatrix);
+  }
 }

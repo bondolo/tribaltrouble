@@ -1,12 +1,10 @@
 package com.oddlabs.tt.effects.render;
 
-
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.Particle;
 import com.oddlabs.tt.engine.render.BoundingMode;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
-import org.joml.Matrix4fc;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.SpriteKey;
@@ -19,7 +17,12 @@ import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
+import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -27,383 +30,366 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL33;
 
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-
-/**
- * Renders instanced particle systems from particle emitters.
- */
+/// Renders instanced particle systems from particle emitters.
 public final class EmitterRenderer implements AutoCloseable {
-    private static final int MAX_PARTICLES = 50000;
-    private static final float DEFAULT_SOFT_RANGE = 2.0f;
+  private static final int MAX_PARTICLES = 50000;
+  private static final float DEFAULT_SOFT_RANGE = 2.0f;
 
-    private static final VertexLayout<ParticleShader.Attribute> VERTEX_LAYOUT = new VertexLayout<>(
-            ParticleShader.Attribute.CENTER_POSITION,
-            ParticleShader.Attribute.SIZE,
-            ParticleShader.Attribute.COLOR,
-            ParticleShader.Attribute.ANGLE,
-            ParticleShader.Attribute.TEX_SLOT
-    );
+  private static final VertexLayout<ParticleShader.Attribute> VERTEX_LAYOUT =
+      new VertexLayout<>(
+          ParticleShader.Attribute.CENTER_POSITION,
+          ParticleShader.Attribute.SIZE,
+          ParticleShader.Attribute.COLOR,
+          ParticleShader.Attribute.ANGLE,
+          ParticleShader.Attribute.TEX_SLOT);
 
-    private final FloatBuffer particle_buffer;
-    private final FloatVBO particle_vbo;
+  private final FloatBuffer particle_buffer;
+  private final FloatVBO particle_vbo;
 
-    private final ParticleShader shader = new ParticleShader();
+  private final ParticleShader shader = new ParticleShader();
 
-    private final VertexArray vao = new VertexArray();
-    private int vbo_offset = 0;
-    private final Matrix4f cachedViewMatrix = new Matrix4f();
-    private final Matrix4f particleMatrix = new Matrix4f();
+  private final VertexArray vao = new VertexArray();
+  private int vbo_offset = 0;
+  private final Matrix4f cachedViewMatrix = new Matrix4f();
+  private final Matrix4f particleMatrix = new Matrix4f();
 
-    private static final class BatchGroup {
-        int srcBlend;
-        int dstBlend;
-        boolean fogEnabled;
-        final List<BatchEntry> entries = new ArrayList<>();
+  private static final class BatchGroup {
+    int srcBlend;
+    int dstBlend;
+    boolean fogEnabled;
+    final List<BatchEntry> entries = new ArrayList<>();
 
-        boolean matches(int srcBlend, int dstBlend, boolean fogEnabled) {
-            return this.srcBlend == srcBlend && this.dstBlend == dstBlend && this.fogEnabled == fogEnabled;
-        }
-
-        void reset(int srcBlend, int dstBlend, boolean fogEnabled) {
-            this.srcBlend = srcBlend;
-            this.dstBlend = dstBlend;
-            this.fogEnabled = fogEnabled;
-            this.entries.clear();
-        }
+    boolean matches(int srcBlend, int dstBlend, boolean fogEnabled) {
+      return this.srcBlend == srcBlend && this.dstBlend == dstBlend && this.fogEnabled == fogEnabled;
     }
 
-    private static final class BatchEntry {
-        @Nullable
-        Emitter<?> emitter;
-        @Nullable
-        List<? extends Particle> particles;
-        @Nullable
-        Texture texture;
+    void reset(int srcBlend, int dstBlend, boolean fogEnabled) {
+      this.srcBlend = srcBlend;
+      this.dstBlend = dstBlend;
+      this.fogEnabled = fogEnabled;
+      this.entries.clear();
+    }
+  }
 
-        void set(Emitter<?> emitter, List<? extends Particle> particles, Texture texture) {
-            this.emitter = emitter;
-            this.particles = particles;
-            this.texture = texture;
-        }
+  private static final class BatchEntry {
+    @Nullable Emitter<?> emitter;
+    @Nullable List<? extends Particle> particles;
+    @Nullable Texture texture;
 
-        void clear() {
-            this.emitter = null;
-            this.particles = null;
-            this.texture = null;
-        }
+    void set(Emitter<?> emitter, List<? extends Particle> particles, Texture texture) {
+      this.emitter = emitter;
+      this.particles = particles;
+      this.texture = texture;
     }
 
-    private final List<BatchGroup> activeGroups = new ArrayList<>();
-    private final List<BatchGroup> groupPool = new ArrayList<>();
-    private final List<BatchEntry> entryPool = new ArrayList<>();
-    private int entryPoolIndex = 0;
-    private final List<Emitter<?>> activeSpriteEmitters = new ArrayList<>();
+    void clear() {
+      this.emitter = null;
+      this.particles = null;
+      this.texture = null;
+    }
+  }
 
-    public EmitterRenderer() {
-        int floatsPerParticle = VERTEX_LAYOUT.getStride() / Float.BYTES;
-        particle_buffer = BufferUtils.createFloatBuffer(MAX_PARTICLES * floatsPerParticle);
-        particle_vbo = new FloatVBO(GL15.GL_STREAM_DRAW, particle_buffer.capacity());
+  private final List<BatchGroup> activeGroups = new ArrayList<>();
+  private final List<BatchGroup> groupPool = new ArrayList<>();
+  private final List<BatchEntry> entryPool = new ArrayList<>();
+  private int entryPoolIndex = 0;
+  private final List<Emitter<?>> activeSpriteEmitters = new ArrayList<>();
 
-        vao.bind();
-        particle_vbo.bind();
-        VERTEX_LAYOUT.bind(shader);
+  public EmitterRenderer() {
+    int floatsPerParticle = VERTEX_LAYOUT.getStride() / Float.BYTES;
+    particle_buffer = BufferUtils.createFloatBuffer(MAX_PARTICLES * floatsPerParticle);
+    particle_vbo = new FloatVBO(GL15.GL_STREAM_DRAW, particle_buffer.capacity());
 
-        // Configure all attributes as instance attributes
-        for (ParticleShader.Attribute attr : ParticleShader.Attribute.values()) {
-            int loc = shader.getAttributeLocation(attr.getName());
-            if (loc >= 0) {
-                GL33.glVertexAttribDivisor(loc, 1);
-            }
-        }
+    vao.bind();
+    particle_vbo.bind();
+    VERTEX_LAYOUT.bind(shader);
 
-        vao.unbind();
+    // Configure all attributes as instance attributes
+    for (ParticleShader.Attribute attr : ParticleShader.Attribute.values()) {
+      int loc = shader.getAttributeLocation(attr.getName());
+      if (loc >= 0) {
+        GL33.glVertexAttribDivisor(loc, 1);
+      }
     }
 
-    private BatchGroup getGroup(int srcBlend, int dstBlend, boolean fogEnabled) {
-        for (int i = 0; i < activeGroups.size(); i++) {
-            BatchGroup g = activeGroups.get(i);
-            if (g.matches(srcBlend, dstBlend, fogEnabled)) {
-                return g;
-            }
-        }
-        BatchGroup g;
-        if (!groupPool.isEmpty()) {
-            g = groupPool.removeLast();
-        } else {
-            g = new BatchGroup();
-        }
-        g.reset(srcBlend, dstBlend, fogEnabled);
-        activeGroups.add(g);
+    vao.unbind();
+  }
+
+  private BatchGroup getGroup(int srcBlend, int dstBlend, boolean fogEnabled) {
+    for (int i = 0; i < activeGroups.size(); i++) {
+      BatchGroup g = activeGroups.get(i);
+      if (g.matches(srcBlend, dstBlend, fogEnabled)) {
         return g;
+      }
+    }
+    BatchGroup g;
+    if (!groupPool.isEmpty()) {
+      g = groupPool.removeLast();
+    } else {
+      g = new BatchGroup();
+    }
+    g.reset(srcBlend, dstBlend, fogEnabled);
+    activeGroups.add(g);
+    return g;
+  }
+
+  private BatchEntry obtainEntry(Emitter<?> emitter, List<? extends Particle> particles, Texture texture) {
+    BatchEntry entry;
+    if (entryPoolIndex < entryPool.size()) {
+      entry = entryPool.get(entryPoolIndex++);
+    } else {
+      entry = new BatchEntry();
+      entryPool.add(entry);
+      entryPoolIndex++;
+    }
+    entry.set(emitter, particles, texture);
+    return entry;
+  }
+
+  public void clear() {
+    for (int i = 0; i < activeGroups.size(); i++) {
+      BatchGroup g = activeGroups.get(i);
+      g.entries.clear();
+      groupPool.add(g);
+    }
+    activeGroups.clear();
+    for (int i = 0; i < entryPoolIndex; i++) {
+      entryPool.get(i).clear();
+    }
+    entryPoolIndex = 0;
+    activeSpriteEmitters.clear();
+  }
+
+  /// Returns true if there are visible particles batched for rendering this frame.
+  public boolean hasVisibleParticles() {
+    return !activeGroups.isEmpty();
+  }
+
+  public void prepare(
+      RenderQueues render_queues, Queue<? extends Emitter<?>> emitters, CameraState state, Matrix4fc modelView) {
+    clear();
+    cachedViewMatrix.set(modelView);
+    if (DebugFlags.draw_particles)
+      for (Emitter<?> emitter : emitters) {
+        collectParticles(render_queues, emitter, state);
+      }
+  }
+
+  public void render(
+      RenderContext context, RenderQueues render_queues, CameraState state, Matrix4fc modelView, Texture depthTexture) {
+    if (activeGroups.isEmpty() && activeSpriteEmitters.isEmpty()) return;
+
+    cachedViewMatrix.set(modelView);
+
+    if (!activeGroups.isEmpty()) {
+      // Reset offset and orphan at start of frame to prevent flickering
+      vbo_offset = 0;
+      particle_vbo.orphan();
+
+      vao.bind();
+      try (var _ = shader.use();
+          var _ = context.withBlendMode(BlendMode.ALPHA);
+          var _ = context.withDepthMode(DepthMode.READ_ONLY)) {
+
+        shader.setUniform(shader.locModelViewMatrix, modelView);
+
+        // Bind global effect texture array to unit 2
+        context.setTexture(
+            2, render_queues.getEffectTextureArray().getHandle(), render_queues.getEffectTextureArray().getTarget());
+        shader.setUniform(shader.locTextureArray, 2);
+
+        context.setActiveTexture(1);
+        context.setTexture(1, depthTexture.getHandle());
+        shader.setUniform(shader.locDepthMap, 1);
+
+        shader.setUniform(shader.locNearFar, RenderConfig.VIEW_MIN, RenderConfig.VIEW_MAX);
+        shader.setUniform(shader.locSoftRange, DEFAULT_SOFT_RANGE);
+
+        flushBatches(context);
+      } finally {
+        vao.unbind();
+        context.setTexture(1, null);
+        context.setTexture(2, null);
+      }
     }
 
-    private BatchEntry obtainEntry(Emitter<?> emitter, List<? extends Particle> particles, Texture texture) {
-        BatchEntry entry;
-        if (entryPoolIndex < entryPool.size()) {
-            entry = entryPool.get(entryPoolIndex++);
-        } else {
-            entry = new BatchEntry();
-            entryPool.add(entry);
-            entryPoolIndex++;
-        }
-        entry.set(emitter, particles, texture);
-        return entry;
+    if (!activeSpriteEmitters.isEmpty()) {
+      renderSpriteEmitters(render_queues, context, state);
     }
+  }
 
-    public void clear() {
-        for (int i = 0; i < activeGroups.size(); i++) {
-            BatchGroup g = activeGroups.get(i);
-            g.entries.clear();
-            groupPool.add(g);
-        }
-        activeGroups.clear();
-        for (int i = 0; i < entryPoolIndex; i++) {
-            entryPool.get(i).clear();
-        }
-        entryPoolIndex = 0;
-        activeSpriteEmitters.clear();
-    }
-
-    /**
-     * Returns true if there are visible particles batched for rendering this frame.
-     */
-    public boolean hasVisibleParticles() {
-        return !activeGroups.isEmpty();
-    }
-
-    public void prepare(RenderQueues render_queues, Queue<? extends Emitter<?>> emitters,
-            CameraState state, Matrix4fc modelView) {
-        clear();
-        cachedViewMatrix.set(modelView);
-        if (DebugFlags.draw_particles)
-            for (Emitter<?> emitter : emitters) {
-                collectParticles(render_queues, emitter, state);
-            }
-    }
-
-    public void render(RenderContext context, RenderQueues render_queues, CameraState state,
-            Matrix4fc modelView, Texture depthTexture) {
-        if (activeGroups.isEmpty() && activeSpriteEmitters.isEmpty()) return;
-
-        cachedViewMatrix.set(modelView);
-
-        if (!activeGroups.isEmpty()) {
-            // Reset offset and orphan at start of frame to prevent flickering
-            vbo_offset = 0;
-            particle_vbo.orphan();
-
-            vao.bind();
-            try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ALPHA); var _ = context.withDepthMode(
-                    DepthMode.READ_ONLY)) {
-
-                shader.setUniform(shader.locModelViewMatrix, modelView);
-
-                // Bind global effect texture array to unit 2
-                context.setTexture(2, render_queues.getEffectTextureArray().getHandle(),
-                        render_queues.getEffectTextureArray().getTarget());
-                shader.setUniform(shader.locTextureArray, 2);
-
-                context.setActiveTexture(1);
-                context.setTexture(1, depthTexture.getHandle());
-                shader.setUniform(shader.locDepthMap, 1);
-
-                shader.setUniform(shader.locNearFar, RenderConfig.VIEW_MIN, RenderConfig.VIEW_MAX);
-                shader.setUniform(shader.locSoftRange, DEFAULT_SOFT_RANGE);
-
-                flushBatches(context);
-            } finally {
-                vao.unbind();
-                context.setTexture(1, null);
-                context.setTexture(2, null);
-            }
-        }
-
-        if (!activeSpriteEmitters.isEmpty()) {
-            renderSpriteEmitters(render_queues, context, state);
-        }
-    }
-
-    private void renderSpriteEmitters(RenderQueues render_queues, RenderContext context, CameraState state) {
-        try {
-            boolean hasInstances = false;
-            for (int i = 0; i < activeSpriteEmitters.size(); i++) {
-                Emitter<?> emitter = activeSpriteEmitters.get(i);
-                SpriteKey[] sprite_renderers = emitter.getSpriteRenderers();
-                if (sprite_renderers == null) continue;
-                List<? extends Particle>[] particles = emitter.getParticles();
-                for (int j = 0; j < particles.length; j++) {
-                    if (j >= sprite_renderers.length) break;
-                    List<? extends Particle> pList = particles[j];
-                    if (pList.isEmpty()) continue;
-                    SpriteRenderer renderer = render_queues.getRenderer(sprite_renderers[j]);
-                    for (int k = 0; k < pList.size(); k++) {
-                        Particle particle = pList.get(k);
-                        particleMatrix.translation(particle.getPosX(), particle.getPosY(), particle.getPosZ());
-                        particleMatrix.m00(cachedViewMatrix.m00());
-                        particleMatrix.m01(cachedViewMatrix.m10());
-                        particleMatrix.m02(cachedViewMatrix.m20());
-                        particleMatrix.m10(cachedViewMatrix.m01());
-                        particleMatrix.m11(cachedViewMatrix.m11());
-                        particleMatrix.m12(cachedViewMatrix.m21());
-                        particleMatrix.m20(cachedViewMatrix.m02());
-                        particleMatrix.m21(cachedViewMatrix.m12());
-                        particleMatrix.m22(cachedViewMatrix.m22());
-                        particleMatrix.rotate(particle.getAngle(), 0f, 0f, 1f);
-                        particleMatrix.scale(particle.getRadiusX(), particle.getRadiusY(), particle.getRadiusZ());
-
-                        renderer.addInstance(
-                                0,
-                                0f,
-                                false,
-                                true,
-                                false,
-                                true,
-                                particleMatrix,
-                                particle.getColor(),
-                                particle.getColor()
-                        );
-                        hasInstances = true;
-                    }
-                }
-            }
-            if (hasInstances) {
-                try (var _ = context.withDrawBuffers(false)) {
-                    render_queues.getInstancedRenderer().renderAll(context, state);
-                }
-            }
-        } finally {
-            activeSpriteEmitters.clear();
-        }
-    }
-
-    private void renderParticle(Particle particle, Emitter<?> emitter, float layer) {
-        particle_buffer.put(particle.getPosX()).put(particle.getPosY()).put(particle.getPosZ()); // World Position
-        particle_buffer.put(particle.getRadiusX() * emitter.getScaleX()).put(particle.getRadiusY() * emitter
-                .getScaleY()).put(particle.getRadiusZ() * emitter.getScaleZ()); // Size (3D)
-
-        particle_buffer.put(particle.getColorR()).put(particle.getColorG()).put(particle.getColorB())
-                .put(particle.getColorA());
-
-        particle_buffer.put(particle.getAngle());
-        particle_buffer.put(layer);
-    }
-
-    private <P extends Particle> void collectParticles(RenderQueues render_queues, Emitter<P> emitter,
-            CameraState state) {
-        if (!state.inNoDetailMode() && !emitter.getBounds().testFrustum(state.getFrustum())) {
-            return;
-        }
-
-        TextureKey[] textures = emitter.getTextures();
-        List<P>[] particles = emitter.getParticles();
+  private void renderSpriteEmitters(RenderQueues render_queues, RenderContext context, CameraState state) {
+    try {
+      boolean hasInstances = false;
+      for (int i = 0; i < activeSpriteEmitters.size(); i++) {
+        Emitter<?> emitter = activeSpriteEmitters.get(i);
         SpriteKey[] sprite_renderers = emitter.getSpriteRenderers();
+        if (sprite_renderers == null) continue;
+        List<? extends Particle>[] particles = emitter.getParticles();
+        for (int j = 0; j < particles.length; j++) {
+          if (j >= sprite_renderers.length) break;
+          List<? extends Particle> pList = particles[j];
+          if (pList.isEmpty()) continue;
+          SpriteRenderer renderer = render_queues.getRenderer(sprite_renderers[j]);
+          for (int k = 0; k < pList.size(); k++) {
+            Particle particle = pList.get(k);
+            particleMatrix.translation(particle.getPosX(), particle.getPosY(), particle.getPosZ());
+            particleMatrix.m00(cachedViewMatrix.m00());
+            particleMatrix.m01(cachedViewMatrix.m10());
+            particleMatrix.m02(cachedViewMatrix.m20());
+            particleMatrix.m10(cachedViewMatrix.m01());
+            particleMatrix.m11(cachedViewMatrix.m11());
+            particleMatrix.m12(cachedViewMatrix.m21());
+            particleMatrix.m20(cachedViewMatrix.m02());
+            particleMatrix.m21(cachedViewMatrix.m12());
+            particleMatrix.m22(cachedViewMatrix.m22());
+            particleMatrix.rotate(particle.getAngle(), 0f, 0f, 1f);
+            particleMatrix.scale(particle.getRadiusX(), particle.getRadiusY(), particle.getRadiusZ());
 
-        if (textures != null) {
-            for (int j = 0; j < particles.length; j++) {
-                List<P> pList = particles[j];
-                if (pList.isEmpty()) continue;
-                Texture texture = render_queues.getTexture(textures[j]);
-                BatchGroup group = getGroup(emitter.getSrcBlendFunc(), emitter.getDstBlendFunc(), emitter
-                        .isFogEnabled());
-                group.entries.add(obtainEntry(emitter, pList, texture));
-            }
-        } else if (sprite_renderers != null) {
-            boolean hasParticles = false;
-            for (int j = 0; j < particles.length; j++) {
-                if (!particles[j].isEmpty()) {
-                    hasParticles = true;
-                    break;
-                }
-            }
-            if (hasParticles) {
-                activeSpriteEmitters.add(emitter);
-            }
+            renderer.addInstance(
+                0, 0f, false, true, false, true, particleMatrix, particle.getColor(), particle.getColor());
+            hasInstances = true;
+          }
         }
+      }
+      if (hasInstances) {
+        try (var _ = context.withDrawBuffers(false)) {
+          render_queues.getInstancedRenderer().renderAll(context, state);
+        }
+      }
+    } finally {
+      activeSpriteEmitters.clear();
+    }
+  }
+
+  private void renderParticle(Particle particle, Emitter<?> emitter, float layer) {
+    particle_buffer.put(particle.getPosX()).put(particle.getPosY()).put(particle.getPosZ()); // World Position
+    particle_buffer
+        .put(particle.getRadiusX() * emitter.getScaleX())
+        .put(particle.getRadiusY() * emitter.getScaleY())
+        .put(particle.getRadiusZ() * emitter.getScaleZ()); // Size (3D)
+
+    particle_buffer
+        .put(particle.getColorR())
+        .put(particle.getColorG())
+        .put(particle.getColorB())
+        .put(particle.getColorA());
+
+    particle_buffer.put(particle.getAngle());
+    particle_buffer.put(layer);
+  }
+
+  private <P extends Particle> void collectParticles(
+      RenderQueues render_queues, Emitter<P> emitter, CameraState state) {
+    if (!state.inNoDetailMode() && !emitter.getBounds().testFrustum(state.getFrustum())) {
+      return;
     }
 
-    private void flushBatches(RenderContext context) {
-        int floatsPerParticle = VERTEX_LAYOUT.getStride() / Float.BYTES;
+    TextureKey[] textures = emitter.getTextures();
+    List<P>[] particles = emitter.getParticles();
+    SpriteKey[] sprite_renderers = emitter.getSpriteRenderers();
 
-        for (int i = 0; i < activeGroups.size(); i++) {
-            BatchGroup group = activeGroups.get(i);
-            context.setBlendFunc(group.srcBlend, group.dstBlend);
-            shader.setUniform(shader.locIsAdditive, group.dstBlend == GL11.GL_ONE ? 1.0f : 0.0f);
-            shader.setUniform(shader.locFogEnabled, group.fogEnabled);
-
-            particle_buffer.clear();
-            int particleCount = 0;
-
-            for (int j = 0; j < group.entries.size(); j++) {
-                BatchEntry batchEntry = group.entries.get(j);
-                float layer = (float) batchEntry.texture.getLayer();
-                particleCount = processBatchEntry(batchEntry, layer, particleCount, floatsPerParticle);
-            }
-            flush(particleCount);
+    if (textures != null) {
+      for (int j = 0; j < particles.length; j++) {
+        List<P> pList = particles[j];
+        if (pList.isEmpty()) continue;
+        Texture texture = render_queues.getTexture(textures[j]);
+        BatchGroup group = getGroup(emitter.getSrcBlendFunc(), emitter.getDstBlendFunc(), emitter.isFogEnabled());
+        group.entries.add(obtainEntry(emitter, pList, texture));
+      }
+    } else if (sprite_renderers != null) {
+      boolean hasParticles = false;
+      for (int j = 0; j < particles.length; j++) {
+        if (!particles[j].isEmpty()) {
+          hasParticles = true;
+          break;
         }
+      }
+      if (hasParticles) {
+        activeSpriteEmitters.add(emitter);
+      }
+    }
+  }
+
+  private void flushBatches(RenderContext context) {
+    int floatsPerParticle = VERTEX_LAYOUT.getStride() / Float.BYTES;
+
+    for (int i = 0; i < activeGroups.size(); i++) {
+      BatchGroup group = activeGroups.get(i);
+      context.setBlendFunc(group.srcBlend, group.dstBlend);
+      shader.setUniform(shader.locIsAdditive, group.dstBlend == GL11.GL_ONE ? 1.0f : 0.0f);
+      shader.setUniform(shader.locFogEnabled, group.fogEnabled);
+
+      particle_buffer.clear();
+      int particleCount = 0;
+
+      for (int j = 0; j < group.entries.size(); j++) {
+        BatchEntry batchEntry = group.entries.get(j);
+        float layer = (float) batchEntry.texture.getLayer();
+        particleCount = processBatchEntry(batchEntry, layer, particleCount, floatsPerParticle);
+      }
+      flush(particleCount);
+    }
+  }
+
+  private int processBatchEntry(BatchEntry batch, float layer, int particleCount, int floatsPerParticle) {
+    List<? extends Particle> particles = batch.particles;
+    Emitter<?> emitter = batch.emitter;
+    if (particles == null || emitter == null) return particleCount;
+
+    // Iterate backwards as per original logic
+    for (int i = particles.size() - 1; i >= 0; i--) {
+      Particle particle = particles.get(i);
+      if (particleCount >= MAX_PARTICLES || particle_buffer.remaining() < floatsPerParticle) {
+        flush(particleCount);
+        particle_buffer.clear();
+        particleCount = 0;
+      }
+      renderParticle(particle, emitter, layer);
+      particleCount++;
+    }
+    return particleCount;
+  }
+
+  private void flush(int particleCount) {
+    if (particleCount == 0) return;
+    particle_buffer.flip();
+
+    if (vbo_offset + particleCount > MAX_PARTICLES) {
+      // This case should be rare since we reset at start of frame
+      particle_vbo.orphan();
+      vbo_offset = 0;
     }
 
-    private int processBatchEntry(BatchEntry batch, float layer, int particleCount,
-            int floatsPerParticle) {
-        List<? extends Particle> particles = batch.particles;
-        Emitter<?> emitter = batch.emitter;
-        if (particles == null || emitter == null) return particleCount;
+    int stride = VERTEX_LAYOUT.getStride();
+    int floatsPerParticle = stride / Float.BYTES;
+    particle_vbo.putSubData(vbo_offset * floatsPerParticle, particle_buffer);
 
-        // Iterate backwards as per original logic
-        for (int i = particles.size() - 1; i >= 0; i--) {
-            Particle particle = particles.get(i);
-            if (particleCount >= MAX_PARTICLES || particle_buffer.remaining() < floatsPerParticle) {
-                flush(particleCount);
-                particle_buffer.clear();
-                particleCount = 0;
-            }
-            renderParticle(particle, emitter, layer);
-            particleCount++;
-        }
-        return particleCount;
+    // Shifting attribute pointers to account for vbo_offset since we use instanced rendering
+    for (ParticleShader.Attribute attr : ParticleShader.Attribute.values()) {
+      int loc = shader.getAttributeLocation(attr.getName());
+      if (loc >= 0) {
+        attr.setPointer(loc, stride, VERTEX_LAYOUT.getOffset(attr) + vbo_offset * stride);
+      }
     }
 
-    private void flush(int particleCount) {
-        if (particleCount == 0) return;
-        particle_buffer.flip();
+    GL31.glDrawArraysInstanced(GL11.GL_TRIANGLE_STRIP, 0, 4, particleCount);
 
-        if (vbo_offset + particleCount > MAX_PARTICLES) {
-            // This case should be rare since we reset at start of frame
-            particle_vbo.orphan();
-            vbo_offset = 0;
-        }
+    vbo_offset += particleCount;
+  }
 
-        int stride = VERTEX_LAYOUT.getStride();
-        int floatsPerParticle = stride / Float.BYTES;
-        particle_vbo.putSubData(vbo_offset * floatsPerParticle, particle_buffer);
-
-        // Shifting attribute pointers to account for vbo_offset since we use instanced rendering
-        for (ParticleShader.Attribute attr : ParticleShader.Attribute.values()) {
-            int loc = shader.getAttributeLocation(attr.getName());
-            if (loc >= 0) {
-                attr.setPointer(loc, stride, VERTEX_LAYOUT.getOffset(attr) + vbo_offset * stride);
-            }
-        }
-
-        GL31.glDrawArraysInstanced(GL11.GL_TRIANGLE_STRIP, 0, 4, particleCount);
-
-        vbo_offset += particleCount;
+  public void debugRender(Queue<Emitter<?>> emitter_queue) {
+    if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
+      for (Emitter<?> emitter : emitter_queue) {
+        emitter.debugRender();
+      }
     }
+  }
 
-    public void debugRender(Queue<Emitter<?>> emitter_queue) {
-        if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
-            for (Emitter<?> emitter : emitter_queue) {
-                emitter.debugRender();
-            }
-        }
-    }
-
-    @Override
-    public void close() {
-        vao.close();
-        particle_vbo.close();
-        shader.close();
-    }
+  @Override
+  public void close() {
+    vao.close();
+    particle_vbo.close();
+    shader.close();
+  }
 }

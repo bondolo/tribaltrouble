@@ -1,114 +1,110 @@
 package com.oddlabs.tt.engine.render;
 
-
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Tracks the specific rendering properties (position, colour, pattern)
- * for an individual world element.
- */
+/// Tracks the specific rendering properties (position, colour, pattern) for an individual world element.
 public final class ElementSceneContext<M extends Model> implements ModelState<M> {
 
-    public final SceneContext sceneContext;
-    public @Nullable ModelVisitor<M> visitor;
-    public @Nullable M model;
-    public float f;
-    private Color.Linear color = Color.Linear.WHITE;
+  public final SceneContext sceneContext;
+  public @Nullable ModelVisitor<M> visitor;
+  public @Nullable M model;
+  public float f;
+  private Color.Linear color = Color.Linear.WHITE;
 
-    public ElementSceneContext(SceneContext sceneContext) {
-        this.sceneContext = sceneContext;
-    }
+  public ElementSceneContext(SceneContext sceneContext) {
+    this.sceneContext = sceneContext;
+  }
 
-    @Override
-    public Color.Linear getColor() {
-        return color;
-    }
+  @Override
+  public Color.Linear getColor() {
+    return color;
+  }
 
-    public void setColor(Color.Linear color) {
-        this.color = color;
-    }
+  public void setColor(Color.Linear color) {
+    this.color = color;
+  }
 
-    public void resetColor() {
-        this.color = Color.Linear.WHITE;
-    }
+  public void resetColor() {
+    this.color = Color.Linear.WHITE;
+  }
 
-    @Override
-    public @Nullable M getModel() {
-        return model;
-    }
+  @Override
+  public @Nullable M getModel() {
+    return model;
+  }
 
-    @Override
-    public Matrix4f getTransform(Matrix4f dest) {
-        visitor.getTransform(this, dest);
-        return dest;
-    }
+  @Override
+  public Matrix4f getTransform(Matrix4f dest) {
+    visitor.getTransform(this, dest);
+    return dest;
+  }
 
-    @Override
-    public int getAnimation() {
-        return model.getAnimation();
-    }
+  @Override
+  public int getAnimation() {
+    return model.getAnimation();
+  }
 
-    @Override
-    public float getAnimationTicks() {
-        return model.getAnimationTicks();
-    }
+  @Override
+  public float getAnimationTicks() {
+    return model.getAnimationTicks();
+  }
 
-    @Override
-    public Color getTeamColor() {
-        return visitor.getTeamColor(this);
-    }
+  @Override
+  public Color getTeamColor() {
+    return visitor.getTeamColor(this);
+  }
 
-    @Override
-    public Color getSelectionColor() {
-        return visitor.getSelectionColor(this);
-    }
+  @Override
+  public Color getSelectionColor() {
+    return visitor.getSelectionColor(this);
+  }
 
-    @Override
-    public VisualPattern getPattern() {
-        return visitor.getPattern(this);
-    }
+  @Override
+  public VisualPattern getPattern() {
+    return visitor.getPattern(this);
+  }
 
-    @Override
-    public float getNoDetailSize() {
-        return visitor.getNoDetailSize(this);
-    }
+  @Override
+  public float getNoDetailSize() {
+    return visitor.getNoDetailSize(this);
+  }
 
-    public void setup(ModelVisitor<M> visitor, M model, float f) {
-        this.visitor = visitor;
-        this.model = model;
-        this.f = f;
-        resetColor();
-    }
+  public void setup(ModelVisitor<M> visitor, M model, float f) {
+    this.visitor = visitor;
+    this.model = model;
+    this.f = f;
+    resetColor();
+  }
 
-    public void setup(ModelVisitor<M> visitor, M model) {
-        this.visitor = visitor;
-        this.model = model;
-        resetColor();
-    }
+  public void setup(ModelVisitor<M> visitor, M model) {
+    this.visitor = visitor;
+    this.model = model;
+    resetColor();
+  }
 
-    public void markDetailPoint() {
-        visitor.markDetailPoint(this);
-    }
+  public void markDetailPoint() {
+    visitor.markDetailPoint(this);
+  }
 
-    public void addToRenderList() {
-        visitor.addToRenderList(this);
-    }
+  public void addToRenderList() {
+    visitor.addToRenderList(this);
+  }
 
-    public SpriteRenderer getRenderer(SpriteKey key) {
-        return sceneContext.getRenderQueues().getRenderer(key);
-    }
+  public SpriteRenderer getRenderer(SpriteKey key) {
+    return sceneContext.getRenderQueues().getRenderer(key);
+  }
 
-    @Override
-    public @Nullable SpriteList getSpriteList() {
-        SpriteKey key = visitor.getSpriteKey(this);
-        return key != null ? getRenderer(key).getSpriteList() : null;
-    }
+  @Override
+  public @Nullable SpriteList getSpriteList() {
+    SpriteKey key = visitor.getSpriteKey(this);
+    return key != null ? getRenderer(key).getSpriteList() : null;
+  }
 
-    @Override
-    public float getInterpolationAlpha() {
-        return sceneContext.getInterpolationAlpha();
-    }
+  @Override
+  public float getInterpolationAlpha() {
+    return sceneContext.getInterpolationAlpha();
+  }
 }

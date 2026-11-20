@@ -1,8 +1,6 @@
 package com.oddlabs.net;
 
 import com.oddlabs.event.Deterministic;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.channels.SelectionKey;
@@ -13,211 +11,200 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Manages non-blocking network I/O multiplexing and ping/timeout scheduling.
- */
+/// Manages non-blocking network I/O multiplexing and ping/timeout scheduling.
 public final class NetworkSelector implements AutoCloseable {
-    private static final long PING_TIMEOUT = TimeUnit.MINUTES.toMillis(4);
-    private static final long PING_DELAY = PING_TIMEOUT / 2;
+  private static final long PING_TIMEOUT = TimeUnit.MINUTES.toMillis(4);
+  private static final long PING_DELAY = PING_TIMEOUT / 2;
 
-    private final TimeManager time_manager;
-    private int current_handler_id;
-    private final Map<Object, Handler> handler_map = new HashMap<>();
-    private @Nullable TaskThread task_thread;
-    private final Selector selector;
-    private final Deque<TimedConnection> ping_connections = new ArrayDeque<>();
-    private final Deque<TimedConnection> ping_timeouts = new ArrayDeque<>();
+  private final TimeManager time_manager;
+  private int current_handler_id;
+  private final Map<Object, Handler> handler_map = new HashMap<>();
+  private @Nullable TaskThread task_thread;
+  private final Selector selector;
+  private final Deque<TimedConnection> ping_connections = new ArrayDeque<>();
+  private final Deque<TimedConnection> ping_timeouts = new ArrayDeque<>();
 
-    private final Deterministic deterministic;
+  private final Deterministic deterministic;
 
-    public NetworkSelector(final Deterministic deterministic) throws IOException {
-        this(deterministic, TimeManager.DEFAULT);
+  public NetworkSelector(final Deterministic deterministic) throws IOException {
+    this(deterministic, TimeManager.DEFAULT);
+  }
+
+  public NetworkSelector(Deterministic deterministic, TimeManager time_manager) throws IOException {
+    this.deterministic = deterministic;
+    this.time_manager = time_manager;
+    this.selector = Selector.open();
+  }
+
+  public Deterministic getDeterministic() {
+    return deterministic;
+  }
+
+  void asyncConnect(String dns_name, int port, Connection conn) {
+    DNSTask task = new DNSTask(dns_name, port, conn);
+    getTaskThread().addTask(task, task);
+  }
+
+  public TaskThread getTaskThread() {
+    if (task_thread == null) {
+      task_thread = new TaskThread(deterministic, selector::wakeup);
     }
+    return task_thread;
+  }
 
-    public NetworkSelector(Deterministic deterministic, TimeManager time_manager) throws IOException {
-        this.deterministic = deterministic;
-        this.time_manager = time_manager;
-        this.selector = Selector.open();
+  Selector getSelector() {
+    return selector;
+  }
+
+  void unregisterForPinging(Connection conn) {
+    TimedConnection unregister_key = new TimedConnection(-1, conn);
+    ping_timeouts.remove(unregister_key);
+    ping_connections.remove(unregister_key);
+  }
+
+  void registerForPingTimeout(Connection conn) {
+    long ping_timeout = time_manager.getMillis() + PING_TIMEOUT;
+    ping_timeouts.add(new TimedConnection(ping_timeout, conn));
+  }
+
+  void registerForPing(Connection conn) {
+    long ping_time = time_manager.getMillis() + PING_DELAY;
+    ping_connections.add(new TimedConnection(ping_time, conn));
+  }
+
+  private void processTasks() {
+    if (task_thread != null) task_thread.poll();
+  }
+
+  private long processPings(long millis) {
+    long next_select_timeout = PING_DELAY;
+    while (!ping_timeouts.isEmpty()) {
+      TimedConnection first_conn = ping_timeouts.getFirst();
+      long first = first_conn.timeout();
+      if (first <= millis) {
+        ping_timeouts.removeFirst();
+        first_conn.connection().timeout();
+      } else {
+        next_select_timeout = first - millis;
+        break;
+      }
     }
-
-    public Deterministic getDeterministic() {
-        return deterministic;
-    }
-
-    void asyncConnect(String dns_name, int port, Connection conn) {
-        DNSTask task = new DNSTask(dns_name, port, conn);
-        getTaskThread().addTask(task, task);
-    }
-
-    public TaskThread getTaskThread() {
-        if (task_thread == null) {
-            task_thread = new TaskThread(deterministic, selector::wakeup);
+    while (!ping_connections.isEmpty()) {
+      TimedConnection first_conn = ping_connections.getFirst();
+      long first = first_conn.timeout();
+      if (first <= millis) {
+        ping_connections.removeFirst();
+        Connection conn = first_conn.connection();
+        if (conn.isConnected()) {
+          conn.doPing();
+          registerForPing(conn);
         }
-        return task_thread;
+      } else {
+        next_select_timeout = Math.min(first - millis, next_select_timeout);
+        break;
+      }
     }
+    return next_select_timeout;
+  }
 
-    Selector getSelector() {
-        return selector;
+  public void tickBlocking(long timeout) throws IOException {
+    processTasks();
+    long millis = time_manager.getMillis();
+    long next_timeout;
+    long ping_timeout = processPings(millis);
+    if (ping_timeout == 0) next_timeout = timeout;
+    else if (timeout == 0) next_timeout = ping_timeout;
+    else next_timeout = Math.min(ping_timeout, timeout);
+    if (deterministic.log(selector != null && selector.select(next_timeout) > 0)) doTick();
+  }
+
+  public void tickBlocking() throws IOException {
+    tickBlocking(0);
+  }
+
+  public void tick() {
+    try {
+      processTasks();
+      processPings(time_manager.getMillis());
+      if (deterministic.log(selector != null && selector.selectNow() > 0)) doTick();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
+  }
 
-    void unregisterForPinging(Connection conn) {
-        TimedConnection unregister_key = new TimedConnection(-1, conn);
-        ping_timeouts.remove(unregister_key);
-        ping_connections.remove(unregister_key);
+  public TimeManager getTimeManager() {
+    return time_manager;
+  }
+
+  void cancelKey(SelectionKey key, Handler handler) {
+    Object handler_key = null;
+    if (!deterministic.isPlayback()) {
+      handler_key = key.attachment();
+      key.cancel();
     }
+    handler_key = deterministic.log(handler_key);
+    handler_map.remove(handler_key);
+  }
 
-    void registerForPingTimeout(Connection conn) {
-        long ping_timeout = time_manager.getMillis() + PING_TIMEOUT;
-        ping_timeouts.add(new TimedConnection(ping_timeout, conn));
+  void attachToKey(SelectionKey key, Handler handler) {
+    Object handler_key = null;
+    if (!deterministic.isPlayback()) {
+      handler_key = current_handler_id++;
+      key.attach(handler_key);
     }
+    handler_key = deterministic.log(handler_key);
+    handler_map.put(handler_key, handler);
+  }
 
-    void registerForPing(Connection conn) {
-        long ping_time = time_manager.getMillis() + PING_DELAY;
-        ping_connections.add(new TimedConnection(ping_time, conn));
+  private void doTick() throws IOException {
+    Iterator<SelectionKey> selected_keys = null;
+    if (!deterministic.isPlayback()) selected_keys = selector.selectedKeys().iterator();
+    while (deterministic.log(deterministic.isPlayback() || selected_keys.hasNext())) {
+      SelectionKey key;
+      if (!deterministic.isPlayback()) {
+        key = selected_keys.next();
+        selected_keys.remove();
+      } else key = null;
+      if (deterministic.log(deterministic.isPlayback() || !key.isValid())) continue;
+      Object handler_key = null;
+      if (!deterministic.isPlayback()) handler_key = key.attachment();
+      handler_key = deterministic.log(handler_key);
+      Handler handler = handler_map.get(handler_key);
+      try {
+        handler.handle();
+      } catch (IOException e) {
+        handler.handleError(e);
+        cancelKey(key, handler);
+      }
     }
+  }
 
-    private void processTasks() {
-        if (task_thread != null)
-            task_thread.poll();
+  @Override
+  public void close() {
+    if (task_thread != null) {
+      task_thread.close();
+      task_thread = null;
     }
-
-    private long processPings(long millis) {
-        long next_select_timeout = PING_DELAY;
-        while (!ping_timeouts.isEmpty()) {
-            TimedConnection first_conn = ping_timeouts.getFirst();
-            long first = first_conn.timeout();
-            if (first <= millis) {
-                ping_timeouts.removeFirst();
-                first_conn.connection().timeout();
-            } else {
-                next_select_timeout = first - millis;
-                break;
-            }
-        }
-        while (!ping_connections.isEmpty()) {
-            TimedConnection first_conn = ping_connections.getFirst();
-            long first = first_conn.timeout();
-            if (first <= millis) {
-                ping_connections.removeFirst();
-                Connection conn = first_conn.connection();
-                if (conn.isConnected()) {
-                    conn.doPing();
-                    registerForPing(conn);
-                }
-            } else {
-                next_select_timeout = Math.min(first - millis, next_select_timeout);
-                break;
-            }
-        }
-        return next_select_timeout;
-    }
-
-    public void tickBlocking(long timeout) throws IOException {
-        processTasks();
-        long millis = time_manager.getMillis();
-        long next_timeout;
-        long ping_timeout = processPings(millis);
-        if (ping_timeout == 0)
-            next_timeout = timeout;
-        else if (timeout == 0)
-            next_timeout = ping_timeout;
-        else
-            next_timeout = Math.min(ping_timeout, timeout);
-        if (deterministic.log(selector != null && selector.select(next_timeout) > 0))
-            doTick();
-    }
-
-    public void tickBlocking() throws IOException {
-        tickBlocking(0);
-    }
-
-    public void tick() {
+    if (selector.isOpen()) {
+      for (SelectionKey key : selector.keys()) {
         try {
-            processTasks();
-            processPings(time_manager.getMillis());
-            if (deterministic.log(selector != null && selector.selectNow() > 0))
-                doTick();
+          key.channel().close();
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+          java.util.logging.Logger.getLogger(NetworkSelector.class.getName())
+              .log(java.util.logging.Level.FINE, "Error closing channel", e);
         }
+      }
+      try {
+        selector.close();
+      } catch (IOException e) {
+        java.util.logging.Logger.getLogger(NetworkSelector.class.getName())
+            .log(java.util.logging.Level.FINE, "Error closing selector", e);
+      }
     }
-
-    public TimeManager getTimeManager() {
-        return time_manager;
-    }
-
-    void cancelKey(SelectionKey key, Handler handler) {
-        Object handler_key = null;
-        if (!deterministic.isPlayback()) {
-            handler_key = key.attachment();
-            key.cancel();
-        }
-        handler_key = deterministic.log(handler_key);
-        handler_map.remove(handler_key);
-    }
-
-    void attachToKey(SelectionKey key, Handler handler) {
-        Object handler_key = null;
-        if (!deterministic.isPlayback()) {
-            handler_key = current_handler_id++;
-            key.attach(handler_key);
-        }
-        handler_key = deterministic.log(handler_key);
-        handler_map.put(handler_key, handler);
-    }
-
-    private void doTick() throws IOException {
-        Iterator<SelectionKey> selected_keys = null;
-        if (!deterministic.isPlayback())
-            selected_keys = selector.selectedKeys().iterator();
-        while (deterministic.log(deterministic.isPlayback() || selected_keys.hasNext())) {
-            SelectionKey key;
-            if (!deterministic.isPlayback()) {
-                key = selected_keys.next();
-                selected_keys.remove();
-            } else
-                key = null;
-            if (deterministic.log(deterministic.isPlayback() || !key.isValid()))
-                continue;
-            Object handler_key = null;
-            if (!deterministic.isPlayback())
-                handler_key = key.attachment();
-            handler_key = deterministic.log(handler_key);
-            Handler handler = handler_map.get(handler_key);
-            try {
-                handler.handle();
-            } catch (IOException e) {
-                handler.handleError(e);
-                cancelKey(key, handler);
-            }
-        }
-    }
-
-    @Override
-    public void close() {
-        if (task_thread != null) {
-            task_thread.close();
-            task_thread = null;
-        }
-        if (selector.isOpen()) {
-            for (SelectionKey key : selector.keys()) {
-                try {
-                    key.channel().close();
-                } catch (IOException e) {
-                    java.util.logging.Logger.getLogger(NetworkSelector.class.getName())
-                            .log(java.util.logging.Level.FINE, "Error closing channel", e);
-                }
-            }
-            try {
-                selector.close();
-            } catch (IOException e) {
-                java.util.logging.Logger.getLogger(NetworkSelector.class.getName())
-                        .log(java.util.logging.Level.FINE, "Error closing selector", e);
-            }
-        }
-        handler_map.clear();
-        ping_connections.clear();
-        ping_timeouts.clear();
-    }
+    handler_map.clear();
+    ping_connections.clear();
+    ping_timeouts.clear();
+  }
 }

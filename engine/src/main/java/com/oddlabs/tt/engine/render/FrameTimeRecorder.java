@@ -1,7 +1,5 @@
 package com.oddlabs.tt.engine.render;
 
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -9,159 +7,164 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Records per-frame phase timings from the render thread and streams them to a CSV file.
- *
- * <p>Recording follows {@link DebugFlags#frame_timing}. While disabled each call is a single flag check; while
- * enabled the render thread only writes timestamps into a preallocated ring buffer.
- */
+/// Records per-frame phase timings from the render thread and streams them to a CSV file.
+///
+/// <p>Recording follows {@link DebugFlags#frame_timing}. While disabled each call is a single flag check; while enabled
+/// the render thread only writes timestamps into a preallocated ring buffer.
 public final class FrameTimeRecorder implements AutoCloseable {
-    private static final Logger logger = Logger.getLogger(FrameTimeRecorder.class.getName());
-    private static final int PHASE_COUNT = Phase.values().length;
-    private static final int GPU_PASS_COUNT = GpuPass.values().length;
-    private static final int METRIC_COUNT = Metric.values().length;
-    private static final DateTimeFormatter FILE_TIMESTAMP = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
-    private static final String FILE_PREFIX = "frametimes-";
-    private static final String FILE_SUFFIX = ".csv";
+  private static final Logger logger = Logger.getLogger(FrameTimeRecorder.class.getName());
+  private static final int PHASE_COUNT = Phase.values().length;
+  private static final int GPU_PASS_COUNT = GpuPass.values().length;
+  private static final int METRIC_COUNT = Metric.values().length;
+  private static final DateTimeFormatter FILE_TIMESTAMP = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+  private static final String FILE_PREFIX = "frametimes-";
+  private static final String FILE_SUFFIX = ".csv";
 
-    /** Segments of a frame, in the order they are marked. */
-    public enum Phase {
-        POLL_EVENTS,
-        SIMULATION,
-        AUDIO,
-        DISPLAY,
-        SWAP,
-        GL_FINISH
-    }
+  /// Segments of a frame, in the order they are marked.
+  public enum Phase {
+    POLL_EVENTS,
+    SIMULATION,
+    AUDIO,
+    DISPLAY,
+    SWAP,
+    GL_FINISH
+  }
 
-    /** Per-frame scene and camera metrics captured alongside timings. */
-    public enum Metric {
-        CAM_PITCH_DEG,
-        CAM_YAW_DEG,
-        CAM_Z,
-        PATCHES_DRAWN,
-        TREES_DRAWN,
-        PREP_LANDSCAPE_US,
-        PREP_TREES_US
-    }
+  /// Per-frame scene and camera metrics captured alongside timings.
+  public enum Metric {
+    CAM_PITCH_DEG,
+    CAM_YAW_DEG,
+    CAM_Z,
+    PATCHES_DRAWN,
+    TREES_DRAWN,
+    PREP_LANDSCAPE_US,
+    PREP_TREES_US
+  }
 
-    private final Path directory;
-    private final GpuTimer gpuTimer;
-    private final long[] gpuNanos = new long[GPU_PASS_COUNT];
-    private @Nullable FrameTimeRing ring;
-    private @Nullable FrameTimeWriter writer;
-    private boolean claimed;
+  private final Path directory;
+  private final GpuTimer gpuTimer;
+  private final long[] gpuNanos = new long[GPU_PASS_COUNT];
+  private @Nullable FrameTimeRing ring;
+  private @Nullable FrameTimeWriter writer;
+  private boolean claimed;
 
-    public FrameTimeRecorder(Path directory, GpuTimer gpuTimer) {
-        this.directory = directory;
-        this.gpuTimer = gpuTimer;
-    }
+  public FrameTimeRecorder(Path directory, GpuTimer gpuTimer) {
+    this.directory = directory;
+    this.gpuTimer = gpuTimer;
+  }
 
-    public void begin() {
-        if (DebugFlags.frame_timing != (ring != null)) {
-            if (DebugFlags.frame_timing) {
-                startRecording();
-            } else {
-                stopRecording();
-            }
-        }
-        var active = ring;
-        claimed = active != null && active.claim(System.nanoTime());
-        if (claimed) {
-            gpuTimer.beginFrame(active.currentFrame());
-        }
-    }
-
-    public void mark(Phase phase) {
-        var active = ring;
-        if (claimed && active != null) {
-            active.set(phase.ordinal(), System.nanoTime());
-        }
-    }
-
-    public void recordSceneStats(float pitchDeg, float yawDeg, float camZ, int patchesDrawn, int treesDrawn,
-            long prepLandscapeUs, long prepTreesUs) {
-        var active = ring;
-        if (claimed && active != null) {
-            active.setMetric(Metric.CAM_PITCH_DEG.ordinal(), Math.round(pitchDeg));
-            active.setMetric(Metric.CAM_YAW_DEG.ordinal(), Math.round(yawDeg));
-            active.setMetric(Metric.CAM_Z.ordinal(), Math.round(camZ));
-            active.setMetric(Metric.PATCHES_DRAWN.ordinal(), patchesDrawn);
-            active.setMetric(Metric.TREES_DRAWN.ordinal(), treesDrawn);
-            active.setMetric(Metric.PREP_LANDSCAPE_US.ordinal(), prepLandscapeUs);
-            active.setMetric(Metric.PREP_TREES_US.ordinal(), prepTreesUs);
-        }
-    }
-
-    private long oldestUnresolvedFrame;
-
-    public void end() {
-        var active = ring;
-        if (claimed && active != null) {
-            gpuTimer.endFrame();
-            drainReadyFrames(active);
-        }
-        claimed = false;
-    }
-
-    private void drainReadyFrames(FrameTimeRing target) {
-        long current = target.currentFrame();
-        while (oldestUnresolvedFrame <= current) {
-            // If the query ring is about to overwrite oldestUnresolvedFrame, force resolve or mark unavailable
-            boolean mustEvict = (current - oldestUnresolvedFrame) >= GpuTimer.DEPTH;
-            if (gpuTimer.isAvailable(oldestUnresolvedFrame)) {
-                gpuTimer.resolve(oldestUnresolvedFrame, gpuNanos);
-                for (int pass = 0; pass < GPU_PASS_COUNT; pass++) {
-                    target.setGpu(oldestUnresolvedFrame, pass, gpuNanos[pass]);
-                }
-                target.publishNext();
-                oldestUnresolvedFrame++;
-            } else if (mustEvict) {
-                for (int pass = 0; pass < GPU_PASS_COUNT; pass++) {
-                    target.setGpu(oldestUnresolvedFrame, pass, FrameTimeRing.UNAVAILABLE);
-                }
-                target.publishNext();
-                oldestUnresolvedFrame++;
-            } else {
-                break;
-            }
-        }
-    }
-
-    private void startRecording() {
-        Path file = directory.resolve(FILE_PREFIX + FILE_TIMESTAMP.format(LocalDateTime.now(ZoneId.systemDefault()))
-                + FILE_SUFFIX);
-        var newRing = new FrameTimeRing(PHASE_COUNT, GPU_PASS_COUNT, METRIC_COUNT);
-        try {
-            writer = FrameTimeWriter.start(newRing, file);
-            ring = newRing;
-            oldestUnresolvedFrame = 0;
-            logger.info("Frame timing recording to " + file.toAbsolutePath());
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "Unable to start frame timing recording", e);
-            DebugFlags.frame_timing = false;
-        }
-    }
-
-    private void stopRecording() {
-        var active = ring;
-        ring = null;
-        var activeWriter = writer;
-        writer = null;
-        claimed = false;
-        gpuTimer.endFrame();
-        if (active != null) {
-            active.publishRemaining();
-        }
-        if (activeWriter != null) {
-            activeWriter.close();
-            logger.info("Frame timing recording stopped");
-        }
-    }
-
-    @Override
-    public void close() {
+  public void begin() {
+    if (DebugFlags.frame_timing != (ring != null)) {
+      if (DebugFlags.frame_timing) {
+        startRecording();
+      } else {
         stopRecording();
+      }
     }
+    var active = ring;
+    claimed = active != null && active.claim(System.nanoTime());
+    if (claimed) {
+      gpuTimer.beginFrame(active.currentFrame());
+    }
+  }
+
+  public void mark(Phase phase) {
+    var active = ring;
+    if (claimed && active != null) {
+      active.set(phase.ordinal(), System.nanoTime());
+    }
+  }
+
+  public void recordSceneStats(
+      float pitchDeg,
+      float yawDeg,
+      float camZ,
+      int patchesDrawn,
+      int treesDrawn,
+      long prepLandscapeUs,
+      long prepTreesUs) {
+    var active = ring;
+    if (claimed && active != null) {
+      active.setMetric(Metric.CAM_PITCH_DEG.ordinal(), Math.round(pitchDeg));
+      active.setMetric(Metric.CAM_YAW_DEG.ordinal(), Math.round(yawDeg));
+      active.setMetric(Metric.CAM_Z.ordinal(), Math.round(camZ));
+      active.setMetric(Metric.PATCHES_DRAWN.ordinal(), patchesDrawn);
+      active.setMetric(Metric.TREES_DRAWN.ordinal(), treesDrawn);
+      active.setMetric(Metric.PREP_LANDSCAPE_US.ordinal(), prepLandscapeUs);
+      active.setMetric(Metric.PREP_TREES_US.ordinal(), prepTreesUs);
+    }
+  }
+
+  private long oldestUnresolvedFrame;
+
+  public void end() {
+    var active = ring;
+    if (claimed && active != null) {
+      gpuTimer.endFrame();
+      drainReadyFrames(active);
+    }
+    claimed = false;
+  }
+
+  private void drainReadyFrames(FrameTimeRing target) {
+    long current = target.currentFrame();
+    while (oldestUnresolvedFrame <= current) {
+      // If the query ring is about to overwrite oldestUnresolvedFrame, force resolve or mark unavailable
+      boolean mustEvict = (current - oldestUnresolvedFrame) >= GpuTimer.DEPTH;
+      if (gpuTimer.isAvailable(oldestUnresolvedFrame)) {
+        gpuTimer.resolve(oldestUnresolvedFrame, gpuNanos);
+        for (int pass = 0; pass < GPU_PASS_COUNT; pass++) {
+          target.setGpu(oldestUnresolvedFrame, pass, gpuNanos[pass]);
+        }
+        target.publishNext();
+        oldestUnresolvedFrame++;
+      } else if (mustEvict) {
+        for (int pass = 0; pass < GPU_PASS_COUNT; pass++) {
+          target.setGpu(oldestUnresolvedFrame, pass, FrameTimeRing.UNAVAILABLE);
+        }
+        target.publishNext();
+        oldestUnresolvedFrame++;
+      } else {
+        break;
+      }
+    }
+  }
+
+  private void startRecording() {
+    Path file =
+        directory.resolve(FILE_PREFIX + FILE_TIMESTAMP.format(LocalDateTime.now(ZoneId.systemDefault())) + FILE_SUFFIX);
+    var newRing = new FrameTimeRing(PHASE_COUNT, GPU_PASS_COUNT, METRIC_COUNT);
+    try {
+      writer = FrameTimeWriter.start(newRing, file);
+      ring = newRing;
+      oldestUnresolvedFrame = 0;
+      logger.info("Frame timing recording to " + file.toAbsolutePath());
+    } catch (IOException e) {
+      logger.log(Level.WARNING, "Unable to start frame timing recording", e);
+      DebugFlags.frame_timing = false;
+    }
+  }
+
+  private void stopRecording() {
+    var active = ring;
+    ring = null;
+    var activeWriter = writer;
+    writer = null;
+    claimed = false;
+    gpuTimer.endFrame();
+    if (active != null) {
+      active.publishRemaining();
+    }
+    if (activeWriter != null) {
+      activeWriter.close();
+      logger.info("Frame timing recording stopped");
+    }
+  }
+
+  @Override
+  public void close() {
+    stopRecording();
+  }
 }

@@ -1,35 +1,29 @@
 package com.oddlabs.tt.base.global;
 
-
 import java.nio.file.Path;
 
-/**
- * Foundational application configuration constants and default settings.
- */
+/// Foundational application configuration constants and default settings.
 public final class AppConfig {
-    public static final String GAME_NAME = "TribalTrouble";
-    public static final Path SETTINGS_FILE_NAME = Path.of("settings");
-    /**
-     * Default baked terrain texture resolution of 8 texels per 2-meter grid unit (25 cm/texel),
-     * providing smooth macro-level colour transitions while fine surface detail is supplied by
-     * high-frequency repeating detail textures.
-     */
-    public static final int DEFAULT_TEXELS_PER_GRID_UNIT = 8;
-    public static final boolean DEVELOPER_MODE = Boolean.getBoolean("com.oddlabs.tt.developer");
-    public static final boolean SAVE_EVENT_LOG = DEVELOPER_MODE;
-    /**
-     * true if simulation operates in legacy deterministic validation mode.
-     */
-    public static final boolean LEGACY_DETERMINISTIC = Boolean.getBoolean("com.oddlabs.tt.legacy.deterministic");
-    /**
-     * 4 - compatible with legacy simulation 764a309d28577fb37ae4608bebfda63a132c0fe8
-     * 5 - compatible with master branch
-     */
-    public static final int REVISION = LEGACY_DETERMINISTIC ? 4 : 5;
-    public static final boolean HIDE_MULTIPLAYER = true;
-    public static final int FRAME_GRAB_MILLISECONDS_PER_FRAME = 40;
+  public static final String GAME_NAME = "TribalTrouble";
+  public static final Path SETTINGS_FILE_NAME = Path.of("settings");
 
-    private AppConfig() {
-        // no instances
-    }
+  /// Default baked terrain texture resolution of 8 texels per 2-meter grid unit (25 cm/texel), providing smooth
+  /// macro-level colour transitions while fine surface detail is supplied by high-frequency repeating detail textures.
+  public static final int DEFAULT_TEXELS_PER_GRID_UNIT = 8;
+
+  public static final boolean DEVELOPER_MODE = Boolean.getBoolean("com.oddlabs.tt.developer");
+  public static final boolean SAVE_EVENT_LOG = DEVELOPER_MODE;
+
+  /// true if simulation operates in legacy deterministic validation mode.
+  public static final boolean LEGACY_DETERMINISTIC = Boolean.getBoolean("com.oddlabs.tt.legacy.deterministic");
+
+  /// 4 - compatible with legacy simulation 764a309d28577fb37ae4608bebfda63a132c0fe8 5 - compatible with master branch
+  public static final int REVISION = LEGACY_DETERMINISTIC ? 4 : 5;
+
+  public static final boolean HIDE_MULTIPLAYER = true;
+  public static final int FRAME_GRAB_MILLISECONDS_PER_FRAME = 40;
+
+  private AppConfig() {
+    // no instances
+  }
 }

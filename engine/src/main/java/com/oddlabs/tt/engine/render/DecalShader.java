@@ -4,252 +4,253 @@ import com.oddlabs.tt.engine.render.shader.FogShader;
 import com.oddlabs.tt.engine.render.shader.Shader;
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 
-/**
- * Renders instanced decals with optional fog and radial distortion.
- */
+/// Renders instanced decals with optional fog and radial distortion.
 final class DecalShader extends ShaderProgram implements FogShader {
 
-    private interface Uniforms {
-        String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
-        String TEXTURES = "u_textures";
-        String HEIGHT_MAP = "u_HeightMap";
-        String WORLD_SIZE = "u_WorldSize";
-        String DEPTH_BIAS = "u_DepthBias";
-    }
+  private interface Uniforms {
+    String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
+    String TEXTURES = "u_textures";
+    String HEIGHT_MAP = "u_HeightMap";
+    String WORLD_SIZE = "u_WorldSize";
+    String DEPTH_BIAS = "u_DepthBias";
+  }
 
-    private static final String VERTEX_SHADER = SHADER_HEADER +
-            GLOBAL_STATE_BLOCK + """
-                    layout(location = 0) in vec2 in_Position;      // Grid vertex (-0.5 to 0.5)
-                    layout(location = 4) in vec2 in_InstancePos;   // World X, Y
-                    layout(location = 5) in float in_InstanceSize; // Size in meters
-                    layout(location = 3) in vec4 in_InstanceColor; // RGBA
-                    layout(location = 6) in float in_InstancePattern; // Pattern ID
-                    layout(location = 7) in float in_InstanceOffsetScale; // Offset scale
-                    layout(location = 8) in float in_InstanceTextureSlot; // Texture unit (0..15)
-                    layout(location = 9) in float in_InstanceFlags; // bit 0: radial
-                    layout(location = 10) in float in_InstanceShadowOpacity;
+  private static final String VERTEX_SHADER =
+      SHADER_HEADER
+          + GLOBAL_STATE_BLOCK
+          + """
+          layout(location = 0) in vec2 in_Position;      // Grid vertex (-0.5 to 0.5)
+          layout(location = 4) in vec2 in_InstancePos;   // World X, Y
+          layout(location = 5) in float in_InstanceSize; // Size in meters
+          layout(location = 3) in vec4 in_InstanceColor; // RGBA
+          layout(location = 6) in float in_InstancePattern; // Pattern ID
+          layout(location = 7) in float in_InstanceOffsetScale; // Offset scale
+          layout(location = 8) in float in_InstanceTextureSlot; // Texture unit (0..15)
+          layout(location = 9) in float in_InstanceFlags; // bit 0: radial
+          layout(location = 10) in float in_InstanceShadowOpacity;
 
-                    uniform mat4 u_modelViewMatrix;
-                    uniform float u_WorldSize;
-                    uniform float u_DepthBias;
-                    uniform sampler2D u_HeightMap;
+          uniform mat4 u_modelViewMatrix;
+          uniform float u_WorldSize;
+          uniform float u_DepthBias;
+          uniform sampler2D u_HeightMap;
 
-                    out VS_OUT {
-                        vec2 TexCoord;
-                        flat vec2 ShadowOffset;
-                        vec4 Color;
-                        float Pattern;
-                        flat int TexSlot;
-                        flat int Flags;
-                        float ShadowOpacity;
-                        float fogDist;
-                    } vs_out;
+          out VS_OUT {
+              vec2 TexCoord;
+              flat vec2 ShadowOffset;
+              vec4 Color;
+              float Pattern;
+              flat int TexSlot;
+              flat int Flags;
+              float ShadowOpacity;
+              float fogDist;
+          } vs_out;
 
-                    void main() {
-                        vec2 localPos = in_Position * in_InstanceSize;
-                        vec2 worldPos = in_InstancePos + localPos;
+          void main() {
+              vec2 localPos = in_Position * in_InstanceSize;
+              vec2 worldPos = in_InstancePos + localPos;
 
-                        // Calculate planar height matching the terrain triangulation:
-                        // Each grid unit = 2.0 meters.
-                        vec2 gridPos = worldPos * 0.5;
-                        vec2 cell = floor(gridPos);
-                        vec2 f = gridPos - cell;
+              // Calculate planar height matching the terrain triangulation:
+              // Each grid unit = 2.0 meters.
+              vec2 gridPos = worldPos * 0.5;
+              vec2 cell = floor(gridPos);
+              vec2 f = gridPos - cell;
 
-                        ivec2 size = textureSize(u_HeightMap, 0);
-                        vec2 sizeVec = vec2(size);
+              ivec2 size = textureSize(u_HeightMap, 0);
+              vec2 sizeVec = vec2(size);
 
-                        ivec2 c00 = ivec2(mod(cell, sizeVec));
-                        ivec2 c10 = ivec2(mod(cell + vec2(1.0, 0.0), sizeVec));
-                        ivec2 c01 = ivec2(mod(cell + vec2(0.0, 1.0), sizeVec));
-                        ivec2 c11 = ivec2(mod(cell + vec2(1.0, 1.0), sizeVec));
+              ivec2 c00 = ivec2(mod(cell, sizeVec));
+              ivec2 c10 = ivec2(mod(cell + vec2(1.0, 0.0), sizeVec));
+              ivec2 c01 = ivec2(mod(cell + vec2(0.0, 1.0), sizeVec));
+              ivec2 c11 = ivec2(mod(cell + vec2(1.0, 1.0), sizeVec));
 
-                        float h00 = texelFetch(u_HeightMap, c00, 0).r;
-                        float h10 = texelFetch(u_HeightMap, c10, 0).r;
-                        float h01 = texelFetch(u_HeightMap, c01, 0).r;
-                        float h11 = texelFetch(u_HeightMap, c11, 0).r;
+              float h00 = texelFetch(u_HeightMap, c00, 0).r;
+              float h10 = texelFetch(u_HeightMap, c10, 0).r;
+              float h01 = texelFetch(u_HeightMap, c01, 0).r;
+              float h11 = texelFetch(u_HeightMap, c11, 0).r;
 
-                        float h;
-                        if (f.x + f.y < 1.0) {
-                            h = h00 + f.x * (h10 - h00) + f.y * (h01 - h00);
-                        } else {
-                            h = h11 + (1.0 - f.x) * (h01 - h11) + (1.0 - f.y) * (h10 - h11);
-                        }
+              float h;
+              if (f.x + f.y < 1.0) {
+                  h = h00 + f.x * (h10 - h00) + f.y * (h01 - h00);
+              } else {
+                  h = h11 + (1.0 - f.x) * (h01 - h11) + (1.0 - f.y) * (h10 - h11);
+              }
 
-                        vec4 viewPosition = u_modelViewMatrix * vec4(worldPos, h, 1.0);
-                        viewPosition.z += u_DepthBias;
+              vec4 viewPosition = u_modelViewMatrix * vec4(worldPos, h, 1.0);
+              viewPosition.z += u_DepthBias;
 
-                        gl_Position = u_projectionMatrix * viewPosition;
-                        vs_out.fogDist = length(viewPosition.xyz);
+              gl_Position = u_projectionMatrix * viewPosition;
+              vs_out.fogDist = length(viewPosition.xyz);
 
-                        // Pass local grid position (-0.5..0.5) to fragment shader
-                        vs_out.TexCoord = in_Position;
-                        vs_out.Color = in_InstanceColor;
-                        vs_out.Pattern = in_InstancePattern;
-                        vs_out.TexSlot = int(in_InstanceTextureSlot + 0.5);
-                        vs_out.Flags = int(in_InstanceFlags + 0.5);
-                        vs_out.ShadowOpacity = in_InstanceShadowOpacity;
+              // Pass local grid position (-0.5..0.5) to fragment shader
+              vs_out.TexCoord = in_Position;
+              vs_out.Color = in_InstanceColor;
+              vs_out.Pattern = in_InstancePattern;
+              vs_out.TexSlot = int(in_InstanceTextureSlot + 0.5);
+              vs_out.Flags = int(in_InstanceFlags + 0.5);
+              vs_out.ShadowOpacity = in_InstanceShadowOpacity;
 
-                        // Shadow offset in local decal space (±0.5 = quad edge = one radius).
-                        // Cast shadow away from the sun direction.
-                        if ((vs_out.Flags & 1) != 0) { // Radial flag
-                            vs_out.ShadowOffset = u_lightDirection.xy * 0.225 * in_InstanceOffsetScale;
-                        } else {
-                            vs_out.ShadowOffset = vec2(0.0);
-                        }
-                    }
-                    """;
+              // Shadow offset in local decal space (±0.5 = quad edge = one radius).
+              // Cast shadow away from the sun direction.
+              if ((vs_out.Flags & 1) != 0) { // Radial flag
+                  vs_out.ShadowOffset = u_lightDirection.xy * 0.225 * in_InstanceOffsetScale;
+              } else {
+                  vs_out.ShadowOffset = vec2(0.0);
+              }
+          }
+          """;
 
-    private static final String FRAGMENT_SHADER = SHADER_HEADER +
-            GLOBAL_STATE_BLOCK +
-            FOG_FUNCTION
-            + """
-                    uniform sampler2D u_textures[14];
+  private static final String FRAGMENT_SHADER =
+      SHADER_HEADER
+          + GLOBAL_STATE_BLOCK
+          + FOG_FUNCTION
+          + """
+          uniform sampler2D u_textures[14];
 
-                    in VS_OUT {
-                        vec2 TexCoord;
-                        flat vec2 ShadowOffset;
-                        vec4 Color;
-                        float Pattern;
-                        flat int TexSlot;
-                        flat int Flags;
-                        float ShadowOpacity;
-                        float fogDist;
-                    } fs_in;
+          in VS_OUT {
+              vec2 TexCoord;
+              flat vec2 ShadowOffset;
+              vec4 Color;
+              float Pattern;
+              flat int TexSlot;
+              flat int Flags;
+              float ShadowOpacity;
+              float fogDist;
+          } fs_in;
 
-                    layout(location = 0) out vec4 out_FragColor;
-                    layout(location = 1) out vec4 out_MaskColor;
+          layout(location = 0) out vec4 out_FragColor;
+          layout(location = 1) out vec4 out_MaskColor;
 
-                    vec4 sampleDecal(vec2 uv) {
-                        switch (fs_in.TexSlot) {
-                            case 0: return texture(u_textures[0], uv);
-                            case 1: return texture(u_textures[1], uv);
-                            case 2: return texture(u_textures[2], uv);
-                            case 3: return texture(u_textures[3], uv);
-                            case 4: return texture(u_textures[4], uv);
-                            case 5: return texture(u_textures[5], uv);
-                            case 6: return texture(u_textures[6], uv);
-                            case 7: return texture(u_textures[7], uv);
-                            case 8: return texture(u_textures[8], uv);
-                            case 9: return texture(u_textures[9], uv);
-                            case 10: return texture(u_textures[10], uv);
-                            case 11: return texture(u_textures[11], uv);
-                            case 12: return texture(u_textures[12], uv);
-                            case 13: return texture(u_textures[13], uv);
-                            default: return texture(u_textures[0], uv);
-                        }
-                    }
+          vec4 sampleDecal(vec2 uv) {
+              switch (fs_in.TexSlot) {
+                  case 0: return texture(u_textures[0], uv);
+                  case 1: return texture(u_textures[1], uv);
+                  case 2: return texture(u_textures[2], uv);
+                  case 3: return texture(u_textures[3], uv);
+                  case 4: return texture(u_textures[4], uv);
+                  case 5: return texture(u_textures[5], uv);
+                  case 6: return texture(u_textures[6], uv);
+                  case 7: return texture(u_textures[7], uv);
+                  case 8: return texture(u_textures[8], uv);
+                  case 9: return texture(u_textures[9], uv);
+                  case 10: return texture(u_textures[10], uv);
+                  case 11: return texture(u_textures[11], uv);
+                  case 12: return texture(u_textures[12], uv);
+                  case 13: return texture(u_textures[13], uv);
+                  default: return texture(u_textures[0], uv);
+              }
+          }
 
-                    void main() {
-                        vec4 baseColor;
-                        if ((fs_in.Flags & 1) != 0) { // Radial flag
-                            // Ring: sample at unshifted position so it stays centred on the unit.
-                            float dist = length(fs_in.TexCoord) * 2.5;
+          void main() {
+              vec4 baseColor;
+              if ((fs_in.Flags & 1) != 0) { // Radial flag
+                  // Ring: sample at unshifted position so it stays centred on the unit.
+                  float dist = length(fs_in.TexCoord) * 2.5;
 
-                            // Shadow: sampled at a position offset opposite the light direction
-                            // so the blob falls behind the unit while the ring stays centred.
-                            float shadowDist = length(fs_in.TexCoord - fs_in.ShadowOffset) * 2.5;
-                            float shadowAlpha = sampleDecal(vec2(shadowDist * 2.0, 0.5)).g;
-                            vec4 baseSample = sampleDecal(vec2(dist * 2.0, 0.5));
+                  // Shadow: sampled at a position offset opposite the light direction
+                  // so the blob falls behind the unit while the ring stays centred.
+                  float shadowDist = length(fs_in.TexCoord - fs_in.ShadowOffset) * 2.5;
+                  float shadowAlpha = sampleDecal(vec2(shadowDist * 2.0, 0.5)).g;
+                  vec4 baseSample = sampleDecal(vec2(dist * 2.0, 0.5));
 
-                            float ringAlpha = 0.0;
+                  float ringAlpha = 0.0;
 
-                            if (fs_in.Pattern > 0.5) { // Any active pattern (Selection/Target)
-                                float angle = atan(fs_in.TexCoord.y, fs_in.TexCoord.x);
-                                if (fs_in.Pattern < 1.5) { // Pattern 1: Friendly (Throb)
-                                    float offset = 0.03 * sin(u_globalTime * 4.0);
-                                    ringAlpha = sampleDecal(vec2((dist - offset) * 2.0, 0.5)).r;
-                                }
-                                else if (fs_in.Pattern < 2.5) { // Pattern 2: Neutral/Ally (Marching Ants)
-                                    float ants = step(0.5, fract(angle * 10.0 / 6.28318 + u_globalTime * 2.0));
-                                    ringAlpha = baseSample.r * (0.4 + 0.6 * ants);
-                                }
-                                else if (fs_in.Pattern < 3.5) { // Pattern 3: Enemy (Aggressive Double Ring)
-                                    float o1 = 0.03 * sin(u_globalTime * 12.0);
-                                    float r1 = sampleDecal(vec2((dist - o1) * 2.0, 0.5)).r;
-                                    float r2 = sampleDecal(vec2((dist + 0.12) * 2.0, 0.5)).r;
-                                    ringAlpha = max(r1, r2);
-                                }
-                                else if (fs_in.Pattern < 4.5) { // Pattern 4: Friendly Building (Minimal Throb)
-                                    float offset = 0.01 * sin(u_globalTime * 2.0);
-                                    ringAlpha = sampleDecal(vec2((dist - offset) * 2.0, 0.5)).r;
-                                }
-                                else if (fs_in.Pattern < 5.5) { // Pattern 5: Neutral Building (Static Ring + Marching Ants)
-                                    float ants = step(0.5, fract(angle * 15.0 / 6.28318 + u_globalTime * 1.0));
-                                    ringAlpha = baseSample.r * (0.4 + 0.6 * ants);
-                                }
-                                else { // Pattern 6: Enemy Building (Double Ring + Minimal Throb)
-                                    float o1 = 0.01 * sin(u_globalTime * 2.0);
-                                    float r1 = sampleDecal(vec2((dist - o1) * 2.0, 0.5)).r;
-                                    float r2 = sampleDecal(vec2((dist + 0.12) * 2.0, 0.5)).r;
-                                    ringAlpha = max(r1, r2);
-                                }
-                            } else {
-                                ringAlpha = baseSample.r;
-                            }
+                  if (fs_in.Pattern > 0.5) { // Any active pattern (Selection/Target)
+                      float angle = atan(fs_in.TexCoord.y, fs_in.TexCoord.x);
+                      if (fs_in.Pattern < 1.5) { // Pattern 1: Friendly (Throb)
+                          float offset = 0.03 * sin(u_globalTime * 4.0);
+                          ringAlpha = sampleDecal(vec2((dist - offset) * 2.0, 0.5)).r;
+                      }
+                      else if (fs_in.Pattern < 2.5) { // Pattern 2: Neutral/Ally (Marching Ants)
+                          float ants = step(0.5, fract(angle * 10.0 / 6.28318 + u_globalTime * 2.0));
+                          ringAlpha = baseSample.r * (0.4 + 0.6 * ants);
+                      }
+                      else if (fs_in.Pattern < 3.5) { // Pattern 3: Enemy (Aggressive Double Ring)
+                          float o1 = 0.03 * sin(u_globalTime * 12.0);
+                          float r1 = sampleDecal(vec2((dist - o1) * 2.0, 0.5)).r;
+                          float r2 = sampleDecal(vec2((dist + 0.12) * 2.0, 0.5)).r;
+                          ringAlpha = max(r1, r2);
+                      }
+                      else if (fs_in.Pattern < 4.5) { // Pattern 4: Friendly Building (Minimal Throb)
+                          float offset = 0.01 * sin(u_globalTime * 2.0);
+                          ringAlpha = sampleDecal(vec2((dist - offset) * 2.0, 0.5)).r;
+                      }
+                      else if (fs_in.Pattern < 5.5) { // Pattern 5: Neutral Building (Static Ring + Marching Ants)
+                          float ants = step(0.5, fract(angle * 15.0 / 6.28318 + u_globalTime * 1.0));
+                          ringAlpha = baseSample.r * (0.4 + 0.6 * ants);
+                      }
+                      else { // Pattern 6: Enemy Building (Double Ring + Minimal Throb)
+                          float o1 = 0.01 * sin(u_globalTime * 2.0);
+                          float r1 = sampleDecal(vec2((dist - o1) * 2.0, 0.5)).r;
+                          float r2 = sampleDecal(vec2((dist + 0.12) * 2.0, 0.5)).r;
+                          ringAlpha = max(r1, r2);
+                      }
+                  } else {
+                      ringAlpha = baseSample.r;
+                  }
 
-                            // Contact Ambient Occlusion: tight non-offset core directly under the unit's base
-                            float contactAlpha = exp(-dist * dist * 12.0) * 0.40;
-                            float combinedShadow = max(shadowAlpha, contactAlpha);
+                  // Contact Ambient Occlusion: tight non-offset core directly under the unit's base
+                  float contactAlpha = exp(-dist * dist * 12.0) * 0.40;
+                  float combinedShadow = max(shadowAlpha, contactAlpha);
 
-                            // Composition: Apply Ring OVER Shadow
-                            float a_r = ringAlpha * 0.8 * fs_in.Color.a; // 80% opacity for selection rings
-                            float a_s = combinedShadow * fs_in.ShadowOpacity;     // opacity scaled by shadow opacity
+                  // Composition: Apply Ring OVER Shadow
+                  float a_r = ringAlpha * 0.8 * fs_in.Color.a; // 80% opacity for selection rings
+                  float a_s = combinedShadow * fs_in.ShadowOpacity;     // opacity scaled by shadow opacity
 
-                            float finalAlpha = a_r + a_s * (1.0 - a_r);
+                  float finalAlpha = a_r + a_s * (1.0 - a_r);
 
-                            // Final output is premultiplied:
-                            // Selection rings get fs_in.Color, unpolluted by ambient light.
-                            // Shadows receive soft ambient skylight fill.
-                            vec3 ringRgb = fs_in.Color.rgb * a_r;
-                            vec3 skyHue = u_fogColor.rgb / max(max(u_fogColor.r, u_fogColor.g), max(u_fogColor.b, 0.01));
-                            vec3 shadowAmbient = u_globalAmbient.rgb * skyHue * 0.10;
-                            vec3 shadowRgb = shadowAmbient * a_s * (1.0 - a_r);
-                            baseColor = vec4(ringRgb + shadowRgb, finalAlpha);
-                        } else {
-                            // Standard 2D sampling (Square Building Sites and Impact Cracks)
-                            baseColor = sampleDecal(fs_in.TexCoord + 0.5) * fs_in.Color;
-                            if (fs_in.Pattern > 9.5) {
-                                float dist = length(fs_in.TexCoord);
-                                float maskRadius = fs_in.Pattern - 10.0;
-                                float edgeWidth = 0.05;
-                                float alphaScale = 1.0 - smoothstep(maskRadius - edgeWidth, maskRadius, dist);
-                                baseColor.a *= alphaScale * fs_in.ShadowOpacity;
-                                if (maskRadius > 0.0) {
-                                    float t = clamp(dist / maskRadius, 0.0, 1.0);
-                                    vec3 glowColor = vec3(2.0, 0.4, 0.0) * (1.0 - t) * (1.0 - t);
-                                    baseColor.rgb = glowColor * fs_in.Color.rgb * baseColor.a;
-                                } else {
-                                    baseColor.rgb = vec3(0.0);
-                                }
-                            } else {
-                                baseColor.rgb *= baseColor.a; // Premultiply for consistency
-                            }
-                        }
+                  // Final output is premultiplied:
+                  // Selection rings get fs_in.Color, unpolluted by ambient light.
+                  // Shadows receive soft ambient skylight fill.
+                  vec3 ringRgb = fs_in.Color.rgb * a_r;
+                  vec3 skyHue = u_fogColor.rgb / max(max(u_fogColor.r, u_fogColor.g), max(u_fogColor.b, 0.01));
+                  vec3 shadowAmbient = u_globalAmbient.rgb * skyHue * 0.10;
+                  vec3 shadowRgb = shadowAmbient * a_s * (1.0 - a_r);
+                  baseColor = vec4(ringRgb + shadowRgb, finalAlpha);
+              } else {
+                  // Standard 2D sampling (Square Building Sites and Impact Cracks)
+                  baseColor = sampleDecal(fs_in.TexCoord + 0.5) * fs_in.Color;
+                  if (fs_in.Pattern > 9.5) {
+                      float dist = length(fs_in.TexCoord);
+                      float maskRadius = fs_in.Pattern - 10.0;
+                      float edgeWidth = 0.05;
+                      float alphaScale = 1.0 - smoothstep(maskRadius - edgeWidth, maskRadius, dist);
+                      baseColor.a *= alphaScale * fs_in.ShadowOpacity;
+                      if (maskRadius > 0.0) {
+                          float t = clamp(dist / maskRadius, 0.0, 1.0);
+                          vec3 glowColor = vec3(2.0, 0.4, 0.0) * (1.0 - t) * (1.0 - t);
+                          baseColor.rgb = glowColor * fs_in.Color.rgb * baseColor.a;
+                      } else {
+                          baseColor.rgb = vec3(0.0);
+                      }
+                  } else {
+                      baseColor.rgb *= baseColor.a; // Premultiply for consistency
+                  }
+              }
 
-                        float fogFactor = calculateFogFactor(fs_in.fogDist, gl_FragCoord.xy);
-                        // For premultiplied alpha, the fog color must also be weighted by alpha
-                        // to correctly blend with the background.
-                        vec3 litColor = mix(u_fogColor.rgb * baseColor.a, baseColor.rgb, fogFactor);
-                        out_FragColor = vec4(litColor, baseColor.a);
+              float fogFactor = calculateFogFactor(fs_in.fogDist, gl_FragCoord.xy);
+              // For premultiplied alpha, the fog color must also be weighted by alpha
+              // to correctly blend with the background.
+              vec3 litColor = mix(u_fogColor.rgb * baseColor.a, baseColor.rgb, fogFactor);
+              out_FragColor = vec4(litColor, baseColor.a);
 
-                        // Shadows/Decals NEVER mark the mask buffer.
-                        out_MaskColor = vec4(0.0);
-                    }
-                    """;
+              // Shadows/Decals NEVER mark the mask buffer.
+              out_MaskColor = vec4(0.0);
+          }
+          """;
 
-    final int locModelViewMatrix;
-    final int locWorldSize;
-    final int locDepthBias;
-    final int locHeightMap;
-    final int locTextures;
+  final int locModelViewMatrix;
+  final int locWorldSize;
+  final int locDepthBias;
+  final int locHeightMap;
+  final int locTextures;
 
-    DecalShader() {
-        super(VERTEX_SHADER, FRAGMENT_SHADER);
-        link();
-        locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
-        locWorldSize = getUniformLocation(Uniforms.WORLD_SIZE);
-        locDepthBias = getUniformLocation(Uniforms.DEPTH_BIAS);
-        locHeightMap = getUniformLocation(Uniforms.HEIGHT_MAP);
-        locTextures = getUniformLocation(Uniforms.TEXTURES);
-    }
+  DecalShader() {
+    super(VERTEX_SHADER, FRAGMENT_SHADER);
+    link();
+    locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
+    locWorldSize = getUniformLocation(Uniforms.WORLD_SIZE);
+    locDepthBias = getUniformLocation(Uniforms.DEPTH_BIAS);
+    locHeightMap = getUniformLocation(Uniforms.HEIGHT_MAP);
+    locTextures = getUniformLocation(Uniforms.TEXTURES);
+  }
 }

@@ -3,35 +3,35 @@ package com.oddlabs.tt.simulation.model;
 import com.oddlabs.tt.simulation.landscape.World;
 
 public final class RubberSupplyManager extends SupplyManager {
-    private static final float SLEEP_TICKS = 60;
-    private static final int MAX_NUM_GROUPS = 3;
+  private static final float SLEEP_TICKS = 60;
+  private static final int MAX_NUM_GROUPS = 3;
 
-    private int current_groups = 0;
+  private int current_groups = 0;
 
-    public RubberSupplyManager(World world) {
-        super(world);
-    }
+  public RubberSupplyManager(World world) {
+    super(world);
+  }
 
-    @Override
-    protected float getSleepTime() {
-        return SLEEP_TICKS;
-    }
+  @Override
+  protected float getSleepTime() {
+    return SLEEP_TICKS;
+  }
 
-    @Override
-    protected boolean shouldSpawn() {
-        return current_groups < MAX_NUM_GROUPS;
-    }
+  @Override
+  protected boolean shouldSpawn() {
+    return current_groups < MAX_NUM_GROUPS;
+  }
 
-    @Override
-    protected void insertSupply() {
-        new RubberGroup(getWorld());
-    }
+  @Override
+  protected void insertSupply() {
+    new RubberGroup(getWorld());
+  }
 
-    public void newGroup() {
-        current_groups++;
-    }
+  public void newGroup() {
+    current_groups++;
+  }
 
-    public void emptyGroup() {
-        current_groups--;
-    }
+  public void emptyGroup() {
+    current_groups--;
+  }
 }

@@ -1,6 +1,4 @@
-/**
- * Procedural geometric shapes, patterns, and gradients.
- */
+/** Procedural geometric shapes, patterns, and gradients. */
 @NullMarked
 package com.oddlabs.tt.procedural.shape;
 

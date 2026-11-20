@@ -1,8 +1,8 @@
 package com.oddlabs.tt.content.menu;
 
 import com.oddlabs.tt.client.camera.Camera;
-import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.client.settings.InGameOptionsMenu;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.gui.MenuButton;
@@ -14,89 +14,87 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Main menu overlay displayable during gameplay.
- */
+/// Main menu overlay displayable during gameplay.
 public final class InGameMainMenu extends Menu {
-    private final WorldViewer viewer;
+  private final WorldViewer viewer;
 
-    private @Nullable Group game_infos;
+  private @Nullable Group game_infos;
 
-    public InGameMainMenu(WorldViewer viewer, Camera camera) {
-        super(viewer.getGUIRoot(), camera, viewer.getPeer(), viewer.getScreenManager());
-        this.viewer = viewer;
-        reload();
+  public InGameMainMenu(WorldViewer viewer, Camera camera) {
+    super(viewer.getGUIRoot(), camera, viewer.getPeer(), viewer.getScreenManager());
+    this.viewer = viewer;
+    reload();
+  }
+
+  @Override
+  protected void doAdd() {
+    super.doAdd();
+    viewer.setPaused(true);
+  }
+
+  @Override
+  protected void doRemove() {
+    super.doRemove();
+    viewer.setPaused(false);
+  }
+
+  public void addAbortButton(String abort_text) {
+    MenuButton abort = new MenuButton(getGUIRoot(), abort_text, COLOR_NORMAL, COLOR_ACTIVE);
+    addChild(abort);
+    abort.addMouseClickListener(new AbortListener());
+  }
+
+  @Override
+  protected void addButtons() {
+    addResumeButton();
+
+    addOptionsButton(() -> new InGameOptionsMenu(viewer));
+
+    game_infos = new Group(getGUIRoot(), false);
+    if (viewer.getInGameInfo() instanceof InGameMenuHook hook) {
+      hook.addGUI(viewer, this, game_infos);
     }
+    addChild(game_infos);
 
+    addExitButton();
+  }
+
+  @Override
+  public void displayChangedNotify(int width, int height) {
+    super.displayChangedNotify(width, height);
+    if (game_infos != null)
+      game_infos.setPos((width - game_infos.getWidth()) / 2, (height - game_infos.getHeight()) / 2);
+  }
+
+  @Override
+  public void handleInput(InputEvent event) {
+    if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
+      if (event.consumeAction(GameAction.UI_CANCEL)) {
+        pop();
+        event.consume();
+        return;
+      }
+    }
+    super.handleInput(event);
+  }
+
+  @Override
+  protected void renderGeometry(GUIRenderer renderer) {
+    super.renderGeometry(renderer);
+    renderBackgroundAlpha(renderer);
+  }
+
+  private final class AbortListener implements MouseClickListener {
     @Override
-    protected void doAdd() {
-        super.doAdd();
-        viewer.setPaused(true);
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {
+      setMenuCentered(new QuestionForm(getGUIRoot(), Menu.i18n("end_game_confirm"), new ActionAbortListener()));
     }
+  }
 
+  private final class ActionAbortListener implements MouseClickListener {
     @Override
-    protected void doRemove() {
-        super.doRemove();
-        viewer.setPaused(false);
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {
+      viewer.abort();
     }
-
-    public void addAbortButton(String abort_text) {
-        MenuButton abort = new MenuButton(getGUIRoot(), abort_text, COLOR_NORMAL, COLOR_ACTIVE);
-        addChild(abort);
-        abort.addMouseClickListener(new AbortListener());
-    }
-
-    @Override
-    protected void addButtons() {
-        addResumeButton();
-
-        addOptionsButton(() -> new InGameOptionsMenu(viewer));
-
-        game_infos = new Group(getGUIRoot(), false);
-        if (viewer.getInGameInfo() instanceof InGameMenuHook hook) {
-            hook.addGUI(viewer, this, game_infos);
-        }
-        addChild(game_infos);
-
-        addExitButton();
-    }
-
-    @Override
-    public void displayChangedNotify(int width, int height) {
-        super.displayChangedNotify(width, height);
-        if (game_infos != null)
-            game_infos.setPos((width - game_infos.getWidth()) / 2, (height - game_infos.getHeight()) / 2);
-    }
-
-    @Override
-    public void handleInput(InputEvent event) {
-        if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
-            if (event.consumeAction(GameAction.UI_CANCEL)) {
-                pop();
-                event.consume();
-                return;
-            }
-        }
-        super.handleInput(event);
-    }
-
-    @Override
-    protected void renderGeometry(GUIRenderer renderer) {
-        super.renderGeometry(renderer);
-        renderBackgroundAlpha(renderer);
-    }
-
-    private final class AbortListener implements MouseClickListener {
-        @Override
-        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            setMenuCentered(new QuestionForm(getGUIRoot(), Menu.i18n("end_game_confirm"), new ActionAbortListener()));
-        }
-    }
-
-    private final class ActionAbortListener implements MouseClickListener {
-        @Override
-        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            viewer.abort();
-        }
-    }
+  }
 }

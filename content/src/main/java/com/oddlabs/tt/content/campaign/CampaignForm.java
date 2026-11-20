@@ -1,23 +1,25 @@
 package com.oddlabs.tt.content.campaign;
 
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
+
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.content.campaign.natives.NativeCampaign;
 import com.oddlabs.tt.content.campaign.viking.VikingCampaign;
-import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Form;
-import com.oddlabs.tt.gui.QuestionForm;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.gui.QuestionForm;
 import com.oddlabs.tt.gui.event.RowListener;
-import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.util.DeterministicSerializerLoopbackInterface;
-
 import java.io.FileNotFoundException;
 import java.io.InvalidClassException;
 import java.nio.file.NoSuchFileException;
@@ -25,152 +27,153 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.gui.Placement.LEFT_MID;
+/// Menu form for selecting, creating, or loading campaigns.
+public final class CampaignForm extends Form implements DeterministicSerializerLoopbackInterface<CampaignState[]> {
+  private static final Logger logger = Logger.getLogger(CampaignForm.class.getSimpleName());
 
-/**
- * Menu form for selecting, creating, or loading campaigns.
- */
-public final class CampaignForm extends Form implements DeterministicSerializerLoopbackInterface<
-        CampaignState[]> {
-    private static final Logger logger = Logger.getLogger(CampaignForm.class.getSimpleName());
+  private final HorizButton button_vikings;
+  private final HorizButton button_load;
+  private final HorizButton button_delete;
+  private final LoadCampaignBox load_campaign_box;
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(CampaignForm.class.getName());
 
-    private final HorizButton button_vikings;
-    private final HorizButton button_load;
-    private final HorizButton button_delete;
-    private final LoadCampaignBox load_campaign_box;
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(CampaignForm.class.getName());
+  private static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
 
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
-    }
+  private final GUIRoot gui_root;
+  private final Menu main_menu;
 
-    private final GUIRoot gui_root;
-    private final Menu main_menu;
+  public CampaignForm(Menu main_menu) {
+    super(main_menu.getGUIRoot());
+    this.main_menu = main_menu;
+    this.gui_root = main_menu.getGUIRoot();
+    Label headline = new Label(i18n("campaign"), getSkin().getHeadlineFont());
+    addChild(headline);
 
-    public CampaignForm(Menu main_menu) {
-        super(main_menu.getGUIRoot());
-        this.main_menu = main_menu;
-        this.gui_root = main_menu.getGUIRoot();
-        Label headline = new Label(i18n("campaign"), getSkin().getHeadlineFont());
-        addChild(headline);
+    button_delete = new HorizButton(gui_root, i18n("delete"), 120);
+    button_delete.addMouseClickListener(this::mouseClickedDelete);
+    button_delete.setDisabled(true);
 
-        button_delete = new HorizButton(gui_root, i18n("delete"), 120);
-        button_delete.addMouseClickListener(this::mouseClickedDelete);
-        button_delete.setDisabled(true);
+    button_vikings = new HorizButton(gui_root, i18n("new"), 120);
+    button_vikings.addMouseClickListener(
+        (_, _, _, _) -> main_menu.setMenu(new NewCampaignForm(main_menu, CampaignForm.this)));
 
-        button_vikings = new HorizButton(gui_root, i18n("new"), 120);
-        button_vikings.addMouseClickListener((_, _, _, _) -> main_menu.setMenu(new NewCampaignForm(
-                main_menu, CampaignForm.this)));
+    button_load = new HorizButton(gui_root, i18n("load"), 120);
+    button_load.setDisabled(true);
 
-        button_load = new HorizButton(gui_root, i18n("load"), 120);
-        button_load.setDisabled(true);
+    HorizButton button_cancel = new CancelButton(gui_root, 120);
+    button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
 
-        HorizButton button_cancel = new CancelButton(gui_root, 120);
-        button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
+    // Combo box
+    RowListener<CampaignState> listListener =
+        new RowListener<>() {
+          @Override
+          public void rowDoubleClicked(CampaignState object) {
+            load(object);
+          }
 
-        // Combo box
-        RowListener<CampaignState> listListener = new RowListener<>() {
-            @Override
-            public void rowDoubleClicked(CampaignState object) {
-                load(object);
-            }
-
-            @Override
-            public void rowChosen(CampaignState object) {
-                button_delete.setDisabled(false);
-                button_load.setDisabled(false);
-            }
+          @Override
+          public void rowChosen(CampaignState object) {
+            button_delete.setDisabled(false);
+            button_load.setDisabled(false);
+          }
         };
-        load_campaign_box = new LoadCampaignBox(gui_root, listListener, main_menu.getPeer().getEventQueue()
-                .getDeterministic(), main_menu.getPeer().getGamePaths().dataDir());
+    load_campaign_box =
+        new LoadCampaignBox(
+            gui_root,
+            listListener,
+            main_menu.getPeer().getEventQueue().getDeterministic(),
+            main_menu.getPeer().getGamePaths().dataDir());
 
-        // Add listener after load_campaign_box is initialized
-        button_load.addMouseClickListener((_, _, _, _) -> {
-            CampaignState selected = load_campaign_box.getSelected();
-            if (selected != null)
-                load(selected);
-        });
+    // Add listener after load_campaign_box is initialized
+    button_load.addMouseClickListener((_, _, _, _) -> {
+      CampaignState selected = load_campaign_box.getSelected();
+      if (selected != null) load(selected);
+    });
 
-        // Add objects
-        addChild(button_delete);
-        addChild(button_vikings);
-        addChild(load_campaign_box);
-        addChild(button_load);
-        addChild(button_cancel);
+    // Add objects
+    addChild(button_delete);
+    addChild(button_vikings);
+    addChild(load_campaign_box);
+    addChild(button_load);
+    addChild(button_cancel);
 
-        // Place objects
-        headline.place();
-        load_campaign_box.place(button_vikings, BOTTOM_LEFT);
-        button_cancel.place(Origin.AT_END);
-        button_delete.place(button_cancel, LEFT_MID);
-        button_load.place(button_delete, LEFT_MID);
-        button_vikings.place(button_load, LEFT_MID);
+    // Place objects
+    headline.place();
+    load_campaign_box.place(button_vikings, BOTTOM_LEFT);
+    button_cancel.place(Origin.AT_END);
+    button_delete.place(button_cancel, LEFT_MID);
+    button_load.place(button_delete, LEFT_MID);
+    button_vikings.place(button_load, LEFT_MID);
 
-        // headline
-        compileCanvas();
-        centerPos();
+    // headline
+    compileCanvas();
+    centerPos();
+  }
+
+  @Override
+  public void setFocus(FocusDirection direction) {
+    if (direction == FocusDirection.BACKWARD) {
+      super.setFocus(direction);
+    } else {
+      button_vikings.setFocus(direction);
     }
+  }
 
-    @Override
-    public void setFocus(FocusDirection direction) {
-        if (direction == FocusDirection.BACKWARD) {
-            super.setFocus(direction);
+  public void load(CampaignState campaign_state) {
+    Campaign campaign =
+        campaign_state.getRace() == Race.VIKINGS
+            ? new VikingCampaign(campaign_state, main_menu)
+            : new NativeCampaign(campaign_state, main_menu);
+    setDisabled(true);
+    if (campaign_state.getIslandState(0) == CampaignState.ISLAND_COMPLETED) {
+      campaign.pushDelegate();
+    } else campaign.startIsland(gui_root, 0);
+  }
+
+  @Override
+  public void saveSucceeded() {
+    load_campaign_box.refresh();
+  }
+
+  @Override
+  public void loadSucceeded(CampaignState[] campaign_states) {
+    CampaignState selected = load_campaign_box.getSelected();
+    if (selected != null) {
+      CampaignState[] new_states = new CampaignState[campaign_states.length - 1];
+      int offset = 0;
+      for (int i = 0; i < campaign_states.length; i++) {
+        if (campaign_states[i].getName().equals(selected.getName())) {
+          offset = 1;
         } else {
-            button_vikings.setFocus(direction);
+          new_states[i - offset] = campaign_states[i];
         }
+      }
+      LoadCampaignBox.saveSavegames(main_menu.getPeer(), new_states, this);
     }
+  }
 
-    public void load(CampaignState campaign_state) {
-        Campaign campaign = campaign_state.getRace() == Race.VIKINGS
-                ? new VikingCampaign(campaign_state, main_menu)
-                : new NativeCampaign(campaign_state, main_menu);
-        setDisabled(true);
-        if (campaign_state.getIslandState(0) == CampaignState.ISLAND_COMPLETED) {
-            campaign.pushDelegate();
-        } else
-            campaign.startIsland(gui_root, 0);
+  @Override
+  public void failed(Throwable e) {
+    if (e instanceof FileNotFoundException || e instanceof NoSuchFileException) {
+    } else if (e instanceof InvalidClassException || e instanceof ClassNotFoundException) {
+    } else {
+      logger.log(Level.SEVERE, "Load failed", e);
+      String failed_message = i18n("failed_message", LoadCampaignBox.SAVEGAMES_FILE_NAME, e.getMessage());
+      gui_root.addModalForm(new MessageForm(gui_root, failed_message));
     }
+  }
 
-    @Override
-    public void saveSucceeded() {
-        load_campaign_box.refresh();
+  private void mouseClickedDelete(MouseButton button, int x, int y, int clicks) {
+    CampaignState state = load_campaign_box.getSelected();
+    if (state != null) {
+      String confirm_str = i18n("confirm_delete", state.getName());
+      gui_root.addModalForm(
+          new QuestionForm(
+              gui_root,
+              confirm_str,
+              (_, _, _, _) -> LoadCampaignBox.loadSavegames(main_menu.getPeer(), CampaignForm.this)));
     }
-
-    @Override
-    public void loadSucceeded(CampaignState[] campaign_states) {
-        CampaignState selected = load_campaign_box.getSelected();
-        if (selected != null) {
-            CampaignState[] new_states = new CampaignState[campaign_states.length - 1];
-            int offset = 0;
-            for (int i = 0; i < campaign_states.length; i++) {
-                if (campaign_states[i].getName().equals(selected.getName())) {
-                    offset = 1;
-                } else {
-                    new_states[i - offset] = campaign_states[i];
-                }
-            }
-            LoadCampaignBox.saveSavegames(main_menu.getPeer(), new_states, this);
-        }
-    }
-
-    @Override
-    public void failed(Throwable e) {
-        if (e instanceof FileNotFoundException || e instanceof NoSuchFileException) {
-        } else if (e instanceof InvalidClassException || e instanceof ClassNotFoundException) {
-        } else {
-            logger.log(Level.SEVERE, "Load failed", e);
-            String failed_message = i18n("failed_message", LoadCampaignBox.SAVEGAMES_FILE_NAME, e.getMessage());
-            gui_root.addModalForm(new MessageForm(gui_root, failed_message));
-        }
-    }
-
-    private void mouseClickedDelete(MouseButton button, int x, int y, int clicks) {
-        CampaignState state = load_campaign_box.getSelected();
-        if (state != null) {
-            String confirm_str = i18n("confirm_delete", state.getName());
-            gui_root.addModalForm(new QuestionForm(gui_root, confirm_str, (_, _, _, _) -> LoadCampaignBox.loadSavegames(
-                    main_menu.getPeer(), CampaignForm.this)));
-        }
-    }
+  }
 }

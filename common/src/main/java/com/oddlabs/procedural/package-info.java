@@ -1,6 +1,4 @@
-/**
- * Provides procedural noise and texture synthesis mathematics.
- */
+/** Provides procedural noise and texture synthesis mathematics. */
 @NullMarked
 package com.oddlabs.procedural;
 

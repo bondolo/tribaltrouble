@@ -1,6 +1,4 @@
-/**
- * Terrain erosion algorithms.
- */
+/** Terrain erosion algorithms. */
 @NullMarked
 package com.oddlabs.tt.procedural.erosion;
 

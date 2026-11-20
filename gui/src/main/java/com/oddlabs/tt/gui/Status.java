@@ -7,45 +7,34 @@ import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.util.Color;
-
 import java.util.function.DoubleSupplier;
 
-/**
- * Diagnostics HUD overlay rendering system memory usage and frame rate.
- */
+/// Diagnostics HUD overlay rendering system memory usage and frame rate.
 public final class Status {
-    private final Settings settings;
-    private final DoubleSupplier fpsSupplier;
-    private final Font font;
-    private final StringBuilder buf = new StringBuilder();
+  private final Settings settings;
+  private final DoubleSupplier fpsSupplier;
+  private final Font font;
+  private final StringBuilder buf = new StringBuilder();
 
-    public Status(Settings settings, DoubleSupplier fpsSupplier, Font font) {
-        this.settings = settings;
-        this.fpsSupplier = fpsSupplier;
-        this.font = font;
+  public Status(Settings settings, DoubleSupplier fpsSupplier, Font font) {
+    this.settings = settings;
+    this.fpsSupplier = fpsSupplier;
+    this.font = font;
+  }
+
+  public void render(GUIRenderer renderer) {
+    long free_mem = Runtime.getRuntime().freeMemory();
+    buf.delete(0, buf.length());
+    if (AppConfig.DEVELOPER_MODE) {
+      buf.append("JHeap ").append(free_mem).append("(");
+      int total_jheap = (int) (Runtime.getRuntime().totalMemory() / (1024 * 1024));
+      buf.append(total_jheap).append("M) globj ").append(NativeResource.getCount());
     }
+    double fps = fpsSupplier.getAsDouble();
+    long fpsDisplay = fps > 0 ? Math.round(1000.0 / fps) : 0;
+    buf.append(" FPS ").append(fpsDisplay).append(" (").append(Math.round(fps)).append(" ms/frame)");
 
-    public void render(GUIRenderer renderer) {
-        long free_mem = Runtime.getRuntime().freeMemory();
-        buf.delete(0, buf.length());
-        if (AppConfig.DEVELOPER_MODE) {
-            buf.append("JHeap ")
-                    .append(free_mem)
-                    .append("(");
-            int total_jheap = (int) (Runtime.getRuntime().totalMemory() / (1024 * 1024));
-            buf.append(total_jheap)
-                    .append("M) globj ")
-                    .append(NativeResource.getCount());
-        }
-        double fps = fpsSupplier.getAsDouble();
-        long fpsDisplay = fps > 0 ? Math.round(1000.0 / fps) : 0;
-        buf.append(" FPS ")
-                .append(fpsDisplay)
-                .append(" (")
-                .append(Math.round(fps))
-                .append(" ms/frame)");
-
-        TextLineRenderer.render(renderer, font, buf, 0, 0, Float.NEGATIVE_INFINITY,
-                Float.POSITIVE_INFINITY, Color.Standard.WHITE);
-    }
+    TextLineRenderer.render(
+        renderer, font, buf, 0, 0, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Color.Standard.WHITE);
+  }
 }

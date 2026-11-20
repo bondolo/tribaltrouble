@@ -4,15 +4,15 @@ import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.util.Color;
 
-/** Styling metrics, sort icons, and colors for multi-column combo boxes. */
-public record MultiColumnComboBoxData(Box box,
-                                      Horizontal buttonPressed,
-                                      Horizontal buttonUnpressed,
-                                      ModeIconQuads descending,
-                                      ModeIconQuads ascending,
-                                      Color.Linear color1,
-                                      Color.Linear color2,
-                                      Color.Linear colorMarked,
-                                      Font font,
-                                      int captionOffset) {
-}
+/// Styling metrics, sort icons, and colors for multi-column combo boxes.
+public record MultiColumnComboBoxData(
+    Box box,
+    Horizontal buttonPressed,
+    Horizontal buttonUnpressed,
+    ModeIconQuads descending,
+    ModeIconQuads ascending,
+    Color.Linear color1,
+    Color.Linear color2,
+    Color.Linear colorMarked,
+    Font font,
+    int captionOffset) {}

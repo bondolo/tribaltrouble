@@ -18,8 +18,6 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.window.SerializableDisplayMode;
-import org.jspecify.annotations.Nullable;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -28,627 +26,611 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.function.BooleanSupplier;
 import java.util.logging.Logger;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Root of a GUI component tree
- */
+/// Root of a GUI component tree
 public final class GUIRoot extends GUIObject {
-    private static final Logger logger = Logger.getLogger(GUIRoot.class.getName());
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(GUIRoot.class.getName());
+  private static final Logger logger = Logger.getLogger(GUIRoot.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(GUIRoot.class.getName());
 
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  private static final int CURSOR_OFFSET_Y = 27;
+
+  private final List<InputDelegate> delegate_stack = new ArrayList<>();
+  private final Deque<ModalDelegate> modal_delegate_stack = new ArrayDeque<>();
+  private final Deque<GUIObject> focus_backup_stack = new ArrayDeque<>();
+
+  private final TimerAnimation tool_tip_timer;
+
+  private final GUI gui;
+  private final Skin skin;
+  private final ToolTipBox tool_tip;
+  private final InfoPrinter info_printer;
+  private final Status status;
+  private final InputState input_state;
+  private boolean render_tool_tip = false;
+  private @Nullable IconQuad cheatIcon;
+  private @Nullable BooleanSupplier cheatActiveSupplier;
+
+  /// the control that currently has focus
+  private GUIObject current_gui_object = this;
+
+  private GUIObject global_focus = this;
+
+  private float effective_scale = 1.0f;
+
+  GUIRoot(GUI gui, Skin skin) {
+    this.gui = gui;
+    this.skin = skin;
+    this.tool_tip = new ToolTipBox(this);
+    this.info_printer = new InfoPrinter(this, 4, skin.getEditFont());
+    this.status = new Status(gui.getSettings(), gui.getFpsSupplier(), skin.getEditFont());
+    this.tool_tip_timer = new TimerAnimation(gui.getAnimationManager(), this::timerUpdate, 0);
+    this.input_state = new InputState(this);
+    setPos(0, 0);
+    setCanFocus(true);
+    setFocusCycle(true);
+
+    setToolTipTimer();
+    addChild(info_printer);
+    info_printer.setPos(0, 0);
+    pushDelegate(new NullDelegate(false));
+  }
+
+  public LocalInput getLocalInput() {
+    return gui.getLocalInput();
+  }
+
+  public InputManager getInputManager() {
+    return gui.getLocalInput().getInputManager();
+  }
+
+  public LocalEventQueue getEventQueue() {
+    return gui.getEventQueue();
+  }
+
+  public AnimationManager getAnimationManager() {
+    return gui.getAnimationManager();
+  }
+
+  public AnimationManager getAnimationManagerHighPrecision() {
+    return gui.getEventQueue().getHighPrecisionManager();
+  }
+
+  public float getTime() {
+    return gui.getTime();
+  }
+
+  private long last_caret_reset_time = 0;
+
+  public void resetCaretBlinking() {
+    last_caret_reset_time = getEventQueue().getMillis();
+  }
+
+  public boolean isCaretVisible() {
+    long elapsed = getEventQueue().getMillis() - last_caret_reset_time;
+    return (elapsed / Index.BLINK_INTERVAL_MS) % 2 == 0;
+  }
+
+  public void playErrorAudio() {
+    gui.playErrorAudio();
+  }
+
+  public int getMouseX() {
+    return gui.getLocalInput().getMouseX();
+  }
+
+  public int getMouseY() {
+    return gui.getLocalInput().getMouseY();
+  }
+
+  public boolean isShiftDown() {
+    return gui.getLocalInput().isShiftDownCurrently();
+  }
+
+  public boolean isControlDown() {
+    return gui.getLocalInput().isControlDownCurrently();
+  }
+
+  public boolean isAltDown() {
+    return gui.getLocalInput().isAltDownCurrently();
+  }
+
+  public boolean isSuperDown() {
+    return gui.getLocalInput().isSuperDownCurrently();
+  }
+
+  public void setCursorPosition(int x, int y) {
+    gui.getLocalInput().getPointerInput().setCursorPosition(x, y);
+  }
+
+  public void setActiveCursor(CursorType type) {
+    if (gui.getGUIRoot() == this) {
+      gui.getLocalInput().getPointerInput().setActiveCursor(type);
+    }
+  }
+
+  public void resetInput() {
+    gui.getLocalInput().resetKeyboard();
+  }
+
+  @Override
+  public GUIRoot self() {
+    return this;
+  }
+
+  @Override
+  public float getGlobalScale() {
+    return effective_scale;
+  }
+
+  @Override
+  public GUIRoot getParentGUIRoot() {
+    return self();
+  }
+
+  @Override
+  public Skin getSkin() {
+    return skin;
+  }
+
+  public GUI getGUI() {
+    return gui;
+  }
+
+  public InputState getInputState() {
+    return input_state;
+  }
+
+  /// {@return the currently focused control}
+  GUIObject getGlobalFocus() {
+    return global_focus;
+  }
+
+  /// set the control which currently has focus
+  void setGlobalFocus(GUIObject object) {
+    global_focus = object;
+  }
+
+  public void setToolTipTimer() {
+    GUISettings guiSettings = GUISettings.from(gui.getSettings());
+    tool_tip_timer.setTimerInterval(guiSettings.tooltip_delay * ToolTipBox.MAX_DELAY_SECONDS);
+  }
+
+  public void timerUpdate(TimerAnimation anim) {
+    render_tool_tip = true;
+  }
+
+  public void stopToolTip() {
+    render_tool_tip = false;
+    tool_tip_timer.stop();
+  }
+
+  public com.oddlabs.tt.base.util.InfoPrinter getInfoPrinter() {
+    return info_printer;
+  }
+
+  public void setCheatIndicator(@Nullable IconQuad cheatIcon, @Nullable BooleanSupplier cheatActiveSupplier) {
+    this.cheatIcon = cheatIcon;
+    this.cheatActiveSupplier = cheatActiveSupplier;
+  }
+
+  public void setCheatIcon(@Nullable IconQuad cheatIcon) {
+    setCheatIndicator(cheatIcon, null);
+  }
+
+  public void pushDelegate(InputDelegate delegate) {
+    if (!delegate_stack.isEmpty()) {
+      InputDelegate current = getDelegate();
+      if (current instanceof GUIObject obj) {
+        obj.remove();
+      }
+    }
+    assert !delegate_stack.contains(delegate);
+    delegate_stack.addFirst(delegate);
+    if (delegate instanceof GUIObject obj) {
+      addChild(obj);
+    }
+    mousePick();
+    updateCursor();
+  }
+
+  public void removeDelegate(InputDelegate delegate) {
+    boolean top_most = getDelegate() == delegate;
+    if (delegate instanceof GUIObject obj) {
+      obj.remove();
     }
 
-    private static final int CURSOR_OFFSET_Y = 27;
+    delegate_stack.remove(delegate);
 
-    private final List<InputDelegate> delegate_stack = new ArrayList<>();
-    private final Deque<ModalDelegate> modal_delegate_stack = new ArrayDeque<>();
-    private final Deque<GUIObject> focus_backup_stack = new ArrayDeque<>();
+    if (delegate_stack.isEmpty()) {
+      pushDelegate(new NullDelegate(false));
+    } else if (top_most) {
+      InputDelegate next = getDelegate();
+      if (next instanceof GUIObject obj) {
+        addChild(obj);
+      }
+    }
+    mousePick();
+    updateCursor();
+  }
 
-    private final TimerAnimation tool_tip_timer;
+  public InputDelegate getDelegate() {
+    return delegate_stack.getFirst();
+  }
 
-    private final GUI gui;
-    private final Skin skin;
-    private final ToolTipBox tool_tip;
-    private final InfoPrinter info_printer;
-    private final Status status;
-    private final InputState input_state;
-    private boolean render_tool_tip = false;
-    private @Nullable IconQuad cheatIcon;
-    private @Nullable BooleanSupplier cheatActiveSupplier;
+  private void pushModalDelegate(ModalDelegate delegate) {
+    ModalDelegate old = getModalDelegate();
+    modal_delegate_stack.push(delegate);
+    if (old != null) {
+      old.remove();
+    }
+    delegate.setDim(getWidth(), getHeight());
+    super.addChild(delegate);
+    mousePick();
+    updateCursor();
+  }
 
-    /**
-     * the control that currently has focus
-     */
-    private GUIObject current_gui_object = this;
-    private GUIObject global_focus = this;
+  private void popModalDelegate(ModalDelegate delegate) {
+    if (!modal_delegate_stack.contains(delegate)) {
+      return;
+    }
+    boolean top_most = getModalDelegate() == delegate;
+    modal_delegate_stack.remove(delegate);
+    delegate.remove();
 
-    private float effective_scale = 1.0f;
-
-    GUIRoot(GUI gui, Skin skin) {
-        this.gui = gui;
-        this.skin = skin;
-        this.tool_tip = new ToolTipBox(this);
-        this.info_printer = new InfoPrinter(this, 4, skin.getEditFont());
-        this.status = new Status(gui.getSettings(), gui.getFpsSupplier(), skin.getEditFont());
-        this.tool_tip_timer = new TimerAnimation(gui.getAnimationManager(), this::timerUpdate, 0);
-        this.input_state = new InputState(this);
-        setPos(0, 0);
-        setCanFocus(true);
-        setFocusCycle(true);
-
-        setToolTipTimer();
-        addChild(info_printer);
-        info_printer.setPos(0, 0);
-        pushDelegate(new NullDelegate(false));
+    ModalDelegate modal_delegate = getModalDelegate();
+    if (top_most && modal_delegate != null) {
+      modal_delegate.setDim(getWidth(), getHeight());
+      super.addChild(modal_delegate);
     }
 
-    public LocalInput getLocalInput() {
-        return gui.getLocalInput();
-    }
-
-    public InputManager getInputManager() {
-        return gui.getLocalInput().getInputManager();
-    }
-
-    public LocalEventQueue getEventQueue() {
-        return gui.getEventQueue();
-    }
-
-    public AnimationManager getAnimationManager() {
-        return gui.getAnimationManager();
-    }
-
-    public AnimationManager getAnimationManagerHighPrecision() {
-        return gui.getEventQueue().getHighPrecisionManager();
-    }
-
-    public float getTime() {
-        return gui.getTime();
-    }
-
-    private long last_caret_reset_time = 0;
-
-    public void resetCaretBlinking() {
-        last_caret_reset_time = getEventQueue().getMillis();
-    }
-
-    public boolean isCaretVisible() {
-        long elapsed = getEventQueue().getMillis() - last_caret_reset_time;
-        return (elapsed / Index.BLINK_INTERVAL_MS) % 2 == 0;
-    }
-
-    public void playErrorAudio() {
-        gui.playErrorAudio();
-    }
-
-    public int getMouseX() {
-        return gui.getLocalInput().getMouseX();
-    }
-
-    public int getMouseY() {
-        return gui.getLocalInput().getMouseY();
-    }
-
-    public boolean isShiftDown() {
-        return gui.getLocalInput().isShiftDownCurrently();
-    }
-
-    public boolean isControlDown() {
-        return gui.getLocalInput().isControlDownCurrently();
-    }
-
-    public boolean isAltDown() {
-        return gui.getLocalInput().isAltDownCurrently();
-    }
-
-    public boolean isSuperDown() {
-        return gui.getLocalInput().isSuperDownCurrently();
-    }
-
-    public void setCursorPosition(int x, int y) {
-        gui.getLocalInput().getPointerInput().setCursorPosition(x, y);
-    }
-
-    public void setActiveCursor(CursorType type) {
-        if (gui.getGUIRoot() == this) {
-            gui.getLocalInput().getPointerInput().setActiveCursor(type);
+    GUIObject object = focus_backup_stack.pop();
+    if (top_most) {
+      if (!delegate_stack.isEmpty()) {
+        InputDelegate active = getDelegate();
+        if (active instanceof GUIObject obj) {
+          obj.setFocus();
         }
-    }
-
-    public void resetInput() {
-        gui.getLocalInput().resetKeyboard();
-    }
-
-    @Override
-    public GUIRoot self() {
-        return this;
-    }
-
-    @Override
-    public float getGlobalScale() {
-        return effective_scale;
-    }
-
-    @Override
-    public GUIRoot getParentGUIRoot() {
-        return self();
-    }
-
-    @Override
-    public Skin getSkin() {
-        return skin;
-    }
-
-    public GUI getGUI() {
-        return gui;
-    }
-
-    public InputState getInputState() {
-        return input_state;
-    }
-
-    /**
-     * {@return the currently focused control}
-     */
-    GUIObject getGlobalFocus() {
-        return global_focus;
-    }
-
-    /**
-     * set the control which currently has focus
-     */
-    void setGlobalFocus(GUIObject object) {
-        global_focus = object;
-    }
-
-    public void setToolTipTimer() {
-        GUISettings guiSettings = GUISettings.from(gui.getSettings());
-        tool_tip_timer.setTimerInterval(guiSettings.tooltip_delay
-                * ToolTipBox.MAX_DELAY_SECONDS);
-    }
-
-    public void timerUpdate(TimerAnimation anim) {
-        render_tool_tip = true;
-    }
-
-    public void stopToolTip() {
-        render_tool_tip = false;
-        tool_tip_timer.stop();
-    }
-
-    public com.oddlabs.tt.base.util.InfoPrinter getInfoPrinter() {
-        return info_printer;
-    }
-
-    public void setCheatIndicator(@Nullable IconQuad cheatIcon, @Nullable BooleanSupplier cheatActiveSupplier) {
-        this.cheatIcon = cheatIcon;
-        this.cheatActiveSupplier = cheatActiveSupplier;
-    }
-
-    public void setCheatIcon(@Nullable IconQuad cheatIcon) {
-        setCheatIndicator(cheatIcon, null);
-    }
-
-    public void pushDelegate(InputDelegate delegate) {
-        if (!delegate_stack.isEmpty()) {
-            InputDelegate current = getDelegate();
-            if (current instanceof GUIObject obj) {
-                obj.remove();
-            }
-        }
-        assert !delegate_stack.contains(delegate);
-        delegate_stack.addFirst(delegate);
-        if (delegate instanceof GUIObject obj) {
-            addChild(obj);
-        }
-        mousePick();
-        updateCursor();
-    }
-
-    public void removeDelegate(InputDelegate delegate) {
-        boolean top_most = getDelegate() == delegate;
-        if (delegate instanceof GUIObject obj) {
-            obj.remove();
-        }
-
-        delegate_stack.remove(delegate);
-
-        if (delegate_stack.isEmpty()) {
-            pushDelegate(new NullDelegate(false));
-        } else if (top_most) {
-            InputDelegate next = getDelegate();
-            if (next instanceof GUIObject obj) {
-                addChild(obj);
-            }
-        }
-        mousePick();
-        updateCursor();
-    }
-
-    public InputDelegate getDelegate() {
-        return delegate_stack.getFirst();
-    }
-
-    private void pushModalDelegate(ModalDelegate delegate) {
-        ModalDelegate old = getModalDelegate();
-        modal_delegate_stack.push(delegate);
-        if (old != null) {
-            old.remove();
-        }
-        delegate.setDim(getWidth(), getHeight());
-        super.addChild(delegate);
-        mousePick();
-        updateCursor();
-    }
-
-    private void popModalDelegate(ModalDelegate delegate) {
-        if (!modal_delegate_stack.contains(delegate)) {
-            return;
-        }
-        boolean top_most = getModalDelegate() == delegate;
-        modal_delegate_stack.remove(delegate);
-        delegate.remove();
-
-        ModalDelegate modal_delegate = getModalDelegate();
-        if (top_most && modal_delegate != null) {
-            modal_delegate.setDim(getWidth(), getHeight());
-            super.addChild(modal_delegate);
-        }
-
-        GUIObject object = focus_backup_stack.pop();
-        if (top_most) {
-            if (!delegate_stack.isEmpty()) {
-                InputDelegate active = getDelegate();
-                if (active instanceof GUIObject obj) {
-                    obj.setFocus();
-                }
-            }
-            if (object != null)
-                object.setFocus();
+      }
+      if (object != null) object.setFocus();
+    } else {
+      if (modal_delegate != null) {
+        GUIObject focused = modal_delegate.getFocusedChild();
+        if (focused != null) {
+          focused.restoreFocus();
         } else {
-            if (modal_delegate != null) {
-                GUIObject focused = modal_delegate.getFocusedChild();
-                if (focused != null) {
-                    focused.restoreFocus();
-                } else {
-                    GUIObject child = modal_delegate.getFirstChild();
-                    Objects.requireNonNullElse(child, modal_delegate).setFocus();
-                }
-            }
+          GUIObject child = modal_delegate.getFirstChild();
+          Objects.requireNonNullElse(child, modal_delegate).setFocus();
         }
-        mousePick();
-        updateCursor();
+      }
+    }
+    mousePick();
+    updateCursor();
+  }
+
+  public @Nullable ModalDelegate getModalDelegate() {
+    return modal_delegate_stack.peek();
+  }
+
+  public boolean isShowingModalForm(Class<?> formClass) {
+    ModalDelegate modal = getModalDelegate();
+    if (modal == null) return false;
+    GUIObject child = modal.getFirstChild();
+    while (child != null) {
+      if (formClass.isInstance(child)) return true;
+      child = child.getNext();
+    }
+    return false;
+  }
+
+  public void addModalForm(Form form) {
+    focus_backup_stack.push(global_focus);
+    ModalDelegate delegate = new ModalDelegate();
+    delegate.addChild(form);
+    form.addCloseListener(() -> popModalDelegate(delegate));
+    pushModalDelegate(delegate);
+    form.centerPos();
+    form.setFocus();
+  }
+
+  void swapFocusBackup(GUIObject o) {
+    focus_backup_stack.pop();
+    focus_backup_stack.push(o);
+  }
+
+  public static float calculateMaxScale(int width, int height) {
+    if (width <= 0 || height <= 0) return 1.0f;
+    float maxScaleX = width / 800f;
+    float maxScaleY = height / 600f;
+    return Math.clamp(maxScaleX, 1.0f, maxScaleY);
+  }
+
+  public static float calculateMinScale(int width, int height) {
+    if (width <= 0 || height <= 0) return 1.0f;
+    float autoScale = Math.min(width / SerializableDisplayMode.MIN_WIDTH, height / SerializableDisplayMode.MIN_HEIGHT);
+    return Math.max(1.0f, autoScale);
+  }
+
+  public float calculateEffectiveScale(int width, int height) {
+    GUISettings guiSettings = GUISettings.from(gui.getSettings());
+    return calculateEffectiveScale(width, height, guiSettings.ui_scale);
+  }
+
+  public static float calculateEffectiveScale(int width, int height, float uiScale) {
+    if (width <= 0 || height <= 0) return 1.0f;
+
+    float minScale = calculateMinScale(width, height);
+    float maxAllowedScale = Math.max(minScale, calculateMaxScale(width, height));
+
+    float current = Math.clamp(uiScale, 0f, 1f);
+
+    // Interpolate
+    float rawTarget = minScale + (current * (maxAllowedScale - minScale));
+
+    // Snap to nearest 0.25 increment
+    float snappedTarget = Math.round(rawTarget * 4f) / 4f;
+
+    return Math.clamp(snappedTarget, minScale, maxAllowedScale);
+  }
+
+  @Override
+  protected void displayChangedNotify(int width, int height) {
+    if (width <= 0 || height <= 0) return;
+
+    effective_scale = calculateEffectiveScale(width, height);
+    float density = gui.getWindow().getPixelDensity();
+
+    var pointerInput = gui.getLocalInput().getPointerInput();
+    pointerInput.loadCursors(effective_scale, density);
+
+    int virtualWidth = (int) (width / effective_scale);
+    int virtualHeight = (int) (height / effective_scale);
+
+    setDim(virtualWidth, virtualHeight);
+  }
+
+  public boolean handleGlobalInput(InputEvent event) {
+    if (event.getPhase() != InputPhase.PRESSED || !event.hasActions()) {
+      return false;
     }
 
-    public @Nullable ModalDelegate getModalDelegate() {
-        return modal_delegate_stack.peek();
+    boolean consumed = false;
+    if (event.consumeAction(GameAction.GLOBAL_SCREENSHOT)) {
+      String filename = GLUtils.takeScreenshot("");
+      info_printer.print(i18n("screenshot_message", filename));
+      consumed = true;
+    }
+    if (event.consumeAction(GameAction.GLOBAL_TOGGLE_STATUS)) {
+      DebugFlags.draw_status = !DebugFlags.draw_status;
+      consumed = true;
+    }
+    if (event.consumeAction(GameAction.GLOBAL_TOGGLE_FRAME_TIMING)) {
+      DebugFlags.frame_timing = !DebugFlags.frame_timing;
+      consumed = true;
     }
 
-    public boolean isShowingModalForm(Class<?> formClass) {
-        ModalDelegate modal = getModalDelegate();
-        if (modal == null) return false;
-        GUIObject child = modal.getFirstChild();
-        while (child != null) {
-            if (formClass.isInstance(child)) return true;
-            child = child.getNext();
-        }
-        return false;
+    if (event.consumeAction(GameAction.GLOBAL_TOGGLE_FULLSCREEN)) {
+      gui.toggleFullscreen();
+      consumed = true;
     }
 
-    public void addModalForm(Form form) {
-        focus_backup_stack.push(global_focus);
-        ModalDelegate delegate = new ModalDelegate();
-        delegate.addChild(form);
-        form.addCloseListener(() -> popModalDelegate(delegate));
-        pushModalDelegate(delegate);
-        form.centerPos();
-        form.setFocus();
+    if (consumed) {
+      event.consume();
+      return true;
+    }
+    return false;
+  }
+
+  private boolean handleDebugInput(InputEvent event) {
+    if (event.getPhase() != InputPhase.PRESSED || !event.hasActions()) {
+      return false;
     }
 
-    void swapFocusBackup(GUIObject o) {
-        focus_backup_stack.pop();
-        focus_backup_stack.push(o);
+    boolean consumed = false;
+    if (AppConfig.DEVELOPER_MODE) {
+      if (event.consumeAction(GameAction.DEBUG_TOGGLE_LIGHT)) {
+        DebugFlags.draw_light = !DebugFlags.draw_light;
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_TOGGLE_PLANTS)) {
+        DebugFlags.draw_plants = !DebugFlags.draw_plants;
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_TOGGLE_PARTICLES)) {
+        DebugFlags.draw_particles = !DebugFlags.draw_particles;
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_TOGGLE_AXES)) {
+        DebugFlags.draw_axes = !DebugFlags.draw_axes;
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_TOGGLE_MISC)) {
+        DebugFlags.draw_misc = !DebugFlags.draw_misc;
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_PROCESS_MISC)) {
+        logger.info("WARNING: DEBUG_PROCESS_MISC triggered!");
+        DebugFlags.process_misc = !DebugFlags.process_misc;
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_RESET_CURSOR)) {
+        gui.getLocalInput().getInputProvider().setCursorPosition(10, 10);
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_TOGGLE_DETAIL)) {
+        DebugFlags.draw_detail = !DebugFlags.draw_detail;
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_CRASH)) {
+        logger.info("crash!");
+        throw new IllegalStateException("Debug crash action triggered.");
+      }
+      if (event.consumeAction(GameAction.DEBUG_TOGGLE_FRAME_BUFFER)) {
+        DebugFlags.clear_frame_buffer = !DebugFlags.clear_frame_buffer;
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_TOGGLE_BOUNDING)) {
+        DebugFlags.switchBoundingMode();
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_TOGGLE_FRUSTUM_FREEZE)) {
+        DebugFlags.frustum_freeze = !DebugFlags.frustum_freeze;
+        logger.info("DebugFlags.frustum_freeze = " + DebugFlags.frustum_freeze);
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_FORCE_GC)) {
+        logger.info("GC Forced");
+        System.gc();
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_START_RECORDING)) {
+        gui.startMovieRecording();
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_TOGGLE_WATER)) {
+        DebugFlags.draw_water = !DebugFlags.draw_water;
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_DUMP_ANIMATIONS)) {
+        logger.info("*********************************************************");
+        gui.getEventQueue().debugPrintAnimations();
+        logger.info("Texture.globalSize() = " + Texture.globalSize());
+        consumed = true;
+      }
+      if (event.consumeAction(GameAction.DEBUG_TOGGLE_MSAA)) {
+        DebugFlags.draw_msaa = !DebugFlags.draw_msaa;
+        logger.info("DebugFlags.draw_msaa = " + DebugFlags.draw_msaa);
+        info_printer.print("MSAA: " + (DebugFlags.draw_msaa ? "enabled" : "disabled"));
+        consumed = true;
+      }
     }
 
-    public static float calculateMaxScale(int width, int height) {
-        if (width <= 0 || height <= 0) return 1.0f;
-        float maxScaleX = width / 800f;
-        float maxScaleY = height / 600f;
-        return Math.clamp(maxScaleX, 1.0f, maxScaleY);
+    if (consumed) {
+      event.consume();
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public void handleInput(InputEvent event) {
+    if (handleGlobalInput(event)) {
+      return;
+    }
+    if (handleDebugInput(event)) {
+      return;
+    }
+    super.handleInput(event);
+  }
+
+  void mousePick() {
+    mousePick(
+        Math.round(gui.getLocalInput().getMouseX() / effective_scale),
+        Math.round(gui.getLocalInput().getMouseY() / effective_scale));
+  }
+
+  private void mousePick(int x, int y) {
+    GUIObject target = pick(x, y);
+    if (target != null && target != current_gui_object) {
+      current_gui_object.mouseExitedAll();
+      tool_tip_timer.resetTime();
+      boolean old_tip = current_gui_object.hasToolTip();
+      boolean new_tip = target.hasToolTip();
+      if (!old_tip && new_tip) {
+        tool_tip_timer.start();
+        render_tool_tip = false;
+      }
+      if (old_tip && !new_tip) {
+        if (!render_tool_tip) tool_tip_timer.stop();
+        else render_tool_tip = false;
+      }
+      current_gui_object = target;
+      current_gui_object.mouseEnteredAll();
+      updateCursor();
+    }
+  }
+
+  /// {@return true if cursor should be rendered.}
+  public boolean renderCursor() {
+    return getModalDelegate() != null || getDelegate().renderCursor();
+  }
+
+  public void updateCursor() {
+    if (gui.getGUIRoot() != this) {
+      return;
+    }
+    CursorType cursorType = (!current_gui_object.isDisabled()) ? current_gui_object.getCursorType() : CursorType.NORMAL;
+    boolean visible = renderCursor() && cursorType != CursorType.NULL;
+    gui.getLocalInput().getPointerInput().setCursorVisible(visible);
+    gui.getLocalInput().getPointerInput().setActiveCursor(visible ? cursorType : CursorType.NULL);
+  }
+
+  public GUIObject getCurrentGUIObject() {
+    return current_gui_object;
+  }
+
+  @Override
+  public void addChild(GUIObject child) {
+    super.addChild(child);
+    ModalDelegate modal_delegate = getModalDelegate();
+    putFirst(info_printer);
+    if (modal_delegate != null) {
+      super.addChild(modal_delegate); // move to front
+    }
+  }
+
+  private boolean showToolTip() {
+    return renderCursor();
+  }
+
+  void renderTopmost(GUIRenderer renderer, @Nullable ToolTip hovered) {
+    if (cheatIcon != null && cheatActiveSupplier != null && cheatActiveSupplier.getAsBoolean()) {
+      renderer.drawIcon(cheatIcon, getWidth() - cheatIcon.getWidth() - 10, 5);
     }
 
-    public static float calculateMinScale(int width, int height) {
-        if (width <= 0 || height <= 0) return 1.0f;
-        float autoScale = Math.min(width / SerializableDisplayMode.MIN_WIDTH, height
-                / SerializableDisplayMode.MIN_HEIGHT);
-        return Math.max(1.0f, autoScale);
+    getDelegate().render2D(renderer);
+
+    // render forced delegates
+    for (int i = 1, size = delegate_stack.size(); i < size; i++) {
+      var delegate = delegate_stack.get(i);
+      if (delegate.forceRender() && delegate instanceof GUIObject obj) {
+        obj.render(renderer);
+      }
     }
 
-    public float calculateEffectiveScale(int width, int height) {
-        GUISettings guiSettings = GUISettings.from(gui.getSettings());
-        return calculateEffectiveScale(width, height, guiSettings.ui_scale);
+    if (DebugFlags.draw_status) {
+      status.render(renderer);
     }
 
-    public static float calculateEffectiveScale(int width, int height, float uiScale) {
-        if (width <= 0 || height <= 0) return 1.0f;
-
-        float minScale = calculateMinScale(width, height);
-        float maxAllowedScale = Math.max(minScale, calculateMaxScale(width, height));
-
-        float current = Math.clamp(uiScale, 0f, 1f);
-
-        // Interpolate
-        float rawTarget = minScale + (current * (maxAllowedScale - minScale));
-
-        // Snap to nearest 0.25 increment
-        float snappedTarget = Math.round(rawTarget * 4f) / 4f;
-
-        return Math.clamp(snappedTarget, minScale, maxAllowedScale);
+    if (showToolTip()) {
+      ToolTip tooltip = getToolTip();
+      if (tooltip == null) tooltip = hovered;
+      if (tooltip != null) renderToolTip(renderer, tooltip);
     }
+  }
 
-    @Override
-    protected void displayChangedNotify(int width, int height) {
-        if (width <= 0 || height <= 0) return;
+  private @Nullable ToolTip getToolTip() {
+    GUIObject obj = getCurrentGUIObject();
+    return render_tool_tip && obj.hasToolTip() ? obj : null;
+  }
 
-        effective_scale = calculateEffectiveScale(width, height);
-        float density = gui.getWindow().getPixelDensity();
+  private void renderToolTip(GUIRenderer renderer, ToolTip hovered) {
+    tool_tip.clear();
+    hovered.appendToolTip(tool_tip);
+    tool_tip.render(
+        renderer,
+        Math.round(gui.getLocalInput().getMouseX() / effective_scale),
+        Math.round(gui.getLocalInput().getMouseY() / effective_scale) - CURSOR_OFFSET_Y,
+        getWidth(),
+        getHeight());
+  }
 
-        var pointerInput = gui.getLocalInput().getPointerInput();
-        pointerInput.loadCursors(effective_scale, density);
-
-        int virtualWidth = (int) (width / effective_scale);
-        int virtualHeight = (int) (height / effective_scale);
-
-        setDim(virtualWidth, virtualHeight);
-    }
-
-    public boolean handleGlobalInput(InputEvent event) {
-        if (event.getPhase() != InputPhase.PRESSED || !event.hasActions()) {
-            return false;
-        }
-
-        boolean consumed = false;
-        if (event.consumeAction(GameAction.GLOBAL_SCREENSHOT)) {
-            String filename = GLUtils.takeScreenshot("");
-            info_printer.print(i18n("screenshot_message", filename));
-            consumed = true;
-        }
-        if (event.consumeAction(GameAction.GLOBAL_TOGGLE_STATUS)) {
-            DebugFlags.draw_status = !DebugFlags.draw_status;
-            consumed = true;
-        }
-        if (event.consumeAction(GameAction.GLOBAL_TOGGLE_FRAME_TIMING)) {
-            DebugFlags.frame_timing = !DebugFlags.frame_timing;
-            consumed = true;
-        }
-
-        if (event.consumeAction(GameAction.GLOBAL_TOGGLE_FULLSCREEN)) {
-            gui.toggleFullscreen();
-            consumed = true;
-        }
-
-        if (consumed) {
-            event.consume();
-            return true;
-        }
-        return false;
-    }
-
-    private boolean handleDebugInput(InputEvent event) {
-        if (event.getPhase() != InputPhase.PRESSED || !event.hasActions()) {
-            return false;
-        }
-
-        boolean consumed = false;
-        if (AppConfig.DEVELOPER_MODE) {
-            if (event.consumeAction(GameAction.DEBUG_TOGGLE_LIGHT)) {
-                DebugFlags.draw_light = !DebugFlags.draw_light;
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_TOGGLE_PLANTS)) {
-                DebugFlags.draw_plants = !DebugFlags.draw_plants;
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_TOGGLE_PARTICLES)) {
-                DebugFlags.draw_particles = !DebugFlags.draw_particles;
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_TOGGLE_AXES)) {
-                DebugFlags.draw_axes = !DebugFlags.draw_axes;
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_TOGGLE_MISC)) {
-                DebugFlags.draw_misc = !DebugFlags.draw_misc;
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_PROCESS_MISC)) {
-                logger.info("WARNING: DEBUG_PROCESS_MISC triggered!");
-                DebugFlags.process_misc = !DebugFlags.process_misc;
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_RESET_CURSOR)) {
-                gui.getLocalInput().getInputProvider().setCursorPosition(10, 10);
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_TOGGLE_DETAIL)) {
-                DebugFlags.draw_detail = !DebugFlags.draw_detail;
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_CRASH)) {
-                logger.info("crash!");
-                throw new IllegalStateException("Debug crash action triggered.");
-            }
-            if (event.consumeAction(GameAction.DEBUG_TOGGLE_FRAME_BUFFER)) {
-                DebugFlags.clear_frame_buffer = !DebugFlags.clear_frame_buffer;
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_TOGGLE_BOUNDING)) {
-                DebugFlags.switchBoundingMode();
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_TOGGLE_FRUSTUM_FREEZE)) {
-                DebugFlags.frustum_freeze = !DebugFlags.frustum_freeze;
-                logger.info("DebugFlags.frustum_freeze = " + DebugFlags.frustum_freeze);
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_FORCE_GC)) {
-                logger.info("GC Forced");
-                System.gc();
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_START_RECORDING)) {
-                gui.startMovieRecording();
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_TOGGLE_WATER)) {
-                DebugFlags.draw_water = !DebugFlags.draw_water;
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_DUMP_ANIMATIONS)) {
-                logger.info("*********************************************************");
-                gui.getEventQueue().debugPrintAnimations();
-                logger.info("Texture.globalSize() = " + Texture.globalSize());
-                consumed = true;
-            }
-            if (event.consumeAction(GameAction.DEBUG_TOGGLE_MSAA)) {
-                DebugFlags.draw_msaa = !DebugFlags.draw_msaa;
-                logger.info("DebugFlags.draw_msaa = " + DebugFlags.draw_msaa);
-                info_printer.print("MSAA: " + (DebugFlags.draw_msaa ? "enabled" : "disabled"));
-                consumed = true;
-            }
-        }
-
-        if (consumed) {
-            event.consume();
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public void handleInput(InputEvent event) {
-        if (handleGlobalInput(event)) {
-            return;
-        }
-        if (handleDebugInput(event)) {
-            return;
-        }
-        super.handleInput(event);
-    }
-
-    void mousePick() {
-        mousePick(Math.round(gui.getLocalInput().getMouseX() / effective_scale),
-                Math.round(gui.getLocalInput().getMouseY() / effective_scale));
-    }
-
-    private void mousePick(int x, int y) {
-        GUIObject target = pick(x, y);
-        if (target != null && target != current_gui_object) {
-            current_gui_object.mouseExitedAll();
-            tool_tip_timer.resetTime();
-            boolean old_tip = current_gui_object.hasToolTip();
-            boolean new_tip = target.hasToolTip();
-            if (!old_tip && new_tip) {
-                tool_tip_timer.start();
-                render_tool_tip = false;
-            }
-            if (old_tip && !new_tip) {
-                if (!render_tool_tip)
-                    tool_tip_timer.stop();
-                else
-                    render_tool_tip = false;
-            }
-            current_gui_object = target;
-            current_gui_object.mouseEnteredAll();
-            updateCursor();
-        }
-    }
-
-    /** {@return true if cursor should be rendered.} */
-    public boolean renderCursor() {
-        return getModalDelegate() != null || getDelegate().renderCursor();
-    }
-
-    public void updateCursor() {
-        if (gui.getGUIRoot() != this) {
-            return;
-        }
-        CursorType cursorType = (!current_gui_object.isDisabled())
-                ? current_gui_object.getCursorType()
-                : CursorType.NORMAL;
-        boolean visible = renderCursor() && cursorType != CursorType.NULL;
-        gui.getLocalInput().getPointerInput().setCursorVisible(visible);
-        gui.getLocalInput().getPointerInput().setActiveCursor(visible ? cursorType : CursorType.NULL);
-    }
-
-    public GUIObject getCurrentGUIObject() {
-        return current_gui_object;
-    }
-
-    @Override
-    public void addChild(GUIObject child) {
-        super.addChild(child);
-        ModalDelegate modal_delegate = getModalDelegate();
-        putFirst(info_printer);
-        if (modal_delegate != null) {
-            super.addChild(modal_delegate); // move to front
-        }
-    }
-
-    private boolean showToolTip() {
-        return renderCursor();
-    }
-
-    void renderTopmost(GUIRenderer renderer, @Nullable ToolTip hovered) {
-        if (cheatIcon != null && cheatActiveSupplier != null && cheatActiveSupplier.getAsBoolean()) {
-            renderer.drawIcon(cheatIcon,
-                    getWidth() - cheatIcon.getWidth() - 10,
-                    5);
-        }
-
-        getDelegate().render2D(renderer);
-
-        // render forced delegates
-        for (int i = 1, size = delegate_stack.size(); i < size; i++) {
-            var delegate = delegate_stack.get(i);
-            if (delegate.forceRender() && delegate instanceof GUIObject obj) {
-                obj.render(renderer);
-            }
-        }
-
-        if (DebugFlags.draw_status) {
-            status.render(renderer);
-        }
-
-        if (showToolTip()) {
-            ToolTip tooltip = getToolTip();
-            if (tooltip == null)
-                tooltip = hovered;
-            if (tooltip != null)
-                renderToolTip(renderer, tooltip);
-        }
-    }
-
-    private @Nullable ToolTip getToolTip() {
-        GUIObject obj = getCurrentGUIObject();
-        return render_tool_tip && obj.hasToolTip() ? obj : null;
-    }
-
-    private void renderToolTip(GUIRenderer renderer, ToolTip hovered) {
-        tool_tip.clear();
-        hovered.appendToolTip(tool_tip);
-        tool_tip.render(renderer,
-                Math.round(gui.getLocalInput().getMouseX() / effective_scale),
-                Math.round(gui.getLocalInput().getMouseY() / effective_scale) - CURSOR_OFFSET_Y,
-                getWidth(), getHeight());
-    }
-
-    /**
-     * Detaches this root and its child hierarchy from active presentation.
-     */
-    public void detach() {
-        removeTree();
-    }
+  /// Detaches this root and its child hierarchy from active presentation.
+  public void detach() {
+    removeTree();
+  }
 }

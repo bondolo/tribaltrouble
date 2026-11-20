@@ -1,6 +1,4 @@
-/**
- * Action controllers and interaction stack for handling contextual player commands and input.
- */
+/** Action controllers and interaction stack for handling contextual player commands and input. */
 @NullMarked
 package com.oddlabs.tt.client.controller;
 

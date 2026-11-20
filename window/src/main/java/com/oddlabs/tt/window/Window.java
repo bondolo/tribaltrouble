@@ -1,220 +1,211 @@
 package com.oddlabs.tt.window;
 
-import org.joml.Vector2f;
-import org.jspecify.annotations.Nullable;
-
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
+import org.joml.Vector2f;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Main interface for window management, display mode handling, and fullscreen controls.
- */
+/// Main interface for window management, display mode handling, and fullscreen controls.
 public interface Window extends AutoCloseable {
-    void create(SerializableDisplayMode mode, boolean fullscreen);
+  void create(SerializableDisplayMode mode, boolean fullscreen);
 
-    WindowSettings getSettings();
+  WindowSettings getSettings();
 
-    void setSettings(WindowSettings settings);
+  void setSettings(WindowSettings settings);
 
-    void setEventListener(@Nullable WindowEventListener listener);
+  void setEventListener(@Nullable WindowEventListener listener);
 
-    @Override
-    void close();
+  @Override
+  void close();
 
-    void update();
+  void update();
 
-    /**
-     * Polls for pending window events without blocking.
-     */
-    void pollEvents();
+  /// Polls for pending window events without blocking.
+  void pollEvents();
 
-    /**
-     * Waits for window events, blocking indefinitely until at least one event is available.
-     */
-    default void waitEvents() {
-        waitEvents(0);
+  /// Waits for window events, blocking indefinitely until at least one event is available.
+  default void waitEvents() {
+    waitEvents(0);
+  }
+
+  /**
+   * Waits for window events, blocking until an event is available or the specified timeout expires.
+   *
+   * @param `timeoutMs` maximum time to wait in milliseconds, or 0 to wait indefinitely
+   */
+  void waitEvents(int timeoutMs);
+
+  boolean isOpen();
+
+  boolean isCloseRequested();
+
+  void setCloseRequested(boolean value);
+
+  boolean isActive();
+
+  boolean isVisible();
+
+  boolean isIconified();
+
+  boolean isMaximized();
+
+  boolean wasResized();
+
+  /**
+   * Returns the physical framebuffer width in pixels. This is the size used for OpenGL viewport and buffer allocations.
+   *
+   * @return int width in pixels
+   */
+  int getWidth();
+
+  /**
+   * Returns the physical framebuffer height in pixels.
+   *
+   * @return int height in pixels
+   */
+  int getHeight();
+
+  /**
+   * Returns the logical window width in screen coordinates. Screen coordinates are used for window positioning and
+   * cursor input. On high-DPI displays (e.g. Retina), this may be smaller than the framebuffer width.
+   *
+   * @return int width in screen coordinates
+   */
+  int getLogicalWidth();
+
+  /**
+   * Returns the logical window height in screen coordinates. Screen coordinates are used for window positioning and
+   * cursor input.
+   *
+   * @return int height in screen coordinates
+   */
+  int getLogicalHeight();
+
+  void setTitle(String title);
+
+  void setVSyncEnabled(boolean enabled);
+
+  void setFullscreen(boolean fullscreen) throws Exception;
+
+  /**
+   * Returns a list of resolutions available for fullscreen mode sorted from largest to smallest.
+   *
+   * @return List of SerializableDisplayMode
+   */
+  List<SerializableDisplayMode> getFullscreenDisplayModes();
+
+  /**
+   * Returns a list of standard resolutions suitable for windowed mode, filtered to fit within the usable area of the
+   * current monitor.
+   *
+   * @return List of SerializableDisplayMode
+   */
+  List<SerializableDisplayMode> getWindowedDisplayModes();
+
+  /// {@return the current display mode}
+  SerializableDisplayMode getDisplayMode();
+
+  void setDisplayMode(SerializableDisplayMode mode) throws Exception;
+
+  void setIcon(java.nio.file.Path imagePath);
+
+  void restore();
+
+  void minimize();
+
+  void show();
+
+  void focus();
+
+  void makeCurrent() throws Exception;
+
+  boolean isFullscreen();
+
+  /**
+   * Returns the physical size of the monitor in millimeters.
+   *
+   * @return Vector2f [width, height] in mm
+   */
+  Vector2f getMonitorPhysicalSize();
+
+  /**
+   * Returns the content scale of the monitor.
+   *
+   * @return Vector2f [xScale, yScale]
+   */
+  Vector2f getMonitorContentScale();
+
+  /**
+   * Returns the content scale of the window.
+   *
+   * @return Vector2f [xScale, yScale]
+   */
+  Vector2f getWindowContentScale();
+
+  /**
+   * Returns the pixel density of the window (Retina/High-DPI factor).
+   *
+   * @return float density
+   */
+  float getPixelDensity();
+
+  /**
+   * Returns true if the given display mode matches a native hardware exclusive fullscreen mode.
+   *
+   * @param `mode` the display mode to check
+   * @return true if it corresponds to an exclusive fullscreen mode
+   */
+  boolean isExclusiveFullscreenMode(SerializableDisplayMode mode);
+
+  /**
+   * Returns true if the window is currently in native hardware exclusive fullscreen mode.
+   *
+   * @return true if exclusive fullscreen is active
+   */
+  boolean isExclusiveFullscreen();
+
+  /**
+   * Returns the physical DPI (dots per inch) for the current display and mode.
+   *
+   * @return physical DPI
+   */
+  default float getDisplayDPI() {
+    Vector2f physSize = getMonitorPhysicalSize();
+    if (physSize.x() > 0 && physSize.y() > 0) {
+      double diagMm = Math.hypot(physSize.x(), physSize.y());
+      double diagInches = diagMm / 25.4;
+      double diagPixels = Math.hypot(getWidth(), getHeight());
+      return (float) (diagPixels / diagInches);
     }
+    float scale = getMonitorContentScale().x();
+    return 96.0f * (scale > 0 ? scale : 1.0f);
+  }
 
-    /**
-     * Waits for window events, blocking until an event is available or the specified timeout expires.
-     *
-     * @param timeoutMs maximum time to wait in milliseconds, or 0 to wait indefinitely
-     */
-    void waitEvents(int timeoutMs);
+  /**
+   * Updates the OS system UI visibility (e.g. taskbar, dock, menu bar) based on the game state.
+   *
+   * @param `playing` true if the game simulation is active (not in a menu)
+   */
+  void updateSystemUI(boolean playing);
 
-    boolean isOpen();
+  /**
+   * Displays a native open-file dialog.
+   *
+   * @param `filterName` name of the filter description
+   * @param `filterPattern` filter pattern (e.g. "json")
+   * @param `callback` consumer to receive the selected Path, or null if cancelled
+   */
+  void showOpenFileDialog(String filterName, String filterPattern, Consumer<@Nullable Path> callback);
 
-    boolean isCloseRequested();
-
-    void setCloseRequested(boolean value);
-
-    boolean isActive();
-
-    boolean isVisible();
-
-    boolean isIconified();
-
-    boolean isMaximized();
-
-    boolean wasResized();
-
-    /**
-     * Returns the physical framebuffer width in pixels. This is the size used for
-     * OpenGL viewport and buffer allocations.
-     *
-     * @return int width in pixels
-     */
-    int getWidth();
-
-    /**
-     * Returns the physical framebuffer height in pixels.
-     *
-     * @return int height in pixels
-     */
-    int getHeight();
-
-    /**
-     * Returns the logical window width in screen coordinates.
-     * Screen coordinates are used for window positioning and cursor input.
-     * On high-DPI displays (e.g. Retina), this may be smaller than the framebuffer width.
-     *
-     * @return int width in screen coordinates
-     */
-    int getLogicalWidth();
-
-    /**
-     * Returns the logical window height in screen coordinates.
-     * Screen coordinates are used for window positioning and cursor input.
-     *
-     * @return int height in screen coordinates
-     */
-    int getLogicalHeight();
-
-    void setTitle(String title);
-
-    void setVSyncEnabled(boolean enabled);
-
-    void setFullscreen(boolean fullscreen) throws Exception;
-
-    /**
-     * Returns a list of resolutions available for fullscreen mode sorted from largest to smallest.
-     *
-     * @return List of SerializableDisplayMode
-     */
-    List<SerializableDisplayMode> getFullscreenDisplayModes();
-
-    /**
-     * Returns a list of standard resolutions suitable for windowed mode, filtered to fit within the usable area of the
-     * current monitor.
-     *
-     * @return List of SerializableDisplayMode
-     */
-    List<SerializableDisplayMode> getWindowedDisplayModes();
-
-    /** {@return the current display mode} */
-    SerializableDisplayMode getDisplayMode();
-
-    void setDisplayMode(SerializableDisplayMode mode) throws Exception;
-
-    void setIcon(java.nio.file.Path imagePath);
-
-    void restore();
-
-    void minimize();
-
-    void show();
-
-    void focus();
-
-    void makeCurrent() throws Exception;
-
-    boolean isFullscreen();
-
-    /**
-     * Returns the physical size of the monitor in millimeters.
-     *
-     * @return Vector2f [width, height] in mm
-     */
-    Vector2f getMonitorPhysicalSize();
-
-    /**
-     * Returns the content scale of the monitor.
-     *
-     * @return Vector2f [xScale, yScale]
-     */
-    Vector2f getMonitorContentScale();
-
-    /**
-     * Returns the content scale of the window.
-     *
-     * @return Vector2f [xScale, yScale]
-     */
-    Vector2f getWindowContentScale();
-
-    /**
-     * Returns the pixel density of the window (Retina/High-DPI factor).
-     *
-     * @return float density
-     */
-    float getPixelDensity();
-
-    /**
-     * Returns true if the given display mode matches a native hardware exclusive fullscreen mode.
-     *
-     * @param mode the display mode to check
-     * @return true if it corresponds to an exclusive fullscreen mode
-     */
-    boolean isExclusiveFullscreenMode(SerializableDisplayMode mode);
-
-    /**
-     * Returns true if the window is currently in native hardware exclusive fullscreen mode.
-     *
-     * @return true if exclusive fullscreen is active
-     */
-    boolean isExclusiveFullscreen();
-
-    /**
-     * Returns the physical DPI (dots per inch) for the current display and mode.
-     *
-     * @return physical DPI
-     */
-    default float getDisplayDPI() {
-        Vector2f physSize = getMonitorPhysicalSize();
-        if (physSize.x() > 0 && physSize.y() > 0) {
-            double diagMm = Math.hypot(physSize.x(), physSize.y());
-            double diagInches = diagMm / 25.4;
-            double diagPixels = Math.hypot(getWidth(), getHeight());
-            return (float) (diagPixels / diagInches);
-        }
-        float scale = getMonitorContentScale().x();
-        return 96.0f * (scale > 0 ? scale : 1.0f);
-    }
-
-    /**
-     * Updates the OS system UI visibility (e.g. taskbar, dock, menu bar) based on the game state.
-     *
-     * @param playing true if the game simulation is active (not in a menu)
-     */
-    void updateSystemUI(boolean playing);
-
-    /**
-     * Displays a native open-file dialog.
-     *
-     * @param filterName name of the filter description
-     * @param filterPattern filter pattern (e.g. "json")
-     * @param callback consumer to receive the selected Path, or null if cancelled
-     */
-    void showOpenFileDialog(String filterName, String filterPattern, Consumer<@Nullable Path> callback);
-
-    /**
-     * Displays a native save-file dialog.
-     *
-     * @param filterName name of the filter description
-     * @param filterPattern filter pattern (e.g. "json")
-     * @param defaultLocation default file name or initial path
-     * @param callback consumer to receive the selected Path, or null if cancelled
-     */
-    void showSaveFileDialog(String filterName, String filterPattern, @Nullable String defaultLocation,
-            Consumer<@Nullable Path> callback);
+  /**
+   * Displays a native save-file dialog.
+   *
+   * @param `filterName` name of the filter description
+   * @param `filterPattern` filter pattern (e.g. "json")
+   * @param `defaultLocation` default file name or initial path
+   * @param `callback` consumer to receive the selected Path, or null if cancelled
+   */
+  void showSaveFileDialog(
+      String filterName, String filterPattern, @Nullable String defaultLocation, Consumer<@Nullable Path> callback);
 }

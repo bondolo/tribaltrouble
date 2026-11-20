@@ -1,43 +1,40 @@
 package com.oddlabs.tt.simulation.landscape;
 
+import java.util.Arrays;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Arrays;
-
-/**
- * Quadtree leaf node storing a flat collection of tree supplies.
- */
+/// Quadtree leaf node storing a flat collection of tree supplies.
 public final class TreeLeaf extends AbstractTreeGroup {
-    private TreeSupply[] infos = new TreeSupply[0];
+  private TreeSupply[] infos = new TreeSupply[0];
 
-    public TreeLeaf(@Nullable AbstractTreeGroup parent) {
-        super(parent);
-    }
+  public TreeLeaf(@Nullable AbstractTreeGroup parent) {
+    super(parent);
+  }
 
-    void insertTree(TreeSupply tree) {
-        TreeSupply[] new_infos = Arrays.copyOf(infos, infos.length + 1);
-        new_infos[new_infos.length - 1] = tree;
-        infos = new_infos;
-    }
+  void insertTree(TreeSupply tree) {
+    TreeSupply[] new_infos = Arrays.copyOf(infos, infos.length + 1);
+    new_infos[new_infos.length - 1] = tree;
+    infos = new_infos;
+  }
 
-    @Override
-    public boolean initBounds() {
-        if (infos.length != 0) {
-            TreeSupply info = infos[0];
-            info.initBounds();
-            setBounds(info);
-            for (int i = 1; i < infos.length; i++) {
-                info = infos[i];
-                info.initBounds();
-                expandBounds(info);
-            }
-            super.initBounds();
-            return true;
-        }
-        return false;
+  @Override
+  public boolean initBounds() {
+    if (infos.length != 0) {
+      TreeSupply info = infos[0];
+      info.initBounds();
+      setBounds(info);
+      for (int i = 1; i < infos.length; i++) {
+        info = infos[i];
+        info.initBounds();
+        expandBounds(info);
+      }
+      super.initBounds();
+      return true;
     }
+    return false;
+  }
 
-    public TreeSupply[] getTrees() {
-        return infos;
-    }
+  public TreeSupply[] getTrees() {
+    return infos;
+  }
 }

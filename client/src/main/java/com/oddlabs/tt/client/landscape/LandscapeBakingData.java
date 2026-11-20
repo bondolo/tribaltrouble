@@ -9,8 +9,4 @@ import com.oddlabs.procedural.Layer;
  * @param detail the high-frequency detail texture layer
  * @param detailNormal the high-frequency detail normal map layer
  */
-record LandscapeBakingData(
-                           BlendInfo[] blendInfos,
-                           Layer detail,
-                           Layer detailNormal) {
-}
+record LandscapeBakingData(BlendInfo[] blendInfos, Layer detail, Layer detailNormal) {}

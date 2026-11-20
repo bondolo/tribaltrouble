@@ -7,113 +7,109 @@ import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 
-/**
- * Transient expanding-ring effect rendered by {@link com.oddlabs.tt.effects.render.SonicBlastRenderer}.
- * Advances through its animation each game tick and removes itself when its duration elapses.
- */
+/// Transient expanding-ring effect rendered by {@link com.oddlabs.tt.effects.render.SonicBlastRenderer}. Advances
+/// through its animation each game tick and removes itself when its duration elapses.
 public final class SonicBlastEffect implements Animated, BoundsProvider {
-    private final World world;
-    private final Vector3f position;
-    private final float maxRadius;
-    private final float duration;
-    private final Color.Linear color;
-    private final BoundingBox bounds;
-    private final BoundingBox[] boundsArray;
-    private float time;
-    private boolean dead;
+  private final World world;
+  private final Vector3f position;
+  private final float maxRadius;
+  private final float duration;
+  private final Color.Linear color;
+  private final BoundingBox bounds;
+  private final BoundingBox[] boundsArray;
+  private float time;
+  private boolean dead;
 
-    public SonicBlastEffect(World world, Vector3f position, float maxRadius, float duration) {
-        this(world, position, maxRadius, duration, new Color.Linear(0.7f, 0.85f, 1.0f, 1.0f));
+  public SonicBlastEffect(World world, Vector3f position, float maxRadius, float duration) {
+    this(world, position, maxRadius, duration, new Color.Linear(0.7f, 0.85f, 1.0f, 1.0f));
+  }
+
+  public SonicBlastEffect(World world, Vector3f position, float maxRadius, float duration, Color.Linear color) {
+    this.world = world;
+    this.position = position;
+    this.maxRadius = maxRadius;
+    this.duration = duration;
+    this.color = color;
+    this.time = 0;
+    this.dead = false;
+
+    this.bounds = new BoundingBox();
+    float visualRadius = maxRadius * 1.2f;
+    this.bounds.setBounds(
+        position.x - visualRadius, position.x + visualRadius,
+        position.y - visualRadius, position.y + visualRadius,
+        position.z - 5f, position.z + 5f);
+    this.boundsArray = new BoundingBox[] {this.bounds};
+
+    world.getAnimationManagerGameTime().registerAnimation(this);
+  }
+
+  public float getPositionX() {
+    return position.x;
+  }
+
+  public float getPositionY() {
+    return position.y;
+  }
+
+  public float getPositionZ() {
+    return position.z;
+  }
+
+  public Color.Linear getColor() {
+    return color;
+  }
+
+  public void update(float dt) {
+    time += dt;
+    if (time >= duration) {
+      dead = true;
+      world.getAnimationManagerGameTime().removeAnimation(this);
     }
+  }
 
-    public SonicBlastEffect(World world, Vector3f position, float maxRadius, float duration,
-            Color.Linear color) {
-        this.world = world;
-        this.position = position;
-        this.maxRadius = maxRadius;
-        this.duration = duration;
-        this.color = color;
-        this.time = 0;
-        this.dead = false;
-
-        this.bounds = new BoundingBox();
-        float visualRadius = maxRadius * 1.2f;
-        this.bounds.setBounds(
-                position.x - visualRadius, position.x + visualRadius,
-                position.y - visualRadius, position.y + visualRadius,
-                position.z - 5f, position.z + 5f
-        );
-        this.boundsArray = new BoundingBox[]{this.bounds};
-
-        world.getAnimationManagerGameTime().registerAnimation(this);
+  public void abort() {
+    if (!dead) {
+      dead = true;
+      world.getAnimationManagerGameTime().removeAnimation(this);
     }
+  }
 
-    public float getPositionX() {
-        return position.x;
-    }
+  @Override
+  public void animate(float dt) {
+    update(dt);
+  }
 
-    public float getPositionY() {
-        return position.y;
-    }
+  public World getWorld() {
+    return world;
+  }
 
-    public float getPositionZ() {
-        return position.z;
-    }
+  public Vector3f getPosition() {
+    return position;
+  }
 
-    public Color.Linear getColor() {
-        return color;
-    }
+  public float getTime() {
+    return time;
+  }
 
-    public void update(float dt) {
-        time += dt;
-        if (time >= duration) {
-            dead = true;
-            world.getAnimationManagerGameTime().removeAnimation(this);
-        }
-    }
+  public float getMaxRadius() {
+    return maxRadius;
+  }
 
-    public void abort() {
-        if (!dead) {
-            dead = true;
-            world.getAnimationManagerGameTime().removeAnimation(this);
-        }
-    }
+  public boolean isDead() {
+    return dead;
+  }
 
-    @Override
-    public void animate(float dt) {
-        update(dt);
-    }
+  public float getDuration() {
+    return duration;
+  }
 
-    public World getWorld() {
-        return world;
-    }
+  public BoundingBox getBounds() {
+    return bounds;
+  }
 
-    public Vector3f getPosition() {
-        return position;
-    }
-
-    public float getTime() {
-        return time;
-    }
-
-    public float getMaxRadius() {
-        return maxRadius;
-    }
-
-    public boolean isDead() {
-        return dead;
-    }
-
-    public float getDuration() {
-        return duration;
-    }
-
-    public BoundingBox getBounds() {
-        return bounds;
-    }
-
-    @Override
-    public BoundingBox[] bounds() {
-        return boundsArray;
-    }
+  @Override
+  public BoundingBox[] bounds() {
+    return boundsArray;
+  }
 }

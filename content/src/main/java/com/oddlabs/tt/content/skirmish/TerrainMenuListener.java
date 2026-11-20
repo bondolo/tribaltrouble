@@ -1,7 +1,7 @@
 package com.oddlabs.tt.content.skirmish;
 
 public interface TerrainMenuListener {
-    void terrainMenuCancel();
+  void terrainMenuCancel();
 
-    void terrainMenuOK();
+  void terrainMenuOK();
 }

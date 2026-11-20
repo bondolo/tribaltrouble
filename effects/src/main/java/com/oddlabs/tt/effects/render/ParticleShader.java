@@ -6,230 +6,229 @@ import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.render.shader.VertexAttribute;
 import org.lwjgl.opengl.GL11;
 
-/**
- * Renders particles using hardware instancing and vertex shader billboard expansion.
- */
+/// Renders particles using hardware instancing and vertex shader billboard expansion.
 final class ParticleShader extends ShaderProgram implements FogShader {
-    private interface Uniforms {
-        String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
-        String TEXTURE_ARRAY = "u_textureArray";
-        String DEPTH_MAP = "u_depthMap";
-        String IS_ADDITIVE = "u_isAdditive";
-        String FOG_ENABLED = "u_fogEnabled";
-        String NEAR_FAR = "u_nearFar"; // x = near, y = far
-        String SOFT_RANGE = "u_softRange";
+  private interface Uniforms {
+    String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
+    String TEXTURE_ARRAY = "u_textureArray";
+    String DEPTH_MAP = "u_depthMap";
+    String IS_ADDITIVE = "u_isAdditive";
+    String FOG_ENABLED = "u_fogEnabled";
+    String NEAR_FAR = "u_nearFar"; // x = near, y = far
+    String SOFT_RANGE = "u_softRange";
+  }
+
+  private interface Attributes {
+    String CENTER_POSITION = "in_CenterPosition";
+    String SIZE = "in_Size";
+    String COLOR = Shader.Attributes.COLOR;
+    String ANGLE = "in_Angle";
+    String TEX_SLOT = "in_TextureSlot";
+  }
+
+  enum Attribute implements VertexAttribute {
+    CENTER_POSITION(Attributes.CENTER_POSITION, 3, GL11.GL_FLOAT),
+    SIZE(Attributes.SIZE, 3, GL11.GL_FLOAT), // radius_x, radius_y, radius_z
+    COLOR(Attributes.COLOR, 4, GL11.GL_FLOAT),
+    ANGLE(Attributes.ANGLE, 1, GL11.GL_FLOAT),
+    TEX_SLOT(Attributes.TEX_SLOT, 1, GL11.GL_FLOAT);
+
+    private final String name;
+    private final int componentCount;
+    private final int glType;
+    private final boolean normalized;
+
+    Attribute(String name, int componentCount, int glType) {
+      this(name, componentCount, glType, false);
     }
 
-    private interface Attributes {
-        String CENTER_POSITION = "in_CenterPosition";
-        String SIZE = "in_Size";
-        String COLOR = Shader.Attributes.COLOR;
-        String ANGLE = "in_Angle";
-        String TEX_SLOT = "in_TextureSlot";
+    Attribute(String name, int componentCount, int glType, boolean normalized) {
+      this.name = name;
+      this.componentCount = componentCount;
+      this.glType = glType;
+      this.normalized = normalized;
     }
 
-    enum Attribute implements VertexAttribute {
-        CENTER_POSITION(Attributes.CENTER_POSITION, 3, GL11.GL_FLOAT),
-        SIZE(Attributes.SIZE, 3, GL11.GL_FLOAT), // radius_x, radius_y, radius_z
-        COLOR(Attributes.COLOR, 4, GL11.GL_FLOAT),
-        ANGLE(Attributes.ANGLE, 1, GL11.GL_FLOAT),
-        TEX_SLOT(Attributes.TEX_SLOT, 1, GL11.GL_FLOAT);
-
-        private final String name;
-        private final int componentCount;
-        private final int glType;
-        private final boolean normalized;
-
-        Attribute(String name, int componentCount, int glType) {
-            this(name, componentCount, glType, false);
-        }
-
-        Attribute(String name, int componentCount, int glType, boolean normalized) {
-            this.name = name;
-            this.componentCount = componentCount;
-            this.glType = glType;
-            this.normalized = normalized;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public int getComponentCount() {
-            return componentCount;
-        }
-
-        @Override
-        public int getGlType() {
-            return glType;
-        }
-
-        @Override
-        public boolean isNormalized() {
-            return normalized;
-        }
+    @Override
+    public String getName() {
+      return name;
     }
 
-    private static final String VERTEX_SHADER = SHADER_HEADER +
-            GLOBAL_STATE_BLOCK +
-            """
-                    layout(location = 0) in vec3 in_CenterPosition;
-                    layout(location = 1) in vec3 in_Size;
-                    layout(location = 3) in vec4 in_Color;
-                    layout(location = 4) in float in_Angle;
-                    layout(location = 5) in float in_TextureSlot;
-
-                    uniform mat4 u_modelViewMatrix;
-
-                    out VS_OUT {
-                        vec2 texCoord;
-                        vec4 color;
-                        float fogDist;
-                        vec3 viewPos;
-                        float verticalFactor;
-                        flat int texSlot;
-                    } vs_out;
-
-                    const vec2 OFFSETS[4] = vec2[](
-                        vec2(-1.0, -1.0), // Bottom-left
-                        vec2(1.0, -1.0),  // Bottom-right
-                        vec2(-1.0, 1.0),  // Top-left
-                        vec2(1.0, 1.0)    // Top-right
-                    );
-
-                    const vec2 UV_COORDS[4] = vec2[](
-                        vec2(0.0, 1.0), // Bottom-left
-                        vec2(1.0, 1.0), // Bottom-right
-                        vec2(0.0, 0.0), // Top-left
-                        vec2(1.0, 0.0)  // Top-right
-                    );
-
-                    void main() {
-                        vec3 center = in_CenterPosition;
-                        vec3 radius = in_Size;
-                        vs_out.color = in_Color;
-                        vs_out.texSlot = int(in_TextureSlot + 0.5);
-
-                        mat4 mv = u_modelViewMatrix;
-                        vec3 right = vec3(mv[0][0], mv[1][0], mv[2][0]);
-                        vec3 up = vec3(mv[0][1], mv[1][1], mv[2][1]);
-
-                        float cosA = cos(in_Angle);
-                        float sinA = sin(in_Angle);
-                        vec2 offset = OFFSETS[gl_VertexID];
-                        vec2 rotatedOffset = vec2(
-                            offset.x * cosA - offset.y * sinA,
-                            offset.x * sinA + offset.y * cosA
-                        );
-
-                        vec3 scaledRight = right * radius.x;
-                        vec3 scaledUp = up * radius.y;
-
-                        vec4 viewCenter = mv * vec4(center, 1.0);
-                        vs_out.fogDist = length(viewCenter.xyz);
-
-                        vec3 worldOffset = (scaledRight * rotatedOffset.x) + (scaledUp * rotatedOffset.y);
-                        vec3 p = center + worldOffset;
-                        vs_out.texCoord = UV_COORDS[gl_VertexID];
-
-                        // Vertical elevation factor in world space (Z is Up in Tribal Trouble):
-                        // Ranges from -1.0 at bottom edge to +1.0 at top edge of billboard
-                        float maxRadius = max(max(radius.x, radius.y), 0.001);
-                        vs_out.verticalFactor = clamp(worldOffset.z / maxRadius, -1.0, 1.0);
-
-                        vec4 viewPosition = mv * vec4(p, 1.0);
-                        vs_out.viewPos = viewPosition.xyz;
-                        gl_Position = u_projectionMatrix * viewPosition;
-                    }
-                    """;
-
-    private static final String FRAGMENT_SHADER = SHADER_HEADER +
-            GLOBAL_STATE_BLOCK +
-            FOG_FUNCTION +
-            """
-                    uniform sampler2DArray u_textureArray;
-                    uniform sampler2D u_depthMap;
-                    uniform float u_isAdditive;
-                    uniform int u_fogEnabled;
-                    uniform vec2 u_nearFar;
-                    uniform float u_softRange;
-
-                    in VS_OUT {
-                        vec2 texCoord;
-                        vec4 color;
-                        float fogDist;
-                        vec3 viewPos;
-                        float verticalFactor;
-                        flat int texSlot;
-                    } fs_in;
-
-                    layout(location = 0) out vec4 out_FragColor;
-
-                    float getLinearDepth(float depth) {
-                        float z = depth * 2.0 - 1.0;
-                        return (2.0 * u_nearFar.x * u_nearFar.y) / (u_nearFar.y + u_nearFar.x - z * (u_nearFar.y - u_nearFar.x));
-                    }
-
-                    vec4 sampleParticle(vec2 uv) {
-                        return texture(u_textureArray, vec3(uv, fs_in.texSlot));
-                    }
-
-                    void main() {
-                        vec4 texColor = sampleParticle(fs_in.texCoord);
-                        vec4 finalColor = fs_in.color * texColor;
-
-                        if (finalColor.a <= 0.0) {
-                            discard;
-                        }
-
-                        // Volumetric hemisphere ambient lighting for non-additive particles (smoke, dust)
-                        if (u_isAdditive <= 0.5) {
-                            float hemi = clamp(0.5 + 0.5 * fs_in.verticalFactor, 0.0, 1.0);
-                            vec3 ambientTone = mix(vec3(0.86, 0.84, 0.82), vec3(1.06, 1.07, 1.10), hemi);
-                            finalColor.rgb *= ambientTone;
-                        }
-
-                        // Soft Particles (Depth Fading)
-                        if (u_softRange > 0.0) {
-                            vec2 screenUV = gl_FragCoord.xy / textureSize(u_depthMap, 0).xy;
-                            float sceneDepth = getLinearDepth(texture(u_depthMap, screenUV).r);
-                            float particleDepth = -fs_in.viewPos.z; // view-space Z is negative
-                            float depthDiff = sceneDepth - particleDepth;
-                            finalColor.a *= clamp(depthDiff / u_softRange, 0.0, 1.0);
-                        }
-
-                        float fogFactor = 1.0;
-                        if (u_fogEnabled != 0) {
-                            fogFactor = calculateFogFactor(fs_in.fogDist, gl_FragCoord.xy);
-                        }
-                        vec3 foggedColor = mix(u_fogColor.rgb, finalColor.rgb, fogFactor);
-                        if (u_isAdditive > 0.5) {
-                            foggedColor = finalColor.rgb * fogFactor;
-                        }
-                        out_FragColor = vec4(foggedColor, clamp(finalColor.a, 0.0, 1.0));
-                    }
-                    """;
-
-
-    final int locModelViewMatrix;
-    final int locTextureArray;
-    final int locDepthMap;
-    final int locIsAdditive;
-    final int locFogEnabled;
-    final int locNearFar;
-    final int locSoftRange;
-
-    ParticleShader() {
-        super(VERTEX_SHADER, FRAGMENT_SHADER);
-        link();
-        locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
-        locTextureArray = getUniformLocation(Uniforms.TEXTURE_ARRAY);
-        locDepthMap = getUniformLocation(Uniforms.DEPTH_MAP);
-        locIsAdditive = getUniformLocation(Uniforms.IS_ADDITIVE);
-        locFogEnabled = getUniformLocation(Uniforms.FOG_ENABLED);
-        locNearFar = getUniformLocation(Uniforms.NEAR_FAR);
-        locSoftRange = getUniformLocation(Uniforms.SOFT_RANGE);
+    @Override
+    public int getComponentCount() {
+      return componentCount;
     }
+
+    @Override
+    public int getGlType() {
+      return glType;
+    }
+
+    @Override
+    public boolean isNormalized() {
+      return normalized;
+    }
+  }
+
+  private static final String VERTEX_SHADER =
+      SHADER_HEADER
+          + GLOBAL_STATE_BLOCK
+          + """
+          layout(location = 0) in vec3 in_CenterPosition;
+          layout(location = 1) in vec3 in_Size;
+          layout(location = 3) in vec4 in_Color;
+          layout(location = 4) in float in_Angle;
+          layout(location = 5) in float in_TextureSlot;
+
+          uniform mat4 u_modelViewMatrix;
+
+          out VS_OUT {
+              vec2 texCoord;
+              vec4 color;
+              float fogDist;
+              vec3 viewPos;
+              float verticalFactor;
+              flat int texSlot;
+          } vs_out;
+
+          const vec2 OFFSETS[4] = vec2[](
+              vec2(-1.0, -1.0), // Bottom-left
+              vec2(1.0, -1.0),  // Bottom-right
+              vec2(-1.0, 1.0),  // Top-left
+              vec2(1.0, 1.0)    // Top-right
+          );
+
+          const vec2 UV_COORDS[4] = vec2[](
+              vec2(0.0, 1.0), // Bottom-left
+              vec2(1.0, 1.0), // Bottom-right
+              vec2(0.0, 0.0), // Top-left
+              vec2(1.0, 0.0)  // Top-right
+          );
+
+          void main() {
+              vec3 center = in_CenterPosition;
+              vec3 radius = in_Size;
+              vs_out.color = in_Color;
+              vs_out.texSlot = int(in_TextureSlot + 0.5);
+
+              mat4 mv = u_modelViewMatrix;
+              vec3 right = vec3(mv[0][0], mv[1][0], mv[2][0]);
+              vec3 up = vec3(mv[0][1], mv[1][1], mv[2][1]);
+
+              float cosA = cos(in_Angle);
+              float sinA = sin(in_Angle);
+              vec2 offset = OFFSETS[gl_VertexID];
+              vec2 rotatedOffset = vec2(
+                  offset.x * cosA - offset.y * sinA,
+                  offset.x * sinA + offset.y * cosA
+              );
+
+              vec3 scaledRight = right * radius.x;
+              vec3 scaledUp = up * radius.y;
+
+              vec4 viewCenter = mv * vec4(center, 1.0);
+              vs_out.fogDist = length(viewCenter.xyz);
+
+              vec3 worldOffset = (scaledRight * rotatedOffset.x) + (scaledUp * rotatedOffset.y);
+              vec3 p = center + worldOffset;
+              vs_out.texCoord = UV_COORDS[gl_VertexID];
+
+              // Vertical elevation factor in world space (Z is Up in Tribal Trouble):
+              // Ranges from -1.0 at bottom edge to +1.0 at top edge of billboard
+              float maxRadius = max(max(radius.x, radius.y), 0.001);
+              vs_out.verticalFactor = clamp(worldOffset.z / maxRadius, -1.0, 1.0);
+
+              vec4 viewPosition = mv * vec4(p, 1.0);
+              vs_out.viewPos = viewPosition.xyz;
+              gl_Position = u_projectionMatrix * viewPosition;
+          }
+          """;
+
+  private static final String FRAGMENT_SHADER =
+      SHADER_HEADER
+          + GLOBAL_STATE_BLOCK
+          + FOG_FUNCTION
+          + """
+          uniform sampler2DArray u_textureArray;
+          uniform sampler2D u_depthMap;
+          uniform float u_isAdditive;
+          uniform int u_fogEnabled;
+          uniform vec2 u_nearFar;
+          uniform float u_softRange;
+
+          in VS_OUT {
+              vec2 texCoord;
+              vec4 color;
+              float fogDist;
+              vec3 viewPos;
+              float verticalFactor;
+              flat int texSlot;
+          } fs_in;
+
+          layout(location = 0) out vec4 out_FragColor;
+
+          float getLinearDepth(float depth) {
+              float z = depth * 2.0 - 1.0;
+              return (2.0 * u_nearFar.x * u_nearFar.y) / (u_nearFar.y + u_nearFar.x - z * (u_nearFar.y - u_nearFar.x));
+          }
+
+          vec4 sampleParticle(vec2 uv) {
+              return texture(u_textureArray, vec3(uv, fs_in.texSlot));
+          }
+
+          void main() {
+              vec4 texColor = sampleParticle(fs_in.texCoord);
+              vec4 finalColor = fs_in.color * texColor;
+
+              if (finalColor.a <= 0.0) {
+                  discard;
+              }
+
+              // Volumetric hemisphere ambient lighting for non-additive particles (smoke, dust)
+              if (u_isAdditive <= 0.5) {
+                  float hemi = clamp(0.5 + 0.5 * fs_in.verticalFactor, 0.0, 1.0);
+                  vec3 ambientTone = mix(vec3(0.86, 0.84, 0.82), vec3(1.06, 1.07, 1.10), hemi);
+                  finalColor.rgb *= ambientTone;
+              }
+
+              // Soft Particles (Depth Fading)
+              if (u_softRange > 0.0) {
+                  vec2 screenUV = gl_FragCoord.xy / textureSize(u_depthMap, 0).xy;
+                  float sceneDepth = getLinearDepth(texture(u_depthMap, screenUV).r);
+                  float particleDepth = -fs_in.viewPos.z; // view-space Z is negative
+                  float depthDiff = sceneDepth - particleDepth;
+                  finalColor.a *= clamp(depthDiff / u_softRange, 0.0, 1.0);
+              }
+
+              float fogFactor = 1.0;
+              if (u_fogEnabled != 0) {
+                  fogFactor = calculateFogFactor(fs_in.fogDist, gl_FragCoord.xy);
+              }
+              vec3 foggedColor = mix(u_fogColor.rgb, finalColor.rgb, fogFactor);
+              if (u_isAdditive > 0.5) {
+                  foggedColor = finalColor.rgb * fogFactor;
+              }
+              out_FragColor = vec4(foggedColor, clamp(finalColor.a, 0.0, 1.0));
+          }
+          """;
+
+  final int locModelViewMatrix;
+  final int locTextureArray;
+  final int locDepthMap;
+  final int locIsAdditive;
+  final int locFogEnabled;
+  final int locNearFar;
+  final int locSoftRange;
+
+  ParticleShader() {
+    super(VERTEX_SHADER, FRAGMENT_SHADER);
+    link();
+    locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
+    locTextureArray = getUniformLocation(Uniforms.TEXTURE_ARRAY);
+    locDepthMap = getUniformLocation(Uniforms.DEPTH_MAP);
+    locIsAdditive = getUniformLocation(Uniforms.IS_ADDITIVE);
+    locFogEnabled = getUniformLocation(Uniforms.FOG_ENABLED);
+    locNearFar = getUniformLocation(Uniforms.NEAR_FAR);
+    locSoftRange = getUniformLocation(Uniforms.SOFT_RANGE);
+  }
 }

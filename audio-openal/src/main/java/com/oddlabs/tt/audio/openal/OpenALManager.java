@@ -1,34 +1,5 @@
 package com.oddlabs.tt.audio.openal;
 
-import com.oddlabs.tt.audio.AbstractAudioManager;
-import com.oddlabs.tt.audio.Audio;
-import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.audio.AudioSettings;
-import com.oddlabs.tt.audio.AudioSource;
-import com.oddlabs.tt.audio.ReverbType;
-import com.oddlabs.tt.base.animation.AnimationManager;
-import org.joml.Vector3fc;
-import org.jspecify.annotations.Nullable;
-import org.lwjgl.openal.AL;
-import org.lwjgl.openal.AL10;
-import org.lwjgl.openal.AL11;
-import org.lwjgl.openal.ALC;
-import org.lwjgl.openal.ALC10;
-import org.lwjgl.openal.ALCCapabilities;
-import org.lwjgl.system.MemoryStack;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
-
 import static org.lwjgl.openal.ALC10.ALC_DEFAULT_DEVICE_SPECIFIER;
 import static org.lwjgl.openal.ALC10.ALC_FALSE;
 import static org.lwjgl.openal.ALC10.ALC_TRUE;
@@ -42,245 +13,271 @@ import static org.lwjgl.openal.ALC10.alcOpenDevice;
 import static org.lwjgl.openal.SOFTHRTF.ALC_HRTF_SOFT;
 import static org.lwjgl.openal.SOFTHRTF.alcResetDeviceSOFT;
 
-/**
- * Audio Manager implementation using OpenAL
- */
+import com.oddlabs.tt.audio.AbstractAudioManager;
+import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.AudioSettings;
+import com.oddlabs.tt.audio.AudioSource;
+import com.oddlabs.tt.audio.ReverbType;
+import com.oddlabs.tt.base.animation.AnimationManager;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
+import org.lwjgl.openal.AL;
+import org.lwjgl.openal.AL10;
+import org.lwjgl.openal.AL11;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC10;
+import org.lwjgl.openal.ALCCapabilities;
+import org.lwjgl.system.MemoryStack;
+
+/// Audio Manager implementation using OpenAL
 final class OpenALManager extends AbstractAudioManager<OpenALManager, OpenALAudioSource> {
-    private static final Logger logger = Logger.getLogger(OpenALManager.class.getName());
-    private static final int MAX_NUM_SOURCES = 32;
+  private static final Logger logger = Logger.getLogger(OpenALManager.class.getName());
+  private static final int MAX_NUM_SOURCES = 32;
 
-    private record ALData(long device, long context) implements AutoCloseable {
-        @Override
-        public void close() {
-            alcDestroyContext(context);
-            alcCloseDevice(device);
-        }
-    }
-
-    private final ALData data;
-    private final EFXManager efxManager = new EFXManager();
-    private final OpenALAudioSource[] sources;
-    private final Iterable<OpenALAudioSource> sharedSources;
-
-    // Queue for OpenAL cleanup tasks to be executed when this manager's context is current
-    private final Queue<Runnable> alCleanupTasks = new ConcurrentLinkedQueue<>();
-
-    OpenALManager(AudioSettings audioSettings, AnimationManager animationManager) {
-        this(audioSettings, animationManager, initAL(audioSettings.headphone_mode));
-    }
-
-    private OpenALManager(AudioSettings audioSettings, AnimationManager animationManager,
-            ALData data) {
-        super(audioSettings, animationManager);
-        this.data = data;
-        this.efxManager.init(data.device);
-        this.sources = Stream.generate(() -> {
-            try {
-                return new OpenALAudioSource(this);
-            } catch (Exception _) {
-                // If source generation fails, stop trying to create more
-                return null;
-            }
-        }).takeWhile(Objects::nonNull)
-                .limit(MAX_NUM_SOURCES)
-                .toArray(OpenALAudioSource[]::new);
-        this.sharedSources = List.of(sources);
-
-        logger.info("OpenAL version: " + AL10.alGetString(AL10.AL_VERSION));
-        logger.info("OpenAL vendor: " + AL10.alGetString(AL10.AL_VENDOR));
-        logger.info("OpenAL renderer: " + AL10.alGetString(AL10.AL_RENDERER));
-        AL10.alDistanceModel(AL11.AL_INVERSE_DISTANCE_CLAMPED);
-    }
-
-    private static ALData initAL(boolean headphoneMode) {
-        String defaultDeviceName = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
-        long device = alcOpenDevice(defaultDeviceName);
-        if (device == 0) {
-            throw new IllegalStateException("Failed to open default OpenAL device");
-        }
-
-        int[] attributes = headphoneMode && alcIsExtensionPresent(device, "ALC_SOFT_HRTF")
-                ? new int[]{ALC_HRTF_SOFT, ALC_TRUE, 0}
-                : new int[]{0};
-
-        long context = alcCreateContext(device, attributes);
-        if (context == 0) {
-            alcCloseDevice(device);
-            throw new IllegalStateException("Failed to create OpenAL context");
-        }
-
-        alcMakeContextCurrent(context);
-
-        ALCCapabilities alcCapabilities = ALC.createCapabilities(device);
-        AL.createCapabilities(alcCapabilities);
-
-        return new ALData(device, context);
-    }
-
-    @Override
-    public void enqueueCleanup(Runnable task) {
-        alCleanupTasks.add(task);
-    }
-
-    /**
-     * Processes all pending OpenAL cleanup tasks. This method must be called from a thread
-     * that has this manager's OpenAL context current.
-     */
-    @Override
-    protected void processCleanupTasks() {
-        if (ALC10.alcGetCurrentContext() == 0) return;
-        Runnable task;
-        int count = 0;
-        while ((task = alCleanupTasks.poll()) != null) {
-            try {
-                task.run();
-                count++;
-            } catch (Throwable t) {
-                logger.log(Level.SEVERE, "Error during OpenAL cleanup task execution", t);
-            }
-        }
-        if (count > 0) {
-            logger.info("Processed " + count + " OpenAL cleanup tasks");
-        }
-    }
-
-    @SuppressWarnings("ClassEscapesDefinedScope")
-    @Override
-    protected Iterable<OpenALAudioSource> getSources() {
-        return sharedSources;
-    }
-
-    long getContext() {
-        return data.context;
-    }
-
-    long getDevice() {
-        return data.device;
-    }
-
-    @Override
-    public boolean isEFXSupported() {
-        return efxManager.isSupported();
-    }
-
-    @Override
-    public int getEFXEffectSlot() {
-        return efxManager.getEffectSlot();
-    }
-
-    @Override
-    public boolean isHRTFSupported() {
-        return alcIsExtensionPresent(data.device, "ALC_SOFT_HRTF");
-    }
-
-    @Override
-    public OpenALManager setHeadphoneMode(boolean enabled) {
-        if (isHRTFSupported()) {
-            int[] attrs = {ALC_HRTF_SOFT, enabled ? ALC_TRUE : ALC_FALSE, 0};
-            if (!alcResetDeviceSOFT(data.device, attrs)) {
-                logger.warning("Failed to reset device for HRTF change");
-            }
-        } else {
-            logger.warning("ALC_SOFT_HRTF not supported");
-        }
-
-        return this;
-    }
-
-    @Override
-    public OpenALManager setMasterGain(float gain) {
-        super.setMasterGain(gain);
-        AL10.alListenerf(AL10.AL_GAIN, gain);
-        return this;
-    }
-
-    @Override
-    public OpenALManager setListenerOrientation(Vector3fc forward, Vector3fc up) {
-        super.setListenerOrientation(forward, up);
-        try (var stack = MemoryStack.stackPush()) {
-            var fb = stack.mallocFloat(6);
-            fb.put(forward.x()).put(forward.y()).put(forward.z());
-            fb.put(up.x()).put(up.y()).put(up.z());
-            fb.flip();
-            AL10.alListenerfv(AL10.AL_ORIENTATION, fb);
-        }
-        return this;
-    }
-
-    @Override
-    public OpenALManager setListenerPosition(float x, float y, float z) {
-        super.setListenerPosition(x, y, z);
-        AL10.alListener3f(AL10.AL_POSITION, x, y, z);
-        return this;
-    }
-
-    @Override
-    protected AudioPlayer createPlayer(@Nullable AudioSource source, float x, float y, float z,
-            AudioParameters params) {
-        return createPlayer((OpenALAudioSource) source, x, y, z, params);
-    }
-
-    private AudioPlayer createPlayer(@Nullable OpenALAudioSource source, float x, float y, float z,
-            AudioParameters params) {
-        AudioPlayer player;
-        if (!params.audio().isStreaming()) {
-            var ourPlayer = new OpenALAudioPlayer(this, source, x, y, z, params);
-            if (params.ambient()) {
-                registerAmbient(ourPlayer);
-            }
-            player = ourPlayer;
-        } else {
-            var queuedPlayer = new OpenALQueuedAudioPlayer(this, source, x, y, z, params);
-            addQueuedPlayer(queuedPlayer);
-            player = queuedPlayer;
-        }
-
-        return player;
-    }
-
-    @Override
-    public Audio createAudio(URL file) throws IOException {
-        return new OpenALAudio(this, file);
-    }
-
+  private record ALData(long device, long context) implements AutoCloseable {
     @Override
     public void close() {
-        if (isClosed()) return;
-        if (!ALC10.alcMakeContextCurrent(data.context)) {
-            logger.warning("Failed to make OpenAL context current for shutdown: " + data.context);
+      alcDestroyContext(context);
+      alcCloseDevice(device);
+    }
+  }
+
+  private final ALData data;
+  private final EFXManager efxManager = new EFXManager();
+  private final OpenALAudioSource[] sources;
+  private final Iterable<OpenALAudioSource> sharedSources;
+
+  // Queue for OpenAL cleanup tasks to be executed when this manager's context is current
+  private final Queue<Runnable> alCleanupTasks = new ConcurrentLinkedQueue<>();
+
+  OpenALManager(AudioSettings audioSettings, AnimationManager animationManager) {
+    this(audioSettings, animationManager, initAL(audioSettings.headphone_mode));
+  }
+
+  private OpenALManager(AudioSettings audioSettings, AnimationManager animationManager, ALData data) {
+    super(audioSettings, animationManager);
+    this.data = data;
+    this.efxManager.init(data.device);
+    this.sources =
+        Stream.generate(
+                () -> {
+                  try {
+                    return new OpenALAudioSource(this);
+                  } catch (Exception _) {
+                    // If source generation fails, stop trying to create more
+                    return null;
+                  }
+                })
+            .takeWhile(Objects::nonNull)
+            .limit(MAX_NUM_SOURCES)
+            .toArray(OpenALAudioSource[]::new);
+    this.sharedSources = List.of(sources);
+
+    logger.info("OpenAL version: " + AL10.alGetString(AL10.AL_VERSION));
+    logger.info("OpenAL vendor: " + AL10.alGetString(AL10.AL_VENDOR));
+    logger.info("OpenAL renderer: " + AL10.alGetString(AL10.AL_RENDERER));
+    AL10.alDistanceModel(AL11.AL_INVERSE_DISTANCE_CLAMPED);
+  }
+
+  private static ALData initAL(boolean headphoneMode) {
+    String defaultDeviceName = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
+    long device = alcOpenDevice(defaultDeviceName);
+    if (device == 0) {
+      throw new IllegalStateException("Failed to open default OpenAL device");
+    }
+
+    int[] attributes =
+        headphoneMode && alcIsExtensionPresent(device, "ALC_SOFT_HRTF")
+            ? new int[] {ALC_HRTF_SOFT, ALC_TRUE, 0}
+            : new int[] {0};
+
+    long context = alcCreateContext(device, attributes);
+    if (context == 0) {
+      alcCloseDevice(device);
+      throw new IllegalStateException("Failed to create OpenAL context");
+    }
+
+    alcMakeContextCurrent(context);
+
+    ALCCapabilities alcCapabilities = ALC.createCapabilities(device);
+    AL.createCapabilities(alcCapabilities);
+
+    return new ALData(device, context);
+  }
+
+  @Override
+  public void enqueueCleanup(Runnable task) {
+    alCleanupTasks.add(task);
+  }
+
+  /// Processes all pending OpenAL cleanup tasks. This method must be called from a thread that has this manager's
+  /// OpenAL context current.
+  @Override
+  protected void processCleanupTasks() {
+    if (ALC10.alcGetCurrentContext() == 0) return;
+    Runnable task;
+    int count = 0;
+    while ((task = alCleanupTasks.poll()) != null) {
+      try {
+        task.run();
+        count++;
+      } catch (Throwable t) {
+        logger.log(Level.SEVERE, "Error during OpenAL cleanup task execution", t);
+      }
+    }
+    if (count > 0) {
+      logger.info("Processed " + count + " OpenAL cleanup tasks");
+    }
+  }
+
+  @SuppressWarnings("ClassEscapesDefinedScope")
+  @Override
+  protected Iterable<OpenALAudioSource> getSources() {
+    return sharedSources;
+  }
+
+  long getContext() {
+    return data.context;
+  }
+
+  long getDevice() {
+    return data.device;
+  }
+
+  @Override
+  public boolean isEFXSupported() {
+    return efxManager.isSupported();
+  }
+
+  @Override
+  public int getEFXEffectSlot() {
+    return efxManager.getEffectSlot();
+  }
+
+  @Override
+  public boolean isHRTFSupported() {
+    return alcIsExtensionPresent(data.device, "ALC_SOFT_HRTF");
+  }
+
+  @Override
+  public OpenALManager setHeadphoneMode(boolean enabled) {
+    if (isHRTFSupported()) {
+      int[] attrs = {ALC_HRTF_SOFT, enabled ? ALC_TRUE : ALC_FALSE, 0};
+      if (!alcResetDeviceSOFT(data.device, attrs)) {
+        logger.warning("Failed to reset device for HRTF change");
+      }
+    } else {
+      logger.warning("ALC_SOFT_HRTF not supported");
+    }
+
+    return this;
+  }
+
+  @Override
+  public OpenALManager setMasterGain(float gain) {
+    super.setMasterGain(gain);
+    AL10.alListenerf(AL10.AL_GAIN, gain);
+    return this;
+  }
+
+  @Override
+  public OpenALManager setListenerOrientation(Vector3fc forward, Vector3fc up) {
+    super.setListenerOrientation(forward, up);
+    try (var stack = MemoryStack.stackPush()) {
+      var fb = stack.mallocFloat(6);
+      fb.put(forward.x()).put(forward.y()).put(forward.z());
+      fb.put(up.x()).put(up.y()).put(up.z());
+      fb.flip();
+      AL10.alListenerfv(AL10.AL_ORIENTATION, fb);
+    }
+    return this;
+  }
+
+  @Override
+  public OpenALManager setListenerPosition(float x, float y, float z) {
+    super.setListenerPosition(x, y, z);
+    AL10.alListener3f(AL10.AL_POSITION, x, y, z);
+    return this;
+  }
+
+  @Override
+  protected AudioPlayer createPlayer(@Nullable AudioSource source, float x, float y, float z, AudioParameters params) {
+    return createPlayer((OpenALAudioSource) source, x, y, z, params);
+  }
+
+  private AudioPlayer createPlayer(
+      @Nullable OpenALAudioSource source, float x, float y, float z, AudioParameters params) {
+    AudioPlayer player;
+    if (!params.audio().isStreaming()) {
+      var ourPlayer = new OpenALAudioPlayer(this, source, x, y, z, params);
+      if (params.ambient()) {
+        registerAmbient(ourPlayer);
+      }
+      player = ourPlayer;
+    } else {
+      var queuedPlayer = new OpenALQueuedAudioPlayer(this, source, x, y, z, params);
+      addQueuedPlayer(queuedPlayer);
+      player = queuedPlayer;
+    }
+
+    return player;
+  }
+
+  @Override
+  public Audio createAudio(URL file) throws IOException {
+    return new OpenALAudio(this, file);
+  }
+
+  @Override
+  public void close() {
+    if (isClosed()) return;
+    if (!ALC10.alcMakeContextCurrent(data.context)) {
+      logger.warning("Failed to make OpenAL context current for shutdown: " + data.context);
+    }
+    try {
+      processCleanupTasks();
+      super.close();
+      synchronized (this) {
+        logger.info("AudioManager closing sources...");
+        for (OpenALAudioSource source : sources) {
+          try {
+            source.close();
+          } catch (Exception e) {
+            logger.log(Level.WARNING, "Error closing audio source", e);
+          }
         }
-        try {
-            processCleanupTasks();
-            super.close();
-            synchronized (this) {
-                logger.info("AudioManager closing sources...");
-                for (OpenALAudioSource source : sources) {
-                    try {
-                        source.close();
-                    } catch (Exception e) {
-                        logger.log(Level.WARNING, "Error closing audio source", e);
-                    }
-                }
-                Arrays.fill(sources, null);
-                processCleanupTasks();
-                efxManager.close();
-            }
-        } finally {
-            data.close();
-        }
+        Arrays.fill(sources, null);
+        processCleanupTasks();
+        efxManager.close();
+      }
+    } finally {
+      data.close();
     }
+  }
 
-    public EFXManager getEfxManager() {
-        return efxManager;
-    }
+  public EFXManager getEfxManager() {
+    return efxManager;
+  }
 
-    @Override
-    public void setReverb(ReverbType type) {
-        efxManager.setReverb(type);
-    }
+  @Override
+  public void setReverb(ReverbType type) {
+    efxManager.setReverb(type);
+  }
 
-    @Override
-    public void setReverb(ReverbType from, ReverbType to, float factor) {
-        efxManager.setReverb(from, to, factor);
-    }
+  @Override
+  public void setReverb(ReverbType from, ReverbType to, float factor) {
+    efxManager.setReverb(from, to, factor);
+  }
 }

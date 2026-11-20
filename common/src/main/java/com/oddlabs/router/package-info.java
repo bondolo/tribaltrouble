@@ -1,6 +1,4 @@
-/**
- * Provides deterministic lockstep message routing and session multiplexing.
- */
+/** Provides deterministic lockstep message routing and session multiplexing. */
 @NullMarked
 package com.oddlabs.router;
 

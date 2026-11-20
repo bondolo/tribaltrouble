@@ -1,40 +1,37 @@
 package com.oddlabs.net;
 
-
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 public final class ByteBufferInputStream extends InputStream {
-    private final ByteBuffer buffer;
+  private final ByteBuffer buffer;
 
-    public ByteBufferInputStream(byte[] array) {
-        buffer = ByteBuffer.wrap(array);
-    }
+  public ByteBufferInputStream(byte[] array) {
+    buffer = ByteBuffer.wrap(array);
+  }
 
-    public ByteBuffer buffer() {
-        return buffer;
-    }
+  public ByteBuffer buffer() {
+    return buffer;
+  }
 
-    @Override
-    public int available() {
-        return buffer.remaining();
-    }
+  @Override
+  public int available() {
+    return buffer.remaining();
+  }
 
-    @Override
-    public int read(byte[] bytes, int offset, int length) {
-        if (available() == 0)
-            return -1;
-        length = Math.min(length, available());
-        buffer.get(bytes, offset, length);
-        return length;
-    }
+  @Override
+  public int read(byte[] bytes, int offset, int length) {
+    if (available() == 0) return -1;
+    length = Math.min(length, available());
+    buffer.get(bytes, offset, length);
+    return length;
+  }
 
-    @Override
-    public int read() {
-        if (available() > 0) {
-            int b = buffer.get();
-            return b & 0xff;
-        } else
-            return -1;
-    }
+  @Override
+  public int read() {
+    if (available() > 0) {
+      int b = buffer.get();
+      return b & 0xff;
+    } else return -1;
+  }
 }

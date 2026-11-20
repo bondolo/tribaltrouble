@@ -7,63 +7,60 @@ import com.oddlabs.net.AbstractConnectionListener;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.ConnectionListenerInterface;
 import com.oddlabs.net.HostSequenceID;
-import org.jspecify.annotations.Nullable;
-
 import java.net.InetAddress;
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Connection listener for incoming matchmaking tunnel connections.
- */
+/// Connection listener for incoming matchmaking tunnel connections.
 public final class TunnelledConnectionListener extends AbstractConnectionListener<TunnelIdentifier> {
-    private final Deque<TunnelledConnection> incoming_connections = new ArrayDeque<>();
-    private final MatchmakingClient matchmaking_client;
-    private boolean open = true;
+  private final Deque<TunnelledConnection> incoming_connections = new ArrayDeque<>();
+  private final MatchmakingClient matchmaking_client;
+  private boolean open = true;
 
-    public TunnelledConnectionListener(MatchmakingClient matchmaking_client,
-            ConnectionListenerInterface<? super TunnelIdentifier> listener_interface) {
-        super(listener_interface);
-        this.matchmaking_client = matchmaking_client;
-        matchmaking_client.registerTunnelledListener(this);
-    }
+  public TunnelledConnectionListener(
+      MatchmakingClient matchmaking_client, ConnectionListenerInterface<? super TunnelIdentifier> listener_interface) {
+    super(listener_interface);
+    this.matchmaking_client = matchmaking_client;
+    matchmaking_client.registerTunnelledListener(this);
+  }
 
-    public void requestTunnelledConnection(HostSequenceID address, InetAddress inet_address,
-            InetAddress local_address, Profile profile) {
-        TunnelledConnection conn = new TunnelledConnection(matchmaking_client, address, null);
-        incoming_connections.add(conn);
-        notifyIncomingConnection(new TunnelIdentifier(profile, new TunnelAddress(address.getHostID(), inet_address,
-                local_address)));
-    }
+  public void requestTunnelledConnection(
+      HostSequenceID address, InetAddress inet_address, InetAddress local_address, Profile profile) {
+    TunnelledConnection conn = new TunnelledConnection(matchmaking_client, address, null);
+    incoming_connections.add(conn);
+    notifyIncomingConnection(
+        new TunnelIdentifier(profile, new TunnelAddress(address.getHostID(), inet_address, local_address)));
+  }
 
-    private TunnelledConnection getNextTunnel() {
-        return incoming_connections.remove();
-    }
+  private TunnelledConnection getNextTunnel() {
+    return incoming_connections.remove();
+  }
 
-    @Override
-    public AbstractConnection acceptConnection(@Nullable ConnectionInterface connection_interface) {
-        TunnelledConnection conn = getNextTunnel();
-        conn.setConnectionInterface(connection_interface);
-        conn.accept();
-        return conn;
-    }
+  @Override
+  public AbstractConnection acceptConnection(@Nullable ConnectionInterface connection_interface) {
+    TunnelledConnection conn = getNextTunnel();
+    conn.setConnectionInterface(connection_interface);
+    conn.accept();
+    return conn;
+  }
 
-    @Override
-    public void rejectConnection() {
-        getNextTunnel().close();
-    }
+  @Override
+  public void rejectConnection() {
+    getNextTunnel().close();
+  }
 
-    public void connectionClosed() {
-        open = false;
-        notifyError(new ClosedChannelException());
-    }
+  public void connectionClosed() {
+    open = false;
+    notifyError(new ClosedChannelException());
+  }
 
-    @Override
-    public void close() {
-        if (open) {
-            matchmaking_client.unregisterTunnelledListener(this);
-            open = false;
-        }
+  @Override
+  public void close() {
+    if (open) {
+      matchmaking_client.unregisterTunnelledListener(this);
+      open = false;
     }
+  }
 }

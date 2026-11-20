@@ -1,24 +1,23 @@
 package com.oddlabs.tt.content.tutorial.trigger;
 
 import com.oddlabs.tt.content.tutorial.Tutorial;
-
 import com.oddlabs.tt.content.tutorial.TutorialForm;
 import com.oddlabs.tt.simulation.model.Building;
 
-/** Tutorial trigger waiting for a tower to be emptied of units. */
+/// Tutorial trigger waiting for a tower to be emptied of units.
 final class EmptyTowerTrigger extends TutorialTrigger {
-    private final Building tower;
+  private final Building tower;
 
-    EmptyTowerTrigger(Building tower) {
-        super(.1f, 0f, "empty_tower");
-        this.tower = tower;
-        tower.getOwner().enableTowerExits(true);
-    }
+  EmptyTowerTrigger(Building tower) {
+    super(.1f, 0f, "empty_tower");
+    this.tower = tower;
+    tower.getOwner().enableTowerExits(true);
+  }
 
-    @Override
-    public void run(Tutorial tutorial) {
-        if (tower.getUnitContainer().map(c -> c.getNumSupplies() == 0).orElse(true)) {
-            tutorial.done(TutorialForm.TUTORIAL_TOWER);
-        }
+  @Override
+  public void run(Tutorial tutorial) {
+    if (tower.getUnitContainer().map(c -> c.getNumSupplies() == 0).orElse(true)) {
+      tutorial.done(TutorialForm.TUTORIAL_TOWER);
     }
+  }
 }

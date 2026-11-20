@@ -1,5 +1,12 @@
 package com.oddlabs.tt.headless;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.oddlabs.net.JitterConfig;
+import com.oddlabs.net.JitterTimeManager;
+import com.oddlabs.net.TickTimeManager;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
@@ -9,428 +16,310 @@ import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import com.oddlabs.net.JitterConfig;
-import com.oddlabs.net.JitterTimeManager;
-import com.oddlabs.net.TickTimeManager;
+import java.util.List;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-/**
- * Integration tests verifying complete simulation runs to victory across procedural maps and teams.
- */
+/// Integration tests verifying complete simulation runs to victory across procedural maps and teams.
 @Tag("integration")
 class FullGameSimulationTest {
 
-    @Test
-    void test1v1BattleRunToVictory() throws Exception {
-        int seed = 1001;
-        IslandConfig islandConfig = new IslandConfig(
-                Terrain.NATIVE,
-                256 * HeightMap.METERS_PER_UNIT_GRID,
-                0.5f,
-                0.5f,
-                0.5f,
-                seed
-        );
+  @Test
+  void test1v1BattleRunToVictory() throws Exception {
+    int seed = 1001;
+    IslandConfig islandConfig =
+        new IslandConfig(Terrain.NATIVE, 256 * HeightMap.METERS_PER_UNIT_GRID, 0.5f, 0.5f, 0.5f, seed);
 
-        WorldParameters worldParameters = new WorldParameters(
-                "headless_1v1_" + seed,
-                Player.INITIAL_UNIT_COUNT,
-                Player.DEFAULT_MAX_UNIT_COUNT
-        );
+    WorldParameters worldParameters =
+        new WorldParameters("headless_1v1_" + seed, Player.INITIAL_UNIT_COUNT, Player.DEFAULT_MAX_UNIT_COUNT);
 
-        UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
+    UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
 
-        List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.HARD, "VikingArmy", battleUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.HARD, "NativeArmy", battleUnits)
-        );
+    List<HeadlessMatchConfig.PlayerConfig> players =
+        List.of(
+            new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.HARD, "VikingArmy", battleUnits),
+            new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.HARD, "NativeArmy", battleUnits));
 
-        HeadlessMatchConfig config = new HeadlessMatchConfig(
-                islandConfig,
-                worldParameters,
-                players,
-                300_000,
-                50
-        );
+    HeadlessMatchConfig config = new HeadlessMatchConfig(islandConfig, worldParameters, players, 300_000, 50);
 
-        HeadlessMatchRunner runner = new HeadlessMatchRunner();
-        HeadlessMatchResult result = runner.run(config);
+    HeadlessMatchRunner runner = new HeadlessMatchRunner();
+    HeadlessMatchResult result = runner.run(config);
 
-        assertTrue(result.victory(), "Match should conclude in victory");
-        assertTrue(result.winningTeam() == 0 || result.winningTeam() == 1, "Winning team must be valid");
-        assertFalse(result.survivingPlayerIndices().isEmpty(), "Winning team must have surviving players");
-        for (int playerIndex : result.survivingPlayerIndices()) {
-            assertEquals(result.winningTeam(), players.get(playerIndex).team(),
-                    "All surviving players must belong to the winning team");
-        }
+    assertTrue(result.victory(), "Match should conclude in victory");
+    assertTrue(result.winningTeam() == 0 || result.winningTeam() == 1, "Winning team must be valid");
+    assertFalse(result.survivingPlayerIndices().isEmpty(), "Winning team must have surviving players");
+    for (int playerIndex : result.survivingPlayerIndices()) {
+      assertEquals(
+          result.winningTeam(),
+          players.get(playerIndex).team(),
+          "All surviving players must belong to the winning team");
     }
+  }
 
-    @Test
-    void test1v1BattleWithJitterClockRunToVictory() throws Exception {
-        int seed = 1002;
-        IslandConfig islandConfig = new IslandConfig(
-                Terrain.NATIVE,
-                256 * HeightMap.METERS_PER_UNIT_GRID,
-                0.5f,
-                0.5f,
-                0.5f,
-                seed
-        );
+  @Test
+  void test1v1BattleWithJitterClockRunToVictory() throws Exception {
+    int seed = 1002;
+    IslandConfig islandConfig =
+        new IslandConfig(Terrain.NATIVE, 256 * HeightMap.METERS_PER_UNIT_GRID, 0.5f, 0.5f, 0.5f, seed);
 
-        WorldParameters worldParameters = new WorldParameters(
-                "headless_jitter_1v1_" + seed,
-                Player.INITIAL_UNIT_COUNT,
-                Player.DEFAULT_MAX_UNIT_COUNT
-        );
+    WorldParameters worldParameters =
+        new WorldParameters("headless_jitter_1v1_" + seed, Player.INITIAL_UNIT_COUNT, Player.DEFAULT_MAX_UNIT_COUNT);
 
-        UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
+    UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
 
-        List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.HARD, "VikingArmy", battleUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.HARD, "NativeArmy", battleUnits)
-        );
+    List<HeadlessMatchConfig.PlayerConfig> players =
+        List.of(
+            new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.HARD, "VikingArmy", battleUnits),
+            new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.HARD, "NativeArmy", battleUnits));
 
-        TickTimeManager baseClock = new TickTimeManager();
-        JitterConfig jitterConfig = JitterConfig.mild(baseClock, seed);
-        JitterTimeManager jitterClock = new JitterTimeManager(jitterConfig);
+    TickTimeManager baseClock = new TickTimeManager();
+    JitterConfig jitterConfig = JitterConfig.mild(baseClock, seed);
+    JitterTimeManager jitterClock = new JitterTimeManager(jitterConfig);
 
-        HeadlessMatchConfig config = new HeadlessMatchConfig(
-                islandConfig,
-                worldParameters,
-                players,
-                300_000,
-                50,
-                jitterClock
-        );
+    HeadlessMatchConfig config =
+        new HeadlessMatchConfig(islandConfig, worldParameters, players, 300_000, 50, jitterClock);
 
-        HeadlessMatchRunner runner = new HeadlessMatchRunner();
-        HeadlessMatchResult result = runner.run(config);
+    HeadlessMatchRunner runner = new HeadlessMatchRunner();
+    HeadlessMatchResult result = runner.run(config);
 
-        assertTrue(result.victory(), "Match under jitter clock should conclude in victory");
-        assertTrue(result.winningTeam() == 0 || result.winningTeam() == 1, "Winning team must be valid");
-        assertFalse(result.survivingPlayerIndices().isEmpty(), "Winning team must have surviving players");
-        for (int playerIndex : result.survivingPlayerIndices()) {
-            assertEquals(result.winningTeam(), players.get(playerIndex).team(),
-                    "All surviving players must belong to the winning team");
-        }
+    assertTrue(result.victory(), "Match under jitter clock should conclude in victory");
+    assertTrue(result.winningTeam() == 0 || result.winningTeam() == 1, "Winning team must be valid");
+    assertFalse(result.survivingPlayerIndices().isEmpty(), "Winning team must have surviving players");
+    for (int playerIndex : result.survivingPlayerIndices()) {
+      assertEquals(
+          result.winningTeam(),
+          players.get(playerIndex).team(),
+          "All surviving players must belong to the winning team");
     }
+  }
 
-    @Test
-    void testMultiPlayerTeamBattleRunToVictory() throws Exception {
-        int seed = 1003;
-        IslandConfig islandConfig = new IslandConfig(
-                Terrain.VIKING,
-                256 * HeightMap.METERS_PER_UNIT_GRID,
-                0.5f,
-                0.5f,
-                0.5f,
-                seed
-        );
+  @Test
+  void testMultiPlayerTeamBattleRunToVictory() throws Exception {
+    int seed = 1003;
+    IslandConfig islandConfig =
+        new IslandConfig(Terrain.VIKING, 256 * HeightMap.METERS_PER_UNIT_GRID, 0.5f, 0.5f, 0.5f, seed);
 
-        WorldParameters worldParameters = new WorldParameters(
-                "headless_2v2_" + seed,
-                Player.INITIAL_UNIT_COUNT,
-                Player.DEFAULT_MAX_UNIT_COUNT
-        );
+    WorldParameters worldParameters =
+        new WorldParameters("headless_2v2_" + seed, Player.INITIAL_UNIT_COUNT, Player.DEFAULT_MAX_UNIT_COUNT);
 
-        UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
+    UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
 
-        List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.HARD, "Team0-Viking", battleUnits),
-                new HeadlessMatchConfig.PlayerConfig(0, Race.NATIVES, AIDifficulty.HARD, "Team0-Native", battleUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.VIKINGS, AIDifficulty.HARD, "Team1-Viking", battleUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.HARD, "Team1-Native", battleUnits)
-        );
+    List<HeadlessMatchConfig.PlayerConfig> players =
+        List.of(
+            new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.HARD, "Team0-Viking", battleUnits),
+            new HeadlessMatchConfig.PlayerConfig(0, Race.NATIVES, AIDifficulty.HARD, "Team0-Native", battleUnits),
+            new HeadlessMatchConfig.PlayerConfig(1, Race.VIKINGS, AIDifficulty.HARD, "Team1-Viking", battleUnits),
+            new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.HARD, "Team1-Native", battleUnits));
 
-        HeadlessMatchConfig config = new HeadlessMatchConfig(
-                islandConfig,
-                worldParameters,
-                players,
-                300_000,
-                50
-        );
+    HeadlessMatchConfig config = new HeadlessMatchConfig(islandConfig, worldParameters, players, 300_000, 50);
 
-        HeadlessMatchRunner runner = new HeadlessMatchRunner();
-        HeadlessMatchResult result = runner.run(config);
+    HeadlessMatchRunner runner = new HeadlessMatchRunner();
+    HeadlessMatchResult result = runner.run(config);
 
-        assertTrue(result.victory(), "Match should conclude in victory for one team");
-        assertTrue(result.winningTeam() == 0 || result.winningTeam() == 1, "Winning team must be 0 or 1");
-        assertFalse(result.survivingPlayerIndices().isEmpty(), "At least one player must survive on winning team");
-        for (int playerIndex : result.survivingPlayerIndices()) {
-            assertEquals(result.winningTeam(), players.get(playerIndex).team(),
-                    "All surviving players must belong to the winning team");
-        }
+    assertTrue(result.victory(), "Match should conclude in victory for one team");
+    assertTrue(result.winningTeam() == 0 || result.winningTeam() == 1, "Winning team must be 0 or 1");
+    assertFalse(result.survivingPlayerIndices().isEmpty(), "At least one player must survive on winning team");
+    for (int playerIndex : result.survivingPlayerIndices()) {
+      assertEquals(
+          result.winningTeam(),
+          players.get(playerIndex).team(),
+          "All surviving players must belong to the winning team");
     }
+  }
 
-    @Test
-    void testProceduralMapWithRandomTerrainAndRacesRunToVictory() throws Exception {
-        int seed = 1004;
-        Terrain terrain = seed % 2 == 0 ? Terrain.VIKING : Terrain.NATIVE;
-        IslandConfig islandConfig = new IslandConfig(
-                terrain,
-                256 * HeightMap.METERS_PER_UNIT_GRID,
-                0.5f,
-                0.5f,
-                0.5f,
-                seed
-        );
+  @Test
+  void testProceduralMapWithRandomTerrainAndRacesRunToVictory() throws Exception {
+    int seed = 1004;
+    Terrain terrain = seed % 2 == 0 ? Terrain.VIKING : Terrain.NATIVE;
+    IslandConfig islandConfig = new IslandConfig(terrain, 256 * HeightMap.METERS_PER_UNIT_GRID, 0.5f, 0.5f, 0.5f, seed);
 
-        WorldParameters worldParameters = new WorldParameters(
-                "headless_procedural_" + seed,
-                Player.INITIAL_UNIT_COUNT,
-                Player.DEFAULT_MAX_UNIT_COUNT
-        );
+    WorldParameters worldParameters =
+        new WorldParameters("headless_procedural_" + seed, Player.INITIAL_UNIT_COUNT, Player.DEFAULT_MAX_UNIT_COUNT);
 
-        UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
+    UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
 
-        List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.NATIVES, AIDifficulty.HARD, "Native-Army", battleUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.VIKINGS, AIDifficulty.HARD, "Viking-Army", battleUnits)
-        );
+    List<HeadlessMatchConfig.PlayerConfig> players =
+        List.of(
+            new HeadlessMatchConfig.PlayerConfig(0, Race.NATIVES, AIDifficulty.HARD, "Native-Army", battleUnits),
+            new HeadlessMatchConfig.PlayerConfig(1, Race.VIKINGS, AIDifficulty.HARD, "Viking-Army", battleUnits));
 
-        HeadlessMatchConfig config = new HeadlessMatchConfig(
-                islandConfig,
-                worldParameters,
-                players,
-                300_000,
-                50
-        );
+    HeadlessMatchConfig config = new HeadlessMatchConfig(islandConfig, worldParameters, players, 300_000, 50);
 
-        HeadlessMatchRunner runner = new HeadlessMatchRunner();
-        HeadlessMatchResult result = runner.run(config);
+    HeadlessMatchRunner runner = new HeadlessMatchRunner();
+    HeadlessMatchResult result = runner.run(config);
 
-        assertTrue(result.victory(), "Match should conclude in victory");
-        assertTrue(result.winningTeam() == 0 || result.winningTeam() == 1, "Winning team must be valid");
-        assertFalse(result.survivingPlayerIndices().isEmpty(), "Surviving players list must not be empty");
-        for (int playerIndex : result.survivingPlayerIndices()) {
-            assertEquals(result.winningTeam(), players.get(playerIndex).team(),
-                    "All surviving players must belong to the winning team");
-        }
+    assertTrue(result.victory(), "Match should conclude in victory");
+    assertTrue(result.winningTeam() == 0 || result.winningTeam() == 1, "Winning team must be valid");
+    assertFalse(result.survivingPlayerIndices().isEmpty(), "Surviving players list must not be empty");
+    for (int playerIndex : result.survivingPlayerIndices()) {
+      assertEquals(
+          result.winningTeam(),
+          players.get(playerIndex).team(),
+          "All surviving players must belong to the winning team");
     }
+  }
 
-    @Test
-    void testMainParseMapKey() {
-        // MapCode for a 2-player skirmish setup
-        String testMapKey = "4Y4SDR388K";
-        HeadlessMatchConfig config = Main.parseMapKey(testMapKey, 10_000);
+  @Test
+  void testMainParseMapKey() {
+    // MapCode for a 2-player skirmish setup
+    String testMapKey = "4Y4SDR388K";
+    HeadlessMatchConfig config = Main.parseMapKey(testMapKey, 10_000);
 
-        assertEquals(10_000, config.maxTicks());
-        assertEquals(HeadlessMatchConfig.DEFAULT_CHECKSUM_INTERVAL, config.checksumIntervalTicks());
-        assertFalse(config.players().isEmpty());
-        assertTrue(config.players().size() >= 2);
-        assertTrue(config.islandConfig().metersPerWorld() > 0);
-        assertEquals(HeadlessMatchConfig.DEFAULT_STALL_TIMEOUT, config.stallTimeout());
-    }
+    assertEquals(10_000, config.maxTicks());
+    assertEquals(HeadlessMatchConfig.DEFAULT_CHECKSUM_INTERVAL, config.checksumIntervalTicks());
+    assertFalse(config.players().isEmpty());
+    assertTrue(config.players().size() >= 2);
+    assertTrue(config.islandConfig().metersPerWorld() > 0);
+    assertEquals(HeadlessMatchConfig.DEFAULT_STALL_TIMEOUT, config.stallTimeout());
+  }
 
-    @Test
-    void testWatchdogStallTimeoutConfiguration() {
-        String testMapKey = "4Y4SDR388K";
-        HeadlessMatchConfig baseConfig = Main.parseMapKey(testMapKey, 10_000);
-        HeadlessMatchConfig configWithTimeout = new HeadlessMatchConfig(
-                baseConfig.islandConfig(),
-                baseConfig.worldParameters(),
-                baseConfig.players(),
-                baseConfig.maxTicks(),
-                baseConfig.checksumIntervalTicks(),
-                baseConfig.timeManager(),
-                java.time.Duration.ofMillis(50)
-        );
+  @Test
+  void testWatchdogStallTimeoutConfiguration() {
+    String testMapKey = "4Y4SDR388K";
+    HeadlessMatchConfig baseConfig = Main.parseMapKey(testMapKey, 10_000);
+    HeadlessMatchConfig configWithTimeout =
+        new HeadlessMatchConfig(
+            baseConfig.islandConfig(),
+            baseConfig.worldParameters(),
+            baseConfig.players(),
+            baseConfig.maxTicks(),
+            baseConfig.checksumIntervalTicks(),
+            baseConfig.timeManager(),
+            java.time.Duration.ofMillis(50));
 
-        assertEquals(java.time.Duration.ofMillis(50), configWithTimeout.stallTimeout());
-    }
+    assertEquals(java.time.Duration.ofMillis(50), configWithTimeout.stallTimeout());
+  }
 
-    @Test
-    void testFourTeamsWithNeutralFactionSoleSurvivorVictory() throws Exception {
-        int seed = 42;
-        IslandConfig islandConfig = new IslandConfig(
-                Terrain.NATIVE,
-                256 * HeightMap.METERS_PER_UNIT_GRID,
-                0.5f,
-                0.5f,
-                0.5f,
-                seed
-        );
+  @Test
+  void testFourTeamsWithNeutralFactionSoleSurvivorVictory() throws Exception {
+    int seed = 42;
+    IslandConfig islandConfig =
+        new IslandConfig(Terrain.NATIVE, 256 * HeightMap.METERS_PER_UNIT_GRID, 0.5f, 0.5f, 0.5f, seed);
 
-        WorldParameters worldParameters = new WorldParameters(
-                "headless_4teams_neutral_" + seed,
-                1,
-                Player.DEFAULT_MAX_UNIT_COUNT
-        );
+    WorldParameters worldParameters =
+        new WorldParameters("headless_4teams_neutral_" + seed, 1, Player.DEFAULT_MAX_UNIT_COUNT);
 
-        UnitInfo activeUnits = new UnitInfo(false, false, 0, false, 1, 0, 0, 0);
-        UnitInfo eliminatedUnits = new UnitInfo(false, false, 0, false, 0, 0, 0, 0);
+    UnitInfo activeUnits = new UnitInfo(false, false, 0, false, 1, 0, 0, 0);
+    UnitInfo eliminatedUnits = new UnitInfo(false, false, 0, false, 0, 0, 0, 0);
 
-        List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.EASY, "Team0", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.EASY, "Team1", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, AIDifficulty.EASY, "Team2-Winner", activeUnits),
-                new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, AIDifficulty.EASY, "Team3", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES,
-                        AIDifficulty.NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
-        );
+    List<HeadlessMatchConfig.PlayerConfig> players =
+        List.of(
+            new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.EASY, "Team0", eliminatedUnits),
+            new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.EASY, "Team1", eliminatedUnits),
+            new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, AIDifficulty.EASY, "Team2-Winner", activeUnits),
+            new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, AIDifficulty.EASY, "Team3", eliminatedUnits),
+            new HeadlessMatchConfig.PlayerConfig(
+                PlayerInfo.TEAM_NEUTRAL, Race.NATIVES, AIDifficulty.NEUTRAL_CAMPAIGN, "Neutral", activeUnits));
 
-        HeadlessMatchConfig config = new HeadlessMatchConfig(
-                islandConfig,
-                worldParameters,
-                players,
-                100,
-                50
-        );
+    HeadlessMatchConfig config = new HeadlessMatchConfig(islandConfig, worldParameters, players, 100, 50);
 
-        HeadlessMatchRunner runner = new HeadlessMatchRunner();
-        HeadlessMatchResult result = runner.run(config);
+    HeadlessMatchRunner runner = new HeadlessMatchRunner();
+    HeadlessMatchResult result = runner.run(config);
 
-        assertTrue(result.victory(), "Match should conclude in victory for the sole surviving competitive team");
-        assertEquals(2, result.winningTeam(), "Team 2 must be the winning team");
-        assertTrue(result.survivingPlayerIndices().contains(2), "Winning player must be in surviving players list");
-        assertTrue(result.survivingPlayerIndices().contains(4),
-                "Neutral player must also survive without preventing victory");
-    }
+    assertTrue(result.victory(), "Match should conclude in victory for the sole surviving competitive team");
+    assertEquals(2, result.winningTeam(), "Team 2 must be the winning team");
+    assertTrue(result.survivingPlayerIndices().contains(2), "Winning player must be in surviving players list");
+    assertTrue(
+        result.survivingPlayerIndices().contains(4), "Neutral player must also survive without preventing victory");
+  }
 
-    @Test
-    void testFourTeamsAllEliminatedWithNeutralFactionSurvivingDraw() throws Exception {
-        int seed = 42;
-        IslandConfig islandConfig = new IslandConfig(
-                Terrain.NATIVE,
-                256 * HeightMap.METERS_PER_UNIT_GRID,
-                0.5f,
-                0.5f,
-                0.5f,
-                seed
-        );
+  @Test
+  void testFourTeamsAllEliminatedWithNeutralFactionSurvivingDraw() throws Exception {
+    int seed = 42;
+    IslandConfig islandConfig =
+        new IslandConfig(Terrain.NATIVE, 256 * HeightMap.METERS_PER_UNIT_GRID, 0.5f, 0.5f, 0.5f, seed);
 
-        WorldParameters worldParameters = new WorldParameters(
-                "headless_4teams_elim_" + seed,
-                1,
-                Player.DEFAULT_MAX_UNIT_COUNT
-        );
+    WorldParameters worldParameters =
+        new WorldParameters("headless_4teams_elim_" + seed, 1, Player.DEFAULT_MAX_UNIT_COUNT);
 
-        UnitInfo activeUnits = new UnitInfo(false, false, 0, false, 1, 0, 0, 0);
-        UnitInfo eliminatedUnits = new UnitInfo(false, false, 0, false, 0, 0, 0, 0);
+    UnitInfo activeUnits = new UnitInfo(false, false, 0, false, 1, 0, 0, 0);
+    UnitInfo eliminatedUnits = new UnitInfo(false, false, 0, false, 0, 0, 0, 0);
 
-        List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.EASY, "Team0", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.EASY, "Team1", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, AIDifficulty.EASY, "Team2", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, AIDifficulty.EASY, "Team3", eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES,
-                        AIDifficulty.NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
-        );
+    List<HeadlessMatchConfig.PlayerConfig> players =
+        List.of(
+            new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.EASY, "Team0", eliminatedUnits),
+            new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.EASY, "Team1", eliminatedUnits),
+            new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, AIDifficulty.EASY, "Team2", eliminatedUnits),
+            new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, AIDifficulty.EASY, "Team3", eliminatedUnits),
+            new HeadlessMatchConfig.PlayerConfig(
+                PlayerInfo.TEAM_NEUTRAL, Race.NATIVES, AIDifficulty.NEUTRAL_CAMPAIGN, "Neutral", activeUnits));
 
-        HeadlessMatchConfig config = new HeadlessMatchConfig(
-                islandConfig,
-                worldParameters,
-                players,
-                100,
-                50
-        );
+    HeadlessMatchConfig config = new HeadlessMatchConfig(islandConfig, worldParameters, players, 100, 50);
 
-        HeadlessMatchRunner runner = new HeadlessMatchRunner();
-        HeadlessMatchResult result = runner.run(config);
+    HeadlessMatchRunner runner = new HeadlessMatchRunner();
+    HeadlessMatchResult result = runner.run(config);
 
-        assertFalse(result.victory(), "Match must not conclude in victory when all competitive teams are eliminated");
-        assertEquals(-1, result.winningTeam(), "Winning team must be -1 when all competitive teams are eliminated");
-        assertEquals(List.of(4), result.survivingPlayerIndices(), "Neutral player must be the sole surviving player");
-    }
+    assertFalse(result.victory(), "Match must not conclude in victory when all competitive teams are eliminated");
+    assertEquals(-1, result.winningTeam(), "Winning team must be -1 when all competitive teams are eliminated");
+    assertEquals(List.of(4), result.survivingPlayerIndices(), "Neutral player must be the sole surviving player");
+  }
 
-    @Test
-    void testFourTeamsMultipleAliveWithNeutralFactionDoesNotDeclarePrematureVictory() throws Exception {
-        int seed = 42;
-        IslandConfig islandConfig = new IslandConfig(
-                Terrain.NATIVE,
-                256 * HeightMap.METERS_PER_UNIT_GRID,
-                0.5f,
-                0.5f,
-                0.5f,
-                seed
-        );
+  @Test
+  void testFourTeamsMultipleAliveWithNeutralFactionDoesNotDeclarePrematureVictory() throws Exception {
+    int seed = 42;
+    IslandConfig islandConfig =
+        new IslandConfig(Terrain.NATIVE, 256 * HeightMap.METERS_PER_UNIT_GRID, 0.5f, 0.5f, 0.5f, seed);
 
-        WorldParameters worldParameters = new WorldParameters(
-                "headless_4teams_multiple_" + seed,
-                1,
-                Player.DEFAULT_MAX_UNIT_COUNT
-        );
+    WorldParameters worldParameters =
+        new WorldParameters("headless_4teams_multiple_" + seed, 1, Player.DEFAULT_MAX_UNIT_COUNT);
 
-        UnitInfo activeUnits = new UnitInfo(false, false, 0, false, 1, 0, 0, 0);
-        UnitInfo eliminatedUnits = new UnitInfo(false, false, 0, false, 0, 0, 0, 0);
+    UnitInfo activeUnits = new UnitInfo(false, false, 0, false, 1, 0, 0, 0);
+    UnitInfo eliminatedUnits = new UnitInfo(false, false, 0, false, 0, 0, 0, 0);
 
-        List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.EASY, "Team0-Alive", activeUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.EASY, "Team1-Elim",
-                        eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, AIDifficulty.EASY, "Team2-Alive", activeUnits),
-                new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, AIDifficulty.EASY, "Team3-Elim",
-                        eliminatedUnits),
-                new HeadlessMatchConfig.PlayerConfig(PlayerInfo.TEAM_NEUTRAL, Race.NATIVES,
-                        AIDifficulty.NEUTRAL_CAMPAIGN, "Neutral", activeUnits)
-        );
+    List<HeadlessMatchConfig.PlayerConfig> players =
+        List.of(
+            new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.EASY, "Team0-Alive", activeUnits),
+            new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.EASY, "Team1-Elim", eliminatedUnits),
+            new HeadlessMatchConfig.PlayerConfig(2, Race.VIKINGS, AIDifficulty.EASY, "Team2-Alive", activeUnits),
+            new HeadlessMatchConfig.PlayerConfig(3, Race.NATIVES, AIDifficulty.EASY, "Team3-Elim", eliminatedUnits),
+            new HeadlessMatchConfig.PlayerConfig(
+                PlayerInfo.TEAM_NEUTRAL, Race.NATIVES, AIDifficulty.NEUTRAL_CAMPAIGN, "Neutral", activeUnits));
 
-        HeadlessMatchConfig config = new HeadlessMatchConfig(
-                islandConfig,
-                worldParameters,
-                players,
-                5,
-                50
-        );
+    HeadlessMatchConfig config = new HeadlessMatchConfig(islandConfig, worldParameters, players, 5, 50);
 
-        HeadlessMatchRunner runner = new HeadlessMatchRunner();
-        HeadlessMatchResult result = runner.run(config);
+    HeadlessMatchRunner runner = new HeadlessMatchRunner();
+    HeadlessMatchResult result = runner.run(config);
 
-        assertFalse(result.victory(), "Match must not declare victory while multiple competitive teams remain alive");
-        assertEquals(-1, result.winningTeam(), "Winning team must be -1 when match ends due to max tick limit");
-        assertTrue(result.survivingPlayerIndices().contains(0));
-        assertTrue(result.survivingPlayerIndices().contains(2));
-        assertTrue(result.survivingPlayerIndices().contains(4));
-        assertEquals(3, result.survivingPlayerIndices().size());
-    }
+    assertFalse(result.victory(), "Match must not declare victory while multiple competitive teams remain alive");
+    assertEquals(-1, result.winningTeam(), "Winning team must be -1 when match ends due to max tick limit");
+    assertTrue(result.survivingPlayerIndices().contains(0));
+    assertTrue(result.survivingPlayerIndices().contains(2));
+    assertTrue(result.survivingPlayerIndices().contains(4));
+    assertEquals(3, result.survivingPlayerIndices().size());
+  }
 
-    @Test
-    void testHugeHillyHighResourceIslandWithAdvancedAIs() throws Exception {
-        int seed = 1;
-        IslandConfig islandConfig = new IslandConfig(
-                Terrain.NATIVE,
-                512 * HeightMap.METERS_PER_UNIT_GRID,
-                0.85f,
-                0.75f,
-                0.95f,
-                seed
-        );
+  @Test
+  void testHugeHillyHighResourceIslandWithAdvancedAIs() throws Exception {
+    int seed = 1;
+    IslandConfig islandConfig =
+        new IslandConfig(Terrain.NATIVE, 512 * HeightMap.METERS_PER_UNIT_GRID, 0.85f, 0.75f, 0.95f, seed);
 
-        WorldParameters worldParameters = new WorldParameters(
-                "headless_huge_hilly_" + seed,
-                Player.INITIAL_UNIT_COUNT,
-                Player.DEFAULT_MAX_UNIT_COUNT
-        );
+    WorldParameters worldParameters =
+        new WorldParameters("headless_huge_hilly_" + seed, Player.INITIAL_UNIT_COUNT, Player.DEFAULT_MAX_UNIT_COUNT);
 
-        UnitInfo startingUnits = new UnitInfo(false, false, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
+    UnitInfo startingUnits = new UnitInfo(false, false, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
 
-        List<HeadlessMatchConfig.PlayerConfig> players = List.of(
-                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.HARD, "VikingAI", startingUnits),
-                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.HARD, "NativeAI", startingUnits)
-        );
+    List<HeadlessMatchConfig.PlayerConfig> players =
+        List.of(
+            new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, AIDifficulty.HARD, "VikingAI", startingUnits),
+            new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, AIDifficulty.HARD, "NativeAI", startingUnits));
 
-        HeadlessMatchConfig config = new HeadlessMatchConfig(
-                islandConfig,
-                worldParameters,
-                players,
-                300_000,
-                50
-        );
+    HeadlessMatchConfig config = new HeadlessMatchConfig(islandConfig, worldParameters, players, 300_000, 50);
 
-        HeadlessMatchRunner runner = new HeadlessMatchRunner();
-        HeadlessMatchResult result = runner.run(config);
+    HeadlessMatchRunner runner = new HeadlessMatchRunner();
+    HeadlessMatchResult result = runner.run(config);
 
-        System.out.println("Match concluded at tick " + result.finalTick() + " with victory=" + result.victory()
-                + ", winningTeam=" + result.winningTeam() + ", totalMagicCasts=" + result.totalMagicCasts());
+    System.out.println(
+        "Match concluded at tick "
+            + result.finalTick()
+            + " with victory="
+            + result.victory()
+            + ", winningTeam="
+            + result.winningTeam()
+            + ", totalMagicCasts="
+            + result.totalMagicCasts());
 
-        assertTrue(result.victory(), "Match should conclude with a victor");
-        assertTrue(result.totalMagicCasts() > 0, "Advanced AIs should cast magic before match concludes");
-    }
+    assertTrue(result.victory(), "Match should conclude with a victor");
+    assertTrue(result.totalMagicCasts() > 0, "Advanced AIs should cast magic before match concludes");
+  }
 }

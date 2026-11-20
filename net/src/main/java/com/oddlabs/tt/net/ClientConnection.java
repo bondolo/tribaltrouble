@@ -4,25 +4,25 @@ import com.oddlabs.net.ARMIEvent;
 import com.oddlabs.net.AbstractConnection;
 
 final class ClientConnection {
-    private final AbstractConnection connection;
-    private final GameClientInterface gameclient_interface;
-    private final ClientInfo client;
+  private final AbstractConnection connection;
+  private final GameClientInterface gameclient_interface;
+  private final ClientInfo client;
 
-    public ClientConnection(AbstractConnection conn, ClientInfo client) {
-        this.connection = conn;
-        this.gameclient_interface = (GameClientInterface) ARMIEvent.createProxy(connection, GameClientInterface.class);
-        this.client = client;
-    }
+  public ClientConnection(AbstractConnection conn, ClientInfo client) {
+    this.connection = conn;
+    this.gameclient_interface = (GameClientInterface) ARMIEvent.createProxy(connection, GameClientInterface.class);
+    this.client = client;
+  }
 
-    public GameClientInterface getClientInterface() {
-        return gameclient_interface;
-    }
+  public GameClientInterface getClientInterface() {
+    return gameclient_interface;
+  }
 
-    public AbstractConnection getConnection() {
-        return connection;
-    }
+  public AbstractConnection getConnection() {
+    return connection;
+  }
 
-    public ClientInfo getClient() {
-        return client;
-    }
+  public ClientInfo getClient() {
+    return client;
+  }
 }

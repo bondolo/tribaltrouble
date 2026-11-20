@@ -1,305 +1,311 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.gui.render.Index;
-import com.oddlabs.tt.gui.render.TextLineRenderer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.gui.event.EnterListener;
+import com.oddlabs.tt.gui.render.Index;
+import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.input.Key;
-import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.Nullable;
-
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Single-line text input field supporting basic text editing, cursor navigation,
- * input filtering, and horizontal scrolling for text exceeding visual width.
- */
+/// Single-line text input field supporting basic text editing, cursor navigation, input filtering, and horizontal
+/// scrolling for text exceeding visual width.
 public class EditLine extends TextField implements Clipped {
-    @SuppressWarnings("TimeUnitConversionChecker")
-    private static final long ERROR_DURATION = TimeUnit.MILLISECONDS.toMillis(200);
-    private final Skin skin;
-    private final Box editBox;
-    private final Set<EnterListener> enter_listeners = new CopyOnWriteArraySet<>();
-    private final Origin alignment;
-    private final @Nullable String allowed_chars;
-    protected final int max_text_width;
+  @SuppressWarnings("TimeUnitConversionChecker")
+  private static final long ERROR_DURATION = TimeUnit.MILLISECONDS.toMillis(200);
 
-    private int offset_x;
-    private int index;
+  private final Skin skin;
+  private final Box editBox;
+  private final Set<EnterListener> enter_listeners = new CopyOnWriteArraySet<>();
+  private final Origin alignment;
+  private final @Nullable String allowed_chars;
+  protected final int max_text_width;
 
-    private long errorFlashStart = 0;
+  private int offset_x;
+  private int index;
 
-    public EditLine(GUIRoot guiRoot, int width, int max_codepoints) {
-        this(guiRoot, width, max_codepoints, Origin.AT_START);
+  private long errorFlashStart = 0;
+
+  public EditLine(GUIRoot guiRoot, int width, int max_codepoints) {
+    this(guiRoot, width, max_codepoints, Origin.AT_START);
+  }
+
+  public EditLine(GUIRoot guiRoot, int width, int max_codepoints, Origin alignment) {
+    this(guiRoot, width, max_codepoints, null, alignment);
+  }
+
+  public EditLine(GUIRoot guiRoot, int width, int max_codepoints, @Nullable String allowed_chars, Origin alignment) {
+    super(guiRoot.getSkin().getEditFont(), max_codepoints);
+    this.skin = guiRoot.getSkin();
+    this.editBox = skin.getEditBox();
+    this.allowed_chars = allowed_chars;
+    this.alignment = alignment;
+    setDim(width, getFont().getHeight() + editBox.getBottomOffset() + editBox.getTopOffset());
+    setCanFocus(true);
+    this.max_text_width = width - editBox.getLeftOffset() - editBox.getRightOffset();
+    clear();
+  }
+
+  @Override
+  protected Skin getSkin() {
+    return skin;
+  }
+
+  @Override
+  protected final CursorType getCursorType() {
+    return isDisabled() ? CursorType.NORMAL : CursorType.TEXT;
+  }
+
+  protected CharSequence getDisplayText() {
+    return getText();
+  }
+
+  @Override
+  protected void renderGeometry(GUIRenderer renderer) {
+    var mode =
+        isDisabled()
+            ? ModeIconQuads.Mode.DISABLED
+            : (isActive() ? ModeIconQuads.Mode.ACTIVE : ModeIconQuads.Mode.NORMAL);
+    editBox.render(renderer, 0f, 0f, getWidth(), getHeight(), mode);
+
+    long elapsed = System.currentTimeMillis() - errorFlashStart;
+    if (elapsed < ERROR_DURATION) {
+      var elapsed_percent = 1.0f - ((float) elapsed / ERROR_DURATION);
+      var color = Color.Linear.WHITE.alpha(0.5f * elapsed_percent);
+      renderer.drawColoredQuad(2, 2, getWidth() - 4, getHeight() - 4, color);
     }
 
-    public EditLine(GUIRoot guiRoot, int width, int max_codepoints, Origin alignment) {
-        this(guiRoot, width, max_codepoints, null, alignment);
+    int render_index = isActive() ? index : -1;
+    renderText(renderer, editBox, offset_x, render_index);
+  }
+
+  protected int getRenderedWidth(CharSequence text) {
+    int x_border = getFont().getXBorder();
+    int half_border = x_border / 2;
+    return text.isEmpty() ? half_border : getFont().getWidth(text) - (x_border - half_border);
+  }
+
+  protected void renderText(GUIRenderer renderer, Box box, int offset_x, int render_index) {
+    var displayText = getDisplayText();
+    TextLineRenderer.render(
+        renderer,
+        getFont(),
+        displayText,
+        box.getLeftOffset() + offset_x,
+        box.getBottomOffset(),
+        box.getLeftOffset() + 1,
+        getWidth() - box.getRightOffset() - 1,
+        Color.Linear.WHITE);
+    if (render_index != -1) {
+      var root = getParentGUIRoot();
+      if (root == null || root.isCaretVisible()) {
+        int cursorX = getRenderedWidth(displayText.subSequence(0, render_index));
+        Index.renderIndex(
+            renderer, box.getLeftOffset() + offset_x + cursorX, box.getBottomOffset(), getFont(), Color.Linear.WHITE);
+      }
     }
+  }
 
-    public EditLine(GUIRoot guiRoot, int width, int max_codepoints, @Nullable String allowed_chars, Origin alignment) {
-        super(guiRoot.getSkin().getEditFont(), max_codepoints);
-        this.skin = guiRoot.getSkin();
-        this.editBox = skin.getEditBox();
-        this.allowed_chars = allowed_chars;
-        this.alignment = alignment;
-        setDim(width, getFont().getHeight() + editBox.getBottomOffset() + editBox.getTopOffset());
-        setCanFocus(true);
-        this.max_text_width = width - editBox.getLeftOffset() - editBox.getRightOffset();
-        clear();
+  @Override
+  protected boolean insert(int index, int codepoint) {
+    boolean result = super.insert(index, codepoint);
+    if (result) {
+      this.index += Character.charCount(codepoint);
     }
+    return result;
+  }
 
-    @Override
-    protected Skin getSkin() {
-        return skin;
+  public void triggerError() {
+    errorFlashStart = System.currentTimeMillis();
+    var root = getParentGUIRoot();
+    if (root != null) {
+      root.playErrorAudio();
     }
+  }
 
-    @Override
-    protected final CursorType getCursorType() {
-        return isDisabled() ? CursorType.NORMAL : CursorType.TEXT;
-    }
-
-    protected CharSequence getDisplayText() {
-        return getText();
-    }
-
-    @Override
-    protected void renderGeometry(GUIRenderer renderer) {
-        var mode = isDisabled() ? ModeIconQuads.Mode.DISABLED : (isActive() ? ModeIconQuads.Mode.ACTIVE
-                : ModeIconQuads.Mode.NORMAL);
-        editBox.render(renderer, 0f, 0f, getWidth(), getHeight(), mode);
-
-        long elapsed = System.currentTimeMillis() - errorFlashStart;
-        if (elapsed < ERROR_DURATION) {
-            var elapsed_percent = 1.0f - ((float) elapsed / ERROR_DURATION);
-            var color = Color.Linear.WHITE.alpha(0.5f * elapsed_percent);
-            renderer.drawColoredQuad(2, 2, getWidth() - 4, getHeight() - 4, color);
+  @Override
+  protected void handleInput(InputEvent event) {
+    if (event.getPhase() == InputPhase.RELEASED) {
+      if (event.consumeAction(GameAction.UI_ACTIVATE)) {
+        if (event.getKeyCode() == Key.RETURN) {
+          enterPressedAll();
         }
-
-        int render_index = isActive() ? index : -1;
-        renderText(renderer, editBox, offset_x, render_index);
+        return;
+      }
     }
 
-    protected int getRenderedWidth(CharSequence text) {
-        int x_border = getFont().getXBorder();
-        int half_border = x_border / 2;
-        return text.isEmpty() ? half_border : getFont().getWidth(text) - (x_border - half_border);
-    }
+    if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
+      boolean consumed = true;
 
-    protected void renderText(GUIRenderer renderer, Box box, int offset_x, int render_index) {
-        var displayText = getDisplayText();
-        TextLineRenderer.render(renderer, getFont(), displayText, box.getLeftOffset() + offset_x, box.getBottomOffset(),
-                box.getLeftOffset() + 1, getWidth() - box.getRightOffset() - 1, Color.Linear.WHITE);
-        if (render_index != -1) {
-            var root = getParentGUIRoot();
-            if (root == null || root.isCaretVisible()) {
-                int cursorX = getRenderedWidth(displayText.subSequence(0, render_index));
-                Index.renderIndex(renderer, box.getLeftOffset() + offset_x + cursorX, box.getBottomOffset(), getFont(),
-                        Color.Linear.WHITE);
-            }
+      if (event.consumeAction(GameAction.UI_NAV_LEFT)) {
+        if (index > 0) {
+          index -= Character.charCount(getText().codePointBefore(index));
         }
-    }
-
-    @Override
-    protected boolean insert(int index, int codepoint) {
-        boolean result = super.insert(index, codepoint);
-        if (result) {
-            this.index += Character.charCount(codepoint);
+      } else if (event.consumeAction(GameAction.UI_NAV_RIGHT)) {
+        if (index < getText().length()) {
+          index += Character.charCount(getText().codePointAt(index));
         }
-        return result;
-    }
-
-    public void triggerError() {
-        errorFlashStart = System.currentTimeMillis();
-        var root = getParentGUIRoot();
-        if (root != null) {
-            root.playErrorAudio();
-        }
-    }
-
-    @Override
-    protected void handleInput(InputEvent event) {
-        if (event.getPhase() == InputPhase.RELEASED) {
-            if (event.consumeAction(GameAction.UI_ACTIVATE)) {
-                if (event.getKeyCode() == Key.RETURN) {
-                    enterPressedAll();
-                }
-                return;
-            }
-        }
-
-        if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
-            boolean consumed = true;
-
-            if (event.consumeAction(GameAction.UI_NAV_LEFT)) {
-                if (index > 0) {
-                    index -= Character.charCount(getText().codePointBefore(index));
-                }
-            } else if (event.consumeAction(GameAction.UI_NAV_RIGHT)) {
-                if (index < getText().length()) {
-                    index += Character.charCount(getText().codePointAt(index));
-                }
-            } else if (event.consumeAction(GameAction.UI_NAV_HOME)) {
-                index = 0;
-            } else if (event.consumeAction(GameAction.UI_NAV_END)) {
-                index = getText().length();
-            } else if (event.consumeAction(GameAction.UI_BACKSPACE)) {
-                if (index > 0) {
-                    int cp = getText().codePointBefore(index);
-                    index -= Character.charCount(cp);
-                    delete(index);
-                } else triggerError();
-            } else if (event.consumeAction(GameAction.UI_DELETE)) {
-                if (index < getText().length()) delete(index);
-            } else if (!event.isControlDown() && !event.isMetaDown() && !event.isAltDown()) {
-                int c = event.getCodepoint();
-                if (c != 0 && !Character.isISOControl(c)) {
-                    if (c == ' ') { // Check if the character is SPACE
-                        event.consumeAction(GameAction.UI_ACTIVATE);
-                    }
-                    consumed = insert(index, c);
-                    if (!consumed) triggerError();
-                } else {
-                    consumed = false;
-                }
-            } else {
-                consumed = false;
-            }
-
-            if (consumed) {
-                correctOffsetX();
-                event.consume();
-                return;
-            }
-
-            // Consume printable keys in PRESSED phase to prevent bubbling (e.g. 'D' triggering debug bounds)
-            // even if the character hasn't been typed yet (will come in REPEAT phase).
-            if (event.getPhase() == InputPhase.PRESSED && !event.isControlDown() && !event.isAltDown() && !event
-                    .isMetaDown()) {
-                int c = event.getCodepoint();
-                if (c != 0 && !Character.isISOControl(c)) {
-                    event.consume();
-                    return;
-                }
-            }
-        }
-
-        super.handleInput(event);
-    }
-
-    @Override
-    public final boolean isAllowed(int codepoint) {
-        return super.isAllowed(codepoint) && getFont().getQuad(codepoint) != null && (allowed_chars == null
-                || allowed_chars.indexOf(codepoint) != -1);
-    }
-
-    private void correctOffsetX() {
-        var displayText = getDisplayText();
-        int cursorX = getRenderedWidth(displayText.subSequence(0, index));
-        int textWidth = getRenderedWidth(displayText);
-
-        if (alignment == Origin.AT_END) {
-            offset_x = max_text_width - textWidth;
-        } else { // AT_START or AT_MIDDLE
-            // First, ensure the cursor is visible
-            if (cursorX + offset_x >= max_text_width) {
-                offset_x = max_text_width - cursorX - Index.INDEX_WIDTH;
-            }
-            if (cursorX + offset_x < 0) {
-                offset_x = -cursorX;
-            }
-
-            // Then, if there's empty space on the right, pull the text back
-            if (textWidth + offset_x < max_text_width) {
-                offset_x = Math.min(0, max_text_width - textWidth);
-            }
-
-            // Finally, ensure we haven't scrolled too far left
-            if (offset_x > 0) {
-                offset_x = 0;
-            }
-        }
-    }
-
-    public final int getIndex() {
-        return index;
-    }
-
-    public final void setIndex(int index) {
-        this.index = index;
-    }
-
-    @Override
-    public final void clear() {
-        super.clear();
+      } else if (event.consumeAction(GameAction.UI_NAV_HOME)) {
         index = 0;
-        correctOffsetX();
-    }
-
-    @Override
-    protected final void appendNotify(CharSequence str) {
-        correctOffsetX();
-    }
-
-    @Override
-    protected void focusNotify(boolean focus) {
-        if (focus)
-            index = getText().length();
-    }
-
-    @Override
-    protected final void mouseEntered() {
-    }
-
-    @Override
-    protected final void mouseExited() {
-    }
-
-    @Override
-    protected final void mousePressed(MouseButton button, int x, int y) {
-        if (button == MouseButton.LEFT) {
-            float relativeX = x - (getRootX() + editBox.getLeftOffset() + offset_x);
-
-            int bestIndex = 0;
-            float bestDx = Float.MAX_VALUE;
-
-            var displayText = getDisplayText();
-            for (int i = 0; i <= displayText.length();) {
-                int charX = getRenderedWidth(displayText.subSequence(0, i));
-                float dx = Math.abs(relativeX - charX);
-                if (dx < bestDx) {
-                    bestDx = dx;
-                    bestIndex = i;
-                }
-                if (i < displayText.length()) {
-                    i += Character.charCount(Character.codePointAt(displayText, i));
-                } else {
-                    break;
-                }
-            }
-            index = bestIndex;
-            correctOffsetX();
+      } else if (event.consumeAction(GameAction.UI_NAV_END)) {
+        index = getText().length();
+      } else if (event.consumeAction(GameAction.UI_BACKSPACE)) {
+        if (index > 0) {
+          int cp = getText().codePointBefore(index);
+          index -= Character.charCount(cp);
+          delete(index);
+        } else triggerError();
+      } else if (event.consumeAction(GameAction.UI_DELETE)) {
+        if (index < getText().length()) delete(index);
+      } else if (!event.isControlDown() && !event.isMetaDown() && !event.isAltDown()) {
+        int c = event.getCodepoint();
+        if (c != 0 && !Character.isISOControl(c)) {
+          if (c == ' ') { // Check if the character is SPACE
+            event.consumeAction(GameAction.UI_ACTIVATE);
+          }
+          consumed = insert(index, c);
+          if (!consumed) triggerError();
+        } else {
+          consumed = false;
         }
-    }
+      } else {
+        consumed = false;
+      }
 
-    public final void enterPressedAll() {
-        CharSequence text = getText();
-        enterPressed(text);
-        for (EnterListener listener : enter_listeners) {
-            listener.enterPressed(text);
+      if (consumed) {
+        correctOffsetX();
+        event.consume();
+        return;
+      }
+
+      // Consume printable keys in PRESSED phase to prevent bubbling (e.g. 'D' triggering debug bounds)
+      // even if the character hasn't been typed yet (will come in REPEAT phase).
+      if (event.getPhase() == InputPhase.PRESSED
+          && !event.isControlDown()
+          && !event.isAltDown()
+          && !event.isMetaDown()) {
+        int c = event.getCodepoint();
+        if (c != 0 && !Character.isISOControl(c)) {
+          event.consume();
+          return;
         }
+      }
     }
 
-    protected void enterPressed(CharSequence text) {
-    }
+    super.handleInput(event);
+  }
 
-    public final void addEnterListener(EnterListener listener) {
-        enter_listeners.add(listener);
+  @Override
+  public final boolean isAllowed(int codepoint) {
+    return super.isAllowed(codepoint)
+        && getFont().getQuad(codepoint) != null
+        && (allowed_chars == null || allowed_chars.indexOf(codepoint) != -1);
+  }
+
+  private void correctOffsetX() {
+    var displayText = getDisplayText();
+    int cursorX = getRenderedWidth(displayText.subSequence(0, index));
+    int textWidth = getRenderedWidth(displayText);
+
+    if (alignment == Origin.AT_END) {
+      offset_x = max_text_width - textWidth;
+    } else { // AT_START or AT_MIDDLE
+      // First, ensure the cursor is visible
+      if (cursorX + offset_x >= max_text_width) {
+        offset_x = max_text_width - cursorX - Index.INDEX_WIDTH;
+      }
+      if (cursorX + offset_x < 0) {
+        offset_x = -cursorX;
+      }
+
+      // Then, if there's empty space on the right, pull the text back
+      if (textWidth + offset_x < max_text_width) {
+        offset_x = Math.min(0, max_text_width - textWidth);
+      }
+
+      // Finally, ensure we haven't scrolled too far left
+      if (offset_x > 0) {
+        offset_x = 0;
+      }
     }
+  }
+
+  public final int getIndex() {
+    return index;
+  }
+
+  public final void setIndex(int index) {
+    this.index = index;
+  }
+
+  @Override
+  public final void clear() {
+    super.clear();
+    index = 0;
+    correctOffsetX();
+  }
+
+  @Override
+  protected final void appendNotify(CharSequence str) {
+    correctOffsetX();
+  }
+
+  @Override
+  protected void focusNotify(boolean focus) {
+    if (focus) index = getText().length();
+  }
+
+  @Override
+  protected final void mouseEntered() {}
+
+  @Override
+  protected final void mouseExited() {}
+
+  @Override
+  protected final void mousePressed(MouseButton button, int x, int y) {
+    if (button == MouseButton.LEFT) {
+      float relativeX = x - (getRootX() + editBox.getLeftOffset() + offset_x);
+
+      int bestIndex = 0;
+      float bestDx = Float.MAX_VALUE;
+
+      var displayText = getDisplayText();
+      for (int i = 0; i <= displayText.length(); ) {
+        int charX = getRenderedWidth(displayText.subSequence(0, i));
+        float dx = Math.abs(relativeX - charX);
+        if (dx < bestDx) {
+          bestDx = dx;
+          bestIndex = i;
+        }
+        if (i < displayText.length()) {
+          i += Character.charCount(Character.codePointAt(displayText, i));
+        } else {
+          break;
+        }
+      }
+      index = bestIndex;
+      correctOffsetX();
+    }
+  }
+
+  public final void enterPressedAll() {
+    CharSequence text = getText();
+    enterPressed(text);
+    for (EnterListener listener : enter_listeners) {
+      listener.enterPressed(text);
+    }
+  }
+
+  protected void enterPressed(CharSequence text) {}
+
+  public final void addEnterListener(EnterListener listener) {
+    enter_listeners.add(listener);
+  }
 }

@@ -1,6 +1,4 @@
-/**
- * Client visual and audio resource registries and definitions.
- */
+/** Client visual and audio resource registries and definitions. */
 @NullMarked
 package com.oddlabs.tt.client.resource;
 

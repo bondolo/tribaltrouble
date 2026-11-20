@@ -1,6 +1,4 @@
-/**
- * Procedural texture generation for GPU materials and scenery.
- */
+/** Procedural texture generation for GPU materials and scenery. */
 @NullMarked
 package com.oddlabs.tt.engine.procedural;
 

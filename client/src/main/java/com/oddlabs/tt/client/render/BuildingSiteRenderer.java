@@ -1,49 +1,60 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
+import java.util.List;
 import org.joml.Matrix4fc;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-import java.util.List;
-
-/**
- * Renders building site placement markers and radius indicators.
- */
+/// Renders building site placement markers and radius indicators.
 public final class BuildingSiteRenderer extends ShadowRenderer {
 
-    private final Texture green;
+  private final Texture green;
 
-    public BuildingSiteRenderer() {
-        GLIntImage img = new GLIntImage(16, 16, GL11.GL_RGBA);
-        img.clear(1, 1, img.getWidth() - 2, img.getHeight() - 2, Color.WHITE_INT);
-        green = new Texture(new GLIntImage[]{img}, GL11.GL_RGBA8,
-                GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
-    }
+  public BuildingSiteRenderer() {
+    GLIntImage img = new GLIntImage(16, 16, GL11.GL_RGBA);
+    img.clear(1, 1, img.getWidth() - 2, img.getHeight() - 2, Color.WHITE_INT);
+    green =
+        new Texture(
+            new GLIntImage[] {img},
+            GL11.GL_RGBA8,
+            GL11.GL_LINEAR_MIPMAP_LINEAR,
+            GL11.GL_LINEAR,
+            GL12.GL_CLAMP_TO_EDGE,
+            GL12.GL_CLAMP_TO_EDGE);
+  }
 
-    public void renderSites(RenderContext context, RenderQueues queues,
-            LandscapeRenderer renderer, Matrix4fc modelView,
-            List<? extends Target> targets, float center_x,
-            float center_y, float max_radius) {
-        try (var _ = setupShadows(context, queues, (float) renderer.getHeightMap().getMetersPerWorld(),
-                renderer.getHeightMapVisual().getHeightTexture(), modelView)) {
-            bindShadowTexture(green);
-            float radius_sqr = max_radius * max_radius;
-            for (Target target : targets) {
-                float dx = target.getPositionX() - center_x;
-                float dy = target.getPositionY() - center_y;
-                float a = (dx * dx + dy * dy) / radius_sqr;
-                if (dx == 0f && dy == 0f)
-                    setShadowColor(Color.Linear.WHITE);
-                else
-                    setShadowColor(Color.Linear.GREEN.alpha(Math.max(0f, 1 - a * a)));
-                renderShadow(context, target.getPositionX(), target.getPositionY(), 2f);
-            }
-        }
+  public void renderSites(
+      RenderContext context,
+      RenderQueues queues,
+      LandscapeRenderer renderer,
+      Matrix4fc modelView,
+      List<? extends Target> targets,
+      float center_x,
+      float center_y,
+      float max_radius) {
+    try (var _ =
+        setupShadows(
+            context,
+            queues,
+            (float) renderer.getHeightMap().getMetersPerWorld(),
+            renderer.getHeightMapVisual().getHeightTexture(),
+            modelView)) {
+      bindShadowTexture(green);
+      float radius_sqr = max_radius * max_radius;
+      for (Target target : targets) {
+        float dx = target.getPositionX() - center_x;
+        float dy = target.getPositionY() - center_y;
+        float a = (dx * dx + dy * dy) / radius_sqr;
+        if (dx == 0f && dy == 0f) setShadowColor(Color.Linear.WHITE);
+        else setShadowColor(Color.Linear.GREEN.alpha(Math.max(0f, 1 - a * a)));
+        renderShadow(context, target.getPositionX(), target.getPositionY(), 2f);
+      }
     }
+  }
 }

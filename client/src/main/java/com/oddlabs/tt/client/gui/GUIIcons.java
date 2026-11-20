@@ -1,328 +1,333 @@
 package com.oddlabs.tt.client.gui;
 
+import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.engine.image.GLImage;
+import com.oddlabs.tt.engine.image.GLIntImage;
+import com.oddlabs.tt.engine.render.IconQuad;
+import com.oddlabs.tt.engine.render.ModeIconQuads;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.gui.GUIErrorHandler;
 import com.oddlabs.tt.gui.IconAtlas;
 import com.oddlabs.tt.gui.Icons;
-import com.oddlabs.tt.engine.render.IconQuad;
-import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.simulation.model.Cost;
 import com.oddlabs.tt.simulation.model.SupplyType;
-import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.engine.image.GLImage;
-import com.oddlabs.tt.engine.image.GLIntImage;
-import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.util.Color;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
-
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.stream.Stream;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
-/**
- * Fast lookups for common UI icons used throughout the game's interface.
- */
+/// Fast lookups for common UI icons used throughout the game's interface.
 public final class GUIIcons {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(Icons.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(Icons.class.getName());
 
-    private String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
-    }
+  private String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
 
-    private static final int WATCH_RIM_COLOR_INT = new Color.Standard(0.75f, 1.0f).toInt();
-    private static final int WATCH_NUM_ICONS = 25;
-    private static final int WATCH_ICON_SIZE = 64;
-    private static final int WATCH_RIM_WIDTH = 2;
-    private static final int WATCH_SHADOW_OFFSET = 2;
+  private static final int WATCH_RIM_COLOR_INT = new Color.Standard(0.75f, 1.0f).toInt();
+  private static final int WATCH_NUM_ICONS = 25;
+  private static final int WATCH_ICON_SIZE = 64;
+  private static final int WATCH_RIM_WIDTH = 2;
+  private static final int WATCH_SHADOW_OFFSET = 2;
 
-    private final ModeIconQuads harvest_icon;
-    private final ModeIconQuads tree_icon;
-    private final ModeIconQuads rock_icon;
-    private final ModeIconQuads iron_icon;
-    private final ModeIconQuads rubber_icon;
-    private final IconQuad tree_status_icon;
-    private final IconQuad rock_status_icon;
-    private final IconQuad iron_status_icon;
-    private final IconQuad rubber_status_icon;
-    private final IconQuad cheat_icon;
-    private final RaceIcons native_icons;
-    private final RaceIcons viking_icons;
-    private final IconQuad[] watch;
-    private final IconQuad infinite;
-    private final NotifyArrowData notify_arrow_data;
+  private final ModeIconQuads harvest_icon;
+  private final ModeIconQuads tree_icon;
+  private final ModeIconQuads rock_icon;
+  private final ModeIconQuads iron_icon;
+  private final ModeIconQuads rubber_icon;
+  private final IconQuad tree_status_icon;
+  private final IconQuad rock_status_icon;
+  private final IconQuad iron_status_icon;
+  private final IconQuad rubber_status_icon;
+  private final IconQuad cheat_icon;
+  private final RaceIcons native_icons;
+  private final RaceIcons viking_icons;
+  private final IconQuad[] watch;
+  private final IconQuad infinite;
+  private final NotifyArrowData notify_arrow_data;
 
-    private final Map<SupplyType, List<IconQuad>> tool_tip_icons;
+  private final Map<SupplyType, List<IconQuad>> tool_tip_icons;
 
-    public GUIIcons() {
-        this("/gui/icons.xml");
-    }
+  public GUIIcons() {
+    this("/gui/icons.xml");
+  }
 
-    public GUIIcons(String xml_file) {
-        IconAtlas atlas = IconAtlas.load(xml_file, new GUIErrorHandler());
+  public GUIIcons(String xml_file) {
+    IconAtlas atlas = IconAtlas.load(xml_file, new GUIErrorHandler());
 
-        harvest_icon = atlas.getNamedIconQuads("harvest_icon");
-        tree_icon = atlas.getNamedIconQuads("tree_icon");
-        rock_icon = atlas.getNamedIconQuads("rock_icon");
-        iron_icon = atlas.getNamedIconQuads("iron_icon");
-        rubber_icon = atlas.getNamedIconQuads("rubber_icon");
-        tree_status_icon = atlas.getNamedIconQuad("tree_status_icon");
-        rock_status_icon = atlas.getNamedIconQuad("rock_status_icon");
-        iron_status_icon = atlas.getNamedIconQuad("iron_status_icon");
-        rubber_status_icon = atlas.getNamedIconQuad("rubber_status_icon");
-        cheat_icon = atlas.getNamedIconQuad("cheat_icon");
+    harvest_icon = atlas.getNamedIconQuads("harvest_icon");
+    tree_icon = atlas.getNamedIconQuads("tree_icon");
+    rock_icon = atlas.getNamedIconQuads("rock_icon");
+    iron_icon = atlas.getNamedIconQuads("iron_icon");
+    rubber_icon = atlas.getNamedIconQuads("rubber_icon");
+    tree_status_icon = atlas.getNamedIconQuad("tree_status_icon");
+    rock_status_icon = atlas.getNamedIconQuad("rock_status_icon");
+    iron_status_icon = atlas.getNamedIconQuad("iron_status_icon");
+    rubber_status_icon = atlas.getNamedIconQuad("rubber_status_icon");
+    cheat_icon = atlas.getNamedIconQuad("cheat_icon");
 
-        viking_icons = GUIIcons.parseRaceIcons(atlas, "vikings");
-        native_icons = GUIIcons.parseRaceIcons(atlas, "natives");
-        watch = generateWatchIcons();
-        infinite = atlas.getNamedIconQuad("infinite");
-        notify_arrow_data = GUIIcons.parseNotifyArrowData(atlas);
-        tool_tip_icons = new EnumMap<>(Map.of(
+    viking_icons = GUIIcons.parseRaceIcons(atlas, "vikings");
+    native_icons = GUIIcons.parseRaceIcons(atlas, "natives");
+    watch = generateWatchIcons();
+    infinite = atlas.getNamedIconQuad("infinite");
+    notify_arrow_data = GUIIcons.parseNotifyArrowData(atlas);
+    tool_tip_icons =
+        new EnumMap<>(
+            Map.of(
                 SupplyType.WOOD, List.of(tree_status_icon),
                 SupplyType.ROCK, List.of(rock_status_icon),
                 SupplyType.IRON, List.of(iron_status_icon),
                 SupplyType.RUBBER, List.of(rubber_status_icon)));
-    }
+  }
 
-    public List<IconQuad> toIconList(Cost cost) {
-        return cost.costs().entrySet().stream()
-                .flatMap(entry -> Stream.generate(() -> getIconQuad(this, entry.getKey())).limit(entry.getValue()))
-                .toList();
-    }
+  public List<IconQuad> toIconList(Cost cost) {
+    return cost.costs().entrySet().stream()
+        .flatMap(entry -> Stream.generate(() -> getIconQuad(this, entry.getKey())).limit(entry.getValue()))
+        .toList();
+  }
 
-    private static IconQuad getIconQuad(GUIIcons icons, SupplyType supply_type) {
-        return switch (supply_type) {
-            case WOOD -> icons.getTreeStatusIcon();
-            case ROCK -> icons.getRockStatusIcon();
-            case IRON -> icons.getIronStatusIcon();
-            case RUBBER -> icons.getRubberStatusIcon();
-        };
-    }
+  private static IconQuad getIconQuad(GUIIcons icons, SupplyType supply_type) {
+    return switch (supply_type) {
+      case WOOD -> icons.getTreeStatusIcon();
+      case ROCK -> icons.getRockStatusIcon();
+      case IRON -> icons.getIronStatusIcon();
+      case RUBBER -> icons.getRubberStatusIcon();
+    };
+  }
 
-    private static RaceIcons parseRaceIcons(IconAtlas atlas, String head) {
-        return new RaceIcons(atlas.getNamedIconQuad(head + "_unit_status_icon"),
-                atlas.getNamedIconQuad(head + "_weapon_rock_status_icon"),
-                atlas.getNamedIconQuad(head + "_weapon_iron_status_icon"),
-                atlas.getNamedIconQuad(head + "_weapon_rubber_status_icon"),
-                atlas.getNamedIconQuads(head + "_build_weapons_icon"),
-                atlas.getNamedIconQuads(head + "_build_weapon_rock_icon"),
-                atlas.getNamedIconQuads(head + "_build_weapon_iron_icon"),
-                atlas.getNamedIconQuads(head + "_build_weapon_rubber_icon"),
-                atlas.getNamedIconQuads(head + "_army_icon"),
-                atlas.getNamedIconQuads(head + "_warrior_rock_icon"),
-                atlas.getNamedIconQuads(head + "_warrior_iron_icon"),
-                atlas.getNamedIconQuads(head + "_warrior_rubber_icon"),
-                atlas.getNamedIconQuads(head + "_peon_icon"),
-                atlas.getNamedIconQuads(head + "_chieftain_icon"),
-                atlas.getNamedIconQuads(head + "_transport_icon"),
-                atlas.getNamedIconQuads(head + "_attack_icon"),
-                atlas.getNamedIconQuads(head + "_move_icon"),
-                atlas.getNamedIconQuads(head + "_gather_repair_icon"),
-                atlas.getNamedIconQuads(head + "_quarters_icon"),
-                atlas.getNamedIconQuads(head + "_armory_icon"),
-                atlas.getNamedIconQuads(head + "_tower_icon"),
-                atlas.getNamedIconQuads(head + "_tower_exit_icon"),
-                atlas.getNamedIconQuads(head + "_rally_point_icon"),
-                atlas.getNamedIconQuads(head + "_magic1_icon"),
-                atlas.getNamedIconQuads(head + "_magic2_icon"));
-    }
+  private static RaceIcons parseRaceIcons(IconAtlas atlas, String head) {
+    return new RaceIcons(
+        atlas.getNamedIconQuad(head + "_unit_status_icon"),
+        atlas.getNamedIconQuad(head + "_weapon_rock_status_icon"),
+        atlas.getNamedIconQuad(head + "_weapon_iron_status_icon"),
+        atlas.getNamedIconQuad(head + "_weapon_rubber_status_icon"),
+        atlas.getNamedIconQuads(head + "_build_weapons_icon"),
+        atlas.getNamedIconQuads(head + "_build_weapon_rock_icon"),
+        atlas.getNamedIconQuads(head + "_build_weapon_iron_icon"),
+        atlas.getNamedIconQuads(head + "_build_weapon_rubber_icon"),
+        atlas.getNamedIconQuads(head + "_army_icon"),
+        atlas.getNamedIconQuads(head + "_warrior_rock_icon"),
+        atlas.getNamedIconQuads(head + "_warrior_iron_icon"),
+        atlas.getNamedIconQuads(head + "_warrior_rubber_icon"),
+        atlas.getNamedIconQuads(head + "_peon_icon"),
+        atlas.getNamedIconQuads(head + "_chieftain_icon"),
+        atlas.getNamedIconQuads(head + "_transport_icon"),
+        atlas.getNamedIconQuads(head + "_attack_icon"),
+        atlas.getNamedIconQuads(head + "_move_icon"),
+        atlas.getNamedIconQuads(head + "_gather_repair_icon"),
+        atlas.getNamedIconQuads(head + "_quarters_icon"),
+        atlas.getNamedIconQuads(head + "_armory_icon"),
+        atlas.getNamedIconQuads(head + "_tower_icon"),
+        atlas.getNamedIconQuads(head + "_tower_exit_icon"),
+        atlas.getNamedIconQuads(head + "_rally_point_icon"),
+        atlas.getNamedIconQuads(head + "_magic1_icon"),
+        atlas.getNamedIconQuads(head + "_magic2_icon"));
+  }
 
-    private static IconQuad[] generateWatchIcons() {
-        int textureSize = Utils.roundToTextureSize((int) Math.ceil(Math.sqrt(WATCH_NUM_ICONS)) * WATCH_ICON_SIZE);
-        int perRow = textureSize / WATCH_ICON_SIZE;
+  private static IconQuad[] generateWatchIcons() {
+    int textureSize = Utils.roundToTextureSize((int) Math.ceil(Math.sqrt(WATCH_NUM_ICONS)) * WATCH_ICON_SIZE);
+    int perRow = textureSize / WATCH_ICON_SIZE;
 
-        assert perRow * perRow >= WATCH_NUM_ICONS : "texture size too small for " + WATCH_NUM_ICONS + " icons";
+    assert perRow * perRow >= WATCH_NUM_ICONS : "texture size too small for " + WATCH_NUM_ICONS + " icons";
 
-        GLIntImage image = new GLIntImage(textureSize, textureSize, GL11.GL_RGBA);
-        image.clearAll(Color.TRANSPARENT_INT);
+    GLIntImage image = new GLIntImage(textureSize, textureSize, GL11.GL_RGBA);
+    image.clearAll(Color.TRANSPARENT_INT);
 
-        int radius = WATCH_ICON_SIZE * 3 / 8;
-        int outerRadius = radius + WATCH_RIM_WIDTH;
+    int radius = WATCH_ICON_SIZE * 3 / 8;
+    int outerRadius = radius + WATCH_RIM_WIDTH;
 
-        for (int i = 0; i < WATCH_NUM_ICONS; i++) {
-            float progress = i / (float) (WATCH_NUM_ICONS - 1);
+    for (int i = 0; i < WATCH_NUM_ICONS; i++) {
+      float progress = i / (float) (WATCH_NUM_ICONS - 1);
 
-            float fill = progress;
-            float rFloat = 1.0f - fill * fill * fill;
-            float gFloat = 1.0f - (1.0f - fill) * (1.0f - fill) * (1.0f - fill);
-            int r = Math.clamp(Math.round(255.0f * rFloat), 0, 255);
-            int g = Math.clamp(Math.round(255.0f * gFloat), 0, 255);
-            int b = 0;
-            // GLIntImage expects 0xAABBGGRR for GL_RGBA
-            int fillColor = (255 << 24) | (b << 16) | (g << 8) | r;
+      float fill = progress;
+      float rFloat = 1.0f - fill * fill * fill;
+      float gFloat = 1.0f - (1.0f - fill) * (1.0f - fill) * (1.0f - fill);
+      int r = Math.clamp(Math.round(255.0f * rFloat), 0, 255);
+      int g = Math.clamp(Math.round(255.0f * gFloat), 0, 255);
+      int b = 0;
+      // GLIntImage expects 0xAABBGGRR for GL_RGBA
+      int fillColor = (255 << 24) | (b << 16) | (g << 8) | r;
 
-            int col = i % perRow;
-            int row = i / perRow;
-            int startX = col * WATCH_ICON_SIZE;
-            int startY = row * WATCH_ICON_SIZE;
+      int col = i % perRow;
+      int row = i / perRow;
+      int startX = col * WATCH_ICON_SIZE;
+      int startY = row * WATCH_ICON_SIZE;
 
-            for (int y = 0; y < WATCH_ICON_SIZE; y++) {
-                for (int x = 0; x < WATCH_ICON_SIZE; x++) {
-                    int px = startX + x;
-                    // GL coordinate (0 is bottom). We want to write to top.
-                    // startY is from top. y is from top of icon.
-                    int py = textureSize - 1 - (startY + y);
+      for (int y = 0; y < WATCH_ICON_SIZE; y++) {
+        for (int x = 0; x < WATCH_ICON_SIZE; x++) {
+          int px = startX + x;
+          // GL coordinate (0 is bottom). We want to write to top.
+          // startY is from top. y is from top of icon.
+          int py = textureSize - 1 - (startY + y);
 
-                    float dx = x - WATCH_ICON_SIZE / 2.0f + 0.5f;
-                    float dy = WATCH_ICON_SIZE / 2.0f - y - 0.5f;
-                    float dist = (float) Math.hypot(dx, dy);
+          float dx = x - WATCH_ICON_SIZE / 2.0f + 0.5f;
+          float dy = WATCH_ICON_SIZE / 2.0f - y - 0.5f;
+          float dist = (float) Math.hypot(dx, dy);
 
-                    float shadowDx = dx - WATCH_SHADOW_OFFSET;
-                    float shadowDy = dy + WATCH_SHADOW_OFFSET; // Lower Right Shadow
-                    float shadowDist = (float) Math.hypot(shadowDx, shadowDy);
+          float shadowDx = dx - WATCH_SHADOW_OFFSET;
+          float shadowDy = dy + WATCH_SHADOW_OFFSET; // Lower Right Shadow
+          float shadowDist = (float) Math.hypot(shadowDx, shadowDy);
 
-                    int finalColor = 0;
+          int finalColor = 0;
 
-                    // Shadow
-                    if (shadowDist < outerRadius + 2) {
-                        float alpha = 0.5f;
-                        if (shadowDist > outerRadius) {
-                            alpha *= (1.0f - (shadowDist - outerRadius) / 2.0f);
-                        }
-                        finalColor = (Math.clamp(Math.round(alpha * 255), 0, 255) << 24);
-                    }
-
-                    // Main Shape
-                    if (dist < outerRadius + 1) {
-                        float alpha = dist > outerRadius ? 1.0f - (dist - outerRadius) : 1.0f;
-
-                        int pixelColor;
-                        if (dist > radius) {
-                            pixelColor = WATCH_RIM_COLOR_INT;
-                        } else {
-                            double angle = Math.atan2(dy, dx);
-                            // Top (PI/2) is 0. Clockwise.
-                            double normalizedAngle = Math.PI / 2 - angle;
-                            if (normalizedAngle < 0) normalizedAngle += 2 * Math.PI;
-                            float angleFraction = (float) (normalizedAngle / (2 * Math.PI));
-
-                            pixelColor = angleFraction <= progress ? fillColor : Color.WHITE_INT;
-                        }
-
-                        // Blend pixelColor over finalColor (shadow)
-                        int destA = (finalColor >>> 24);
-                        int srcA = Math.clamp(Math.round((pixelColor >>> 24) * alpha), 0, 255);
-
-                        float srcAf = srcA / 255.0f;
-                        float destAf = destA / 255.0f;
-                        float outAf = srcAf + destAf * (1.0f - srcAf);
-
-                        if (outAf > 0) {
-                            int srcR = (pixelColor >>> 16) & 0xFF;
-                            int srcG = (pixelColor >>> 8) & 0xFF;
-                            int srcB = pixelColor & 0xFF;
-
-                            int outR = Math.clamp(Math.round((srcR * srcAf) / outAf), 0, 255);
-                            int outG = Math.clamp(Math.round((srcG * srcAf) / outAf), 0, 255);
-                            int outB = Math.clamp(Math.round((srcB * srcAf) / outAf), 0, 255);
-                            int outA = Math.clamp(Math.round(outAf * 255), 0, 255);
-
-                            finalColor = (outA << 24) | (outR << 16) | (outG << 8) | outB;
-                        }
-                    }
-                    image.putPixel(px, py, finalColor);
-                }
+          // Shadow
+          if (shadowDist < outerRadius + 2) {
+            float alpha = 0.5f;
+            if (shadowDist > outerRadius) {
+              alpha *= (1.0f - (shadowDist - outerRadius) / 2.0f);
             }
+            finalColor = (Math.clamp(Math.round(alpha * 255), 0, 255) << 24);
+          }
+
+          // Main Shape
+          if (dist < outerRadius + 1) {
+            float alpha = dist > outerRadius ? 1.0f - (dist - outerRadius) : 1.0f;
+
+            int pixelColor;
+            if (dist > radius) {
+              pixelColor = WATCH_RIM_COLOR_INT;
+            } else {
+              double angle = Math.atan2(dy, dx);
+              // Top (PI/2) is 0. Clockwise.
+              double normalizedAngle = Math.PI / 2 - angle;
+              if (normalizedAngle < 0) normalizedAngle += 2 * Math.PI;
+              float angleFraction = (float) (normalizedAngle / (2 * Math.PI));
+
+              pixelColor = angleFraction <= progress ? fillColor : Color.WHITE_INT;
+            }
+
+            // Blend pixelColor over finalColor (shadow)
+            int destA = (finalColor >>> 24);
+            int srcA = Math.clamp(Math.round((pixelColor >>> 24) * alpha), 0, 255);
+
+            float srcAf = srcA / 255.0f;
+            float destAf = destA / 255.0f;
+            float outAf = srcAf + destAf * (1.0f - srcAf);
+
+            if (outAf > 0) {
+              int srcR = (pixelColor >>> 16) & 0xFF;
+              int srcG = (pixelColor >>> 8) & 0xFF;
+              int srcB = pixelColor & 0xFF;
+
+              int outR = Math.clamp(Math.round((srcR * srcAf) / outAf), 0, 255);
+              int outG = Math.clamp(Math.round((srcG * srcAf) / outAf), 0, 255);
+              int outB = Math.clamp(Math.round((srcB * srcAf) / outAf), 0, 255);
+              int outA = Math.clamp(Math.round(outAf * 255), 0, 255);
+
+              finalColor = (outA << 24) | (outR << 16) | (outG << 8) | outB;
+            }
+          }
+          image.putPixel(px, py, finalColor);
         }
-
-        Texture texture = new Texture(new GLImage[]{image}, GL11.GL_RGBA, GL11.GL_LINEAR, GL11.GL_LINEAR,
-                GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
-
-        return IntStream.range(0, WATCH_NUM_ICONS).mapToObj(i -> {
-            int col = i % perRow;
-            int row = i / perRow;
-            int startX = col * WATCH_ICON_SIZE;
-            int startY = row * WATCH_ICON_SIZE;
-
-            float u1 = startX / (float) textureSize;
-            float v1 = 1f - (startY + WATCH_ICON_SIZE) / (float) textureSize;
-            float u2 = (startX + WATCH_ICON_SIZE) / (float) textureSize;
-            float v2 = 1f - startY / (float) textureSize;
-
-            return new IconQuad(u1, v1, u2, v2, 22, 22, texture);
-        }).toArray(IconQuad[]::new);
+      }
     }
 
-    private static NotifyArrowData parseNotifyArrowData(IconAtlas atlas) {
-        IconAtlas.Element node = atlas.getElement("notify_arrow");
-        return new NotifyArrowData(node.getIconQuad(),
-                node.getInt("head_x"),
-                node.getInt("head_y"),
-                node.getInt("end_x"),
-                node.getInt("end_y"));
-    }
+    Texture texture =
+        new Texture(
+            new GLImage[] {image},
+            GL11.GL_RGBA,
+            GL11.GL_LINEAR,
+            GL11.GL_LINEAR,
+            GL12.GL_CLAMP_TO_EDGE,
+            GL12.GL_CLAMP_TO_EDGE);
 
-    public List<IconQuad> getToolTipIcon(SupplyType key) {
-        return tool_tip_icons.get(key);
-    }
+    return IntStream.range(0, WATCH_NUM_ICONS)
+        .mapToObj(i -> {
+          int col = i % perRow;
+          int row = i / perRow;
+          int startX = col * WATCH_ICON_SIZE;
+          int startY = row * WATCH_ICON_SIZE;
 
-    public final RaceIcons getVikingIcons() {
-        return viking_icons;
-    }
+          float u1 = startX / (float) textureSize;
+          float v1 = 1f - (startY + WATCH_ICON_SIZE) / (float) textureSize;
+          float u2 = (startX + WATCH_ICON_SIZE) / (float) textureSize;
+          float v2 = 1f - startY / (float) textureSize;
 
-    public final RaceIcons getNativeIcons() {
-        return native_icons;
-    }
+          return new IconQuad(u1, v1, u2, v2, 22, 22, texture);
+        })
+        .toArray(IconQuad[]::new);
+  }
 
-    public final ModeIconQuads getHarvestIcon() {
-        return harvest_icon;
-    }
+  private static NotifyArrowData parseNotifyArrowData(IconAtlas atlas) {
+    IconAtlas.Element node = atlas.getElement("notify_arrow");
+    return new NotifyArrowData(
+        node.getIconQuad(), node.getInt("head_x"), node.getInt("head_y"), node.getInt("end_x"), node.getInt("end_y"));
+  }
 
-    public final IconQuad getTreeStatusIcon() {
-        return tree_status_icon;
-    }
+  public List<IconQuad> getToolTipIcon(SupplyType key) {
+    return tool_tip_icons.get(key);
+  }
 
-    public final IconQuad getRockStatusIcon() {
-        return rock_status_icon;
-    }
+  public final RaceIcons getVikingIcons() {
+    return viking_icons;
+  }
 
-    public final IconQuad getIronStatusIcon() {
-        return iron_status_icon;
-    }
+  public final RaceIcons getNativeIcons() {
+    return native_icons;
+  }
 
-    public final IconQuad getRubberStatusIcon() {
-        return rubber_status_icon;
-    }
+  public final ModeIconQuads getHarvestIcon() {
+    return harvest_icon;
+  }
 
-    public final IconQuad getCheatIcon() {
-        return cheat_icon;
-    }
+  public final IconQuad getTreeStatusIcon() {
+    return tree_status_icon;
+  }
 
-    public final ModeIconQuads getTreeIcon() {
-        return tree_icon;
-    }
+  public final IconQuad getRockStatusIcon() {
+    return rock_status_icon;
+  }
 
-    public final ModeIconQuads getRockIcon() {
-        return rock_icon;
-    }
+  public final IconQuad getIronStatusIcon() {
+    return iron_status_icon;
+  }
 
-    public final ModeIconQuads getIronIcon() {
-        return iron_icon;
-    }
+  public final IconQuad getRubberStatusIcon() {
+    return rubber_status_icon;
+  }
 
-    public final ModeIconQuads getRubberIcon() {
-        return rubber_icon;
-    }
+  public final IconQuad getCheatIcon() {
+    return cheat_icon;
+  }
 
-    public final IconQuad getWatch(float progress) {
-        return watch[(int) (progress * (watch.length - 1))];
-    }
+  public final ModeIconQuads getTreeIcon() {
+    return tree_icon;
+  }
 
-    public final IconQuad getInfinite() {
-        return infinite;
-    }
+  public final ModeIconQuads getRockIcon() {
+    return rock_icon;
+  }
 
-    public final IconQuad getNotifyArrow() {
-        return notify_arrow_data.arrow();
-    }
+  public final ModeIconQuads getIronIcon() {
+    return iron_icon;
+  }
 
-    public final int getNotifyArrowHeadX() {
-        return notify_arrow_data.headX();
-    }
+  public final ModeIconQuads getRubberIcon() {
+    return rubber_icon;
+  }
 
-    public final int getNotifyArrowHeadY() {
-        return notify_arrow_data.headY();
-    }
+  public final IconQuad getWatch(float progress) {
+    return watch[(int) (progress * (watch.length - 1))];
+  }
+
+  public final IconQuad getInfinite() {
+    return infinite;
+  }
+
+  public final IconQuad getNotifyArrow() {
+    return notify_arrow_data.arrow();
+  }
+
+  public final int getNotifyArrowHeadX() {
+    return notify_arrow_data.headX();
+  }
+
+  public final int getNotifyArrowHeadY() {
+    return notify_arrow_data.headY();
+  }
 }

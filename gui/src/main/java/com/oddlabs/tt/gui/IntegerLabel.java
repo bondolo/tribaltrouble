@@ -2,22 +2,22 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.font.Font;
 
-/** Numeric label that renders an integer and compares numerically. */
+/// Numeric label that renders an integer and compares numerically.
 public final class IntegerLabel extends Label {
-    private final int val;
+  private final int val;
 
-    public IntegerLabel(int val, Font font, int width) {
-        super(Integer.toString(val), font, width, Origin.AT_END);
-        this.val = val;
-    }
+  public IntegerLabel(int val, Font font, int width) {
+    super(Integer.toString(val), font, width, Origin.AT_END);
+    this.val = val;
+  }
 
-    public IntegerLabel(int val, Font font) {
-        super(Integer.toString(val), font);
-        this.val = val;
-    }
+  public IntegerLabel(int val, Font font) {
+    super(Integer.toString(val), font);
+    this.val = val;
+  }
 
-    @Override
-    public int compareTo(Label o) {
-        return o instanceof IntegerLabel other ? val - other.val : -1;
-    }
+  @Override
+  public int compareTo(Label o) {
+    return o instanceof IntegerLabel other ? val - other.val : -1;
+  }
 }

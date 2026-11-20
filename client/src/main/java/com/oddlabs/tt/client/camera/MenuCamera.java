@@ -1,57 +1,55 @@
 package com.oddlabs.tt.client.camera;
 
-import com.oddlabs.tt.engine.render.CameraState;
-
 import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.simulation.landscape.World;
 
 public final class MenuCamera extends Camera {
-    private static final float ANGLE_DELTA = 0.020f;
-    private static final float RADIUS = 176f;
-    private static final float HEIGHT = 0f;
-    private static final float LANDSCAPE_OFFSET = 5f;
-    private static final float CENTER_Z = 128f; // NOT HEIGHT!
-    private static final float MAX_ACCUMULATOR_STEP = 0.2f;
+  private static final float ANGLE_DELTA = 0.020f;
+  private static final float RADIUS = 176f;
+  private static final float HEIGHT = 0f;
+  private static final float LANDSCAPE_OFFSET = 5f;
+  private static final float CENTER_Z = 128f; // NOT HEIGHT!
+  private static final float MAX_ACCUMULATOR_STEP = 0.2f;
 
-    private final World world;
-    private final AnimationManager manager;
-    private final float centerX;
-    private final float centerY;
-    private float center_angle;
-    private float tickAccumulator;
+  private final World world;
+  private final AnimationManager manager;
+  private final float centerX;
+  private final float centerY;
+  private float center_angle;
+  private float tickAccumulator;
 
-    public MenuCamera(World world, AnimationManager highPrecisionManager,
-            AnimationManager menuManager) {
-        super(world.getLandscapeEnvironment(), new CameraState(), highPrecisionManager);
-        this.world = world;
-        this.manager = menuManager;
-        this.centerX = world.getLandscapeEnvironment().getMetersPerWorld() / 2f;
-        this.centerY = world.getLandscapeEnvironment().getMetersPerWorld() / 2f;
-        reset();
+  public MenuCamera(World world, AnimationManager highPrecisionManager, AnimationManager menuManager) {
+    super(world.getLandscapeEnvironment(), new CameraState(), highPrecisionManager);
+    this.world = world;
+    this.manager = menuManager;
+    this.centerX = world.getLandscapeEnvironment().getMetersPerWorld() / 2f;
+    this.centerY = world.getLandscapeEnvironment().getMetersPerWorld() / 2f;
+    reset();
+  }
+
+  private void reset() {
+    center_angle = 1;
+    getState().setCurrentVertAngle(-(float) Math.atan((HEIGHT - CENTER_Z) / RADIUS));
+    updatePos(0f);
+  }
+
+  private void updatePos(float t) {
+    center_angle = (center_angle + ANGLE_DELTA * t) % (2 * (float) Math.PI);
+    getState().setCurrentX(centerX + RADIUS * (float) Math.cos(center_angle));
+    getState().setCurrentY(centerY + RADIUS * (float) Math.sin(center_angle));
+    getState().setCurrentHorizAngle((float) Math.PI * .925f + center_angle);
+    getState().setCurrentZ(LANDSCAPE_OFFSET);
+  }
+
+  @Override
+  public void doAnimate(float dt) {
+    updatePos(dt);
+    tickAccumulator += Math.min(dt, MAX_ACCUMULATOR_STEP);
+    while (tickAccumulator >= AnimationManager.ANIMATION_SECONDS_PER_TICK) {
+      world.tick();
+      tickAccumulator -= AnimationManager.ANIMATION_SECONDS_PER_TICK;
     }
-
-    private void reset() {
-        center_angle = 1;
-        getState().setCurrentVertAngle(-(float) Math.atan((HEIGHT - CENTER_Z) / RADIUS));
-        updatePos(0f);
-    }
-
-    private void updatePos(float t) {
-        center_angle = (center_angle + ANGLE_DELTA * t) % (2 * (float) Math.PI);
-        getState().setCurrentX(centerX + RADIUS * (float) Math.cos(center_angle));
-        getState().setCurrentY(centerY + RADIUS * (float) Math.sin(center_angle));
-        getState().setCurrentHorizAngle((float) Math.PI * .925f + center_angle);
-        getState().setCurrentZ(LANDSCAPE_OFFSET);
-    }
-
-    @Override
-    public void doAnimate(float dt) {
-        updatePos(dt);
-        tickAccumulator += Math.min(dt, MAX_ACCUMULATOR_STEP);
-        while (tickAccumulator >= AnimationManager.ANIMATION_SECONDS_PER_TICK) {
-            world.tick();
-            tickAccumulator -= AnimationManager.ANIMATION_SECONDS_PER_TICK;
-        }
-        manager.runAnimations(dt);
-    }
+    manager.runAnimations(dt);
+  }
 }

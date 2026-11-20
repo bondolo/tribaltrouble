@@ -1,6 +1,4 @@
-/**
- * Client-side graphical user interface components and HUD controls.
- */
+/** Client-side graphical user interface components and HUD controls. */
 @NullMarked
 package com.oddlabs.tt.client.gui;
 

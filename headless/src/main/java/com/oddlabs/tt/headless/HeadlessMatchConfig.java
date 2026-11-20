@@ -1,14 +1,12 @@
 package com.oddlabs.tt.headless;
 
+import com.oddlabs.net.TickTimeManager;
+import com.oddlabs.net.TimeManager;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-
-import com.oddlabs.net.TickTimeManager;
-import com.oddlabs.net.TimeManager;
-
 import java.time.Duration;
 import java.util.List;
 
@@ -21,65 +19,63 @@ import java.util.List;
  * @param maxTicks maximum simulation ticks before match termination
  * @param checksumIntervalTicks frequency of deterministic state checksum validations
  * @param timeManager clock manager driving session networking and pace
- * @param stallTimeout maximum elapsed real time allowed without simulation tick progress before failing, or
- *            {@link Duration#ZERO} to disable
+ * @param stallTimeout maximum elapsed real time allowed without simulation tick progress before failing, or {@link
+ *     Duration#ZERO} to disable
  */
 public record HeadlessMatchConfig(
-                                  IslandConfig islandConfig,
-                                  WorldParameters worldParameters,
-                                  List<PlayerConfig> players,
-                                  int maxTicks,
-                                  int checksumIntervalTicks,
-                                  TimeManager timeManager,
-                                  Duration stallTimeout) {
+    IslandConfig islandConfig,
+    WorldParameters worldParameters,
+    List<PlayerConfig> players,
+    int maxTicks,
+    int checksumIntervalTicks,
+    TimeManager timeManager,
+    Duration stallTimeout) {
 
-    public static final int DEFAULT_MAX_TICKS = 200_000;
-    public static final int DEFAULT_CHECKSUM_INTERVAL = 50;
-    public static final Duration DEFAULT_STALL_TIMEOUT = Duration.ofSeconds(15);
+  public static final int DEFAULT_MAX_TICKS = 200_000;
+  public static final int DEFAULT_CHECKSUM_INTERVAL = 50;
+  public static final Duration DEFAULT_STALL_TIMEOUT = Duration.ofSeconds(15);
 
-    public HeadlessMatchConfig(
-            IslandConfig islandConfig,
-            WorldParameters worldParameters,
-            List<PlayerConfig> players,
-            int maxTicks,
-            int checksumIntervalTicks) {
-        this(islandConfig, worldParameters, players, maxTicks, checksumIntervalTicks, new TickTimeManager(),
-                DEFAULT_STALL_TIMEOUT);
+  public HeadlessMatchConfig(
+      IslandConfig islandConfig,
+      WorldParameters worldParameters,
+      List<PlayerConfig> players,
+      int maxTicks,
+      int checksumIntervalTicks) {
+    this(
+        islandConfig,
+        worldParameters,
+        players,
+        maxTicks,
+        checksumIntervalTicks,
+        new TickTimeManager(),
+        DEFAULT_STALL_TIMEOUT);
+  }
+
+  public HeadlessMatchConfig(
+      IslandConfig islandConfig,
+      WorldParameters worldParameters,
+      List<PlayerConfig> players,
+      int maxTicks,
+      int checksumIntervalTicks,
+      TimeManager timeManager) {
+    this(islandConfig, worldParameters, players, maxTicks, checksumIntervalTicks, timeManager, DEFAULT_STALL_TIMEOUT);
+  }
+
+  /**
+   * Configuration for an individual player slot in a headless match.
+   *
+   * @param team team identifier (players on the same team share victory)
+   * @param race playable faction race
+   * @param aiDifficulty AI difficulty tier
+   * @param name display name for the player
+   * @param unitInfo starting army and structure configuration
+   */
+  public record PlayerConfig(int team, Race race, AIDifficulty aiDifficulty, String name, UnitInfo unitInfo) {}
+
+  public HeadlessMatchConfig {
+    if (checksumIntervalTicks < 0) {
+      throw new IllegalArgumentException("checksumIntervalTicks must be >= 0: " + checksumIntervalTicks);
     }
-
-    public HeadlessMatchConfig(
-            IslandConfig islandConfig,
-            WorldParameters worldParameters,
-            List<PlayerConfig> players,
-            int maxTicks,
-            int checksumIntervalTicks,
-            TimeManager timeManager) {
-        this(islandConfig, worldParameters, players, maxTicks, checksumIntervalTicks, timeManager,
-                DEFAULT_STALL_TIMEOUT);
-    }
-
-    /**
-     * Configuration for an individual player slot in a headless match.
-     *
-     * @param team team identifier (players on the same team share victory)
-     * @param race playable faction race
-     * @param aiDifficulty AI difficulty tier
-     * @param name display name for the player
-     * @param unitInfo starting army and structure configuration
-     */
-    public record PlayerConfig(
-                               int team,
-                               Race race,
-                               AIDifficulty aiDifficulty,
-                               String name,
-                               UnitInfo unitInfo) {
-    }
-
-    public HeadlessMatchConfig {
-        if (checksumIntervalTicks < 0) {
-            throw new IllegalArgumentException(
-                    "checksumIntervalTicks must be >= 0: " + checksumIntervalTicks);
-        }
-        players = List.copyOf(players);
-    }
+    players = List.copyOf(players);
+  }
 }

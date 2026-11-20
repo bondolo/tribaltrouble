@@ -1,6 +1,4 @@
-/**
- * Window management and display mode handling interfaces and LWJGL implementations.
- */
+/** Window management and display mode handling interfaces and LWJGL implementations. */
 @NullMarked
 package com.oddlabs.tt.window;
 

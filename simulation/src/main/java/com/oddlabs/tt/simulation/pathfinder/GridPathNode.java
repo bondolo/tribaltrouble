@@ -8,5 +8,4 @@ import org.jspecify.annotations.Nullable;
  * @param parent previous node along the path
  * @param direction direction from previous node to this node
  */
-public record GridPathNode(@Nullable GridPathNode parent, DirectionNode direction) implements PathNode<GridPathNode> {
-}
+public record GridPathNode(@Nullable GridPathNode parent, DirectionNode direction) implements PathNode<GridPathNode> {}

@@ -12,5 +12,4 @@ import com.oddlabs.procedural.Layer;
  * @param alphaPower the power exponent applied to the alpha channel
  */
 record StructureBlend(Layer structureLayer, Layer normalLayer, Channel alphaChannel, float alphaPower)
-        implements BlendInfo {
-}
+    implements BlendInfo {}

@@ -1,29 +1,29 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
 public interface Movable {
-    boolean isMoving();
+  boolean isMoving();
 
-    int getGridX();
+  int getGridX();
 
-    int getGridY();
+  int getGridY();
 
-    void setPosition(float x, float y);
+  void setPosition(float x, float y);
 
-    void setDirection(float dir_x, float dir_y);
+  void setDirection(float dir_x, float dir_y);
 
-    float getPositionX();
+  float getPositionX();
 
-    float getPositionY();
+  float getPositionY();
 
-    PathTracker getTracker();
+  PathTracker getTracker();
 
-    void free();
+  void free();
 
-    void setGridPosition(int grid_x, int grid_y);
+  void setGridPosition(int grid_x, int grid_y);
 
-    void occupy();
+  void occupy();
 
-    void markBlocking();
+  void markBlocking();
 
-    boolean isDead();
+  boolean isDead();
 }

@@ -10,129 +10,142 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Logic controller for the Poison Fog magic effect.
- * Periodically applies damage to units within its radius.
- */
+/// Logic controller for the Poison Fog magic effect. Periodically applies damage to units within its radius.
 public final class PoisonFog extends Model implements Magic {
-    private static final float SECONDS_BETWEEN_BURSTS = .15f;
-    private static final int PARTICLES_PER_BURST = 4;
-    private static final int MIN_BURSTS_PER_SOUND = 2;
+  private static final float SECONDS_BETWEEN_BURSTS = .15f;
+  private static final int PARTICLES_PER_BURST = 4;
+  private static final int MIN_BURSTS_PER_SOUND = 2;
 
-    private final float hit_radius;
-    private final float hit_chance;
-    private final float interval;
-    private final int damage;
-    private final Unit src;
-    private final Player owner;
-    private final float start_x;
-    private final float start_y;
-    private final float offset_z;
-    private final float total_time;
+  private final float hit_radius;
+  private final float hit_chance;
+  private final float interval;
+  private final int damage;
+  private final Unit src;
+  private final Player owner;
+  private final float start_x;
+  private final float start_y;
+  private final float offset_z;
+  private final float total_time;
 
-    private float time = 0f;
-    private int num_hits = 0;
-    private int bursts = 0;
-    private int next_sound = 1;
+  private float time = 0f;
+  private int num_hits = 0;
+  private int bursts = 0;
+  private int next_sound = 1;
 
-    public PoisonFog(float offset_x, float offset_y, float offset_z, float hit_radius, float hit_chance, float interval,
-            float time, int damage, Unit src) {
-        super(src.getOwner().getWorld());
-        this.hit_radius = hit_radius;
-        this.hit_chance = hit_chance;
-        this.interval = interval;
-        this.offset_z = offset_z;
-        total_time = time;
-        this.damage = damage;
-        this.src = src;
-        owner = src.getOwner();
+  public PoisonFog(
+      float offset_x,
+      float offset_y,
+      float offset_z,
+      float hit_radius,
+      float hit_chance,
+      float interval,
+      float time,
+      int damage,
+      Unit src) {
+    super(src.getOwner().getWorld());
+    this.hit_radius = hit_radius;
+    this.hit_chance = hit_chance;
+    this.interval = interval;
+    this.offset_z = offset_z;
+    total_time = time;
+    this.damage = damage;
+    this.src = src;
+    owner = src.getOwner();
 
-        start_x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
-        start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
-        setPosition(start_x, start_y, owner.getWorld().getHeightMap().getNearestHeight(start_x, start_y));
-        register();
-    }
+    start_x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
+    start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
+    setPosition(start_x, start_y, owner.getWorld().getHeightMap().getNearestHeight(start_x, start_y));
+    register();
+  }
 
-    public float getHitRadius() {
-        return hit_radius;
-    }
+  public float getHitRadius() {
+    return hit_radius;
+  }
 
-    public float getCloudOffsetZ() {
-        return offset_z;
-    }
+  public float getCloudOffsetZ() {
+    return offset_z;
+  }
 
-    @Override
-    public void remove() {
-        super.remove();
-        owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
-        owner.getWorld().getNotificationListener().onModelRemoved(this);
-    }
+  @Override
+  public void remove() {
+    super.remove();
+    owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
+    owner.getWorld().getNotificationListener().onModelRemoved(this);
+  }
 
-    @Override
-    protected void onReinsert() {
-        float x = getPositionX();
-        float y = getPositionY();
-        float z = getPositionZ();
-        setBounds(x - hit_radius, x + hit_radius, y - hit_radius, y + hit_radius, z - 5f, z + 20f);
-    }
+  @Override
+  protected void onReinsert() {
+    float x = getPositionX();
+    float y = getPositionY();
+    float z = getPositionZ();
+    setBounds(x - hit_radius, x + hit_radius, y - hit_radius, y + hit_radius, z - 5f, z + 20f);
+  }
 
-    @Override
-    protected BoundingBox @Nullable [] getLocalBounds() {
-        return null;
-    }
+  @Override
+  protected BoundingBox @Nullable [] getLocalBounds() {
+    return null;
+  }
 
-    @Override
-    public void animate(float dt) {
-        time += dt;
-        boolean finished = time >= total_time;
+  @Override
+  public void animate(float dt) {
+    time += dt;
+    boolean finished = time >= total_time;
 
-        if (AppConfig.LEGACY_DETERMINISTIC) {
-            if (bursts * SECONDS_BETWEEN_BURSTS < time) {
-                var random = owner.getWorld().getRandom();
-                random.nextGaussian();
-                random.nextFloat();
-                random.nextFloat();
-                var emitter = new LegacyOneShotEmitter(owner.getWorld(),
-                        owner.getWorld().getAnimationManagerGameTime(),
-                        PARTICLES_PER_BURST, (float) PARTICLES_PER_BURST, 0f, 0f, 1);
-                owner.getWorld().getAnimationManagerGameTime().registerAnimation(emitter);
-                if (bursts % next_sound == 0) {
-                    next_sound = MIN_BURSTS_PER_SOUND + random.nextInt(5);
-                }
-                bursts++;
-            }
+    if (AppConfig.LEGACY_DETERMINISTIC) {
+      if (bursts * SECONDS_BETWEEN_BURSTS < time) {
+        var random = owner.getWorld().getRandom();
+        random.nextGaussian();
+        random.nextFloat();
+        random.nextFloat();
+        var emitter =
+            new LegacyOneShotEmitter(
+                owner.getWorld(),
+                owner.getWorld().getAnimationManagerGameTime(),
+                PARTICLES_PER_BURST,
+                (float) PARTICLES_PER_BURST,
+                0f,
+                0f,
+                1);
+        owner.getWorld().getAnimationManagerGameTime().registerAnimation(emitter);
+        if (bursts % next_sound == 0) {
+          next_sound = MIN_BURSTS_PER_SOUND + random.nextInt(5);
         }
-
-        if ((num_hits + 1) * interval < time) {
-            hitUnits(hit_radius);
-            num_hits++;
-        }
-        if (finished) {
-            remove();
-        }
+        bursts++;
+      }
     }
 
-    private void hitUnits(float radius) {
-        FindOccupantFilter<Unit> filter = new FindOccupantFilter<>(start_x, start_y, radius, src, Unit.class);
-        UnitGrid unit_grid = owner.getWorld().getUnitGrid();
-        unit_grid.scan(filter, UnitGrid.toGridCoordinate(start_x), UnitGrid.toGridCoordinate(start_y));
-        for (var s : filter.getResult()) {
-            float dx = s.getPositionX() - start_x;
-            float dy = s.getPositionY() - start_y;
-            float squared_dist = dx * dx + dy * dy;
-            if (!s.isDead() && ((owner.isEnemy(s.getOwner()) && owner.getWorld().getRandom().nextFloat() < hit_chance
-                    * (1 - s.getDefenseChance()))
-                    || (!owner.isEnemy(s.getOwner()) && owner.getWorld().getRandom().nextFloat() < (hit_chance / 4f)
-                            * (1 - s.getDefenseChance())
-                            && owner.getActiveChieftain() != s))) {
-                float inv_dist = 1f / ((float) Math.sqrt(squared_dist));
-                s.hit(damage, dx * inv_dist, dy * inv_dist, owner);
-            }
-        }
+    if ((num_hits + 1) * interval < time) {
+      hitUnits(hit_radius);
+      num_hits++;
     }
+    if (finished) {
+      remove();
+    }
+  }
 
-    @Override
-    public void interrupt() {
-        // DO NOT FIX (AppConfig.LEGACY_DETERMINISTIC): Preserved for legacy simulation fidelity; the original game only silenced the sound here while the spell keeps running after the caster is interrupted.
+  private void hitUnits(float radius) {
+    FindOccupantFilter<Unit> filter = new FindOccupantFilter<>(start_x, start_y, radius, src, Unit.class);
+    UnitGrid unit_grid = owner.getWorld().getUnitGrid();
+    unit_grid.scan(filter, UnitGrid.toGridCoordinate(start_x), UnitGrid.toGridCoordinate(start_y));
+    for (var s : filter.getResult()) {
+      float dx = s.getPositionX() - start_x;
+      float dy = s.getPositionY() - start_y;
+      float squared_dist = dx * dx + dy * dy;
+      if (!s.isDead()
+          && ((owner.isEnemy(s.getOwner())
+                  && owner.getWorld().getRandom().nextFloat() < hit_chance * (1 - s.getDefenseChance()))
+              || (!owner.isEnemy(s.getOwner())
+                  && owner.getWorld().getRandom().nextFloat() < (hit_chance / 4f) * (1 - s.getDefenseChance())
+                  && owner.getActiveChieftain() != s))) {
+        float inv_dist = 1f / ((float) Math.sqrt(squared_dist));
+        s.hit(damage, dx * inv_dist, dy * inv_dist, owner);
+      }
     }
+  }
+
+  @Override
+  public void interrupt() {
+    // DO NOT FIX (AppConfig.LEGACY_DETERMINISTIC): Preserved for legacy simulation fidelity; the original game only
+    // silenced the sound here while the spell keeps running after the caster is interrupted.
+  }
 }

@@ -1,6 +1,4 @@
-/**
- * Input handling and provider abstractions for keyboard, mouse, and gamepads.
- */
+/** Input handling and provider abstractions for keyboard, mouse, and gamepads. */
 @NullMarked
 package com.oddlabs.tt.input;
 

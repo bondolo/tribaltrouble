@@ -1,8 +1,22 @@
 package com.oddlabs.tt.content.tutorial;
 
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
+
+import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.match.MatchLauncher;
-import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.client.screen.ScreenManager;
+import com.oddlabs.tt.client.viewer.WorldInitAction;
+import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.content.menu.Menu;
+import com.oddlabs.tt.content.tutorial.trigger.BuildingChieftainTrigger;
+import com.oddlabs.tt.content.tutorial.trigger.PlacingDelegateTrigger;
+import com.oddlabs.tt.content.tutorial.trigger.ScrollTrigger;
+import com.oddlabs.tt.content.tutorial.trigger.SelectArmoryTrigger;
+import com.oddlabs.tt.content.tutorial.trigger.SelectTowerTrigger;
+import com.oddlabs.tt.content.tutorial.trigger.TutorialOverTrigger;
+import com.oddlabs.tt.content.tutorial.trigger.TutorialTrigger;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -11,256 +25,298 @@ import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.event.MouseClickListener;
-import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.content.tutorial.trigger.BuildingChieftainTrigger;
-import com.oddlabs.tt.content.tutorial.trigger.PlacingDelegateTrigger;
-import com.oddlabs.tt.content.tutorial.trigger.ScrollTrigger;
-import com.oddlabs.tt.content.tutorial.trigger.SelectArmoryTrigger;
-import com.oddlabs.tt.content.tutorial.trigger.SelectTowerTrigger;
-import com.oddlabs.tt.content.tutorial.trigger.TutorialOverTrigger;
-import com.oddlabs.tt.content.tutorial.trigger.TutorialTrigger;
-import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.net.GameNetwork;
-import com.oddlabs.tt.simulation.player.AIDifficulty;
-import com.oddlabs.tt.simulation.player.SlotType;
-import com.oddlabs.tt.client.viewer.WorldInitAction;
-import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitType;
+import com.oddlabs.tt.simulation.player.AIDifficulty;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.SlotType;
 import com.oddlabs.tt.simulation.player.UnitInfo;
+import java.util.ResourceBundle;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ResourceBundle;
-
-import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
-
-/** UI form displaying tutorial step instructions. */
+/// UI form displaying tutorial step instructions.
 public final class TutorialForm extends Form {
-    public static final int TUTORIAL_CAMERA = 1;
-    public static final int TUTORIAL_QUARTERS = 2;
-    public static final int TUTORIAL_ARMORY = 3;
-    public static final int TUTORIAL_TOWER = 4;
-    public static final int TUTORIAL_CHIEFTAIN = 5;
-    public static final int TUTORIAL_BATTLE = 6;
+  public static final int TUTORIAL_CAMERA = 1;
+  public static final int TUTORIAL_QUARTERS = 2;
+  public static final int TUTORIAL_ARMORY = 3;
+  public static final int TUTORIAL_TOWER = 4;
+  public static final int TUTORIAL_CHIEFTAIN = 5;
+  public static final int TUTORIAL_BATTLE = 6;
 
-    public static final int NUM_TUTORIALS = 6;
+  public static final int NUM_TUTORIALS = 6;
 
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(TutorialForm.class.getName());
+  private static final ResourceBundle bundle = ResourceBundle.getBundle(TutorialForm.class.getName());
 
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
+  private static String i18n(String key, Object... args) {
+    return Utils.getBundleString(bundle, key, args);
+  }
+
+  private final GUIRoot gui_root;
+  private final Peer peer;
+  private final ScreenManager screenManager;
+
+  private static String formatTutorial(int tutorial_number) {
+    return i18n("tutorial", Integer.toString(tutorial_number));
+  }
+
+  public TutorialForm(Menu menu) {
+    this(menu.getGUIRoot(), menu.getPeer(), menu.getScreenManager());
+  }
+
+  public TutorialForm(GUIRoot gui_root, Peer peer, ScreenManager screenManager) {
+    super(gui_root);
+    this.gui_root = gui_root;
+    this.peer = peer;
+    this.screenManager = screenManager;
+    Label headline = new Label(i18n("tutorial_caption"), getSkin().getHeadlineFont());
+    addChild(headline);
+
+    var font = getSkin().getEditFont();
+
+    HorizButton button_tutorial1 = new HorizButton(gui_root, formatTutorial(TUTORIAL_CAMERA), 120);
+    button_tutorial1.addMouseClickListener(new TutorialListener(TUTORIAL_CAMERA));
+    addChild(button_tutorial1);
+    Label label_tutorial1 = new Label(i18n("tutorial1_tip"), font);
+    addChild(label_tutorial1);
+
+    HorizButton button_tutorial2 = new HorizButton(gui_root, formatTutorial(TUTORIAL_QUARTERS), 120);
+    button_tutorial2.addMouseClickListener(new TutorialListener(TUTORIAL_QUARTERS));
+    addChild(button_tutorial2);
+    Label label_tutorial2 = new Label(i18n("tutorial2_tip"), font);
+    addChild(label_tutorial2);
+
+    HorizButton button_tutorial3 = new HorizButton(gui_root, formatTutorial(TUTORIAL_ARMORY), 120);
+    button_tutorial3.addMouseClickListener(new TutorialListener(TUTORIAL_ARMORY));
+    addChild(button_tutorial3);
+    Label label_tutorial3 = new Label(i18n("tutorial3_tip"), font);
+    addChild(label_tutorial3);
+
+    HorizButton button_tutorial4 = new HorizButton(gui_root, formatTutorial(TUTORIAL_TOWER), 120);
+    button_tutorial4.addMouseClickListener(new TutorialListener(TUTORIAL_TOWER));
+    addChild(button_tutorial4);
+    Label label_tutorial4 = new Label(i18n("tutorial4_tip"), font);
+    addChild(label_tutorial4);
+
+    HorizButton button_tutorial5 = new HorizButton(gui_root, formatTutorial(TUTORIAL_CHIEFTAIN), 120);
+    button_tutorial5.addMouseClickListener(new TutorialListener(TUTORIAL_CHIEFTAIN));
+    addChild(button_tutorial5);
+    Label label_tutorial5 = new Label(i18n("tutorial5_tip"), font);
+    addChild(label_tutorial5);
+
+    HorizButton button_tutorial6 = new HorizButton(gui_root, formatTutorial(TUTORIAL_BATTLE), 120);
+    button_tutorial6.addMouseClickListener(new TutorialListener(TUTORIAL_BATTLE));
+    addChild(button_tutorial6);
+    Label label_tutorial6 = new Label(i18n("tutorial6_tip"), font);
+    addChild(label_tutorial6);
+
+    HorizButton cancel_button = new CancelButton(gui_root, 120);
+    addChild(cancel_button);
+    cancel_button.addMouseClickListener((_, _, _, _) -> this.cancel());
+
+    // Place objects
+    headline.place();
+    button_tutorial1.place(headline, BOTTOM_LEFT);
+    label_tutorial1.place(button_tutorial1, RIGHT_MID);
+    button_tutorial2.place(button_tutorial1, BOTTOM_LEFT);
+    label_tutorial2.place(button_tutorial2, RIGHT_MID);
+    button_tutorial3.place(button_tutorial2, BOTTOM_LEFT);
+    label_tutorial3.place(button_tutorial3, RIGHT_MID);
+    button_tutorial4.place(button_tutorial3, BOTTOM_LEFT);
+    label_tutorial4.place(button_tutorial4, RIGHT_MID);
+    button_tutorial5.place(button_tutorial4, BOTTOM_LEFT);
+    label_tutorial5.place(button_tutorial5, RIGHT_MID);
+    button_tutorial6.place(button_tutorial5, BOTTOM_LEFT);
+    label_tutorial6.place(button_tutorial6, RIGHT_MID);
+    cancel_button.place(Origin.AT_END);
+
+    // headline
+    compileCanvas();
+    centerPos();
+  }
+
+  private record TutorialAction(TriggerFactory factory, TutorialInGameInfo ingame_info) implements WorldInitAction {
+
+    @Override
+    public void run(WorldViewer viewer) {
+      new Tutorial(viewer, ingame_info, factory.create(viewer));
     }
+  }
 
-    private final GUIRoot gui_root;
-    private final Peer peer;
-    private final ScreenManager screenManager;
+  private interface TriggerFactory {
+    TutorialTrigger create(WorldViewer viewer);
+  }
 
-    private static String formatTutorial(int tutorial_number) {
-        return i18n("tutorial", Integer.toString(tutorial_number));
-    }
+  private static void startNewGame(
+      Peer peer, GUIRoot gui_root, ScreenManager screenManager, TriggerFactory factory, int tutorial_num) {
+    TutorialInGameInfo ingame_info = new TutorialInGameInfo();
+    GameNetwork game_network =
+        doStartNewGame(
+            peer,
+            gui_root,
+            screenManager,
+            ingame_info,
+            new TutorialAction(factory, ingame_info),
+            Player.INITIAL_UNIT_COUNT,
+            tutorial_num);
+    game_network
+        .getClient()
+        .getServerInterface()
+        .setPlayerSlot(0, SlotType.HUMAN, Race.NATIVES, 0, true, AIDifficulty.NONE);
+    game_network.getClient().getServerInterface().startServer();
+  }
 
-    public TutorialForm(Menu menu) {
-        this(menu.getGUIRoot(), menu.getPeer(), menu.getScreenManager());
-    }
-
-    public TutorialForm(GUIRoot gui_root, Peer peer, ScreenManager screenManager) {
-        super(gui_root);
-        this.gui_root = gui_root;
-        this.peer = peer;
-        this.screenManager = screenManager;
-        Label headline = new Label(i18n("tutorial_caption"), getSkin().getHeadlineFont());
-        addChild(headline);
-
-        var font = getSkin().getEditFont();
-
-        HorizButton button_tutorial1 = new HorizButton(gui_root, formatTutorial(TUTORIAL_CAMERA), 120);
-        button_tutorial1.addMouseClickListener(new TutorialListener(TUTORIAL_CAMERA));
-        addChild(button_tutorial1);
-        Label label_tutorial1 = new Label(i18n("tutorial1_tip"), font);
-        addChild(label_tutorial1);
-
-        HorizButton button_tutorial2 = new HorizButton(gui_root, formatTutorial(TUTORIAL_QUARTERS), 120);
-        button_tutorial2.addMouseClickListener(new TutorialListener(TUTORIAL_QUARTERS));
-        addChild(button_tutorial2);
-        Label label_tutorial2 = new Label(i18n("tutorial2_tip"), font);
-        addChild(label_tutorial2);
-
-        HorizButton button_tutorial3 = new HorizButton(gui_root, formatTutorial(TUTORIAL_ARMORY), 120);
-        button_tutorial3.addMouseClickListener(new TutorialListener(TUTORIAL_ARMORY));
-        addChild(button_tutorial3);
-        Label label_tutorial3 = new Label(i18n("tutorial3_tip"), font);
-        addChild(label_tutorial3);
-
-        HorizButton button_tutorial4 = new HorizButton(gui_root, formatTutorial(TUTORIAL_TOWER), 120);
-        button_tutorial4.addMouseClickListener(new TutorialListener(TUTORIAL_TOWER));
-        addChild(button_tutorial4);
-        Label label_tutorial4 = new Label(i18n("tutorial4_tip"), font);
-        addChild(label_tutorial4);
-
-        HorizButton button_tutorial5 = new HorizButton(gui_root, formatTutorial(TUTORIAL_CHIEFTAIN), 120);
-        button_tutorial5.addMouseClickListener(new TutorialListener(TUTORIAL_CHIEFTAIN));
-        addChild(button_tutorial5);
-        Label label_tutorial5 = new Label(i18n("tutorial5_tip"), font);
-        addChild(label_tutorial5);
-
-        HorizButton button_tutorial6 = new HorizButton(gui_root, formatTutorial(TUTORIAL_BATTLE), 120);
-        button_tutorial6.addMouseClickListener(new TutorialListener(TUTORIAL_BATTLE));
-        addChild(button_tutorial6);
-        Label label_tutorial6 = new Label(i18n("tutorial6_tip"), font);
-        addChild(label_tutorial6);
-
-        HorizButton cancel_button = new CancelButton(gui_root, 120);
-        addChild(cancel_button);
-        cancel_button.addMouseClickListener((_, _, _, _) -> this.cancel());
-
-        // Place objects
-        headline.place();
-        button_tutorial1.place(headline, BOTTOM_LEFT);
-        label_tutorial1.place(button_tutorial1, RIGHT_MID);
-        button_tutorial2.place(button_tutorial1, BOTTOM_LEFT);
-        label_tutorial2.place(button_tutorial2, RIGHT_MID);
-        button_tutorial3.place(button_tutorial2, BOTTOM_LEFT);
-        label_tutorial3.place(button_tutorial3, RIGHT_MID);
-        button_tutorial4.place(button_tutorial3, BOTTOM_LEFT);
-        label_tutorial4.place(button_tutorial4, RIGHT_MID);
-        button_tutorial5.place(button_tutorial4, BOTTOM_LEFT);
-        label_tutorial5.place(button_tutorial5, RIGHT_MID);
-        button_tutorial6.place(button_tutorial5, BOTTOM_LEFT);
-        label_tutorial6.place(button_tutorial6, RIGHT_MID);
-        cancel_button.place(Origin.AT_END);
-
-        // headline
-        compileCanvas();
-        centerPos();
-    }
-
-    private record TutorialAction(TriggerFactory factory, TutorialInGameInfo ingame_info) implements WorldInitAction {
-
-        @Override
-        public void run(WorldViewer viewer) {
-            new Tutorial(viewer, ingame_info, factory.create(viewer));
-        }
-    }
-
-    private interface TriggerFactory {
-        TutorialTrigger create(WorldViewer viewer);
-    }
-
-    private static void startNewGame(
-            Peer peer, GUIRoot gui_root, ScreenManager screenManager,
-            TriggerFactory factory, int tutorial_num) {
-        TutorialInGameInfo ingame_info = new TutorialInGameInfo();
-        GameNetwork game_network = doStartNewGame(peer, gui_root, screenManager, ingame_info, new TutorialAction(
-                factory,
-                ingame_info), Player.INITIAL_UNIT_COUNT, tutorial_num);
-        game_network.getClient().getServerInterface().setPlayerSlot(0, SlotType.HUMAN, Race.NATIVES, 0,
-                true, AIDifficulty.NONE);
-        game_network.getClient().getServerInterface().startServer();
-    }
-
-    private static GameNetwork doStartNewGame(
-            Peer peer, GUIRoot gui_root, ScreenManager screenManager,
-            TutorialInGameInfo ingame_info, final @Nullable WorldInitAction initial_action,
-            int initial_unit_count, int tutorial_num) {
-        int size = 256;
-        float hills = 1f;
-        float trees = 1f;
-        float resources = 1f;
-        int seed = 2;
-        String ai_string = i18n("ai");
-        WorldInitAction compound_action = (WorldViewer world_viewer) -> {
-            if (initial_action != null)
-                initial_action.run(world_viewer);
-            MatchLauncher.completeGameSetup(world_viewer);
+  private static GameNetwork doStartNewGame(
+      Peer peer,
+      GUIRoot gui_root,
+      ScreenManager screenManager,
+      TutorialInGameInfo ingame_info,
+      final @Nullable WorldInitAction initial_action,
+      int initial_unit_count,
+      int tutorial_num) {
+    int size = 256;
+    float hills = 1f;
+    float trees = 1f;
+    float resources = 1f;
+    int seed = 2;
+    String ai_string = i18n("ai");
+    WorldInitAction compound_action =
+        (WorldViewer world_viewer) -> {
+          if (initial_action != null) initial_action.run(world_viewer);
+          MatchLauncher.completeGameSetup(world_viewer);
         };
-        var islandConfig = new IslandConfig(Terrain.NATIVE, size, hills, trees, 0f, seed);
-        var worldParameters = new WorldParameters("Tutorial"
-                + tutorial_num, initial_unit_count, Player.DEFAULT_MAX_UNIT_COUNT);
-        return MatchLauncher.startNewGame(peer, gui_root, screenManager, null, worldParameters, ingame_info,
-                compound_action,
-                islandConfig, new String[]{ai_string + "0", ai_string
-                        + "1", ai_string + "2", ai_string + "3", ai_string + "4", ai_string + "5"});
+    var islandConfig = new IslandConfig(Terrain.NATIVE, size, hills, trees, 0f, seed);
+    var worldParameters =
+        new WorldParameters("Tutorial" + tutorial_num, initial_unit_count, Player.DEFAULT_MAX_UNIT_COUNT);
+    return MatchLauncher.startNewGame(
+        peer,
+        gui_root,
+        screenManager,
+        null,
+        worldParameters,
+        ingame_info,
+        compound_action,
+        islandConfig,
+        new String[] {
+          ai_string + "0", ai_string + "1", ai_string + "2", ai_string + "3", ai_string + "4", ai_string + "5"
+        });
+  }
+
+  public static boolean checkTutorial(int tutorial_number) {
+    return true;
+  }
+
+  public static void startTutorial(Peer peer, GUIRoot gui_root, ScreenManager screenManager, int tutorial_number) {
+    switch (tutorial_number) {
+      case TUTORIAL_CAMERA ->
+          startNewGame(
+              peer, gui_root, screenManager, (WorldViewer viewer) -> new ScrollTrigger(viewer.getLocalPlayer()), 1);
+      case TUTORIAL_QUARTERS ->
+          startNewGame(
+              peer,
+              gui_root,
+              screenManager,
+              (WorldViewer viewer) -> new PlacingDelegateTrigger(viewer.getLocalPlayer()),
+              2);
+      case TUTORIAL_ARMORY ->
+          startNewGame(
+              peer,
+              gui_root,
+              screenManager,
+              (WorldViewer viewer) -> new SelectArmoryTrigger(viewer.getLocalPlayer()),
+              3);
+      case TUTORIAL_TOWER -> {
+        var ingame_info = new TutorialInGameInfo();
+        WorldInitAction action =
+            (WorldViewer viewer) -> {
+              Player player = viewer.getLocalPlayer();
+              new Unit(
+                  player,
+                  player.getStartX(),
+                  player.getStartY(),
+                  null,
+                  player.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+              new Tutorial(viewer, ingame_info, new SelectTowerTrigger(viewer.getLocalPlayer()));
+            };
+        var game_network = doStartNewGame(peer, gui_root, screenManager, ingame_info, action, 10, 4);
+        game_network
+            .getClient()
+            .getServerInterface()
+            .setPlayerSlot(0, SlotType.HUMAN, Race.NATIVES, 0, true, AIDifficulty.TOWER_TUTORIAL);
+        game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, false, 10, 0, 0, 0));
+        game_network
+            .getClient()
+            .getServerInterface()
+            .setPlayerSlot(1, SlotType.AI, Race.VIKINGS, 1, true, AIDifficulty.TOWER_TUTORIAL);
+        game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
+        game_network.getClient().getServerInterface().startServer();
+      }
+      case TUTORIAL_CHIEFTAIN -> {
+        var ingame_info = new TutorialInGameInfo();
+        var game_network =
+            doStartNewGame(
+                peer,
+                gui_root,
+                screenManager,
+                ingame_info,
+                new TutorialAction(
+                    (WorldViewer viewer) -> new BuildingChieftainTrigger(viewer.getLocalPlayer()), ingame_info),
+                Player.INITIAL_UNIT_COUNT,
+                5);
+        game_network
+            .getClient()
+            .getServerInterface()
+            .setPlayerSlot(0, SlotType.HUMAN, Race.NATIVES, 0, true, AIDifficulty.NONE);
+        game_network
+            .getClient()
+            .getServerInterface()
+            .setPlayerSlot(1, SlotType.AI, Race.VIKINGS, 1, true, AIDifficulty.CHIEFTAIN_TUTORIAL);
+        game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
+        game_network.getClient().getServerInterface().startServer();
+      }
+      case TUTORIAL_BATTLE -> {
+        var ingame_info = new TutorialInGameInfo();
+        var game_network =
+            doStartNewGame(
+                peer,
+                gui_root,
+                screenManager,
+                ingame_info,
+                new TutorialAction((WorldViewer _) -> new TutorialOverTrigger(), ingame_info),
+                Player.INITIAL_UNIT_COUNT,
+                6);
+        game_network
+            .getClient()
+            .getServerInterface()
+            .setPlayerSlot(0, SlotType.HUMAN, Race.NATIVES, 0, true, AIDifficulty.NONE);
+        game_network
+            .getClient()
+            .getServerInterface()
+            .setPlayerSlot(1, SlotType.AI, Race.VIKINGS, 1, true, AIDifficulty.BATTLE_TUTORIAL);
+        game_network.getClient().setUnitInfo(1, new UnitInfo(true, true, 0, false, 0, 15, 0, 0));
+        game_network.getClient().getServerInterface().startServer();
+      }
+      default -> throw new IllegalArgumentException("Unexpected tutorial number:" + tutorial_number);
+    }
+  }
+
+  private final class TutorialListener implements MouseClickListener {
+    private final int number;
+
+    TutorialListener(int number) {
+      this.number = number;
     }
 
-    public static boolean checkTutorial(int tutorial_number) {
-        return true;
+    @Override
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {
+      if (checkTutorial(number)) {
+        startTutorial(peer, gui_root, TutorialForm.this.screenManager, number);
+        TutorialForm.this.remove();
+      }
     }
-
-    public static void startTutorial(Peer peer, GUIRoot gui_root, ScreenManager screenManager, int tutorial_number) {
-        switch (tutorial_number) {
-            case TUTORIAL_CAMERA ->
-                startNewGame(peer, gui_root, screenManager, (WorldViewer viewer) -> new ScrollTrigger(viewer
-                        .getLocalPlayer()),
-                        1);
-            case TUTORIAL_QUARTERS ->
-                startNewGame(peer, gui_root, screenManager, (WorldViewer viewer) -> new PlacingDelegateTrigger(viewer
-                        .getLocalPlayer()), 2);
-            case TUTORIAL_ARMORY ->
-                startNewGame(peer, gui_root, screenManager, (WorldViewer viewer) -> new SelectArmoryTrigger(viewer
-                        .getLocalPlayer()), 3);
-            case TUTORIAL_TOWER -> {
-                var ingame_info = new TutorialInGameInfo();
-                WorldInitAction action = (WorldViewer viewer) -> {
-                    Player player = viewer.getLocalPlayer();
-                    new Unit(player, player.getStartX(), player.getStartY(), null, player.getRaceInfo().getUnitTemplate(
-                            UnitType.WARRIOR_ROCK));
-                    new Tutorial(viewer, ingame_info, new SelectTowerTrigger(viewer.getLocalPlayer()));
-                };
-                var game_network = doStartNewGame(peer, gui_root, screenManager, ingame_info, action, 10, 4);
-                game_network.getClient().getServerInterface().setPlayerSlot(0, SlotType.HUMAN,
-                        Race.NATIVES, 0, true, AIDifficulty.TOWER_TUTORIAL);
-                game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, false, 10, 0, 0, 0));
-                game_network.getClient().getServerInterface().setPlayerSlot(1, SlotType.AI,
-                        Race.VIKINGS, 1, true, AIDifficulty.TOWER_TUTORIAL);
-                game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
-                game_network.getClient().getServerInterface().startServer();
-            }
-            case TUTORIAL_CHIEFTAIN -> {
-                var ingame_info = new TutorialInGameInfo();
-                var game_network = doStartNewGame(peer, gui_root, screenManager, ingame_info, new TutorialAction((
-                        WorldViewer viewer) -> new BuildingChieftainTrigger(viewer.getLocalPlayer()), ingame_info),
-                        Player.INITIAL_UNIT_COUNT, 5);
-                game_network.getClient().getServerInterface().setPlayerSlot(0, SlotType.HUMAN,
-                        Race.NATIVES, 0, true, AIDifficulty.NONE);
-                game_network.getClient().getServerInterface().setPlayerSlot(1, SlotType.AI,
-                        Race.VIKINGS, 1, true, AIDifficulty.CHIEFTAIN_TUTORIAL);
-                game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
-                game_network.getClient().getServerInterface().startServer();
-            }
-            case TUTORIAL_BATTLE -> {
-                var ingame_info = new TutorialInGameInfo();
-                var game_network = doStartNewGame(peer, gui_root, screenManager, ingame_info, new TutorialAction((
-                        WorldViewer _) -> new TutorialOverTrigger(), ingame_info), Player.INITIAL_UNIT_COUNT, 6);
-                game_network.getClient().getServerInterface().setPlayerSlot(0, SlotType.HUMAN,
-                        Race.NATIVES, 0, true, AIDifficulty.NONE);
-                game_network.getClient().getServerInterface().setPlayerSlot(1, SlotType.AI,
-                        Race.VIKINGS, 1, true, AIDifficulty.BATTLE_TUTORIAL);
-                game_network.getClient().setUnitInfo(1, new UnitInfo(true, true, 0, false, 0, 15, 0, 0));
-                game_network.getClient().getServerInterface().startServer();
-            }
-            default -> throw new IllegalArgumentException("Unexpected tutorial number:" + tutorial_number);
-        }
-    }
-
-    private final class TutorialListener implements MouseClickListener {
-        private final int number;
-
-        TutorialListener(int number) {
-            this.number = number;
-        }
-
-        @Override
-        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            if (checkTutorial(number)) {
-                startTutorial(peer, gui_root, TutorialForm.this.screenManager, number);
-                TutorialForm.this.remove();
-            }
-        }
-    }
+  }
 }

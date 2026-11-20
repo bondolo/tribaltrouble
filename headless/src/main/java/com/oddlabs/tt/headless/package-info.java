@@ -1,6 +1,4 @@
-/**
- * Headless simulation execution, match orchestration, and automated bot runners.
- */
+/** Headless simulation execution, match orchestration, and automated bot runners. */
 @NullMarked
 package com.oddlabs.tt.headless;
 

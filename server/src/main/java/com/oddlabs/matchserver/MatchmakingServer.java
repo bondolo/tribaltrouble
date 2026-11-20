@@ -10,7 +10,6 @@ import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.net.SecureConnection;
 import com.oddlabs.net.SocketConnectionListener;
 import com.oddlabs.util.KeyManager;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -23,120 +22,123 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-/**
- * Server handling player matchmaking, chat rooms, and game coordination.
- */
+/// Server handling player matchmaking, chat rooms, and game coordination.
 public final class MatchmakingServer implements ConnectionListenerInterface<InetAddress> {
-    private static final Map<String, Client> online_users = new HashMap<>();
-    private static int current_id = 1;
+  private static final Map<String, Client> online_users = new HashMap<>();
+  private static int current_id = 1;
 
-    private static final Logger logger = Logger.getLogger("com.oddlabs.matchserver");
+  private static final Logger logger = Logger.getLogger("com.oddlabs.matchserver");
 
-    private final Logger chat_logger = Logger.getLogger("chatlog");
+  private final Logger chat_logger = Logger.getLogger("chatlog");
 
-    private final ConnectionListener connection_listener;
-    private final AlgorithmParameterSpec param_spec;
-    private final NetworkSelector network;
-    private final Map<Integer, Client> client_map = new HashMap<>();
+  private final ConnectionListener connection_listener;
+  private final AlgorithmParameterSpec param_spec;
+  private final NetworkSelector network;
+  private final Map<Integer, Client> client_map = new HashMap<>();
 
-    static {
-        try {
-            Handler fh = new FileHandler("logs/matchserver.%g.log", 10 * 1024 * 1024, 50);
-            fh.setFormatter(new SimpleFormatter());
-            logger.addHandler(fh);
-            logger.setLevel(Level.ALL);
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Failed to configure file logger", e);
-        }
+  static {
+    try {
+      Handler fh = new FileHandler("logs/matchserver.%g.log", 10 * 1024 * 1024, 50);
+      fh.setFormatter(new SimpleFormatter());
+      logger.addHandler(fh);
+      logger.setLevel(Level.ALL);
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Failed to configure file logger", e);
     }
+  }
 
-    private MatchmakingServer() throws Exception {
-        Deterministic deterministic = new NotDeterministic();
-        this.network = new NetworkSelector(deterministic);
-        Handler fh = new FileHandler("logs/chatlog.%g.log", 10 * 1024 * 1024, 50);
-        fh.setFormatter(new SimpleFormatter());
-        chat_logger.addHandler(fh);
-        chat_logger.setLevel(Level.ALL);
-        DBUtils.initConnection(DBUtils.DEFAULT_SQLITE_URL, null, null);
-        logger.info("Generating encryption keys.");
-        this.param_spec = KeyManager.generateParameterSpec();
-        connection_listener = new SocketConnectionListener(network,
-                new InetSocketAddress(MatchmakingServerInterface.MATCHMAKING_SERVER_PORT), this);
-        DBInterface.initDropGames();
-        DBInterface.clearOnlineProfiles();
-        logger.info("Matchmaking server started.");
-        while (true)
-            network.tickBlocking();
-    }
+  private MatchmakingServer() throws Exception {
+    Deterministic deterministic = new NotDeterministic();
+    this.network = new NetworkSelector(deterministic);
+    Handler fh = new FileHandler("logs/chatlog.%g.log", 10 * 1024 * 1024, 50);
+    fh.setFormatter(new SimpleFormatter());
+    chat_logger.addHandler(fh);
+    chat_logger.setLevel(Level.ALL);
+    DBUtils.initConnection(DBUtils.DEFAULT_SQLITE_URL, null, null);
+    logger.info("Generating encryption keys.");
+    this.param_spec = KeyManager.generateParameterSpec();
+    connection_listener =
+        new SocketConnectionListener(
+            network, new InetSocketAddress(MatchmakingServerInterface.MATCHMAKING_SERVER_PORT), this);
+    DBInterface.initDropGames();
+    DBInterface.clearOnlineProfiles();
+    logger.info("Matchmaking server started.");
+    while (true) network.tickBlocking();
+  }
 
-    public static Logger getLogger() {
-        return logger;
-    }
+  public static Logger getLogger() {
+    return logger;
+  }
 
-    public Logger getChatLogger() {
-        return chat_logger;
-    }
+  public Logger getChatLogger() {
+    return chat_logger;
+  }
 
-    public AlgorithmParameterSpec getSpec() {
-        return param_spec;
-    }
+  public AlgorithmParameterSpec getSpec() {
+    return param_spec;
+  }
 
-    @Override
-    public void incomingConnection(ConnectionListener connection_listener, InetAddress remote_address) {
-        int id = current_id++;
-        AbstractConnection conn = connection_listener.acceptConnection(null);
-        SecureConnection secure_conn = new SecureConnection(network.getDeterministic(), conn, param_spec);
-        Authenticator client = new Authenticator(this, secure_conn, remote_address, id);
-    }
+  @Override
+  public void incomingConnection(ConnectionListener connection_listener, InetAddress remote_address) {
+    int id = current_id++;
+    AbstractConnection conn = connection_listener.acceptConnection(null);
+    SecureConnection secure_conn = new SecureConnection(network.getDeterministic(), conn, param_spec);
+    Authenticator client = new Authenticator(this, secure_conn, remote_address, id);
+  }
 
-    public void loginClient(InetAddress remote_address, InetAddress local_remote_address, String username,
-            AbstractConnection conn, boolean guest, int revision, int host_id) {
-        Client old_logged_in = online_users.remove(username.toLowerCase());
-        if (old_logged_in != null) {
-            old_logged_in.close();
-            logger.info(username + " overtaked old login");
-        }
-        Client client = new Client(this, conn, remote_address, local_remote_address, username, guest,
-                revision, host_id);
-        online_users.put(username.toLowerCase(), client);
-        client_map.put(client.getHostID(), client);
-        logger.info(username + " logged in");
+  public void loginClient(
+      InetAddress remote_address,
+      InetAddress local_remote_address,
+      String username,
+      AbstractConnection conn,
+      boolean guest,
+      int revision,
+      int host_id) {
+    Client old_logged_in = online_users.remove(username.toLowerCase());
+    if (old_logged_in != null) {
+      old_logged_in.close();
+      logger.info(username + " overtaked old login");
     }
+    Client client = new Client(this, conn, remote_address, local_remote_address, username, guest, revision, host_id);
+    online_users.put(username.toLowerCase(), client);
+    client_map.put(client.getHostID(), client);
+    logger.info(username + " logged in");
+  }
 
-    public Client getClientFromID(int host_id) {
-        return client_map.get(host_id);
-    }
+  public Client getClientFromID(int host_id) {
+    return client_map.get(host_id);
+  }
 
-    @Override
-    public void error(ConnectionListener conn_id, IOException e) {
-        logger.severe("Server socket failed!");
-        throw new RuntimeException(e);
-    }
+  @Override
+  public void error(ConnectionListener conn_id, IOException e) {
+    logger.severe("Server socket failed!");
+    throw new RuntimeException(e);
+  }
 
-    public void logoutClient(Client client) {
-        online_users.remove(client.getUsername().toLowerCase());
-        removeInstance(client.getHostID());
-    }
+  public void logoutClient(Client client) {
+    online_users.remove(client.getUsername().toLowerCase());
+    removeInstance(client.getHostID());
+  }
 
-    public void removeInstance(int instance_id) {
-        client_map.remove(instance_id);
-    }
+  public void removeInstance(int instance_id) {
+    client_map.remove(instance_id);
+  }
 
-    private static void postPanic() {
-        try {
-            DBUtils.postHermesMessage("elias, xar, jacob, thufir: Matchmaking service crashed!");
-        } catch (Throwable t) {
-            logger.throwing("MatchmakingServer", "postPanic", t);
-        }
+  private static void postPanic() {
+    try {
+      DBUtils.postHermesMessage("elias, xar, jacob, thufir: Matchmaking service crashed!");
+    } catch (Throwable t) {
+      logger.throwing("MatchmakingServer", "postPanic", t);
     }
+  }
 
-    public static void main(String[] args) {
-        try {
-            new MatchmakingServer();
-        } catch (Throwable t) {
-            logger.throwing("MatchmakingServer", "main", t);
-            postPanic();
-            System.exit(1);
-        }
+  public static void main(String[] args) {
+    try {
+      new MatchmakingServer();
+    } catch (Throwable t) {
+      logger.throwing("MatchmakingServer", "main", t);
+      postPanic();
+      System.exit(1);
     }
+  }
 }

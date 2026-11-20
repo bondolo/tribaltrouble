@@ -1,6 +1,4 @@
-/**
- * Core rendering system and display coordination logic.
- */
+/** Core rendering system and display coordination logic. */
 @NullMarked
 package com.oddlabs.tt.engine.render;
 

@@ -2,37 +2,35 @@ package com.oddlabs.tt.simulation.pathfinder;
 
 import org.jspecify.annotations.Nullable;
 
-/**
- * Search algorithm locating valid target regions containing matching occupants.
- */
+/// Search algorithm locating valid target regions containing matching occupants.
 final class TargetRegionFinder implements PathFinderAlgorithm {
-    private final FinderFilter<?> filter;
-    private final UnitGrid unit_grid;
+  private final FinderFilter<?> filter;
+  private final UnitGrid unit_grid;
 
-    TargetRegionFinder(UnitGrid unit_grid, FinderFilter<?> filter) {
-        this.unit_grid = unit_grid;
-        this.filter = filter;
-    }
+  TargetRegionFinder(UnitGrid unit_grid, FinderFilter<?> filter) {
+    this.unit_grid = unit_grid;
+    this.filter = filter;
+  }
 
-    @Override
-    public int computeEstimatedCost(Node node) {
-        return 0;
-    }
+  @Override
+  public int computeEstimatedCost(Node node) {
+    return 0;
+  }
 
-    @Override
-    public boolean touchNeighbour(Occupant occ) {
-        return false;
-    }
+  @Override
+  public boolean touchNeighbour(Occupant occ) {
+    return false;
+  }
 
-    @Override
-    public @Nullable Node touchNode(Node node) {
-        Region region = (Region) node;
-        var occ = filter.getOccupantFromRegion(region, false);
-        return occ.map(o -> (Node) unit_grid.getRegion(o.getGridX(), o.getGridY())).orElse(null);
-    }
+  @Override
+  public @Nullable Node touchNode(Node node) {
+    Region region = (Region) node;
+    var occ = filter.getOccupantFromRegion(region, false);
+    return occ.map(o -> (Node) unit_grid.getRegion(o.getGridX(), o.getGridY())).orElse(null);
+  }
 
-    @Override
-    public @Nullable Node getBestNode() {
-        return filter.getBest().map(o -> (Node) unit_grid.getRegion(o.getGridX(), o.getGridY())).orElse(null);
-    }
+  @Override
+  public @Nullable Node getBestNode() {
+    return filter.getBest().map(o -> (Node) unit_grid.getRegion(o.getGridX(), o.getGridY())).orElse(null);
+  }
 }

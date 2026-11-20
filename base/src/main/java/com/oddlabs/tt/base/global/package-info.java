@@ -1,6 +1,4 @@
-/**
- * Global game state, settings, and lifecycle management.
- */
+/** Global game state, settings, and lifecycle management. */
 @NullMarked
 package com.oddlabs.tt.base.global;
 

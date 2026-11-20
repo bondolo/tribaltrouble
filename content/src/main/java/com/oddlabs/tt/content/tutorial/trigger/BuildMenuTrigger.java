@@ -1,19 +1,18 @@
 package com.oddlabs.tt.content.tutorial.trigger;
 
 import com.oddlabs.tt.content.tutorial.Tutorial;
-
 import com.oddlabs.tt.simulation.player.Player;
 
-/** Tutorial trigger waiting for the player to open the build menu. */
+/// Tutorial trigger waiting for the player to open the build menu.
 final class BuildMenuTrigger extends TutorialTrigger {
-    BuildMenuTrigger(Player local_player) {
-        super(.1f, 0f, "build_menu");
-        local_player.enableWeapons(true);
-    }
+  BuildMenuTrigger(Player local_player) {
+    super(.1f, 0f, "build_menu");
+    local_player.enableWeapons(true);
+  }
 
-    @Override
-    public void run(Tutorial tutorial) {
-        if (tutorial.getViewer().getPanel().inBuildMenu())
-            tutorial.next(new WeaponTrigger(tutorial.getViewer().getLocalPlayer()));
-    }
+  @Override
+  public void run(Tutorial tutorial) {
+    if (tutorial.getViewer().getPanel().inBuildMenu())
+      tutorial.next(new WeaponTrigger(tutorial.getViewer().getLocalPlayer()));
+  }
 }

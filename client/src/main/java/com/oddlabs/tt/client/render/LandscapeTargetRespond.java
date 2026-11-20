@@ -5,61 +5,59 @@ import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.geom.BoundsProvider;
 
-/**
- * Visual element that appears as a target indicator when the user clicks on the landscape.
- */
+/// Visual element that appears as a target indicator when the user clicks on the landscape.
 final class LandscapeTargetRespond implements Animated, BoundsProvider {
-    static final int SIZE = 128;
-    private static final float SECOND_PER_PICK_RESPOND = 1f / 3f;
+  static final int SIZE = 128;
+  private static final float SECOND_PER_PICK_RESPOND = 1f / 3f;
 
-    private final AnimationManager animation_manager;
-    private final float x;
-    private final float y;
-    private final BoundingBox bounds = new BoundingBox();
-    private final BoundingBox[] boundsArray = new BoundingBox[]{bounds};
-    private float time;
+  private final AnimationManager animation_manager;
+  private final float x;
+  private final float y;
+  private final BoundingBox bounds = new BoundingBox();
+  private final BoundingBox[] boundsArray = new BoundingBox[] {bounds};
+  private float time;
 
-    LandscapeTargetRespond(AnimationManager animation_manager, float x, float y) {
-        this.animation_manager = animation_manager;
-        this.x = x;
-        this.y = y;
-        this.bounds.setBounds(x - SIZE / 2f, x + SIZE / 2f, y - SIZE / 2f, y + SIZE / 2f, Float.NEGATIVE_INFINITY,
-                Float.POSITIVE_INFINITY);
-        this.time = SECOND_PER_PICK_RESPOND;
-        animation_manager.registerAnimation(this);
+  LandscapeTargetRespond(AnimationManager animation_manager, float x, float y) {
+    this.animation_manager = animation_manager;
+    this.x = x;
+    this.y = y;
+    this.bounds.setBounds(
+        x - SIZE / 2f, x + SIZE / 2f, y - SIZE / 2f, y + SIZE / 2f, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
+    this.time = SECOND_PER_PICK_RESPOND;
+    animation_manager.registerAnimation(this);
+  }
+
+  float getPositionX() {
+    return x;
+  }
+
+  float getPositionY() {
+    return y;
+  }
+
+  @Override
+  public BoundingBox[] bounds() {
+    return boundsArray;
+  }
+
+  BoundingBox getBounds() {
+    return bounds;
+  }
+
+  @Override
+  public void animate(float dt) {
+    if (time > 0) {
+      time = Math.max(0, time - dt);
+    } else {
+      animation_manager.removeAnimation(this);
     }
+  }
 
-    float getPositionX() {
-        return x;
-    }
+  boolean isFinished() {
+    return time <= 0;
+  }
 
-    float getPositionY() {
-        return y;
-    }
-
-    @Override
-    public BoundingBox[] bounds() {
-        return boundsArray;
-    }
-
-    BoundingBox getBounds() {
-        return bounds;
-    }
-
-    @Override
-    public void animate(float dt) {
-        if (time > 0) {
-            time = Math.max(0, time - dt);
-        } else {
-            animation_manager.removeAnimation(this);
-        }
-    }
-
-    boolean isFinished() {
-        return time <= 0;
-    }
-
-    float getProgress() {
-        return time / SECOND_PER_PICK_RESPOND;
-    }
+  float getProgress() {
+    return time / SECOND_PER_PICK_RESPOND;
+  }
 }

@@ -4,71 +4,73 @@ import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.client.viewer.Selection;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.RenderQueues;
-import org.joml.FrustumIntersection;
 import com.oddlabs.tt.simulation.model.AbstractElementNode;
 import com.oddlabs.tt.simulation.model.Element;
 import com.oddlabs.tt.simulation.model.ElementNode;
 import com.oddlabs.tt.simulation.player.Player;
+import org.joml.FrustumIntersection;
 
-/**
- * Traverses element spatial hierarchy and dispatches visible entities to {@link RenderState}.
- */
+/// Traverses element spatial hierarchy and dispatches visible entities to {@link RenderState}.
 final class ElementRenderer<T extends Element<T>> implements AutoCloseable {
 
-    private final RenderState render_state;
-    private final boolean picking;
-    private CameraState camera;
+  private final RenderState render_state;
+  private final boolean picking;
+  private CameraState camera;
 
-    ElementRenderer(Player local_player, RenderQueues render_queues, Picker picker,
-            boolean picking, Selection selection,
-            AudioImplementation audio) {
-        this.picking = picking;
-        this.render_state = new RenderState(local_player, render_queues, picker, selection, audio);
+  ElementRenderer(
+      Player local_player,
+      RenderQueues render_queues,
+      Picker picker,
+      boolean picking,
+      Selection selection,
+      AudioImplementation audio) {
+    this.picking = picking;
+    this.render_state = new RenderState(local_player, render_queues, picker, selection, audio);
+  }
+
+  RenderState getRenderState() {
+    return render_state;
+  }
+
+  void setup(CameraState camera_state) {
+    setup(camera_state, -1f);
+  }
+
+  void setup(CameraState camera_state, float currentTime) {
+    this.camera = camera_state;
+    render_state.setup(picking, camera, currentTime);
+  }
+
+  @Override
+  public void close() {
+    render_state.close();
+  }
+
+  public void visit(AbstractElementNode<T> node) {
+    visit(node, camera.inNoDetailMode());
+  }
+
+  private void visit(AbstractElementNode<T> node, boolean fullyInside) {
+    boolean childInside = fullyInside;
+    if (!fullyInside) {
+      int res = node.intersectFrustum(camera.getFrustum());
+      if (res >= 0) {
+        return;
+      }
+      childInside = (res == FrustumIntersection.INSIDE);
+    }
+    boolean old_state_override = render_state.overrideVisibility();
+    render_state.setVisibleOverride(childInside);
+
+    for (T element = node.getModels().getFirst(); element != null; element = element.getNext()) {
+      render_state.visit(element);
+    }
+    if (node instanceof ElementNode<T> elementNode) {
+      for (AbstractElementNode<T> child : elementNode.children()) {
+        visit(child, childInside);
+      }
     }
 
-    RenderState getRenderState() {
-        return render_state;
-    }
-
-    void setup(CameraState camera_state) {
-        setup(camera_state, -1f);
-    }
-
-    void setup(CameraState camera_state, float currentTime) {
-        this.camera = camera_state;
-        render_state.setup(picking, camera, currentTime);
-    }
-
-    @Override
-    public void close() {
-        render_state.close();
-    }
-
-    public void visit(AbstractElementNode<T> node) {
-        visit(node, camera.inNoDetailMode());
-    }
-
-    private void visit(AbstractElementNode<T> node, boolean fullyInside) {
-        boolean childInside = fullyInside;
-        if (!fullyInside) {
-            int res = node.intersectFrustum(camera.getFrustum());
-            if (res >= 0) {
-                return;
-            }
-            childInside = (res == FrustumIntersection.INSIDE);
-        }
-        boolean old_state_override = render_state.overrideVisibility();
-        render_state.setVisibleOverride(childInside);
-
-        for (T element = node.getModels().getFirst(); element != null; element = element.getNext()) {
-            render_state.visit(element);
-        }
-        if (node instanceof ElementNode<T> elementNode) {
-            for (AbstractElementNode<T> child : elementNode.children()) {
-                visit(child, childInside);
-            }
-        }
-
-        render_state.setVisibleOverride(old_state_override);
-    }
+    render_state.setVisibleOverride(old_state_override);
+  }
 }

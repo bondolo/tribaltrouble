@@ -6,19 +6,18 @@ import com.oddlabs.util.FontInfo;
 
 public final class FontFile extends File<Font> {
 
-    public FontFile(String file_name) {
-        super(file_name);
-    }
+  public FontFile(String file_name) {
+    super(file_name);
+  }
 
-    @Override
-    public Font get() {
-        FontInfo font_info = FontInfo.loadFromFile(getURL());
-        return new Font(font_info);
-    }
+  @Override
+  public Font get() {
+    FontInfo font_info = FontInfo.loadFromFile(getURL());
+    return new Font(font_info);
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        return (o instanceof FontFile) &&
-                super.equals(o);
-    }
+  @Override
+  public boolean equals(Object o) {
+    return (o instanceof FontFile) && super.equals(o);
+  }
 }

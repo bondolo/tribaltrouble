@@ -12,453 +12,465 @@ import org.joml.Vector2f;
 import org.joml.Vector2fc;
 import org.jspecify.annotations.Nullable;
 
-/**
- * A sophisticated camera implementation supporting standard gameplay controls,
- * including panning, pitching, and zooming, with smooth animation.
- */
+/// A sophisticated camera implementation supporting standard gameplay controls, including panning, pitching, and
+/// zooming, with smooth animation.
 public final class GameCamera extends Camera {
-    public static final int SCROLL_BUFFER = 5;
-    private static final float INIT_DISTANCE = 50;
-    private static final float ANGLE_DELTA = (float) (Math.PI / 2);
-    public static final float MAX_Z = 100f;
-    private static final float GROUND_CLEARANCE = 1.0f;
-    private static final float ZOOM_Z_DIR_MIN = -(float) Math.tan(Math.PI / 6);
-    private static final float SCROLL_ACCELERATION_SECONDS_MAX = 1f;
-    private static final float SCROLL_ACCELERATION_FACTOR = 2.5f;
-    private static final float SCROLL_START_MAX_SPEED = 60f;
-    private static final float ZOOM_SPEED = 50f;
+  public static final int SCROLL_BUFFER = 5;
+  private static final float INIT_DISTANCE = 50;
+  private static final float ANGLE_DELTA = (float) (Math.PI / 2);
+  public static final float MAX_Z = 100f;
+  private static final float GROUND_CLEARANCE = 1.0f;
+  private static final float ZOOM_Z_DIR_MIN = -(float) Math.tan(Math.PI / 6);
+  private static final float SCROLL_ACCELERATION_SECONDS_MAX = 1f;
+  private static final float SCROLL_ACCELERATION_FACTOR = 2.5f;
+  private static final float SCROLL_START_MAX_SPEED = 60f;
+  private static final float ZOOM_SPEED = 50f;
 
-    private final WorldViewer viewer;
+  private final WorldViewer viewer;
 
-    private float left_dir_x;
-    private float left_dir_y;
-    private float scroll_x;
-    private float scroll_y;
-    private float scrolling_x;
-    private float scrolling_y;
-    private float scroll_acceleration_seconds;
-    private float scroll_start_speed;
-    private boolean scroll_start;
-    private float zoom_time;
-    private final float default_rotate_radius;
-    private float last_zoom_factor;
+  private float left_dir_x;
+  private float left_dir_y;
+  private float scroll_x;
+  private float scroll_y;
+  private float scrolling_x;
+  private float scrolling_y;
+  private float scroll_acceleration_seconds;
+  private float scroll_start_speed;
+  private boolean scroll_start;
+  private float zoom_time;
+  private final float default_rotate_radius;
+  private float last_zoom_factor;
 
-    private @Nullable Target rotation_point = null;
-    private SelectionDelegate owner;
+  private @Nullable Target rotation_point = null;
+  private SelectionDelegate owner;
 
-    private boolean pitch_up;
-    private boolean pitch_down;
-    private boolean rotate_left;
-    private boolean rotate_right;
+  private boolean pitch_up;
+  private boolean pitch_down;
+  private boolean rotate_left;
+  private boolean rotate_right;
 
-    public GameCamera(WorldViewer viewer, CameraState camera) {
-        super(viewer.getWorld().getLandscapeEnvironment(), camera, viewer.getAnimationManagerHighPrecision());
-        this.default_rotate_radius = viewer.getWorld().getLandscapeEnvironment().getMetersPerWorld() / 4f;
-        this.viewer = viewer;
+  public GameCamera(WorldViewer viewer, CameraState camera) {
+    super(viewer.getWorld().getLandscapeEnvironment(), camera, viewer.getAnimationManagerHighPrecision());
+    this.default_rotate_radius = viewer.getWorld().getLandscapeEnvironment().getMetersPerWorld() / 4f;
+    this.viewer = viewer;
+    checkPosition();
+    updateDirection();
+  }
+
+  public void setOwner(SelectionDelegate owner) {
+    this.owner = owner;
+  }
+
+  public float getScrollX() {
+    return scrolling_x;
+  }
+
+  public float getScrollY() {
+    return scrolling_y;
+  }
+
+  public void resetLastZoomFactor() {
+    last_zoom_factor = 0f;
+  }
+
+  public float getLastZoomFactor() {
+    return last_zoom_factor;
+  }
+
+  public boolean pitchUp() {
+    return pitch_up;
+  }
+
+  public boolean pitchDown() {
+    return pitch_down;
+  }
+
+  public boolean rotateRight() {
+    return rotate_right;
+  }
+
+  public boolean rotateLeft() {
+    return rotate_left;
+  }
+
+  public void reset() {}
+
+  public void reset(float x, float y) {
+    float dx = x - .5f * getLandscapeEnvironment().getMetersPerWorld();
+    float dy = y - .5f * getLandscapeEnvironment().getMetersPerWorld();
+    float r = (float) Math.sqrt(dx * dx + dy * dy);
+    if (dy > 0) {
+      getState().setCurrentHorizAngle((float) (Math.PI + Math.acos(dx / r)));
+    } else {
+      getState().setCurrentHorizAngle(-(float) (Math.PI + Math.acos(dx / r)));
+    }
+    //              setHorizAngle(-(float)Math.PI/2f);
+    getState().setCurrentVertAngle(-45f * (float) Math.PI / 180f);
+
+    setPos(x, y);
+
+    zoom_time = 0f;
+    updateDirection();
+  }
+
+  public void setPos(float x, float y) {
+    float radius = (float) Math.cos(getState().getTargetVertAngle());
+    float dir_x = (float) Math.cos(getState().getTargetHorizAngle()) * radius;
+    float dir_y = (float) Math.sin(getState().getTargetHorizAngle()) * radius;
+    float dir_z = (float) Math.sin(getState().getTargetVertAngle());
+    getState().setCurrentX(x - dir_x * INIT_DISTANCE);
+    getState().setCurrentY(y - dir_y * INIT_DISTANCE);
+    getState().setCurrentZ(getLandscapeEnvironment().getHeight(x, y) - dir_z * INIT_DISTANCE);
+    checkPosition();
+  }
+
+  private void updateDirection() {
+    left_dir_x = -(float) Math.sin(getState().getTargetHorizAngle());
+    left_dir_y = (float) Math.cos(getState().getTargetHorizAngle());
+  }
+
+  private void doZoom(float time_delta) {
+    zoom(zoom_time * time_delta * ZOOM_SPEED * getState().getTargetZ());
+    if (zoom_time < 0f) zoom_time = Math.min(0f, zoom_time + time_delta);
+    else if (zoom_time > 0f) zoom_time = Math.max(0f, zoom_time - time_delta);
+  }
+
+  public void zoom(float zoom_factor) {
+    if (zoom_factor != 0f) {
+      last_zoom_factor = zoom_factor;
+      float radius = (float) Math.cos(getState().getTargetVertAngle());
+      float dir_x = (float) Math.cos(getState().getTargetHorizAngle()) * radius;
+      float dir_y = (float) Math.sin(getState().getTargetHorizAngle()) * radius;
+      float dir_z = (float) Math.sin(getState().getTargetVertAngle());
+      if (dir_z > ZOOM_Z_DIR_MIN) {
+        dir_z = ZOOM_Z_DIR_MIN;
+        float length = (float) Math.sqrt(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z);
+        dir_x /= length;
+        dir_y /= length;
+        dir_z /= length;
+      }
+      float temp_x = getState().getTargetX() + dir_x * zoom_factor;
+      float temp_y = getState().getTargetY() + dir_y * zoom_factor;
+      float temp_z = getState().getTargetZ() + dir_z * zoom_factor;
+
+      float min_z_level = getLandscapeEnvironment().getSeaLevelMeters() + GROUND_CLEARANCE;
+      temp_z = Math.max(temp_z, min_z_level);
+      float backup_x = getState().getTargetX();
+      float backup_y = getState().getTargetY();
+      float backup_z = getState().getTargetZ();
+
+      int mid = getLandscapeEnvironment().getMetersPerWorld() / 2;
+      float dx = (temp_x - mid);
+      float dy = (temp_y - mid);
+      float squared_dist = dx * dx + dy * dy;
+      if (squared_dist < getLandscapeEnvironment().getMetersPerWorld() * getLandscapeEnvironment().getMetersPerWorld()
+          && temp_z < MAX_Z) {
+        getState().setTargetX(temp_x);
+        getState().setTargetY(temp_y);
+        getState().setTargetZ(temp_z);
+        if (bounce(
+            getState().getTargetX(),
+            getState().getTargetY(),
+            getState().getTargetZ(),
+            viewer.getGUIRoot().getWidth(),
+            viewer.getGUIRoot().getHeight())) {
+          getState().setTargetX(backup_x);
+          getState().setTargetY(backup_y);
+          getState().setTargetZ(backup_z);
+        }
         checkPosition();
-        updateDirection();
+      }
+    }
+  }
+
+  private void doScroll(float time_delta) {
+    if (!viewer.getGUIRoot().getDelegate().canScroll()) return;
+    var inputManager = viewer.getInputManager();
+    float scroll_speed =
+        scroll_start_speed
+            * (.4f + (scroll_acceleration_seconds / SCROLL_ACCELERATION_SECONDS_MAX) * SCROLL_ACCELERATION_FACTOR);
+    float scroll_factor = time_delta * scroll_speed;
+    boolean blocked = viewer.getGUIRoot().getDelegate().keyboardBlocked();
+
+    scrolling_x =
+        inputManager.isActive(GameAction.CAMERA_PAN_LEFT)
+                && !inputManager.isActive(GameAction.CAMERA_PAN_RIGHT)
+                && !blocked
+            ? -1f
+            : inputManager.isActive(GameAction.CAMERA_PAN_RIGHT)
+                    && !inputManager.isActive(GameAction.CAMERA_PAN_LEFT)
+                    && !blocked
+                ? 1f
+                : scroll_x;
+
+    scrolling_y =
+        inputManager.isActive(GameAction.CAMERA_PAN_DOWN)
+                && !inputManager.isActive(GameAction.CAMERA_PAN_UP)
+                && !blocked
+            ? -1f
+            : inputManager.isActive(GameAction.CAMERA_PAN_UP)
+                    && !inputManager.isActive(GameAction.CAMERA_PAN_DOWN)
+                    && !blocked
+                ? 1f
+                : scroll_y;
+
+    float new_x = getState().getTargetX() - (scrolling_x * left_dir_x + scrolling_y * -left_dir_y) * scroll_factor;
+    float new_y = getState().getTargetY() - (scrolling_x * left_dir_y + scrolling_y * left_dir_x) * scroll_factor;
+    if (new_x != getState().getTargetX() || new_y != getState().getTargetY()) {
+      getState().setTargetX(new_x);
+      getState().setTargetY(new_y);
+      checkPosition();
     }
 
-    public void setOwner(SelectionDelegate owner) {
-        this.owner = owner;
-    }
+    scroll_acceleration_seconds = Math.min(scroll_acceleration_seconds + time_delta, SCROLL_ACCELERATION_SECONDS_MAX);
+  }
 
-    public float getScrollX() {
-        return scrolling_x;
+  private void doPitch(float time_delta) {
+    checkKeys();
+    boolean invert = CameraSettings.from(viewer.getPeer().getSettings()).invert_camera_pitch;
+    if ((pitch_down && !invert) || (pitch_up && invert)) {
+      getState().setTargetVertAngle(getState().getTargetVertAngle() - time_delta * ANGLE_DELTA);
+      checkPosition();
     }
-
-    public float getScrollY() {
-        return scrolling_y;
+    if ((pitch_up && !invert) || (pitch_down && invert)) {
+      getState().setTargetVertAngle(getState().getTargetVertAngle() + time_delta * ANGLE_DELTA);
+      checkPosition();
     }
+  }
 
-    public void resetLastZoomFactor() {
-        last_zoom_factor = 0f;
+  private void doRotate(float time_delta) {
+    checkKeys();
+    if (rotate_left || rotate_right) {
+      float dx;
+      float dy;
+      float da;
+
+      Vector2fc point = getRotationPoint();
+      if (insideWorld(point.x(), point.y())) {
+        dx = getState().getTargetX() - point.x();
+        dy = getState().getTargetY() - point.y();
+      } else {
+        dx = -left_dir_y * default_rotate_radius;
+        dy = left_dir_x * default_rotate_radius;
+      }
+
+      if (rotate_left) {
+        da = -time_delta * ANGLE_DELTA;
+      } else {
+        da = time_delta * ANGLE_DELTA;
+      }
+      getState().setTargetHorizAngle(getState().getTargetHorizAngle() + da);
+      getState().setTargetX(getState().getTargetX() - dx + (float) (dx * Math.cos(da) - dy * Math.sin(da)));
+      getState().setTargetY(getState().getTargetY() - dy + (float) (dx * Math.sin(da) + dy * Math.cos(da)));
+      checkPosition();
     }
+  }
 
-    public float getLastZoomFactor() {
-        return last_zoom_factor;
+  public int getRotateY() {
+    int center_y = viewer.getGUIRoot().getHeight() / 2;
+    float aspect = (float) viewer.getGUIRoot().getWidth() / viewer.getGUIRoot().getHeight();
+    float currentFov = Camera.calculateDynamicFOV(getState().getTargetZ(), aspect, Camera.FOVMode.DIAGONAL);
+    float rotatePickingAngleMax = (-currentFov - 10) * ((float) Math.PI / 180) * .5f;
+    if (getState().getTargetVertAngle() < rotatePickingAngleMax) {
+      return center_y;
+    } else {
+      float da = getState().getTargetVertAngle() - rotatePickingAngleMax;
+      float fovyRad = (float) Math.toRadians(currentFov);
+      float pixels_to_screen = (viewer.getGUIRoot().getHeight() * 0.5f) / (float) Math.tan(fovyRad * 0.5f);
+      int dy = (int) (Math.tan(da) * pixels_to_screen);
+      int y = center_y - dy;
+      return Math.max(0, y);
     }
+  }
 
-    public boolean pitchUp() {
-        return pitch_up;
+  public float getDefaultRotateRadius() {
+    return default_rotate_radius;
+  }
+
+  private boolean insideWorld(float x, float y) {
+    return x > 0
+        && x < getLandscapeEnvironment().getMetersPerWorld()
+        && y > 0
+        && y < getLandscapeEnvironment().getMetersPerWorld();
+  }
+
+  @Override
+  public void doAnimate(float dt) {
+    doZoom(dt);
+    doScroll(dt);
+    doPitch(dt);
+    doRotate(dt);
+    updateDirection();
+  }
+
+  @Override
+  public void mouseScrolled(int amount) {
+    zoom_time = Math.clamp(zoom_time + amount * .05f, -.15f, .15f);
+  }
+
+  @Override
+  public void rotate(int amount) {
+    viewer.getPicker().pickRotate(this);
+    float da = -amount * 0.1f;
+    Vector2fc point = getRotationPoint();
+    float dx;
+    float dy;
+    if (insideWorld(point.x(), point.y())) {
+      dx = getState().getTargetX() - point.x();
+      dy = getState().getTargetY() - point.y();
+    } else {
+      dx = -left_dir_y * default_rotate_radius;
+      dy = left_dir_x * default_rotate_radius;
     }
+    getState().setTargetHorizAngle(getState().getTargetHorizAngle() + da);
+    getState().setTargetX(getState().getTargetX() - dx + (float) (dx * Math.cos(da) - dy * Math.sin(da)));
+    getState().setTargetY(getState().getTargetY() - dy + (float) (dx * Math.sin(da) + dy * Math.cos(da)));
+    checkPosition();
+  }
 
-    public boolean pitchDown() {
-        return pitch_down;
-    }
+  public void setRotationPoint(Target target) {
+    rotation_point = target;
+  }
 
-    public boolean rotateRight() {
-        return rotate_right;
-    }
+  public Vector2fc getRotationPoint() {
+    return rotation_point != null
+        ? new Vector2f(rotation_point.getPositionX(), rotation_point.getPositionY())
+        : new Vector2f(getState().getTargetX(), getState().getTargetY());
+  }
 
-    public boolean rotateLeft() {
-        return rotate_left;
-    }
-
-    public void reset() {
-    }
-
-    public void reset(float x, float y) {
-        float dx = x - .5f * getLandscapeEnvironment().getMetersPerWorld();
-        float dy = y - .5f * getLandscapeEnvironment().getMetersPerWorld();
-        float r = (float) Math.sqrt(dx * dx + dy * dy);
-        if (dy > 0) {
-            getState().setCurrentHorizAngle((float) (Math.PI + Math.acos(dx / r)));
-        } else {
-            getState().setCurrentHorizAngle(-(float) (Math.PI + Math.acos(dx / r)));
+  @Override
+  public void mouseMoved(int x, int y) {
+    int view_width = viewer.getGUIRoot().getWidth();
+    int view_height = viewer.getGUIRoot().getHeight();
+    if ((owner == null || !owner.isSelecting())
+        && (x < SCROLL_BUFFER
+            || y < SCROLL_BUFFER
+            || x > view_width - 1 - SCROLL_BUFFER
+            || y > view_height - 1 - SCROLL_BUFFER)) {
+      if (scroll_start) {
+        scroll_start = false;
+        if (!scrollSpeedLocked(null)) {
+          scroll_acceleration_seconds = 0;
+          setScrollSpeed();
         }
-//              setHorizAngle(-(float)Math.PI/2f);
-        getState().setCurrentVertAngle(-45f * (float) Math.PI / 180f);
-
-        setPos(x, y);
-
-        zoom_time = 0f;
-        updateDirection();
+      }
+      scroll_x = (x - view_width / 2f);
+      scroll_y = (y - view_height / 2f);
+      float inv_length = 1f / (float) Math.sqrt(scroll_x * scroll_x + scroll_y * scroll_y);
+      scroll_x *= inv_length;
+      scroll_y *= inv_length;
+    } else {
+      scroll_start = true;
+      scroll_x = 0;
+      scroll_y = 0;
     }
+  }
 
-    public void setPos(float x, float y) {
-        float radius = (float) Math.cos(getState().getTargetVertAngle());
-        float dir_x = (float) Math.cos(getState().getTargetHorizAngle()) * radius;
-        float dir_y = (float) Math.sin(getState().getTargetHorizAngle()) * radius;
-        float dir_z = (float) Math.sin(getState().getTargetVertAngle());
-        getState().setCurrentX(x - dir_x * INIT_DISTANCE);
-        getState().setCurrentY(y - dir_y * INIT_DISTANCE);
-        getState().setCurrentZ(getLandscapeEnvironment().getHeight(x, y) - dir_z * INIT_DISTANCE);
-        checkPosition();
-    }
+  private boolean scrollSpeedLocked(@Nullable GameAction action) {
+    var inputManager = viewer.getInputManager();
+    return scroll_x != 0
+        || scroll_y != 0
+        || (inputManager.isActive(GameAction.CAMERA_PAN_UP) && action != GameAction.CAMERA_PAN_UP)
+        || (inputManager.isActive(GameAction.CAMERA_PAN_DOWN) && action != GameAction.CAMERA_PAN_DOWN)
+        || (inputManager.isActive(GameAction.CAMERA_PAN_LEFT) && action != GameAction.CAMERA_PAN_LEFT)
+        || (inputManager.isActive(GameAction.CAMERA_PAN_RIGHT) && action != GameAction.CAMERA_PAN_RIGHT);
+  }
 
-    private void updateDirection() {
-        left_dir_x = -(float) Math.sin(getState().getTargetHorizAngle());
-        left_dir_y = (float) Math.cos(getState().getTargetHorizAngle());
-    }
+  private void setScrollSpeed() {
+    viewer.getPicker().pickRotate(this);
+    Vector2fc landscape_point = getRotationPoint();
+    float landscape_z = getLandscapeEnvironment().getHeight(landscape_point.x(), landscape_point.y());
+    float dx = landscape_point.x() - getState().getTargetX();
+    float dy = landscape_point.y() - getState().getTargetY();
+    float dz = landscape_z - getState().getTargetZ();
+    scroll_start_speed = Math.min((float) Math.sqrt(dx * dx + dy * dy + dz * dz), SCROLL_START_MAX_SPEED);
+  }
 
-    private void doZoom(float time_delta) {
-        zoom(zoom_time * time_delta * ZOOM_SPEED * getState().getTargetZ());
-        if (zoom_time < 0f)
-            zoom_time = Math.min(0f, zoom_time + time_delta);
-        else if (zoom_time > 0f)
-            zoom_time = Math.max(0f, zoom_time - time_delta);
-    }
+  public World getWorld() {
+    return viewer.getWorld();
+  }
 
-    public void zoom(float zoom_factor) {
-        if (zoom_factor != 0f) {
-            last_zoom_factor = zoom_factor;
-            float radius = (float) Math.cos(getState().getTargetVertAngle());
-            float dir_x = (float) Math.cos(getState().getTargetHorizAngle()) * radius;
-            float dir_y = (float) Math.sin(getState().getTargetHorizAngle()) * radius;
-            float dir_z = (float) Math.sin(getState().getTargetVertAngle());
-            if (dir_z > ZOOM_Z_DIR_MIN) {
-                dir_z = ZOOM_Z_DIR_MIN;
-                float length = (float) Math.sqrt(dir_x * dir_x + dir_y * dir_y + dir_z * dir_z);
-                dir_x /= length;
-                dir_y /= length;
-                dir_z /= length;
-            }
-            float temp_x = getState().getTargetX() + dir_x * zoom_factor;
-            float temp_y = getState().getTargetY() + dir_y * zoom_factor;
-            float temp_z = getState().getTargetZ() + dir_z * zoom_factor;
+  @Override
+  public void handleInput(InputEvent event) {
+    if (event.getPhase() == InputPhase.PRESSED) {
+      boolean handled = false;
 
-            float min_z_level = getLandscapeEnvironment().getSeaLevelMeters() + GROUND_CLEARANCE;
-            temp_z = Math.max(temp_z, min_z_level);
-            float backup_x = getState().getTargetX();
-            float backup_y = getState().getTargetY();
-            float backup_z = getState().getTargetZ();
+      if (event.consumeAction(GameAction.CAMERA_PITCH_UP)) handled = true;
+      if (event.consumeAction(GameAction.CAMERA_PITCH_DOWN)) handled = true;
 
-            int mid = getLandscapeEnvironment().getMetersPerWorld() / 2;
-            float dx = (temp_x - mid);
-            float dy = (temp_y - mid);
-            float squared_dist = dx * dx + dy * dy;
-            if (squared_dist < getLandscapeEnvironment().getMetersPerWorld() * getLandscapeEnvironment()
-                    .getMetersPerWorld() && temp_z
-                            < MAX_Z) {
-                getState().setTargetX(temp_x);
-                getState().setTargetY(temp_y);
-                getState().setTargetZ(temp_z);
-                if (bounce(getState().getTargetX(), getState().getTargetY(), getState().getTargetZ(), viewer
-                        .getGUIRoot().getWidth(), viewer.getGUIRoot().getHeight())) {
-                    getState().setTargetX(backup_x);
-                    getState().setTargetY(backup_y);
-                    getState().setTargetZ(backup_z);
-                }
-                checkPosition();
-            }
-        }
-    }
-
-    private void doScroll(float time_delta) {
-        if (!viewer.getGUIRoot().getDelegate().canScroll())
-            return;
-        var inputManager = viewer.getInputManager();
-        float scroll_speed = scroll_start_speed * (.4f + (scroll_acceleration_seconds / SCROLL_ACCELERATION_SECONDS_MAX)
-                * SCROLL_ACCELERATION_FACTOR);
-        float scroll_factor = time_delta * scroll_speed;
-        boolean blocked = viewer.getGUIRoot().getDelegate().keyboardBlocked();
-
-        scrolling_x = inputManager.isActive(GameAction.CAMERA_PAN_LEFT) && !inputManager.isActive(
-                GameAction.CAMERA_PAN_RIGHT) && !blocked
-                ? -1f : inputManager.isActive(GameAction.CAMERA_PAN_RIGHT) && !inputManager.isActive(
-                        GameAction.CAMERA_PAN_LEFT) && !blocked
-                        ? 1f : scroll_x;
-
-        scrolling_y = inputManager.isActive(GameAction.CAMERA_PAN_DOWN) && !inputManager.isActive(
-                GameAction.CAMERA_PAN_UP) && !blocked
-                ? -1f : inputManager.isActive(GameAction.CAMERA_PAN_UP) && !inputManager.isActive(
-                        GameAction.CAMERA_PAN_DOWN) && !blocked
-                        ? 1f : scroll_y;
-
-        float new_x = getState().getTargetX() - (scrolling_x * left_dir_x + scrolling_y * -left_dir_y) * scroll_factor;
-        float new_y = getState().getTargetY() - (scrolling_x * left_dir_y + scrolling_y * left_dir_x) * scroll_factor;
-        if (new_x != getState().getTargetX() || new_y != getState().getTargetY()) {
-            getState().setTargetX(new_x);
-            getState().setTargetY(new_y);
-            checkPosition();
-        }
-
-        scroll_acceleration_seconds = Math.min(scroll_acceleration_seconds + time_delta,
-                SCROLL_ACCELERATION_SECONDS_MAX);
-    }
-
-    private void doPitch(float time_delta) {
-        checkKeys();
-        boolean invert = CameraSettings.from(viewer.getPeer().getSettings()).invert_camera_pitch;
-        if ((pitch_down && !invert) || (pitch_up && invert)) {
-            getState().setTargetVertAngle(getState().getTargetVertAngle() - time_delta * ANGLE_DELTA);
-            checkPosition();
-        }
-        if ((pitch_up && !invert) || (pitch_down && invert)) {
-            getState().setTargetVertAngle(getState().getTargetVertAngle() + time_delta * ANGLE_DELTA);
-            checkPosition();
-        }
-    }
-
-    private void doRotate(float time_delta) {
-        checkKeys();
-        if (rotate_left || rotate_right) {
-            float dx;
-            float dy;
-            float da;
-
-            Vector2fc point = getRotationPoint();
-            if (insideWorld(point.x(), point.y())) {
-                dx = getState().getTargetX() - point.x();
-                dy = getState().getTargetY() - point.y();
-            } else {
-                dx = -left_dir_y * default_rotate_radius;
-                dy = left_dir_x * default_rotate_radius;
-            }
-
-            if (rotate_left) {
-                da = -time_delta * ANGLE_DELTA;
-            } else {
-                da = time_delta * ANGLE_DELTA;
-            }
-            getState().setTargetHorizAngle(getState().getTargetHorizAngle() + da);
-            getState().setTargetX(getState().getTargetX() - dx + (float) (dx * Math.cos(da) - dy * Math.sin(da)));
-            getState().setTargetY(getState().getTargetY() - dy + (float) (dx * Math.sin(da) + dy * Math.cos(da)));
-            checkPosition();
-        }
-    }
-
-    public int getRotateY() {
-        int center_y = viewer.getGUIRoot().getHeight() / 2;
-        float aspect = (float) viewer.getGUIRoot().getWidth() / viewer.getGUIRoot().getHeight();
-        float currentFov = Camera.calculateDynamicFOV(getState().getTargetZ(), aspect, Camera.FOVMode.DIAGONAL);
-        float rotatePickingAngleMax = (-currentFov - 10) * ((float) Math.PI / 180) * .5f;
-        if (getState().getTargetVertAngle() < rotatePickingAngleMax) {
-            return center_y;
-        } else {
-            float da = getState().getTargetVertAngle() - rotatePickingAngleMax;
-            float fovyRad = (float) Math.toRadians(currentFov);
-            float pixels_to_screen = (viewer.getGUIRoot().getHeight() * 0.5f) / (float) Math.tan(fovyRad * 0.5f);
-            int dy = (int) (Math.tan(da) * pixels_to_screen);
-            int y = center_y - dy;
-            return Math.max(0, y);
-        }
-    }
-
-    public float getDefaultRotateRadius() {
-        return default_rotate_radius;
-    }
-
-    private boolean insideWorld(float x, float y) {
-        return x > 0 && x < getLandscapeEnvironment().getMetersPerWorld() && y > 0 && y < getLandscapeEnvironment()
-                .getMetersPerWorld();
-    }
-
-    @Override
-    public void doAnimate(float dt) {
-        doZoom(dt);
-        doScroll(dt);
-        doPitch(dt);
-        doRotate(dt);
-        updateDirection();
-    }
-
-    @Override
-    public void mouseScrolled(int amount) {
-        zoom_time = Math.clamp(zoom_time + amount * .05f, -.15f, .15f);
-    }
-
-    @Override
-    public void rotate(int amount) {
+      if (event.consumeAction(GameAction.CAMERA_ROTATE_RIGHT)) {
         viewer.getPicker().pickRotate(this);
-        float da = -amount * 0.1f;
-        Vector2fc point = getRotationPoint();
-        float dx;
-        float dy;
-        if (insideWorld(point.x(), point.y())) {
-            dx = getState().getTargetX() - point.x();
-            dy = getState().getTargetY() - point.y();
-        } else {
-            dx = -left_dir_y * default_rotate_radius;
-            dy = left_dir_x * default_rotate_radius;
-        }
-        getState().setTargetHorizAngle(getState().getTargetHorizAngle() + da);
-        getState().setTargetX(getState().getTargetX() - dx + (float) (dx * Math.cos(da) - dy * Math.sin(da)));
-        getState().setTargetY(getState().getTargetY() - dy + (float) (dx * Math.sin(da) + dy * Math.cos(da)));
-        checkPosition();
-    }
-
-    public void setRotationPoint(Target target) {
-        rotation_point = target;
-    }
-
-    public Vector2fc getRotationPoint() {
-        return rotation_point != null
-                ? new Vector2f(rotation_point.getPositionX(), rotation_point.getPositionY())
-                : new Vector2f(getState().getTargetX(), getState().getTargetY());
-    }
-
-    @Override
-    public void mouseMoved(int x, int y) {
-        int view_width = viewer.getGUIRoot().getWidth();
-        int view_height = viewer.getGUIRoot().getHeight();
-        if ((owner == null || !owner.isSelecting()) && (x < SCROLL_BUFFER || y < SCROLL_BUFFER ||
-                x > view_width - 1 - SCROLL_BUFFER || y > view_height - 1 - SCROLL_BUFFER)) {
-            if (scroll_start) {
-                scroll_start = false;
-                if (!scrollSpeedLocked(null)) {
-                    scroll_acceleration_seconds = 0;
-                    setScrollSpeed();
-                }
-            }
-            scroll_x = (x - view_width / 2f);
-            scroll_y = (y - view_height / 2f);
-            float inv_length = 1f / (float) Math.sqrt(scroll_x * scroll_x + scroll_y * scroll_y);
-            scroll_x *= inv_length;
-            scroll_y *= inv_length;
-        } else {
-            scroll_start = true;
-            scroll_x = 0;
-            scroll_y = 0;
-        }
-    }
-
-    private boolean scrollSpeedLocked(@Nullable GameAction action) {
-        var inputManager = viewer.getInputManager();
-        return scroll_x != 0
-                || scroll_y != 0
-                || (inputManager.isActive(GameAction.CAMERA_PAN_UP) && action != GameAction.CAMERA_PAN_UP)
-                || (inputManager.isActive(GameAction.CAMERA_PAN_DOWN) && action != GameAction.CAMERA_PAN_DOWN)
-                || (inputManager.isActive(GameAction.CAMERA_PAN_LEFT) && action != GameAction.CAMERA_PAN_LEFT)
-                || (inputManager.isActive(GameAction.CAMERA_PAN_RIGHT) && action != GameAction.CAMERA_PAN_RIGHT);
-    }
-
-    private void setScrollSpeed() {
+        handled = true;
+      }
+      if (event.consumeAction(GameAction.CAMERA_ROTATE_LEFT)) {
         viewer.getPicker().pickRotate(this);
-        Vector2fc landscape_point = getRotationPoint();
-        float landscape_z = getLandscapeEnvironment().getHeight(landscape_point.x(), landscape_point.y());
-        float dx = landscape_point.x() - getState().getTargetX();
-        float dy = landscape_point.y() - getState().getTargetY();
-        float dz = landscape_z - getState().getTargetZ();
-        scroll_start_speed = Math.min((float) Math.sqrt(dx * dx + dy * dy + dz * dz), SCROLL_START_MAX_SPEED);
-    }
+        handled = true;
+      }
 
-    public World getWorld() {
-        return viewer.getWorld();
-    }
-
-    @Override
-    public void handleInput(InputEvent event) {
-        if (event.getPhase() == InputPhase.PRESSED) {
-            boolean handled = false;
-
-            if (event.consumeAction(GameAction.CAMERA_PITCH_UP)) handled = true;
-            if (event.consumeAction(GameAction.CAMERA_PITCH_DOWN)) handled = true;
-
-            if (event.consumeAction(GameAction.CAMERA_ROTATE_RIGHT)) {
-                viewer.getPicker().pickRotate(this);
-                handled = true;
-            }
-            if (event.consumeAction(GameAction.CAMERA_ROTATE_LEFT)) {
-                viewer.getPicker().pickRotate(this);
-                handled = true;
-            }
-
-            if (event.consumeAction(GameAction.CAMERA_ZOOM_IN)) {
-                mouseScrolled(-2);
-                handled = true;
-            }
-            if (event.consumeAction(GameAction.CAMERA_ZOOM_OUT)) {
-                mouseScrolled(2);
-                handled = true;
-            }
-            if (event.consumeAction(GameAction.CAMERA_PAN_UP)) {
-                if (!scrollSpeedLocked(GameAction.CAMERA_PAN_UP)) {
-                    scroll_acceleration_seconds = 0;
-                    setScrollSpeed();
-                }
-                handled = true;
-            }
-            if (event.consumeAction(GameAction.CAMERA_PAN_DOWN)) {
-                if (!scrollSpeedLocked(GameAction.CAMERA_PAN_DOWN)) {
-                    scroll_acceleration_seconds = 0;
-                    setScrollSpeed();
-                }
-                handled = true;
-            }
-            if (event.consumeAction(GameAction.CAMERA_PAN_LEFT)) {
-                if (!scrollSpeedLocked(GameAction.CAMERA_PAN_LEFT)) {
-                    scroll_acceleration_seconds = 0;
-                    setScrollSpeed();
-                }
-                handled = true;
-            }
-            if (event.consumeAction(GameAction.CAMERA_PAN_RIGHT)) {
-                if (!scrollSpeedLocked(GameAction.CAMERA_PAN_RIGHT)) {
-                    scroll_acceleration_seconds = 0;
-                    setScrollSpeed();
-                }
-                handled = true;
-            }
-
-            if (handled) {
-                event.consume();
-            }
+      if (event.consumeAction(GameAction.CAMERA_ZOOM_IN)) {
+        mouseScrolled(-2);
+        handled = true;
+      }
+      if (event.consumeAction(GameAction.CAMERA_ZOOM_OUT)) {
+        mouseScrolled(2);
+        handled = true;
+      }
+      if (event.consumeAction(GameAction.CAMERA_PAN_UP)) {
+        if (!scrollSpeedLocked(GameAction.CAMERA_PAN_UP)) {
+          scroll_acceleration_seconds = 0;
+          setScrollSpeed();
         }
-    }
-
-    private void checkKeys() {
-        if (viewer.getGUIRoot().getDelegate().keyboardBlocked() || viewer.getGUIRoot().getModalDelegate() != null) {
-            pitch_up = false;
-            pitch_down = false;
-            rotate_right = false;
-            rotate_left = false;
-            return;
+        handled = true;
+      }
+      if (event.consumeAction(GameAction.CAMERA_PAN_DOWN)) {
+        if (!scrollSpeedLocked(GameAction.CAMERA_PAN_DOWN)) {
+          scroll_acceleration_seconds = 0;
+          setScrollSpeed();
         }
+        handled = true;
+      }
+      if (event.consumeAction(GameAction.CAMERA_PAN_LEFT)) {
+        if (!scrollSpeedLocked(GameAction.CAMERA_PAN_LEFT)) {
+          scroll_acceleration_seconds = 0;
+          setScrollSpeed();
+        }
+        handled = true;
+      }
+      if (event.consumeAction(GameAction.CAMERA_PAN_RIGHT)) {
+        if (!scrollSpeedLocked(GameAction.CAMERA_PAN_RIGHT)) {
+          scroll_acceleration_seconds = 0;
+          setScrollSpeed();
+        }
+        handled = true;
+      }
 
-        var inputManager = viewer.getInputManager();
-        pitch_up = inputManager.isActive(GameAction.CAMERA_PITCH_UP);
-        pitch_down = inputManager.isActive(GameAction.CAMERA_PITCH_DOWN);
-        rotate_right = inputManager.isActive(GameAction.CAMERA_ROTATE_RIGHT);
-        rotate_left = inputManager.isActive(GameAction.CAMERA_ROTATE_LEFT);
+      if (handled) {
+        event.consume();
+      }
+    }
+  }
+
+  private void checkKeys() {
+    if (viewer.getGUIRoot().getDelegate().keyboardBlocked() || viewer.getGUIRoot().getModalDelegate() != null) {
+      pitch_up = false;
+      pitch_down = false;
+      rotate_right = false;
+      rotate_left = false;
+      return;
     }
 
-    @Override
-    public void enable() {
-        super.enable();
-        var guiRoot = viewer.getGUIRoot();
-        float scale = guiRoot.getGlobalScale();
-        mouseMoved(Math.round(guiRoot.getMouseX() / scale), Math.round(guiRoot.getMouseY() / scale));
-    }
+    var inputManager = viewer.getInputManager();
+    pitch_up = inputManager.isActive(GameAction.CAMERA_PITCH_UP);
+    pitch_down = inputManager.isActive(GameAction.CAMERA_PITCH_DOWN);
+    rotate_right = inputManager.isActive(GameAction.CAMERA_ROTATE_RIGHT);
+    rotate_left = inputManager.isActive(GameAction.CAMERA_ROTATE_LEFT);
+  }
+
+  @Override
+  public void enable() {
+    super.enable();
+    var guiRoot = viewer.getGUIRoot();
+    float scale = guiRoot.getGlobalScale();
+    mouseMoved(Math.round(guiRoot.getMouseX() / scale), Math.round(guiRoot.getMouseY() / scale));
+  }
 }

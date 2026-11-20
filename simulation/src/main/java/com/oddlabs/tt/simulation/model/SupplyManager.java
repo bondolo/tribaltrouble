@@ -2,76 +2,70 @@ package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.simulation.landscape.World;
-
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Manages periodic replenishment and respawning of world resources and supplies.
- */
+/// Manages periodic replenishment and respawning of world resources and supplies.
 public class SupplyManager implements Animated {
-    private static final float SLEEP_TIME = 10f;
-    private static final float MAX_EMPTY_SUPPLIES = .75f;
+  private static final float SLEEP_TIME = 10f;
+  private static final float MAX_EMPTY_SUPPLIES = .75f;
 
-    private final List<Supply> empty_supplies = new ArrayList<>();
-    private final World world;
+  private final List<Supply> empty_supplies = new ArrayList<>();
+  private final World world;
 
-    private int total_num_supplies = 0;
-    private float time;
+  private int total_num_supplies = 0;
+  private float time;
 
+  public SupplyManager(World world) {
+    this.world = world;
+    world.getAnimationManagerGameTime().registerAnimation(this);
+    resetCounter();
+  }
 
-    public SupplyManager(World world) {
-        this.world = world;
-        world.getAnimationManagerGameTime().registerAnimation(this);
-        resetCounter();
+  protected final World getWorld() {
+    return world;
+  }
+
+  private void resetCounter() {
+    time = getSleepTime();
+  }
+
+  protected float getSleepTime() {
+    return SLEEP_TIME;
+  }
+
+  public final void debugSpawnSupply() {
+    if (!empty_supplies.isEmpty()) insertSupply();
+  }
+
+  public final void newSupply() {
+    total_num_supplies++;
+  }
+
+  public final void emptySupply(Supply supply) {
+    empty_supplies.add(supply);
+  }
+
+  @Override
+  public final void animate(float dt) {
+    if (time < 0) {
+      resetCounter();
+      if (shouldSpawn()) insertSupply();
     }
+    time -= dt;
+  }
 
-    protected final World getWorld() {
-        return world;
-    }
+  protected boolean shouldSpawn() {
+    return (int) (total_num_supplies * MAX_EMPTY_SUPPLIES) < empty_supplies.size();
+  }
 
-    private void resetCounter() {
-        time = getSleepTime();
+  protected void insertSupply() {
+    int index = world.getRandom().nextInt(empty_supplies.size());
+    Supply supply = empty_supplies.get(index);
+    boolean occupied = world.getUnitGrid().isGridOccupied(supply.getGridX(), supply.getGridY());
+    if (!occupied) {
+      empty_supplies.remove(supply);
+      supply.respawn();
     }
-
-    protected float getSleepTime() {
-        return SLEEP_TIME;
-    }
-
-    public final void debugSpawnSupply() {
-        if (!empty_supplies.isEmpty())
-            insertSupply();
-    }
-
-    public final void newSupply() {
-        total_num_supplies++;
-    }
-
-    public final void emptySupply(Supply supply) {
-        empty_supplies.add(supply);
-    }
-
-    @Override
-    public final void animate(float dt) {
-        if (time < 0) {
-            resetCounter();
-            if (shouldSpawn())
-                insertSupply();
-        }
-        time -= dt;
-    }
-
-    protected boolean shouldSpawn() {
-        return (int) (total_num_supplies * MAX_EMPTY_SUPPLIES) < empty_supplies.size();
-    }
-
-    protected void insertSupply() {
-        int index = world.getRandom().nextInt(empty_supplies.size());
-        Supply supply = empty_supplies.get(index);
-        boolean occupied = world.getUnitGrid().isGridOccupied(supply.getGridX(), supply.getGridY());
-        if (!occupied) {
-            empty_supplies.remove(supply);
-            supply.respawn();
-        }
-    }
+  }
 }

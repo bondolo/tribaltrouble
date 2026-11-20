@@ -3,23 +3,22 @@ package com.oddlabs.tt.simulation.trigger;
 import com.oddlabs.tt.simulation.model.Selectable;
 
 public final class DeathTrigger extends IntervalTrigger {
-    private final Selectable<?> selectable;
-    private final Runnable runnable;
+  private final Selectable<?> selectable;
+  private final Runnable runnable;
 
-    public DeathTrigger(Selectable<?> selectable, Runnable runnable) {
-        super(selectable.getOwner().getWorld(), .5f, 0f);
-        this.selectable = selectable;
-        this.runnable = runnable;
-    }
+  public DeathTrigger(Selectable<?> selectable, Runnable runnable) {
+    super(selectable.getOwner().getWorld(), .5f, 0f);
+    this.selectable = selectable;
+    this.runnable = runnable;
+  }
 
-    @Override
-    protected void check() {
-        if (selectable.isDead())
-            triggered();
-    }
+  @Override
+  protected void check() {
+    if (selectable.isDead()) triggered();
+  }
 
-    @Override
-    protected void done() {
-        runnable.run();
-    }
+  @Override
+  protected void done() {
+    runnable.run();
+  }
 }

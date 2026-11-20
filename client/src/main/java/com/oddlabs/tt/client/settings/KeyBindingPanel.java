@@ -1,9 +1,12 @@
 package com.oddlabs.tt.client.settings;
 
-import com.oddlabs.tt.base.global.AppConfig;
-import com.oddlabs.tt.gui.*;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.engine.font.Font;
+import com.oddlabs.tt.engine.render.GUIRenderer;
+import com.oddlabs.tt.gui.*;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
@@ -18,177 +21,181 @@ import com.oddlabs.tt.gui.SortedLabel;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputBinding;
-import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
-
-/**
- * UI Panel for remapping game actions to keyboard and controller inputs.
- */
+/// UI Panel for remapping game actions to keyboard and controller inputs.
 final class KeyBindingPanel extends Panel {
-    private static final int COL_ACTION_WIDTH = 200;
-    private static final int COL_BINDINGS_WIDTH = 300;
+  private static final int COL_ACTION_WIDTH = 200;
+  private static final int COL_BINDINGS_WIDTH = 300;
 
-    private final MultiColumnComboBox<GameAction> list_box;
-    private final GUIRoot gui_root;
+  private final MultiColumnComboBox<GameAction> list_box;
+  private final GUIRoot gui_root;
 
-    KeyBindingPanel(GUIRoot gui_root) {
-        super(gui_root, AbstractOptionsMenu.i18n("key_bindings_title"));
-        this.gui_root = gui_root;
+  KeyBindingPanel(GUIRoot gui_root) {
+    super(gui_root, AbstractOptionsMenu.i18n("key_bindings_title"));
+    this.gui_root = gui_root;
 
-        list_box = new MultiColumnComboBox<>(
-                gui_root,
-                300,
-                false,
-                new ColumnInfo(AbstractOptionsMenu.i18n("column_action"), COL_ACTION_WIDTH),
-                new ColumnInfo(AbstractOptionsMenu.i18n("column_bindings"), COL_BINDINGS_WIDTH));
-        addChild(list_box);
+    list_box =
+        new MultiColumnComboBox<>(
+            gui_root,
+            300,
+            false,
+            new ColumnInfo(AbstractOptionsMenu.i18n("column_action"), COL_ACTION_WIDTH),
+            new ColumnInfo(AbstractOptionsMenu.i18n("column_bindings"), COL_BINDINGS_WIDTH));
+    addChild(list_box);
 
-        updateList();
+    updateList();
 
-        list_box.addRowListener(new RowListener<>() {
-            @Override
-            public void rowDoubleClicked(GameAction action) {
-                gui_root.addModalForm(new KeyBindingDialog(gui_root, action, bindings -> {
-                    gui_root.getInputManager().setBindings(action, bindings);
-                    updateList();
-                }));
-            }
+    list_box.addRowListener(
+        new RowListener<>() {
+          @Override
+          public void rowDoubleClicked(GameAction action) {
+            gui_root.addModalForm(
+                new KeyBindingDialog(
+                    gui_root,
+                    action,
+                    bindings -> {
+                      gui_root.getInputManager().setBindings(action, bindings);
+                      updateList();
+                    }));
+          }
         });
 
-        // Buttons
-        Group button_group = new Group(gui_root);
-        addChild(button_group);
+    // Buttons
+    Group button_group = new Group(gui_root);
+    addChild(button_group);
 
-        HorizButton btn_reset = new HorizButton(gui_root, AbstractOptionsMenu.i18n("btn_reset_all"), 100);
-        btn_reset.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new QuestionForm(gui_root,
-                AbstractOptionsMenu.i18n(
-                        "confirm_reset_all"), (_, _, _, _) -> {
-                            gui_root.getInputManager().resetToDefaults();
-                            updateList();
-                        })));
-        button_group.addChild(btn_reset);
+    HorizButton btn_reset = new HorizButton(gui_root, AbstractOptionsMenu.i18n("btn_reset_all"), 100);
+    btn_reset.addMouseClickListener((_, _, _, _) ->
+        gui_root.addModalForm(
+            new QuestionForm(
+                gui_root,
+                AbstractOptionsMenu.i18n("confirm_reset_all"),
+                (_, _, _, _) -> {
+                  gui_root.getInputManager().resetToDefaults();
+                  updateList();
+                })));
+    button_group.addChild(btn_reset);
 
-        HorizButton btn_save = new HorizButton(gui_root, AbstractOptionsMenu.i18n("btn_save_bindings"), 100);
-        btn_save.addMouseClickListener((_, _, _, _) -> saveMappings());
-        button_group.addChild(btn_save);
+    HorizButton btn_save = new HorizButton(gui_root, AbstractOptionsMenu.i18n("btn_save_bindings"), 100);
+    btn_save.addMouseClickListener((_, _, _, _) -> saveMappings());
+    button_group.addChild(btn_save);
 
-        HorizButton btn_load = new HorizButton(gui_root, AbstractOptionsMenu.i18n("btn_load_bindings"), 100);
-        btn_load.addMouseClickListener((_, _, _, _) -> loadMappings());
-        button_group.addChild(btn_load);
+    HorizButton btn_load = new HorizButton(gui_root, AbstractOptionsMenu.i18n("btn_load_bindings"), 100);
+    btn_load.addMouseClickListener((_, _, _, _) -> loadMappings());
+    button_group.addChild(btn_load);
 
-        btn_reset.place();
-        btn_save.place(btn_reset, RIGHT_MID);
-        btn_load.place(btn_save, RIGHT_MID);
-        button_group.compileCanvas();
+    btn_reset.place();
+    btn_save.place(btn_reset, RIGHT_MID);
+    btn_load.place(btn_save, RIGHT_MID);
+    button_group.compileCanvas();
 
-        list_box.place();
-        button_group.place(list_box, BOTTOM_LEFT);
+    list_box.place();
+    button_group.place(list_box, BOTTOM_LEFT);
 
-        compileCanvas();
+    compileCanvas();
+  }
+
+  private void updateList() {
+    GameAction selectedAction = list_box.getSelected();
+    list_box.clear();
+    Row<GameAction, ?> rowToSelect = null;
+
+    for (GameAction action : GameAction.values()) {
+      if (action.name().startsWith("DEBUG_") && !AppConfig.DEVELOPER_MODE) {
+        continue;
+      }
+      if (action.name().startsWith("CHEAT_") && !AppConfig.DEVELOPER_MODE) {
+        continue;
+      }
+      String name;
+      try {
+        name = AbstractOptionsMenu.i18n("action." + action.name());
+      } catch (Exception e) {
+        name = action.name();
+      }
+
+      var bindings = gui_root.getInputManager().getBindings(action);
+      Label bindingLabel;
+      var comboFont = getSkin().getMultiColumnComboBoxData().font();
+
+      if (bindings.isEmpty()) {
+        bindingLabel = new InvertedLabel(AbstractOptionsMenu.i18n("unassigned"), comboFont, COL_BINDINGS_WIDTH);
+      } else {
+        var desc = bindings.stream().map(InputBinding::toString).collect(Collectors.joining(", "));
+        bindingLabel = new Label(desc, comboFont);
+      }
+
+      Label actionLabel = new SortedLabel(name, action.ordinal(), comboFont);
+      Row<GameAction, ?> row = new Row<>(gui_root, List.of(actionLabel, bindingLabel), action);
+      list_box.addRow(row);
+
+      if (action == selectedAction) {
+        rowToSelect = row;
+      }
     }
 
-    private void updateList() {
-        GameAction selectedAction = list_box.getSelected();
-        list_box.clear();
-        Row<GameAction, ?> rowToSelect = null;
-
-        for (GameAction action : GameAction.values()) {
-            if (action.name().startsWith("DEBUG_") && !AppConfig.DEVELOPER_MODE) {
-                continue;
-            }
-            if (action.name().startsWith("CHEAT_") && !AppConfig.DEVELOPER_MODE) {
-                continue;
-            }
-            String name;
-            try {
-                name = AbstractOptionsMenu.i18n("action." + action.name());
-            } catch (Exception e) {
-                name = action.name();
-            }
-
-            var bindings = gui_root.getInputManager().getBindings(action);
-            Label bindingLabel;
-            var comboFont = getSkin().getMultiColumnComboBoxData().font();
-
-            if (bindings.isEmpty()) {
-                bindingLabel = new InvertedLabel(AbstractOptionsMenu.i18n("unassigned"), comboFont, COL_BINDINGS_WIDTH);
-            } else {
-                var desc = bindings.stream()
-                        .map(InputBinding::toString)
-                        .collect(Collectors.joining(", "));
-                bindingLabel = new Label(desc, comboFont);
-            }
-
-            Label actionLabel = new SortedLabel(name, action.ordinal(), comboFont);
-            Row<GameAction, ?> row = new Row<>(gui_root, List.of(actionLabel, bindingLabel), action);
-            list_box.addRow(row);
-
-            if (action == selectedAction) {
-                rowToSelect = row;
-            }
-        }
-
-        if (rowToSelect != null) {
-            list_box.selectRow(rowToSelect);
-        }
+    if (rowToSelect != null) {
+      list_box.selectRow(rowToSelect);
     }
+  }
 
-    private void saveMappings() {
-        gui_root.getGUI().getWindow().showSaveFileDialog(
-                AbstractOptionsMenu.i18n("json_files"),
-                "json",
-                "keybindings.json",
-                path -> {
-                    if (path != null) {
-                        String json = gui_root.getInputManager().exportBindings();
-                        try {
-                            Files.writeString(path, json);
-                        } catch (IOException e) {
-                            gui_root.addModalForm(new MessageForm(gui_root, AbstractOptionsMenu.i18n(
-                                    "error_save_failed", e.getMessage())));
-                        }
-                    }
+  private void saveMappings() {
+    gui_root
+        .getGUI()
+        .getWindow()
+        .showSaveFileDialog(
+            AbstractOptionsMenu.i18n("json_files"),
+            "json",
+            "keybindings.json",
+            path -> {
+              if (path != null) {
+                String json = gui_root.getInputManager().exportBindings();
+                try {
+                  Files.writeString(path, json);
+                } catch (IOException e) {
+                  gui_root.addModalForm(
+                      new MessageForm(gui_root, AbstractOptionsMenu.i18n("error_save_failed", e.getMessage())));
                 }
-        );
-    }
+              }
+            });
+  }
 
-    private void loadMappings() {
-        gui_root.getGUI().getWindow().showOpenFileDialog(
-                AbstractOptionsMenu.i18n("json_files"),
-                "json",
-                path -> {
-                    if (path != null) {
-                        try {
-                            String json = Files.readString(path);
-                            gui_root.getInputManager().importBindings(json);
-                            updateList();
-                        } catch (IOException e) {
-                            gui_root.addModalForm(new MessageForm(gui_root, AbstractOptionsMenu.i18n(
-                                    "error_load_failed", e.getMessage())));
-                        }
-                    }
+  private void loadMappings() {
+    gui_root
+        .getGUI()
+        .getWindow()
+        .showOpenFileDialog(
+            AbstractOptionsMenu.i18n("json_files"),
+            "json",
+            path -> {
+              if (path != null) {
+                try {
+                  String json = Files.readString(path);
+                  gui_root.getInputManager().importBindings(json);
+                  updateList();
+                } catch (IOException e) {
+                  gui_root.addModalForm(
+                      new MessageForm(gui_root, AbstractOptionsMenu.i18n("error_load_failed", e.getMessage())));
                 }
-        );
+              }
+            });
+  }
+
+  private static final class InvertedLabel extends Label {
+    InvertedLabel(String text, Font font, int width) {
+      super(text, font, width, Origin.AT_MIDDLE);
+      setColor(Color.Standard.BLACK);
     }
 
-    private static final class InvertedLabel extends Label {
-        InvertedLabel(String text, Font font, int width) {
-            super(text, font, width, Origin.AT_MIDDLE);
-            setColor(Color.Standard.BLACK);
-        }
-
-        @Override
-        protected void renderGeometry(GUIRenderer renderer) {
-            renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), Label.DEFAULT_COLOR);
-            super.renderGeometry(renderer);
-        }
+    @Override
+    protected void renderGeometry(GUIRenderer renderer) {
+      renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), Label.DEFAULT_COLOR);
+      super.renderGeometry(renderer);
     }
+  }
 }

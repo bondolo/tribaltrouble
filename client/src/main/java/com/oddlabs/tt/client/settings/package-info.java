@@ -1,6 +1,4 @@
-/**
- * Client-side options menu and subsystem settings panels.
- */
+/** Client-side options menu and subsystem settings panels. */
 @NullMarked
 package com.oddlabs.tt.client.settings;
 

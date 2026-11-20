@@ -1,114 +1,108 @@
 package com.oddlabs.tt.engine.render.shader;
 
 import com.oddlabs.tt.engine.vbo.VertexArray;
+import java.nio.FloatBuffer;
+import java.util.Objects;
 import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
-import java.nio.FloatBuffer;
-import java.util.Objects;
-
-/**
- * Renders geometry using a shader program abstracting away the OpenGL VBO and shader setup.
- */
+/// Renders geometry using a shader program abstracting away the OpenGL VBO and shader setup.
 class ShaderRenderer implements AutoCloseable {
-    private static final int FLOATS_PER_VERTEX = 12; // pos(3) + normal(3) + color(4) + uv(2)
-    private static final int INITIAL_VERTEX_CAPACITY = 1024;
+  private static final int FLOATS_PER_VERTEX = 12; // pos(3) + normal(3) + color(4) + uv(2)
+  private static final int INITIAL_VERTEX_CAPACITY = 1024;
 
-    private final DebugMeshShader shader;
-    private @Nullable Matrix4fc modelView;
-    private final VertexArray vao = new VertexArray();
+  private final DebugMeshShader shader;
+  private @Nullable Matrix4fc modelView;
+  private final VertexArray vao = new VertexArray();
 
-    private final FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(
-            INITIAL_VERTEX_CAPACITY * FLOATS_PER_VERTEX);
-    private int vboHandle = 0;
-    private int vertexCount = 0;
-    private int mode = GL11.GL_TRIANGLES;
+  private final FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(INITIAL_VERTEX_CAPACITY * FLOATS_PER_VERTEX);
+  private int vboHandle = 0;
+  private int vertexCount = 0;
+  private int mode = GL11.GL_TRIANGLES;
 
-    ShaderRenderer(DebugMeshShader shader) {
-        this.shader = shader;
+  ShaderRenderer(DebugMeshShader shader) {
+    this.shader = shader;
 
-        vao.bind();
-        this.vboHandle = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboHandle);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (long) vertexBuffer.capacity() * Float.BYTES, GL15.GL_STREAM_DRAW);
+    vao.bind();
+    this.vboHandle = GL15.glGenBuffers();
+    GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboHandle);
+    GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (long) vertexBuffer.capacity() * Float.BYTES, GL15.GL_STREAM_DRAW);
 
-        var layout = new VertexLayout<>(
-                DebugMeshShader.Attribute.POSITION,
-                DebugMeshShader.Attribute.NORMAL,
-                DebugMeshShader.Attribute.COLOR,
-                DebugMeshShader.Attribute.TEX_COORD_0
-        );
-        layout.bind(shader);
+    var layout =
+        new VertexLayout<>(
+            DebugMeshShader.Attribute.POSITION,
+            DebugMeshShader.Attribute.NORMAL,
+            DebugMeshShader.Attribute.COLOR,
+            DebugMeshShader.Attribute.TEX_COORD_0);
+    layout.bind(shader);
 
-        vao.unbind();
+    vao.unbind();
+  }
+
+  public void begin(int glMode, Matrix4fc modelView) {
+    vertexBuffer.clear();
+    vertexCount = 0;
+    this.mode = glMode;
+    this.modelView = modelView;
+  }
+
+  public void vertex(
+      float x, float y, float z, float nx, float ny, float nz, float r, float g, float b, float a, float u, float v) {
+    if (vertexBuffer.remaining() < FLOATS_PER_VERTEX) {
+      flush();
+      vertexBuffer.clear();
     }
 
-    public void begin(int glMode, Matrix4fc modelView) {
-        vertexBuffer.clear();
-        vertexCount = 0;
-        this.mode = glMode;
-        this.modelView = modelView;
+    vertexBuffer.put(x).put(y).put(z);
+    vertexBuffer.put(nx).put(ny).put(nz);
+    vertexBuffer.put(r).put(g).put(b).put(a);
+    vertexBuffer.put(u).put(v);
+    vertexCount++;
+  }
+
+  public void end() {
+    flush();
+  }
+
+  protected void flush() {
+    flush(1.0f);
+  }
+
+  protected void flush(float pointSize) {
+    if (vertexCount == 0) {
+      return;
     }
 
-    public void vertex(float x, float y, float z,
-            float nx, float ny, float nz,
-            float r, float g, float b, float a,
-            float u, float v) {
-        if (vertexBuffer.remaining() < FLOATS_PER_VERTEX) {
-            flush();
-            vertexBuffer.clear();
-        }
+    vertexBuffer.flip();
 
-        vertexBuffer.put(x).put(y).put(z);
-        vertexBuffer.put(nx).put(ny).put(nz);
-        vertexBuffer.put(r).put(g).put(b).put(a);
-        vertexBuffer.put(u).put(v);
-        vertexCount++;
+    GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboHandle);
+    GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, vertexBuffer);
+
+    try (var _ = shader.use()) {
+      shader.setUniform(shader.locModelViewMatrix, Objects.requireNonNull(modelView, "modelView must be set"));
+      shader.setUniform(shader.locEnableLighting, false);
+      shader.setUniform(shader.locEnableTexture, false);
+      shader.setUniform(shader.locAlphaCutoff, 0.0f);
+      shader.setUniform(shader.locReplaceMode, false);
+      shader.setUniform(shader.locPointSize, pointSize);
+
+      vao.bind();
+      GL11.glDrawArrays(mode, 0, vertexCount);
+      vao.unbind();
     }
 
-    public void end() {
-        flush();
+    vertexCount = 0;
+  }
+
+  @Override
+  public void close() {
+    if (vboHandle != 0) {
+      GL15.glDeleteBuffers(vboHandle);
+      vboHandle = 0;
     }
-
-    protected void flush() {
-        flush(1.0f);
-    }
-
-    protected void flush(float pointSize) {
-        if (vertexCount == 0) {
-            return;
-        }
-
-        vertexBuffer.flip();
-
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboHandle);
-        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, vertexBuffer);
-
-        try (var _ = shader.use()) {
-            shader.setUniform(shader.locModelViewMatrix, Objects.requireNonNull(modelView, "modelView must be set"));
-            shader.setUniform(shader.locEnableLighting, false);
-            shader.setUniform(shader.locEnableTexture, false);
-            shader.setUniform(shader.locAlphaCutoff, 0.0f);
-            shader.setUniform(shader.locReplaceMode, false);
-            shader.setUniform(shader.locPointSize, pointSize);
-
-            vao.bind();
-            GL11.glDrawArrays(mode, 0, vertexCount);
-            vao.unbind();
-        }
-
-        vertexCount = 0;
-    }
-
-    @Override
-    public void close() {
-        if (vboHandle != 0) {
-            GL15.glDeleteBuffers(vboHandle);
-            vboHandle = 0;
-        }
-        vao.close();
-    }
+    vao.close();
+  }
 }
