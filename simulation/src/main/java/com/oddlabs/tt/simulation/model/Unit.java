@@ -3,27 +3,30 @@ package com.oddlabs.tt.simulation.model;
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.global.AppConfig;
+import com.oddlabs.tt.simulation.state.CastingMagic;
+import com.oddlabs.tt.simulation.state.Defending;
+import com.oddlabs.tt.simulation.state.Dying;
+import com.oddlabs.tt.simulation.state.EnteringBuilding;
+import com.oddlabs.tt.simulation.state.Gathering;
+import com.oddlabs.tt.simulation.state.Hunting;
+import com.oddlabs.tt.simulation.state.Idling;
+import com.oddlabs.tt.simulation.state.PlacingBuilding;
+import com.oddlabs.tt.simulation.state.Repairing;
+import com.oddlabs.tt.simulation.state.Stunned;
+import com.oddlabs.tt.simulation.state.UnitContext;
+import com.oddlabs.tt.simulation.state.UnitState;
+import com.oddlabs.tt.simulation.state.UnitStateMachine;
+import com.oddlabs.tt.simulation.state.Walking;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
-import com.oddlabs.tt.simulation.behaviour.AttackBehaviour;
-import com.oddlabs.tt.simulation.behaviour.AttackController;
-import com.oddlabs.tt.simulation.behaviour.Controller;
-import com.oddlabs.tt.simulation.behaviour.DefendController;
-import com.oddlabs.tt.simulation.behaviour.DieBehaviour;
-import com.oddlabs.tt.simulation.behaviour.DieController;
-import com.oddlabs.tt.simulation.behaviour.EnterController;
-import com.oddlabs.tt.simulation.behaviour.GatherController;
-import com.oddlabs.tt.simulation.behaviour.HuntController;
-import com.oddlabs.tt.simulation.behaviour.IdleController;
-import com.oddlabs.tt.simulation.behaviour.MagicController;
-import com.oddlabs.tt.simulation.behaviour.PlaceBuildingController;
-import com.oddlabs.tt.simulation.behaviour.RepairController;
-import com.oddlabs.tt.simulation.behaviour.StunController;
-import com.oddlabs.tt.simulation.behaviour.WalkBehaviour;
-import com.oddlabs.tt.simulation.behaviour.WalkController;
+import com.oddlabs.tt.simulation.model.weapon.Magic;
+import com.oddlabs.tt.simulation.model.weapon.MagicFactory;
 import com.oddlabs.tt.simulation.model.weapon.WeaponFactory;
+import com.oddlabs.tt.simulation.pathfinder.FinderTrackerAlgorithm;
 import com.oddlabs.tt.simulation.pathfinder.Movable;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.PathTracker;
+import com.oddlabs.tt.simulation.pathfinder.ScanFilter;
+import com.oddlabs.tt.simulation.pathfinder.TargetTrackerAlgorithm;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
 import org.jspecify.annotations.Nullable;
@@ -37,7 +40,7 @@ import java.util.Map;
 /**
  * Represents a mobile unit in the game world.
  */
-public final class Unit extends Selectable<UnitTemplate> implements Occupant, Movable {
+public final class Unit extends Selectable<UnitTemplate> implements Occupant, Movable, UnitContext {
 
     private static final float IDLE_SPEED = 1f / 2.5f;
     /** Unit speed when transporting */
@@ -76,8 +79,13 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
     /** unit is mounted in a tower */
     private @Nullable Building mounted_building;
-    private float mount_offset = 0;
+    private float mount_offset;
     private float range_bonus;
+    private float deathOffsetZ;
+    private @Nullable FinderTrackerAlgorithm<? extends Supply> activeSupplyFinderTracker;
+    private @Nullable FinderTrackerAlgorithm<Building> activeBuildingFinderTracker;
+    private UnitState defaultState = new Idling(AttackScanFilter.UNIT_RANGE, true);
+    private final UnitStateMachine stateMachine;
 
     public Unit(Player owner, float x, float y, @Nullable Target rally_point,
             UnitTemplate unit_template) {
@@ -102,7 +110,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         supply_container = factory != null ? (UnitSupplyContainer) factory.createContainer(this) : null;
 
         findInitialPosition(x, y, grid_targets_only);
-        pushController(new IdleController(this, new AttackScanFilter(getOwner(), AttackScanFilter.UNIT_RANGE), true));
+        this.stateMachine = new UnitStateMachine(defaultState, this);
         if (!getAbilities().hasAbilities(Abilities.MAGIC)) {
             int result = getOwner().getUnitCountContainer().increaseSupply(1);
             assert (result == 1) : "No room for new unit in player unit container.";
@@ -115,11 +123,13 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 UnitGrid grid = getUnitGrid();
                 List<Target> temp_occupants = new ArrayList<>();
                 for (var s : getOwner().getUnits().getSet()) {
-                    if (s.getCurrentController() instanceof WalkController wc) {
-                        Target target = wc.getTarget();
-                        if (!grid.isGridOccupied(target.getGridX(), target.getGridY())) {
-                            grid.occupyGrid(target.getGridX(), target.getGridY(), this);
-                            temp_occupants.add(target);
+                    if (s instanceof Unit u) {
+                        Target target = u.getStateMachine().getWalkTarget();
+                        if (target != null) {
+                            if (!grid.isGridOccupied(target.getGridX(), target.getGridY())) {
+                                grid.occupyGrid(target.getGridX(), target.getGridY(), this);
+                                temp_occupants.add(target);
+                            }
                         }
                     }
                 }
@@ -131,7 +141,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 unit_target = rally_point;
 
             boolean aggressive = unit_template.getAbilities().hasAbilities(Abilities.THROW);
-            setTarget(unit_target, Action.DEFAULT, aggressive);
+            applyTarget(unit_target, Action.DEFAULT, aggressive, false);
         }
     }
 
@@ -210,8 +220,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
     public void unmount() {
         assert !isDead();
-        clearControllerStack();
-        swapController(new IdleController(this, new AttackScanFilter(getOwner(), AttackScanFilter.UNIT_RANGE), true));
+        replaceDefaultAndRequestOrder(new Idling(AttackScanFilter.UNIT_RANGE, true));
         mount_offset = 0;
         mounted_building = null;
         enable();
@@ -226,8 +235,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         disable();
         free();
         setPosition(building.getPositionX(), building.getPositionY());
-        clearControllerStack();
-        swapController(new IdleController(this, new AttackScanFilter(getOwner(), AttackScanFilter.TOWER_RANGE), false));
+        replaceDefaultAndRequestOrder(new Idling(AttackScanFilter.TOWER_RANGE, false));
     }
 
     public boolean isMounted() {
@@ -247,6 +255,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
             return getTemplate().getMetersPerSecond();
     }
 
+    @Override
     public void aimAtTarget(Target target) {
         assert !isDead();
         float dx = target.getPositionX() - getPositionX();
@@ -257,9 +266,16 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         setDirection(dx, dy);
     }
 
+    @Override
     public void switchToIdleAnimation() {
         assert !isDead();
         switchAnimation(IDLE_SPEED, Animation.IDLING);
+    }
+
+    @Override
+    public void switchToMovingAnimation() {
+        assert !isDead();
+        switchAnimation(getMetersPerSecond(), Animation.MOVING);
     }
 
     public WeaponFactory getWeaponFactory() {
@@ -285,6 +301,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
     @Override
     public void doAnimate(float t) {
+        getStateMachine().animate(t, this);
         anim_time += anim_speed * t;
         if (isDead() || isMounted())
             reinsert();
@@ -331,7 +348,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     }
 
     @Override
-    protected void removeDying() {
+    public void removeDying() {
         if (getAbilities().hasAbilities(Abilities.MAGIC)) {
             getOwner().setActiveChieftain(null);
         }
@@ -369,14 +386,9 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
     @Override
     public boolean isMoving() {
-        return getCurrentBehaviour() instanceof WalkBehaviour;
+        return getStateMachine().isMoving();
     }
 
-    /*	public final void moveNextAnimate() {
-    	WalkBehaviour behaviour = (WalkBehaviour)getCurrentBehaviour();
-    	behaviour.moveNextAnimate();
-    }
-     */
     @Override
     public void hit(int damage, float direction_x, float direction_y, Player owner) {
         super.hit(damage, direction_x, direction_y, owner);
@@ -391,8 +403,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
                 getWorld().getNotificationListener().onUnitDeath(this);
 
-                pushController(new DieController(this));
-                forceDecide();
+                forceStateTransition(new Dying());
                 if (AppConfig.LEGACY_DETERMINISTIC) {
                     getWorld().getRandom().nextFloat();
                 }
@@ -412,8 +423,8 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 rand.nextInt(1);
             }
         }
-        pushController(new StunController(this, time));
-        forceDecide();
+        forceStateTransition(Stunned.preempt(time, getStateMachine().getActiveOrPendingState(),
+                AppConfig.LEGACY_DETERMINISTIC));
     }
 
     public boolean canAttack(Target target, boolean kill_friendly) {
@@ -456,38 +467,36 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     }
 
     public float getStunTimeLeft() {
-        return !isDead() && getCurrentController() instanceof StunController sc ? sc.getTime() : 0f;
+        return !isDead() ? getStateMachine().getStunTimeLeft() : 0f;
     }
 
     public boolean isStunned() {
-        return !isDead() && getCurrentController() instanceof StunController;
+        return !isDead() && getStateMachine().isStunned();
     }
 
     public boolean isCastingMagic() {
-        return !isDead() && getPrimaryController() instanceof MagicController;
+        return !isDead() && getStateMachine().isCastingMagic();
     }
 
     public boolean isAttacking() {
-        return !isDead() && (getCurrentController() instanceof AttackController
-                || getCurrentController() instanceof HuntController
-                || getCurrentBehaviour() instanceof AttackBehaviour);
+        return !isDead() && getStateMachine().isAttacking();
     }
 
     public boolean isAggressiveWalking() {
-        return !isDead() && getPrimaryController() instanceof WalkController wc && wc.isAgressive();
+        return !isDead() && getStateMachine().isAggressiveWalking();
     }
 
     public boolean isAttackWeaponReleased() {
-        return getCurrentBehaviour() instanceof AttackBehaviour ab && ab.isReleased();
+        return getStateMachine().isAttackWeaponReleased();
     }
 
     public @Nullable Selectable<?> getAttackTarget() {
-        return getCurrentBehaviour() instanceof AttackBehaviour ab ? ab.getTarget() : null;
+        return getStateMachine().getAttackTarget();
     }
 
     public void resetGiveUpCounters() {
         if (!isDead()) {
-            getCurrentController().resetGiveUpCounters();
+            getStateMachine().resetGiveUpCounters();
         }
     }
 
@@ -496,84 +505,91 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         if (isDead()) {
             return EntityActivity.DEAD;
         }
-        if (isStunned()) {
-            return EntityActivity.STUNNED;
-        }
-        if (isAttacking() || isCastingMagic()) {
-            return EntityActivity.ACTIVE;
-        }
-        Controller primary = getPrimaryController();
-        return switch (primary) {
-            case IdleController _,DefendController _ -> EntityActivity.IDLE;
-            case WalkController wc -> wc.isAgressive() ? EntityActivity.ATTACKING_MOVING : EntityActivity.MOVING;
-            case GatherController<?> _ -> EntityActivity.GATHERING;
-            case PlaceBuildingController _ -> EntityActivity.PLACING_BUILDING;
-            default -> EntityActivity.OTHER;
-        };
+        return getStateMachine().getActivity();
     }
 
-    private void walkToTarget(Target target, boolean scan_attack) {
+    private void walkToTarget(Target target, boolean scan_attack, boolean replaceOrder) {
         Target walkable_target = getUnitGrid().findGridTarget(target.getGridX(), target.getGridY(), false);
-        pushController(new WalkController(this, walkable_target != null ? walkable_target : target, scan_attack));
+        Target resolvedTarget = walkable_target != null ? walkable_target : target;
+        if (replaceOrder) {
+            requestOrder(new Walking(resolvedTarget, scan_attack, getDefaultState()));
+        } else {
+            pushOrder(new Walking(resolvedTarget, scan_attack, getCurrentState()));
+        }
     }
 
     @Override
     public void setTarget(Target target, Action action, boolean aggressive) {
+        applyTarget(target, action, aggressive, true);
+    }
+
+    private void applyTarget(Target target, Action action, boolean aggressive, boolean replaceOrder) {
         if (target == this)
             return;
         assert !target.isDead() : "Setting dead target";
         assert !isMounted() : "Unit is mounted in building " + mounted_building;
+        UnitState fallback = replaceOrder ? getDefaultState() : getCurrentState();
         switch (action) {
             case DEFAULT -> {
                 if (canBuild(target)) {
-                    pushController(new PlaceBuildingController(this, (Building) target));
+                    submitOrder(new PlacingBuilding((Building) target, fallback), replaceOrder);
                 } else if (canGather(target)) {
-                    pushController(new GatherController(this, (Supply) target, ((Supply) target).getSupplyType()));
+                    submitOrder(new Gathering((Supply) target, ((Supply) target).getSupplyType(), fallback),
+                            replaceOrder);
                 } else if (canRepair(target, false)) {
-                    pushController(new RepairController(this, (Building) target));
+                    submitOrder(new Repairing((Building) target, fallback), replaceOrder);
                 } else if (canEnter(target)) {
-                    pushController(new EnterController(this, (Building) target));
+                    submitOrder(new EnteringBuilding((Building) target, fallback), replaceOrder);
                 } else if (canAttack(target, false)) {
-                    pushController(new HuntController(this, (Selectable<?>) target));
+                    submitOrder(new Hunting((Selectable<?>) target, fallback), replaceOrder);
                 } else {
-                    walkToTarget(target, aggressive);
+                    walkToTarget(target, aggressive, replaceOrder);
                 }
             }
             case MOVE -> {
                 if (canEnter(target)) {
-                    pushController(new EnterController(this, (Building) target));
+                    submitOrder(new EnteringBuilding((Building) target, fallback), replaceOrder);
                 } else {
-                    walkToTarget(target, false);
+                    walkToTarget(target, false, replaceOrder);
                 }
             }
             case ATTACK -> {
                 if (canAttack(target, true)) {
-                    pushController(new HuntController(this, (Selectable<?>) target));
+                    submitOrder(new Hunting((Selectable<?>) target, fallback), replaceOrder);
                 } else {
-                    walkToTarget(target, true);
+                    walkToTarget(target, true, replaceOrder);
                 }
             }
             case GATHER_REPAIR -> {
                 if (canGather(target)) {
-                    pushController(new GatherController(this, (Supply) target, ((Supply) target).getSupplyType()));
+                    submitOrder(new Gathering((Supply) target, ((Supply) target).getSupplyType(), fallback),
+                            replaceOrder);
                 } else if (canRepair(target, true)) {
-                    pushController(new RepairController(this, (Building) target));
+                    submitOrder(new Repairing((Building) target, fallback), replaceOrder);
                 }
             }
-            case DEFEND -> pushController(new DefendController(this, target));
+            case DEFEND -> submitOrder(new Defending(target, fallback), replaceOrder);
             default -> IO.println("Invalid action: " + action);
+        }
+    }
+
+    private void submitOrder(UnitState order, boolean replaceOrder) {
+        if (replaceOrder) {
+            requestOrder(order);
+        } else {
+            pushOrder(order);
         }
     }
 
     public void printDebugInfo() {
         IO.println("-----------------------------------");
-        IO.println("Primary Controller = " + getPrimaryController());
+        IO.println("Primary State = " + getStateMachine().getActiveOrPendingState());
         if (getAbilities().hasAbilities(Abilities.MAGIC)) {
             IO.println("Hit Points = " + hit_points);
             for (MagicType type : getOwner().getRaceInfo().getMagics()) {
                 IO.println("Magic Energy " + type.name() + " = " + getMagicEnergy(type));
             }
-            IO.println("Controller = " + getPrimaryController());
+            IO.println("State = " + getStateMachine().getActiveOrPendingState());
         }
     }
 
@@ -587,9 +603,14 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
     public void doMagic(MagicType type, boolean clear_stack) {
         if (canDoMagic(type)) {
-            if (clear_stack)
-                clearControllerStack();
-            pushController(new MagicController(this, getOwner().getRaceInfo().getMagicFactory(type)));
+            UnitState fallback = clear_stack ? getDefaultState() : getStateMachine().getActiveOrPendingState();
+            CastingMagic magicState = new CastingMagic(getOwner().getRaceInfo().getMagicFactory(type),
+                    fallback);
+            if (clear_stack) {
+                requestOrder(magicState);
+            } else {
+                pushOrder(magicState);
+            }
             magic_energy.clear();
             last_magic_type = type;
 
@@ -606,6 +627,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         return getMagicEnergy(type) / MAX_MAGIC_ENERGY.get(type);
     }
 
+    @Override
     public void switchAnimation(float anim_speed, Animation animation) {
         assert !isDead();
         this.anim_speed = anim_speed;
@@ -636,16 +658,301 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     public float getOffsetZ() {
         if (isMounted())
             return mounted_building.getOffsetZ() + mount_offset;
-        else {
-            if (isDead()) {
-                DieBehaviour die_behaviour = (DieBehaviour) getCurrentBehaviour();
-                return die_behaviour.getOffsetZ();
-            } else
-                return 0f;
-        }
+        else
+            return isDead() ? deathOffsetZ : 0f;
     }
 
     public PathTracker getPathTracker() {
         return path_tracker;
+    }
+
+    private UnitState getDefaultState() {
+        return defaultState;
+    }
+
+    UnitStateMachine getStateMachine() {
+        return stateMachine;
+    }
+
+    public UnitState getCurrentState() {
+        return getStateMachine().getCurrentState();
+    }
+
+    public void requestOrder(UnitState newOrder) {
+        assert !isDead();
+        getStateMachine().requestOrder(newOrder, this);
+    }
+
+    public void pushOrder(UnitState newOrder) {
+        assert !isDead();
+        getStateMachine().pushOrder(newOrder, this);
+    }
+
+    public void forceStateTransition(UnitState preemptingState) {
+        getStateMachine().forceTransition(preemptingState, this);
+    }
+
+    private void replaceDefaultAndRequestOrder(UnitState newDefaultState) {
+        this.defaultState = newDefaultState;
+        getStateMachine().replaceDefaultAndRequestOrder(newDefaultState, this);
+    }
+
+    boolean isShouldDecide() {
+        return getStateMachine().isShouldDecide();
+    }
+
+    String getLastBehaviourStateName() {
+        return getStateMachine().getLastStepStatusName();
+    }
+
+    private boolean isBlocking() {
+        return getStateMachine().isBlocking();
+    }
+
+    public boolean isIdle() {
+        return !isDead() && getStateMachine().isIdle();
+    }
+
+    public boolean isDefending() {
+        return !isDead() && getStateMachine().isDefending();
+    }
+
+    public boolean isPlacingBuilding() {
+        return !isDead() && getStateMachine().isPlacingBuilding();
+    }
+
+    public @Nullable SupplyType getGatheringSupplyType() {
+        return !isDead() ? getStateMachine().getGatheringSupplyType() : null;
+    }
+
+    public @Nullable BuildingTemplate getPlacingBuilding() {
+        if (isDead()) {
+            return null;
+        }
+        Building target = getStateMachine().getPlacingBuildingTarget();
+        return target != null ? target.getTemplate() : null;
+    }
+
+    private void scanVicinity(ScanFilter filter) {
+        assert !isDead();
+        getUnitGrid().scan(filter, getGridX(), getGridY());
+    }
+
+    @Override
+    public boolean isCloseEnough(float max_dist, Target target) {
+        assert !isDead();
+        return isCloseEnough(getUnitGrid(), max_dist, getGridX(), getGridY(), target);
+    }
+
+    @Override
+    public boolean hasAbility(int abilityMask) {
+        return getAbilities().hasAbilities(abilityMask);
+    }
+
+    @Override
+    public float getAttackRange(Target target) {
+        return getRange(target);
+    }
+
+    @Override
+    public @Nullable Selectable<?> scanForEnemy(int range) {
+        AttackScanFilter scanFilter = new AttackScanFilter(getOwner(), range);
+        scanVicinity(scanFilter);
+        return scanFilter.removeTarget();
+    }
+
+    @Override
+    public int getCarriedSupplyCount() {
+        return supply_container != null ? supply_container.getNumSupplies() : 0;
+    }
+
+    @Override
+    public @Nullable SupplyType getCarriedSupplyType() {
+        return supply_container != null ? supply_container.getSupplyType().orElse(null) : null;
+    }
+
+    @Override
+    public boolean isSupplyFull() {
+        return supply_container != null && supply_container.isSupplyFull();
+    }
+
+    @Override
+    public boolean isLegacyDeterministic() {
+        return AppConfig.LEGACY_DETERMINISTIC;
+    }
+
+    @Override
+    public float nextRandomFloat() {
+        return getWorld().getRandom().nextFloat();
+    }
+
+    @Override
+    public void initWalkTarget(Target target, float range) {
+        path_tracker.setTarget(new TargetTrackerAlgorithm(getUnitGrid(), range, target));
+    }
+
+    @Override
+    public void initSupplyFinderWalk(SupplyType supplyType) {
+        activeSupplyFinderTracker = new FinderTrackerAlgorithm<>(getUnitGrid(), new SupplyFinder<>(this, supplyType));
+        path_tracker.setTarget(activeSupplyFinderTracker);
+    }
+
+    @Override
+    public @Nullable Supply getFoundSupply() {
+        return activeSupplyFinderTracker != null ? activeSupplyFinderTracker.getOccupant().orElse(null) : null;
+    }
+
+    @Override
+    public void initSupplyBuildingFinderWalk() {
+        activeBuildingFinderTracker = new FinderTrackerAlgorithm<>(getUnitGrid(),
+                new BuildingFinder(getOwner(), Abilities.SUPPLY_CONTAINER));
+        path_tracker.setTarget(activeBuildingFinderTracker);
+    }
+
+    @Override
+    public @Nullable Building getFoundSupplyBuilding() {
+        return activeBuildingFinderTracker != null ? activeBuildingFinderTracker.getOccupant().orElse(null) : null;
+    }
+
+    @Override
+    public PathTracker.State stepWalk(float dt) {
+        return path_tracker.animate(getMetersPerSecond() * dt);
+    }
+
+    @Override
+    public @Nullable Movable getCurrentWalkBlocker() {
+        Occupant blocker = path_tracker.getBlocker();
+        return blocker instanceof Movable movable ? movable : null;
+    }
+
+    @Override
+    public void setOffsetZ(float z) {
+        this.deathOffsetZ = z;
+    }
+
+    @Override
+    public float getWeaponSecondsPerRelease(float animSpeed) {
+        return getWeaponFactory().getSecondsPerRelease(animSpeed);
+    }
+
+    @Override
+    public void launchWeaponAttack(Selectable<?> target) {
+        if (isMounted()) {
+            getWeaponFactory().attack(this, target, 3f);
+        } else {
+            getWeaponFactory().attack(this, target);
+        }
+    }
+
+    @Override
+    public void onHarvestSwing(Supply supply) {
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            int soundCount = switch (supply.getSupplyType()) {
+                case WOOD -> 6;
+                case ROCK, IRON, RUBBER -> 5;
+            };
+            getWorld().getRandom().nextInt(soundCount);
+        }
+        getWorld().getNotificationListener().onHarvest(this, supply.getSupplyType());
+        if (supply_container != null && supply.hit()) {
+            supply_container.increaseSupply(1, supply.getSupplyType());
+            getOwner().harvested(supply.getSupplyType());
+        }
+    }
+
+    @Override
+    public void consumeOneWoodForRepair() {
+        if (supply_container != null) {
+            supply_container.increaseSupply(-1, SupplyType.WOOD);
+        }
+    }
+
+    @Override
+    public void onRepairSwing() {
+        if (AppConfig.LEGACY_DETERMINISTIC) {
+            getWorld().getRandom().nextInt(6);
+        }
+        getWorld().getNotificationListener().onRepair(this);
+    }
+
+    @Override
+    public void applyRepairPoint(Building building) {
+        building.repair(1);
+    }
+
+    @Override
+    public boolean depositSupplyIntoBuilding(Building building) {
+        if (supply_container == null) {
+            return false;
+        }
+        supply_container.getSupplyType().ifPresent(unitSupplyType -> {
+            int numSupplies = building.getSupplyContainer(unitSupplyType).orElseThrow()
+                    .increaseSupply(supply_container.getNumSupplies());
+            supply_container.increaseSupply(-numSupplies, unitSupplyType);
+        });
+        return supply_container.getNumSupplies() > 0;
+    }
+
+    @Override
+    public boolean isBuildingPlacementLegal(Building building) {
+        return building.isPlacingLegal();
+    }
+
+    @Override
+    public void placeBuilding(Building building) {
+        building.place();
+    }
+
+    @Override
+    public boolean isFriendlySupplyContainerBuilding(Building building) {
+        return building.getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER) && getOwner() == building.getOwner();
+    }
+
+    @Override
+    public boolean canEnterBuilding(Building building) {
+        return canEnter(building);
+    }
+
+    @Override
+    public void enterBuilding(Building building) {
+        UnitContainer container = building.getRawUnitContainer();
+        if (container == null || !container.canEnter(this)) {
+            return;
+        }
+        if (building.getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER)) {
+            if (getAbilities().hasAbilities(Abilities.HARVEST) && supply_container != null
+                    && supply_container.getNumSupplies() > 0) {
+                supply_container.getSupplyType().ifPresent(type -> building.getSupplyContainer(type)
+                        .orElseThrow().increaseSupply(supply_container.getNumSupplies()));
+            }
+            WeaponTier tier = getWeaponFactory().getTier();
+            if (tier != null) {
+                building.getWeaponContainer(tier).ifPresent(weaponContainer -> weaponContainer.increaseSupply(1));
+            }
+        }
+        container.enter(this);
+    }
+
+    @Override
+    public void enterBuildingWithoutDeposit(Building building) {
+        UnitContainer container = building.getRawUnitContainer();
+        if (container != null && container.canEnter(this)) {
+            container.enter(this);
+        }
+    }
+
+    @Override
+    public @Nullable Magic executeMagic(MagicFactory factory) {
+        return factory.execute(this);
+    }
+
+    @Override
+    public void registerMagic(Magic magic) {
+        getOwner().getWorld().getAnimationManagerGameTime().registerAnimation(magic);
+    }
+
+    @Override
+    public void removeFromWorld() {
+        remove();
     }
 }

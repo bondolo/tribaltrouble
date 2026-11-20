@@ -111,40 +111,43 @@ public abstract class AI {
         defendingUnits.clear();
 
         for (Selectable<?> s : owner.getUnits().getSet()) {
-            if (s instanceof Building b) {
-                if (b.getBuildStage() != Building.BuildStage.BUILT) {
-                    constructionSites.add(b);
-                } else if (b.isOperating()) {
-                    if (b.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
-                        armories.add(b);
-                    } else if (b.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
-                        quarters.add(b);
-                    } else if (b.getAbilities().hasAbilities(Abilities.ATTACK)) {
-                        towers.add(b);
+            switch (s) {
+                case Building b -> {
+                    if (b.getBuildStage() != Building.BuildStage.BUILT) {
+                        constructionSites.add(b);
+                    } else if (b.isOperating()) {
+                        if (b.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+                            armories.add(b);
+                        } else if (b.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
+                            quarters.add(b);
+                        } else if (b.getAbilities().hasAbilities(Abilities.ATTACK)) {
+                            towers.add(b);
+                        }
                     }
                 }
-                continue;
-            }
-            if (s.isIdle()) {
-                if (s.getAbilities().hasAbilities(Abilities.BUILD)) {
-                    idlePeons.add(s);
-                } else if (s.getAbilities().hasAbilities(Abilities.MAGIC)) {
-                    idleChieftains.add(s);
-                } else if (s.getAbilities().hasAbilities(Abilities.ATTACK)) {
-                    idleWarriors.add(s);
+                case Unit u -> {
+                    if (u.isIdle()) {
+                        if (u.getAbilities().hasAbilities(Abilities.BUILD)) {
+                            idlePeons.add(u);
+                        } else if (u.getAbilities().hasAbilities(Abilities.MAGIC)) {
+                            idleChieftains.add(u);
+                        } else if (u.getAbilities().hasAbilities(Abilities.ATTACK)) {
+                            idleWarriors.add(u);
+                        }
+                    } else if (u.getGatheringSupplyType() != null) {
+                        var gatherPeons = switch (u.getGatheringSupplyType()) {
+                            case WOOD -> gatherTreePeons;
+                            case IRON -> gatherIronPeons;
+                            case ROCK -> gatherRockPeons;
+                            case RUBBER -> gatherRubberPeons;
+                        };
+                        gatherPeons.add(u);
+                    } else if (u.isPlacingBuilding()) {
+                        placeBuildingPeons.add(u);
+                    } else if (u.isDefending()) {
+                        defendingUnits.add(u);
+                    }
                 }
-            } else if (s.getGatheringSupplyType() != null) {
-                var gatherPeons = switch (s.getGatheringSupplyType()) {
-                    case WOOD -> gatherTreePeons;
-                    case IRON -> gatherIronPeons;
-                    case ROCK -> gatherRockPeons;
-                    case RUBBER -> gatherRubberPeons;
-                };
-                gatherPeons.add(s);
-            } else if (s.isPlacingBuilding()) {
-                placeBuildingPeons.add(s);
-            } else if (s.isDefending()) {
-                defendingUnits.add(s);
             }
         }
 

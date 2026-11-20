@@ -1,22 +1,11 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.base.animation.Animated;
-import com.oddlabs.tt.simulation.behaviour.Behaviour;
-import com.oddlabs.tt.simulation.behaviour.Controller;
-import com.oddlabs.tt.simulation.behaviour.DefendController;
-import com.oddlabs.tt.simulation.behaviour.GatherController;
-import com.oddlabs.tt.simulation.behaviour.IdleController;
-import com.oddlabs.tt.simulation.behaviour.PlaceBuildingController;
+import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
-import com.oddlabs.tt.simulation.pathfinder.ScanFilter;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.base.event.StateChecksum;
 import org.jspecify.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Represents a {@link Model} that can be selected, commanded.
@@ -26,14 +15,10 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         ModelToolTip permits Unit, Building {
 
     private final Player owner;
-    private @Nullable Behaviour current_behaviour;
     private final Abilities abilities = new Abilities(Abilities.NONE);
     private final T template;
-    private final List<Controller> controller_stack = new ArrayList<>();
 
     private boolean dead;
-    private boolean should_decide;
-    private Behaviour.State last = Behaviour.State.DONE;
 
     private int grid_x;
     private int grid_y;
@@ -63,23 +48,9 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         return template.getHitOffsetZ(0);
     }
 
-    final Controller getCurrentController() {
-        return controller_stack.getLast();
-    }
-
     @Override
     public final void animate(float dt) {
         capturePreviousTransform();
-        last = current_behaviour.animate(dt);
-        switch (last) {
-            case UNINTERRUPTIBLE -> {
-            }
-            case INTERRUPTIBLE -> {
-                if (should_decide)
-                    decide();
-            }
-            case DONE -> decide();
-        }
         doAnimate(dt);
         owner.getWorld().updateGlobalChecksum(grid_x + grid_y);
     }
@@ -87,44 +58,10 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
     protected void doAnimate(float t) {
     }
 
-    protected final boolean isBlocking() {
-        return current_behaviour.isBlocking();
-    }
-
-    final @Nullable Behaviour getCurrentBehaviour() {
-        return current_behaviour;
-    }
-
     public abstract EntityActivity getActivity();
-
-    public boolean isIdle() {
-        return !isDead() && getPrimaryController() instanceof IdleController;
-    }
-
-    public boolean isDefending() {
-        return !isDead() && getPrimaryController() instanceof DefendController;
-    }
-
-    public boolean isPlacingBuilding() {
-        return !isDead() && getPrimaryController() instanceof PlaceBuildingController;
-    }
-
-    public @Nullable SupplyType getGatheringSupplyType() {
-        return !isDead() && getPrimaryController() instanceof GatherController<?> gc ? gc.getSupplyType() : null;
-    }
-
-    public @Nullable BuildingTemplate getPlacingBuilding() {
-        return !isDead() && getPrimaryController() instanceof PlaceBuildingController pbc ? pbc.getBuilding()
-                .getTemplate() : null;
-    }
 
     public final UnitGrid getUnitGrid() {
         return owner.getWorld().getUnitGrid();
-    }
-
-    public final void scanVicinity(ScanFilter filter) {
-        assert !isDead();
-        getUnitGrid().scan(filter, getGridX(), getGridY());
     }
 
     private static boolean isAdjacent(UnitGrid unit_grid, int grid_x, int grid_y, Occupant occ) {
@@ -142,11 +79,6 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
             dy = -1;
         assert dx != 0 || dy != 0 : "occ = " + occ;
         return unit_grid.getOccupant(grid_x + dx, grid_y + dy) == occ;
-    }
-
-    public final boolean isCloseEnough(float max_dist, Target target) {
-        assert !isDead();
-        return isCloseEnough(getUnitGrid(), max_dist, getGridX(), getGridY(), target);
     }
 
     public static boolean isCloseEnough(UnitGrid unit_grid, float max_dist, int grid_x, int grid_y,
@@ -169,79 +101,9 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         enable();
     }
 
-    private void decide() {
-        if (last != Behaviour.State.UNINTERRUPTIBLE) {
-            doDecide();
-        } else {
-            should_decide = true;
-        }
-    }
-
-    private void doDecide() {
-        should_decide = false;
-        if (current_behaviour != null) {
-            current_behaviour.onCleanup();
-            current_behaviour = null;
-        }
-        getCurrentController().decide();
-    }
-
-    protected final void forceDecide() {
-        current_behaviour.forceInterrupted();
-        last = Behaviour.State.INTERRUPTIBLE;
-        doDecide();
-    }
-
-    public final void pushController(Controller controller) {
-        assert !isDead();
-        controller_stack.add(controller);
-        decide();
-    }
-
-    public final void pushControllers(Controller... controllers) {
-        assert !isDead();
-        controller_stack.addAll(Arrays.asList(controllers));
-        decide();
-    }
-
-    public final void swapController(Controller controller) {
-        assert !isDead();
-        controller_stack.removeLast();
-        pushController(controller);
-    }
-
-    public final void popController() {
-        assert !isDead();
-        controller_stack.removeLast();
-        decide();
-    }
-
-    public final void setBehaviour(Behaviour behaviour) {
-        assert !isDead();
-        assert last != Behaviour.State.UNINTERRUPTIBLE : "Invalid behaviour state";
-        if (current_behaviour != null) {
-            current_behaviour.onCleanup();
-        }
-        current_behaviour = behaviour;
-    }
-
-    final Controller getPrimaryController() {
-        assert !isDead();
-        return controller_stack.size() > 1
-                ? controller_stack.get(1)  // Jump over the default controller
-                : controller_stack.getFirst();
-    }
-
-    protected final void clearControllerStack() {
-        Controller default_controller = controller_stack.getFirst();
-        controller_stack.clear();
-        controller_stack.add(default_controller);
-    }
-
     public final void initTarget(@Nullable Target target, Action action, boolean aggressive) {
         assert !isDead();
         if (target != null) {
-            clearControllerStack();
             setTarget(target, action, aggressive);
         }
     }
@@ -306,7 +168,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         owner.getUnits().add(this);
     }
 
-    protected void removeDying() {
+    public void removeDying() {
         disable();
         dead = true;
     }

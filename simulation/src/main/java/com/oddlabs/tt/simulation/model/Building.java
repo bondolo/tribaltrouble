@@ -4,10 +4,9 @@ import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.behaviour.AttackController;
-import com.oddlabs.tt.simulation.behaviour.GatherController;
-import com.oddlabs.tt.simulation.behaviour.NullController;
-import com.oddlabs.tt.simulation.behaviour.TransferUnitController;
+import com.oddlabs.tt.simulation.state.Hunting;
+import com.oddlabs.tt.simulation.state.Gathering;
+import com.oddlabs.tt.simulation.state.Transporting;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
@@ -69,7 +68,6 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         float x = UnitGrid.coordinateFromGrid(grid_x);
         float y = UnitGrid.coordinateFromGrid(grid_y);
         setPosition(x, y);
-        pushController(new NullController(this));
         if (AppConfig.LEGACY_DETERMINISTIC) {
             damaged_emitter = new LegacyDamagedSmokeEmitter(owner.getWorld());
             owner.getWorld().getAnimationManagerRealTime().registerAnimation(damaged_emitter);
@@ -263,7 +261,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 unit_container.exit();
             }
             Unit unit = createUnit(null, raceInfo.getUnitTemplate(UnitType.PEON));
-            unit.pushController(new GatherController<>(unit, null, supplyType));
+            unit.pushOrder(new Gathering(null, supplyType, unit.getCurrentState()));
         }
     }
 
@@ -356,7 +354,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             }
             Unit unit = createUnit(hasRallyPoint() ? rally_point : null, raceInfo.getUnitTemplate(template));
             if (getAbilities().hasAbilities(Abilities.REPRODUCE) && !hasRallyPoint()) {
-                unit.pushController(new TransferUnitController(unit));
+                unit.pushOrder(new Transporting(unit.getCurrentState()));
             }
         }
     }
@@ -452,9 +450,9 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         return build_points == getTemplate().getMaxHitPoints();
     }
 
-    /// Returns true if this building is completed and operating normally with an idle controller.
+    /// Returns true if this building is completed and operating normally.
     public boolean isOperating() {
-        return !isDead() && isBuilt() && getPrimaryController() instanceof NullController;
+        return !isDead() && isBuilt();
     }
 
     @Override
@@ -584,7 +582,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 boolean kill_friendly = action == Action.ATTACK;
                 Unit unit = mountContainer.getUnit();
                 if (unit != null && unit.canAttack(target, kill_friendly))
-                    unit.pushController(new AttackController(unit, (Selectable<?>) target));
+                    unit.pushOrder(new Hunting((Selectable<?>) target, false, unit.getCurrentState()));
             }
         } else {
             setRallyPoint(target);
@@ -617,7 +615,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     @Override
-    protected void removeDying() {
+    public void removeDying() {
         remove_delay = REMOVE_DELAY;
         if (unit_container != null) {
             while (unit_container.getNumSupplies() > 0) {
