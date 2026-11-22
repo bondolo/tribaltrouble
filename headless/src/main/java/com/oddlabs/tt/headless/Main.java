@@ -13,6 +13,7 @@ import com.oddlabs.tt.simulation.player.UnitInfo;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 /// Standalone executable entry point for running headless match sessions.
@@ -166,6 +167,7 @@ public final class Main {
     IO.println("  Winning Team: " + result.winningTeam());
     IO.println("  Final Tick: " + result.finalTick());
     IO.println("  Checksum: " + result.finalChecksum());
+    IO.println(String.format(Locale.ROOT, "  Merkle Root: 0x%016x", result.finalMerkleRootHash()));
     IO.println("  Surviving Players: " + result.survivingPlayerIndices());
   }
 }

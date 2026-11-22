@@ -28,7 +28,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /// Integration tests for running multiple headless simulation instances in the same JVM process.
-class HeadlessMultiplayerHarnessTest {
+final class HeadlessMultiplayerHarnessTest {
 
   private static Landscape createTestLandscape(int size) {
     return createTestLandscape(size, 2);
@@ -387,6 +387,29 @@ class HeadlessMultiplayerHarnessTest {
       harness.awaitSynchronized(Duration.ofSeconds(5));
       harness.runUntilTick(20, Duration.ofSeconds(10));
       harness.verifyChecksums();
+    }
+  }
+
+  @Test
+  void testVerifyChecksumsReportsMerkleDiffOnSemanticDesync() throws Exception {
+    Landscape landscape = createTestLandscape(64);
+    WorldParameters worldParams = new WorldParameters("1", 5, 20);
+    List<PlayerSlot> slots = createTestSlots(AIDifficulty.EASY, "BotA", AIDifficulty.EASY, "BotB");
+    List<UnitInfo> unitInfos = createDefaultUnitInfos();
+
+    try (HeadlessMultiplayerHarness harness =
+        HeadlessMultiplayerHarness.create(landscape, worldParams, slots, unitInfos)) {
+      harness.awaitSynchronized(Duration.ofSeconds(5));
+      harness.runUntilTick(20, Duration.ofSeconds(10));
+      harness.verifyChecksums();
+
+      // Advance only instance 1's PRNG without altering the legacy world checksum
+      harness.getInstance(1).getWorld().getRandom().nextInt();
+
+      AssertionError error = assertThrows(AssertionError.class, harness::verifyChecksums);
+      assertTrue(
+          error.getMessage().contains("subsystems.clock.randomSeed"),
+          "Expected Merkle diff to pinpoint PRNG divergence, got: " + error.getMessage());
     }
   }
 }

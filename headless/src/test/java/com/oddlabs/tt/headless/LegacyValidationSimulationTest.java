@@ -26,9 +26,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 /// Integration tests verifying bit-exact deterministic parity with legacy game execution.
 @Tag("integration")
 @Execution(ExecutionMode.CONCURRENT)
-class LegacyValidationSimulationTest {
+final class LegacyValidationSimulationTest {
 
   private static final int NUM_RANDOM_SCENARIOS = 10;
+  private static final long EXPECTED_SEED_42_MERKLE_ROOT_HASH = 0xa8f51312a78cad35L;
 
   static Stream<LegacyLibraryValidationSimulationTest.LegacyRunRecord> provideRandomLegacyScenarios()
       throws IOException {
@@ -90,11 +91,17 @@ class LegacyValidationSimulationTest {
             + ", finishTick="
             + result.finalTick()
             + ", checksum="
-            + result.finalChecksum());
+            + result.finalChecksum()
+            + ", merkleRoot="
+            + LegacyLibraryValidationSimulationTest.formatMerkleRootHash(result.finalMerkleRootHash()));
 
     assertTrue(result.victory(), "Match should conclude in victory");
     assertEquals(0, result.winningTeam(), "Player (Team 0) must win");
     assertEquals(43_421, result.finalTick(), "Winning tick must match legacy baseline");
     assertEquals(325_069_689, result.finalChecksum(), "World checksum must match legacy baseline");
+    assertEquals(
+        LegacyLibraryValidationSimulationTest.formatMerkleRootHash(EXPECTED_SEED_42_MERKLE_ROOT_HASH),
+        LegacyLibraryValidationSimulationTest.formatMerkleRootHash(result.finalMerkleRootHash()),
+        "World Merkle root hash must match baseline");
   }
 }

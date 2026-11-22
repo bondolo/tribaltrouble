@@ -52,5 +52,10 @@ tasks.register<JavaExec>("regenerateLegacyLibrary") {
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("com.oddlabs.tt.headless.LegacyValidationLibraryGenerator")
     workingDir = rootProject.projectDir
-    jvmArgs("--add-modules", "jdk.incubator.vector", "-Djava.awt.headless=true", "-Dapple.awt.UIElement=true")
+    jvmArgs(
+        "--add-modules",
+        "jdk.incubator.vector",
+        "-Dcom.oddlabs.tt.legacy.deterministic=true",
+        "-Djava.awt.headless=true",
+        "-Dapple.awt.UIElement=true")
 }

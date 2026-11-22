@@ -4,6 +4,7 @@ import com.oddlabs.tt.net.HeadlessMultiplayerHarness;
 import com.oddlabs.tt.net.HeadlessSimulationInstance;
 import com.oddlabs.tt.procedural.landscape.IslandGenerator;
 import com.oddlabs.tt.simulation.landscape.Landscape;
+import com.oddlabs.tt.simulation.model.WorldMerkleTree;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -172,19 +173,7 @@ public final class HeadlessMatchRunner {
                   + " (magic casts: "
                   + totalMagicCasts
                   + ")");
-          List<Integer> survivingPlayers = new ArrayList<>();
-          for (HeadlessSimulationInstance instance : harness.getInstances()) {
-            if (instance.isAlive()) {
-              survivingPlayers.add(instance.getPlayerIndex());
-            }
-          }
-          return new HeadlessMatchResult(
-              winningTeam,
-              true,
-              currentTick,
-              harness.getInstances().getFirst().getChecksum(),
-              survivingPlayers,
-              totalMagicCasts);
+          return createMatchResult(harness, winningTeam, true, currentTick, totalMagicCasts);
         }
 
         if (!anyNonNeutralAlive) {
@@ -192,19 +181,7 @@ public final class HeadlessMatchRunner {
           int totalMagicCasts =
               harness.getInstances().getFirst().getWorld().getPlayers().stream().mapToInt(Player::getMagics).sum();
           logger.info(() -> "All teams eliminated at tick " + currentTick + " (magic casts: " + totalMagicCasts + ")");
-          List<Integer> survivingPlayers = new ArrayList<>();
-          for (HeadlessSimulationInstance instance : harness.getInstances()) {
-            if (instance.isAlive()) {
-              survivingPlayers.add(instance.getPlayerIndex());
-            }
-          }
-          return new HeadlessMatchResult(
-              -1,
-              false,
-              currentTick,
-              harness.getInstances().getFirst().getChecksum(),
-              survivingPlayers,
-              totalMagicCasts);
+          return createMatchResult(harness, -1, false, currentTick, totalMagicCasts);
         }
 
         if (elapsedTicks >= maxTicks) {
@@ -219,21 +196,23 @@ public final class HeadlessMatchRunner {
                   + ", magic casts: "
                   + totalMagicCasts
                   + ")");
-          List<Integer> survivingPlayers = new ArrayList<>();
-          for (HeadlessSimulationInstance instance : harness.getInstances()) {
-            if (instance.isAlive()) {
-              survivingPlayers.add(instance.getPlayerIndex());
-            }
-          }
-          return new HeadlessMatchResult(
-              -1,
-              false,
-              currentTick,
-              harness.getInstances().getFirst().getChecksum(),
-              survivingPlayers,
-              totalMagicCasts);
+          return createMatchResult(harness, -1, false, currentTick, totalMagicCasts);
         }
       }
     }
+  }
+
+  private static HeadlessMatchResult createMatchResult(
+      HeadlessMultiplayerHarness harness, int winningTeam, boolean victory, int currentTick, int totalMagicCasts) {
+    List<Integer> survivingPlayers = new ArrayList<>();
+    for (HeadlessSimulationInstance instance : harness.getInstances()) {
+      if (instance.isAlive()) {
+        survivingPlayers.add(instance.getPlayerIndex());
+      }
+    }
+    HeadlessSimulationInstance reference = harness.getInstances().getFirst();
+    long merkleRootHash = WorldMerkleTree.capture(reference.getWorld()).rootHash();
+    return new HeadlessMatchResult(
+        winningTeam, victory, currentTick, reference.getChecksum(), merkleRootHash, survivingPlayers, totalMagicCasts);
   }
 }

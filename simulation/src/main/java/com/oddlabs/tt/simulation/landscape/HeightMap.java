@@ -3,6 +3,7 @@ package com.oddlabs.tt.simulation.landscape;
 import com.oddlabs.tt.base.global.AppConfig;
 import java.util.BitSet;
 import java.util.List;
+import java.util.function.LongSupplier;
 
 /// Manages spatial terrain elevation, surface interpolation, accessibility, and building grid queries.
 public final class HeightMap implements LandscapeEnvironment {
@@ -12,6 +13,7 @@ public final class HeightMap implements LandscapeEnvironment {
 
   private final World world_instance;
   private final Landscape landscape;
+  private final float[] heightmap;
   private final int patches_per_world;
   private final int meters_per_patch;
   private final int grid_units_per_world;
@@ -20,11 +22,15 @@ public final class HeightMap implements LandscapeEnvironment {
 
   private final LandscapeLeaf[][] landscape_leaves;
   private final BitSet below_sea_level;
+  private long heightEditVersion;
+  private long cachedHeightHashVersion = -1L;
+  private long cachedHeightHash;
 
   public HeightMap(World world_instance, Landscape landscape) {
     this.world_instance = world_instance;
     this.landscape = landscape;
-    this.grid_units_per_world = (int) Math.sqrt(landscape.heightmap().length);
+    this.heightmap = landscape.heightmap().clone();
+    this.grid_units_per_world = (int) Math.sqrt(heightmap.length);
     patches_per_world = grid_units_per_world / GRID_UNITS_PER_PATCH;
     meters_per_patch = GRID_UNITS_PER_PATCH * METERS_PER_UNIT_GRID;
     inv_meters_per_patch = 1f / meters_per_patch;
@@ -42,7 +48,16 @@ public final class HeightMap implements LandscapeEnvironment {
   }
 
   public float[] getHeightData() {
-    return landscape.heightmap();
+    return heightmap;
+  }
+
+  /// Returns a cached hash of the current heightmap data, recomputing via `hashComputer` only after `editHeight`.
+  public long getOrComputeHeightHash(LongSupplier hashComputer) {
+    if (cachedHeightHashVersion != heightEditVersion) {
+      cachedHeightHash = hashComputer.getAsLong();
+      cachedHeightHashVersion = heightEditVersion;
+    }
+    return cachedHeightHash;
   }
 
   public Landscape landscape() {
@@ -180,7 +195,6 @@ public final class HeightMap implements LandscapeEnvironment {
     int x1 = (x0 + 1) % size;
     int y1 = (y0 + 1) % size;
 
-    float[] heightmap = landscape.heightmap();
     float h00 = heightmap[y0 * size + x0];
     float h10 = heightmap[y0 * size + x1];
     float h01 = heightmap[y1 * size + x0];
@@ -241,13 +255,14 @@ public final class HeightMap implements LandscapeEnvironment {
   }
 
   public float getHeight(int grid_x, int grid_y) {
-    return landscape.heightmap()[grid_y * grid_units_per_world + grid_x];
+    return heightmap[grid_y * grid_units_per_world + grid_x];
   }
 
   public void editHeight(int grid_x, int grid_y, float height) {
     final int wrappedX = wrapGridCoord(grid_x);
     final int wrappedY = wrapGridCoord(grid_y);
-    landscape.heightmap()[wrappedY * grid_units_per_world + wrappedX] = height;
+    heightmap[wrappedY * grid_units_per_world + wrappedX] = height;
+    heightEditVersion++;
 
     int patch_x1 = wrappedX / GRID_UNITS_PER_PATCH;
 

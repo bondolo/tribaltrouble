@@ -2,11 +2,14 @@ package com.oddlabs.tt.simulation.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.oddlabs.tt.simulation.landscape.FlatLandscape;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.Landscape;
+import com.oddlabs.tt.simulation.landscape.RandomState;
 import com.oddlabs.tt.simulation.landscape.SpawnLocation;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
@@ -21,7 +24,9 @@ import com.oddlabs.tt.simulation.player.PlayerControllerType;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.util.Color;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
@@ -105,6 +110,54 @@ final class WorldMerkleTreeTest {
     assertEquals(treeA.tick(), treeB.tick());
     assertEquals(treeA.subsystems().hash(), treeB.subsystems().hash());
     assertTrue(WorldMerkleTree.diff(treeA, treeB).isEmpty());
+  }
+
+  @Test
+  void testPrngDrawPinpointsClockRandomSeedDivergence() {
+    World world = createSeededWorld();
+    WorldMerkleTree before = WorldMerkleTree.capture(world);
+
+    world.getRandom().nextInt();
+
+    WorldMerkleTree after = WorldMerkleTree.capture(world);
+    RandomState.LegacyLcg beforeState =
+        assertInstanceOf(RandomState.LegacyLcg.class, before.subsystems().clock().randomState());
+    RandomState.LegacyLcg afterState =
+        assertInstanceOf(RandomState.LegacyLcg.class, after.subsystems().clock().randomState());
+    assertNotEquals(before.rootHash(), after.rootHash());
+    assertNotEquals(beforeState.seed(), afterState.seed());
+    assertEquals(before.players(), after.players());
+
+    List<Difference> diffs = WorldMerkleTree.diff(before, after);
+    assertEquals(1, diffs.size(), "Expected single randomSeed diff, got: " + diffs);
+    assertEquals("subsystems.clock.randomSeed", diffs.getFirst().path());
+    assertEquals(Long.toString(beforeState.seed()), diffs.getFirst().expectedValue());
+    assertEquals(Long.toString(afterState.seed()), diffs.getFirst().actualValue());
+  }
+
+  @Test
+  void testCachedGaussianConsumptionPinpointsClockDivergence() {
+    World world = createSeededWorld();
+    world.getRandom().nextGaussian();
+    WorldMerkleTree afterFirst = WorldMerkleTree.capture(world);
+
+    world.getRandom().nextGaussian();
+    WorldMerkleTree afterSecond = WorldMerkleTree.capture(world);
+
+    RandomState.LegacyLcg firstState =
+        assertInstanceOf(RandomState.LegacyLcg.class, afterFirst.subsystems().clock().randomState());
+    RandomState.LegacyLcg secondState =
+        assertInstanceOf(RandomState.LegacyLcg.class, afterSecond.subsystems().clock().randomState());
+    assertEquals(firstState.seed(), secondState.seed());
+    assertNotEquals(afterFirst.rootHash(), afterSecond.rootHash());
+
+    List<Difference> diffs = WorldMerkleTree.diff(afterFirst, afterSecond);
+    assertTrue(
+        diffs.stream().anyMatch(d -> d.path().equals("subsystems.clock.haveNextNextGaussian")),
+        "Expected haveNextNextGaussian diff, got: " + diffs);
+    assertTrue(
+        diffs.stream().anyMatch(d -> d.path().equals("subsystems.clock.nextNextGaussian")),
+        "Expected nextNextGaussian diff, got: " + diffs);
   }
 
   @Test
@@ -218,6 +271,62 @@ final class WorldMerkleTreeTest {
         "Expected hitPoints diff on hit unit, got: " + diffs);
   }
 
+  @Test
+  void testSharedLandscapeHeightmapIsIsolatedAcrossWorlds() {
+    int gridSize = 64;
+    float[] heights = new float[gridSize * gridSize];
+    for (int y = 0; y < gridSize; y++) {
+      for (int x = 0; x < gridSize; x++) {
+        heights[y * gridSize + x] = 5f + (x + y) * 0.1f;
+      }
+    }
+    boolean[][] accessGrid = new boolean[gridSize][gridSize];
+    for (boolean[] row : accessGrid) {
+      Arrays.fill(row, true);
+    }
+    byte[][] buildGrid = new byte[gridSize][gridSize];
+    for (byte[] row : buildGrid) {
+      Arrays.fill(row, (byte) 10);
+    }
+    List<List<SpawnLocation>> spawns =
+        List.of(List.of(new SpawnLocation(24f, 24f)), List.of(new SpawnLocation(96f, 96f)));
+    Landscape sharedLandscape = new FlatLandscape(gridSize, Terrain.NATIVE, heights, accessGrid, buildGrid, spawns);
+    float[] originalHeights = sharedLandscape.heightmap().clone();
+
+    World worldA = createSeededWorld(sharedLandscape);
+    World worldB = createSeededWorld(sharedLandscape);
+
+    assertTrue(Arrays.equals(originalHeights, sharedLandscape.heightmap()));
+    assertFalse(Arrays.equals(originalHeights, worldA.getHeightMap().getHeightData()));
+
+    WorldMerkleTree treeA = WorldMerkleTree.capture(worldA);
+    WorldMerkleTree treeB = WorldMerkleTree.capture(worldB);
+    assertEquals(treeA.rootHash(), treeB.rootHash());
+    assertTrue(WorldMerkleTree.diff(treeA, treeB).isEmpty());
+  }
+
+  @Test
+  void testLandscapeHashCachesUntilHeightEdited() {
+    World world = createSeededWorld();
+    HeightMap heightMap = world.getHeightMap();
+    AtomicInteger invocations = new AtomicInteger();
+
+    long h1 = heightMap.getOrComputeHeightHash(() -> 100L + invocations.incrementAndGet());
+    long h2 = heightMap.getOrComputeHeightHash(() -> 100L + invocations.incrementAndGet());
+    assertEquals(h1, h2);
+    assertEquals(1, invocations.get(), "Unmodified heightmap should reuse cached hash");
+
+    WorldMerkleTree before = WorldMerkleTree.capture(world);
+    heightMap.editHeight(10, 10, 99.5f);
+    WorldMerkleTree after = WorldMerkleTree.capture(world);
+
+    assertNotEquals(before.subsystems().landscapeHash(), after.subsystems().landscapeHash());
+    List<Difference> diffs = WorldMerkleTree.diff(before, after);
+    assertTrue(
+        diffs.stream().anyMatch(d -> d.path().equals("subsystems.landscape")),
+        "Expected subsystems.landscape diff, got: " + diffs);
+  }
+
   private static UnitNode findUnit(PlayerNode player, int entityId) {
     return player.units().stream().filter(u -> u.entityId() == entityId).findFirst().orElseThrow();
   }
@@ -226,7 +335,10 @@ final class WorldMerkleTreeTest {
     int gridSize = 64;
     List<List<SpawnLocation>> spawns =
         List.of(List.of(new SpawnLocation(24f, 24f)), List.of(new SpawnLocation(96f, 96f)));
-    Landscape landscape = FlatLandscape.create(gridSize, spawns);
+    return createSeededWorld(FlatLandscape.create(gridSize, spawns));
+  }
+
+  private static World createSeededWorld(Landscape landscape) {
     WorldParameters worldParams = new WorldParameters("1", 5, 20);
     UnitInfo unitInfo = new UnitInfo(true, true, 1, true, 2, 1, 0, 0);
 

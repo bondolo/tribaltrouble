@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 import org.jspecify.annotations.NullMarked;
@@ -30,7 +31,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 @Tag("integration")
 @Tag("release")
 @Execution(ExecutionMode.CONCURRENT)
-public class LegacyLibraryValidationSimulationTest {
+final class LegacyLibraryValidationSimulationTest {
 
   record LegacyRunRecord(
       int lineNumber,
@@ -45,7 +46,8 @@ public class LegacyLibraryValidationSimulationTest {
       String playersStr,
       int expectedWinningTeam,
       int expectedFinishTick,
-      int expectedWorldChecksum) {
+      int expectedWorldChecksum,
+      long expectedMerkleRootHash) {
     @Override
     public String toString() {
       return "Line " + lineNumber + ": Run " + runId + " (seed=" + seed + ", " + terrain + ", " + metersPerWorld + "m)";
@@ -79,6 +81,19 @@ public class LegacyLibraryValidationSimulationTest {
     assertEquals(record.expectedFinishTick(), result.finalTick(), "Run " + record.runId() + " finish tick mismatch");
     assertEquals(
         record.expectedWorldChecksum(), result.finalChecksum(), "Run " + record.runId() + " final checksum mismatch");
+    assertEquals(
+        formatMerkleRootHash(record.expectedMerkleRootHash()),
+        formatMerkleRootHash(result.finalMerkleRootHash()),
+        "Run " + record.runId() + " final Merkle root hash mismatch");
+  }
+
+  static long parseMerkleRootHash(String raw) {
+    String hex = raw.startsWith("0x") || raw.startsWith("0X") ? raw.substring(2) : raw;
+    return Long.parseUnsignedLong(hex, 16);
+  }
+
+  static String formatMerkleRootHash(long hash) {
+    return String.format(Locale.ROOT, "0x%016x", hash);
   }
 
   static HeadlessMatchConfig toMatchConfig(LegacyRunRecord record) {
@@ -145,7 +160,8 @@ public class LegacyLibraryValidationSimulationTest {
                   cols[8],
                   Integer.parseInt(cols[9]),
                   Integer.parseInt(cols[10]),
-                  Integer.parseInt(cols[11])));
+                  Integer.parseInt(cols[11]),
+                  parseMerkleRootHash(cols[12])));
         }
       }
     }

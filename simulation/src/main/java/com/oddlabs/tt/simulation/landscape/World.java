@@ -40,7 +40,7 @@ public final class World implements SimulationClock {
       };
 
   private final HeightMap world;
-  private final Random random;
+  private final LegacyTTSimulationRandom random;
   private final AnimationManager animation_manager_game_time;
   private final AnimationManager animation_manager_real_time;
 
@@ -208,7 +208,7 @@ public final class World implements SimulationClock {
     world = new HeightMap(this, landscape);
     animation_manager_game_time = new AnimationManager();
     animation_manager_real_time = new AnimationManager();
-    random = new Random(42);
+    random = new LegacyTTSimulationRandom();
 
     List<List<SpawnLocation>> startingLocations = landscape.startingLocations();
     players =
@@ -307,6 +307,11 @@ public final class World implements SimulationClock {
 
   public Random getRandom() {
     return random;
+  }
+
+  /// Returns an immutable snapshot of the simulation PRNG state for Merkle tree capture.
+  public RandomState getRandomState() {
+    return random.captureState();
   }
 
   /**

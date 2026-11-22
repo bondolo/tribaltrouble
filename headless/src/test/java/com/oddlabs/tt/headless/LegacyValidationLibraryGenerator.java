@@ -1,5 +1,9 @@
 package com.oddlabs.tt.headless;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
@@ -17,13 +21,19 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-/// Utility tool to regenerate {@code legacy_validation_library.csv} matching upstream baseline simulation outcomes.
+/// Utility tool to regenerate `legacy_validation_library.csv` matching upstream baseline simulation outcomes.
+@NullMarked
 final class LegacyValidationLibraryGenerator {
+
+  record BaselineOutcome(int winningTeam, int finishTick, int worldChecksum) {}
 
   record RunInput(
       int lineNumber,
@@ -35,13 +45,14 @@ final class LegacyValidationLibraryGenerator {
       float vegetation,
       float supplies,
       int maxTicks,
-      String playersStr) {}
+      String playersStr,
+      @Nullable BaselineOutcome expectedBaseline) {}
 
-  record RunOutput(RunInput input, int winningTeam, int finishTick, int checksum) {
+  record RunOutput(RunInput input, int winningTeam, int finishTick, int checksum, long merkleRootHash) {
     String toCsvLine() {
       return String.format(
-          java.util.Locale.ROOT,
-          "%d,%d,%d,%s,%.2f,%.2f,%.2f,%d,%s,%d,%d,%d",
+          Locale.ROOT,
+          "%d,%d,%d,%s,%.2f,%.2f,%.2f,%d,%s,%d,%d,%d,0x%016x",
           input.runId(),
           input.seed(),
           input.metersPerWorld(),
@@ -53,7 +64,8 @@ final class LegacyValidationLibraryGenerator {
           input.playersStr(),
           winningTeam,
           finishTick,
-          checksum);
+          checksum,
+          merkleRootHash);
     }
   }
 
@@ -69,12 +81,17 @@ final class LegacyValidationLibraryGenerator {
 
   void regenerateCsv() throws Exception {
     System.setProperty("com.oddlabs.tt.legacy.deterministic", "true");
+    if (!AppConfig.LEGACY_DETERMINISTIC) {
+      throw new IllegalStateException(
+          "LegacyValidationLibraryGenerator must run with -Dcom.oddlabs.tt.legacy.deterministic=true");
+    }
     List<RunInput> inputs = loadInputs();
     System.out.println("Loaded " + inputs.size() + " run configurations. Running simulation...");
 
     int total = inputs.size();
     AtomicInteger completed = new AtomicInteger(0);
     long startTime = System.currentTimeMillis();
+    boolean allowBaselineChange = Boolean.getBoolean("legacy.allowBaselineChange");
 
     RunOutput[] outputs = new RunOutput[total];
 
@@ -83,8 +100,14 @@ final class LegacyValidationLibraryGenerator {
           HeadlessMatchConfig config = toMatchConfig(input);
           LegacyValidationMatchRunner runner = new LegacyValidationMatchRunner();
           HeadlessMatchResult result = runner.run(config);
+          verifyBaselineParity(input, result, allowBaselineChange);
           outputs[input.runId()] =
-              new RunOutput(input, result.winningTeam(), result.finalTick(), result.finalChecksum());
+              new RunOutput(
+                  input,
+                  result.winningTeam(),
+                  result.finalTick(),
+                  result.finalChecksum(),
+                  result.finalMerkleRootHash());
 
           int done = completed.incrementAndGet();
           if (done % 50 == 0 || done == total) {
@@ -99,7 +122,7 @@ final class LegacyValidationLibraryGenerator {
 
     try (BufferedWriter writer = Files.newBufferedWriter(tempCsv, StandardCharsets.UTF_8)) {
       writer.write(
-          "run_id,seed,meters_per_world,terrain,hills,vegetation,supplies,max_ticks,players,winning_team,finish_tick,world_checksum");
+          "run_id,seed,meters_per_world,terrain,hills,vegetation,supplies,max_ticks,players,winning_team,finish_tick,world_checksum,merkle_root_hash");
       writer.newLine();
       for (RunOutput output : outputs) {
         writer.write(output.toCsvLine());
@@ -156,6 +179,11 @@ final class LegacyValidationLibraryGenerator {
             continue;
           }
           String[] cols = line.split(",");
+          BaselineOutcome expectedBaseline =
+              cols.length >= 12
+                  ? new BaselineOutcome(
+                      Integer.parseInt(cols[9]), Integer.parseInt(cols[10]), Integer.parseInt(cols[11]))
+                  : null;
           list.add(
               new RunInput(
                   lineNumber,
@@ -167,10 +195,46 @@ final class LegacyValidationLibraryGenerator {
                   Float.parseFloat(cols[5]),
                   Float.parseFloat(cols[6]),
                   Integer.parseInt(cols[7]),
-                  cols[8]));
+                  cols[8],
+                  expectedBaseline));
         }
       }
     }
     return list;
+  }
+
+  static void verifyBaselineParity(RunInput input, HeadlessMatchResult result, boolean allowBaselineChange) {
+    BaselineOutcome expected = input.expectedBaseline();
+    if (expected == null || allowBaselineChange) {
+      return;
+    }
+    if (expected.winningTeam() != result.winningTeam()
+        || expected.finishTick() != result.finalTick()
+        || expected.worldChecksum() != result.finalChecksum()) {
+      throw new IllegalStateException(
+          String.format(
+              Locale.ROOT,
+              "Legacy baseline drift on run %d (line %d): expected=(team=%d, tick=%d, checksum=%d) actual=(team=%d, tick=%d, checksum=%d). Pass -Dlegacy.allowBaselineChange=true to overwrite.",
+              input.runId(),
+              input.lineNumber(),
+              expected.winningTeam(),
+              expected.finishTick(),
+              expected.worldChecksum(),
+              result.winningTeam(),
+              result.finalTick(),
+              result.finalChecksum()));
+    }
+  }
+
+  @Test
+  void testVerifyBaselineParityDetectsDrift() {
+    BaselineOutcome baseline = new BaselineOutcome(1, 20989, 194664523);
+    RunInput input = new RunInput(2, 1, 492955, 256, Terrain.VIKING, 0.76f, 0.50f, 0.75f, 1_000_000, "", baseline);
+    HeadlessMatchResult matching = new HeadlessMatchResult(1, true, 20989, 194664523, 0x1234L, List.of());
+    HeadlessMatchResult drifted = new HeadlessMatchResult(1, true, 20990, 194664523, 0x1234L, List.of());
+
+    assertDoesNotThrow(() -> verifyBaselineParity(input, matching, false));
+    assertThrows(IllegalStateException.class, () -> verifyBaselineParity(input, drifted, false));
+    assertDoesNotThrow(() -> verifyBaselineParity(input, drifted, true));
   }
 }

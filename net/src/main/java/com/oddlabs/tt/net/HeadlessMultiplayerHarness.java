@@ -11,6 +11,7 @@ import com.oddlabs.router.SessionID;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
+import com.oddlabs.tt.simulation.model.WorldMerkleTree;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.util.Utils;
@@ -19,6 +20,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeoutException;
@@ -28,6 +30,7 @@ import org.jspecify.annotations.Nullable;
 /// Orchestrator harness running multiple headless simulation instances in the same JVM process.
 public final class HeadlessMultiplayerHarness implements AutoCloseable {
   private static final Logger logger = Logger.getLogger(HeadlessMultiplayerHarness.class.getName());
+  private static final int MAX_REPORTED_DIFFS = 20;
 
   private final NetworkSelector network;
   private final Router router;
@@ -352,24 +355,71 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
     return true;
   }
 
-  /// Verifies that all instances have identical state checksums at the current tick.
+  /// Verifies that all instances have identical state checksums and semantic Merkle trees at the current tick.
   public void verifyChecksums() {
-    if (instances.isEmpty()) {
+    if (instances.size() < 2) {
       return;
     }
-    int expectedChecksum = instances.getFirst().getChecksum();
-    int expectedTick = instances.getFirst().getTick();
+    HeadlessSimulationInstance reference = instances.getFirst();
+    int expectedChecksum = reference.getChecksum();
+    int expectedTick = reference.getTick();
+    WorldMerkleTree expectedTree = WorldMerkleTree.capture(reference.getWorld());
     for (int i = 1; i < instances.size(); i++) {
       HeadlessSimulationInstance instance = instances.get(i);
       int checksum = instance.getChecksum();
       int tick = instance.getTick();
-      if (checksum != expectedChecksum || tick != expectedTick) {
+      WorldMerkleTree actualTree = WorldMerkleTree.capture(instance.getWorld());
+      if (checksum != expectedChecksum || tick != expectedTick || actualTree.rootHash() != expectedTree.rootHash()) {
+        List<WorldMerkleTree.Difference> diffs = WorldMerkleTree.diff(expectedTree, actualTree);
         throw new AssertionError(
-            String.format(
-                "Checksum mismatch: instance 0 has checksum %d at tick %d, but instance %d has checksum %d at tick %d",
-                expectedChecksum, expectedTick, i, checksum, tick));
+            formatDesyncMessage(
+                expectedChecksum,
+                expectedTick,
+                expectedTree.rootHash(),
+                i,
+                checksum,
+                tick,
+                actualTree.rootHash(),
+                diffs));
       }
     }
+  }
+
+  private static String formatDesyncMessage(
+      int expectedChecksum,
+      int expectedTick,
+      long expectedRootHash,
+      int instanceIndex,
+      int actualChecksum,
+      int actualTick,
+      long actualRootHash,
+      List<WorldMerkleTree.Difference> diffs) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(
+        String.format(
+            Locale.ROOT,
+            "State mismatch: instance 0 has checksum %d, merkle 0x%016x at tick %d, but instance %d has checksum %d, merkle 0x%016x at tick %d",
+            expectedChecksum,
+            expectedRootHash,
+            expectedTick,
+            instanceIndex,
+            actualChecksum,
+            actualRootHash,
+            actualTick));
+    if (!diffs.isEmpty()) {
+      sb.append(String.format(Locale.ROOT, " (%d Merkle diff%s):", diffs.size(), diffs.size() == 1 ? "" : "s"));
+      int limit = Math.min(diffs.size(), MAX_REPORTED_DIFFS);
+      for (int i = 0; i < limit; i++) {
+        WorldMerkleTree.Difference diff = diffs.get(i);
+        sb.append(
+            String.format(
+                Locale.ROOT, "%n  - %s: expected=%s actual=%s", diff.path(), diff.expectedValue(), diff.actualValue()));
+      }
+      if (diffs.size() > limit) {
+        sb.append(String.format(Locale.ROOT, "%n  ... and %d more", diffs.size() - limit));
+      }
+    }
+    return sb.toString();
   }
 
   @Override

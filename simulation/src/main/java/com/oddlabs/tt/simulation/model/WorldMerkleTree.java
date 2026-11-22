@@ -1,6 +1,7 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.RandomState;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
@@ -83,6 +84,10 @@ public record WorldMerkleTree(long rootHash, int tick, SubsystemsNode subsystems
       putInt(Float.floatToRawIntBits(value));
     }
 
+    public void putDouble(double value) {
+      putLong(Double.doubleToRawLongBits(value));
+    }
+
     public void putBoolean(boolean value) {
       putLong(value ? 1L : 0L);
     }
@@ -133,8 +138,9 @@ public record WorldMerkleTree(long rootHash, int tick, SubsystemsNode subsystems
     }
   }
 
-  /// Simulation clock and global checksum snapshot.
-  public record ClockNode(long hash, int tick, int gamespeed, float secondsPerTick, int globalChecksum) {}
+  /// Simulation clock, global checksum, and PRNG state snapshot.
+  public record ClockNode(
+      long hash, int tick, int gamespeed, float secondsPerTick, int globalChecksum, RandomState randomState) {}
 
   /// Harvestable supply entity snapshot.
   public record SupplyNode(
@@ -296,26 +302,40 @@ public record WorldMerkleTree(long rootHash, int tick, SubsystemsNode subsystems
     int gamespeed = world.getGamespeed();
     float secondsPerTick = world.getSecondsPerTick();
     int globalChecksum = world.getChecksum();
+    RandomState randomState = world.getRandomState();
 
     hasher.reset(0L);
     hasher.putInt(tick);
     hasher.putInt(gamespeed);
     hasher.putFloat(secondsPerTick);
     hasher.putInt(globalChecksum);
+    hashRandomState(randomState, hasher);
     long hash = hasher.digest();
 
-    return new ClockNode(hash, tick, gamespeed, secondsPerTick, globalChecksum);
+    return new ClockNode(hash, tick, gamespeed, secondsPerTick, globalChecksum, randomState);
+  }
+
+  private static void hashRandomState(RandomState randomState, Murmur3Hasher hasher) {
+    switch (randomState) {
+      case RandomState.LegacyLcg lcg -> {
+        hasher.putLong(lcg.seed());
+        hasher.putBoolean(lcg.haveNextNextGaussian());
+        hasher.putDouble(lcg.nextNextGaussian());
+      }
+    }
   }
 
   private static long hashLandscape(HeightMap heightMap, Murmur3Hasher hasher) {
-    hasher.reset(0L);
-    hasher.putInt(heightMap.getGridUnitsPerWorld());
-    float[] heights = heightMap.getHeightData();
-    hasher.putInt(heights.length);
-    for (float h : heights) {
-      hasher.putFloat(h);
-    }
-    return hasher.digest();
+    return heightMap.getOrComputeHeightHash(() -> {
+      hasher.reset(0L);
+      hasher.putInt(heightMap.getGridUnitsPerWorld());
+      float[] heights = heightMap.getHeightData();
+      hasher.putInt(heights.length);
+      for (float h : heights) {
+        hasher.putFloat(h);
+      }
+      return hasher.digest();
+    });
   }
 
   private static long hashUnitGrid(UnitGrid unitGrid, Murmur3Hasher hasher) {
@@ -700,6 +720,26 @@ public record WorldMerkleTree(long rootHash, int tick, SubsystemsNode subsystems
     diffInt(diffs, prefix, "gamespeed", exp.hash(), act.hash(), exp.gamespeed(), act.gamespeed());
     diffFloat(diffs, prefix, "secondsPerTick", exp.hash(), act.hash(), exp.secondsPerTick(), act.secondsPerTick());
     diffInt(diffs, prefix, "globalChecksum", exp.hash(), act.hash(), exp.globalChecksum(), act.globalChecksum());
+    diffRandomState(diffs, prefix, exp.hash(), act.hash(), exp.randomState(), act.randomState());
+  }
+
+  private static void diffRandomState(
+      List<Difference> diffs, String prefix, long expHash, long actHash, RandomState exp, RandomState act) {
+    if (exp instanceof RandomState.LegacyLcg expLcg && act instanceof RandomState.LegacyLcg actLcg) {
+      diffLong(diffs, prefix, "randomSeed", expHash, actHash, expLcg.seed(), actLcg.seed());
+      diffBoolean(
+          diffs,
+          prefix,
+          "haveNextNextGaussian",
+          expHash,
+          actHash,
+          expLcg.haveNextNextGaussian(),
+          actLcg.haveNextNextGaussian());
+      diffDouble(
+          diffs, prefix, "nextNextGaussian", expHash, actHash, expLcg.nextNextGaussian(), actLcg.nextNextGaussian());
+    } else {
+      diffValue(diffs, prefix, "randomState", expHash, actHash, exp, act);
+    }
   }
 
   private static void diffSupplies(List<Difference> diffs, List<SupplyNode> expList, List<SupplyNode> actList) {
@@ -941,6 +981,13 @@ public record WorldMerkleTree(long rootHash, int tick, SubsystemsNode subsystems
     }
   }
 
+  private static void diffDouble(
+      List<Difference> diffs, String prefix, String field, long expHash, long actHash, double exp, double act) {
+    if (Double.doubleToRawLongBits(exp) != Double.doubleToRawLongBits(act)) {
+      diffs.add(new Difference(prefix + "." + field, expHash, actHash, Double.toString(exp), Double.toString(act)));
+    }
+  }
+
   private static void diffBoolean(
       List<Difference> diffs, String prefix, String field, long expHash, long actHash, boolean exp, boolean act) {
     if (exp != act) {
@@ -958,6 +1005,13 @@ public record WorldMerkleTree(long rootHash, int tick, SubsystemsNode subsystems
       @Nullable Object act) {
     if (!Objects.equals(exp, act)) {
       diffs.add(new Difference(prefix + "." + field, expHash, actHash, String.valueOf(exp), String.valueOf(act)));
+    }
+  }
+
+  private static void diffLong(
+      List<Difference> diffs, String prefix, String field, long expHash, long actHash, long exp, long act) {
+    if (exp != act) {
+      diffs.add(new Difference(prefix + "." + field, expHash, actHash, Long.toString(exp), Long.toString(act)));
     }
   }
 }

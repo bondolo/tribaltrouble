@@ -6,6 +6,7 @@ import com.oddlabs.tt.net.HeadlessSimulationInstance;
 import com.oddlabs.tt.procedural.landscape.IslandGenerator;
 import com.oddlabs.tt.simulation.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.World;
+import com.oddlabs.tt.simulation.model.WorldMerkleTree;
 import com.oddlabs.tt.simulation.player.CommandAdapterPlayerInterface;
 import com.oddlabs.tt.simulation.player.DelegatingPlayerInterface;
 import com.oddlabs.tt.simulation.player.Player;
@@ -145,12 +146,19 @@ public final class LegacyValidationMatchRunner {
             survivingPlayers.add(i);
           }
         }
-        return new HeadlessMatchResult(winningTeam, true, world.getTick(), world.getChecksum(), survivingPlayers);
+        return new HeadlessMatchResult(
+            winningTeam,
+            true,
+            world.getTick(),
+            world.getChecksum(),
+            WorldMerkleTree.capture(world).rootHash(),
+            survivingPlayers);
       }
 
       if (!anyPlayerAlive) {
         logger.info(() -> "All teams eliminated at tick " + tick);
-        return new HeadlessMatchResult(-1, false, world.getTick(), world.getChecksum(), List.of());
+        return new HeadlessMatchResult(
+            -1, false, world.getTick(), world.getChecksum(), WorldMerkleTree.capture(world).rootHash(), List.of());
       }
     }
 
@@ -161,7 +169,8 @@ public final class LegacyValidationMatchRunner {
         survivingPlayers.add(i);
       }
     }
-    return new HeadlessMatchResult(-1, false, world.getTick(), world.getChecksum(), survivingPlayers);
+    return new HeadlessMatchResult(
+        -1, false, world.getTick(), world.getChecksum(), WorldMerkleTree.capture(world).rootHash(), survivingPlayers);
   }
 
   static boolean matchesFilter(int value, @Nullable String filterSpec) {
