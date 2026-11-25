@@ -24,8 +24,7 @@ public final class RenderQueues implements AutoCloseable {
   private final List<SpriteRenderer> plant_renderers = new ArrayList<>();
 
   private final List<SpriteRenderer> sprite_list_lookup = new ArrayList<>();
-  private final List<ShadowListRenderer> shadow_renderer_lookup = new ArrayList<>();
-  private final Map<Supplier<Texture[]>, ShadowListKey<?>> desc_to_shadow_key = new HashMap<>();
+  private final ShadowRendererRegistry shadowRenderers = new ShadowRendererRegistry();
   private final List<Texture> texture_lookup = new ArrayList<>();
 
   // Shared array for particle effects
@@ -150,30 +149,11 @@ public final class RenderQueues implements AutoCloseable {
 
   public <R extends ShadowListRenderer> ShadowListKey<R> registerShadowRenderer(
       Supplier<Texture[]> desc, Class<R> type, Supplier<? extends R> rendererFactory) {
-    ShadowListKey<?> existing = desc_to_shadow_key.get(desc);
-    if (existing != null) {
-      if (existing.type() != type) {
-        throw new IllegalStateException(
-            "Shadow renderer already registered as " + existing.type().getName() + ", requested " + type.getName());
-      }
-      @SuppressWarnings("unchecked")
-      ShadowListKey<R> typed = (ShadowListKey<R>) existing;
-      return typed;
-    }
-    return register(desc, type, rendererFactory.get());
-  }
-
-  private <R extends ShadowListRenderer> ShadowListKey<R> register(
-      Supplier<Texture[]> desc, Class<R> type, R renderer) {
-    int index = shadow_renderer_lookup.size();
-    shadow_renderer_lookup.add(renderer);
-    ShadowListKey<R> key = new ShadowListKey<>(index, type);
-    desc_to_shadow_key.put(desc, key);
-    return key;
+    return shadowRenderers.register(desc, type, rendererFactory);
   }
 
   public <R extends ShadowListRenderer> R getShadowRenderer(ShadowListKey<R> key) {
-    return key.type().cast(shadow_renderer_lookup.get(key.key()));
+    return shadowRenderers.get(key);
   }
 
   public SpriteKey register(SpriteFile sprite_file) {
@@ -252,7 +232,7 @@ public final class RenderQueues implements AutoCloseable {
   public void renderShadows(RenderContext context, float worldSize, Texture heightTexture, Matrix4fc modelView) {
     decalRenderer.clear();
     try (var _ = decalRenderer.setup(context, worldSize, heightTexture, modelView)) {
-      for (ShadowListRenderer shadowListRenderer : shadow_renderer_lookup) {
+      for (ShadowListRenderer shadowListRenderer : shadowRenderers.renderers()) {
         shadowListRenderer.renderShadows(context, this, worldSize, heightTexture, modelView);
       }
     }
@@ -262,9 +242,12 @@ public final class RenderQueues implements AutoCloseable {
   public void close() {
     spriteRenderer.close();
     decalRenderer.close();
+    if (effect_texture_array != null) {
+      effect_texture_array.close();
+    }
     for (SpriteList spriteList : sprite_list_lookup.stream().map(SpriteRenderer::getSpriteList).distinct().toList()) {
       spriteList.close();
     }
-    shadow_renderer_lookup.forEach(ShadowListRenderer::close);
+    shadowRenderers.close();
   }
 }
