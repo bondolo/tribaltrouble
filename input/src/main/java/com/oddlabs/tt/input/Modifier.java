@@ -20,12 +20,6 @@ public enum Modifier {
     return mask;
   }
 
-  /**
-   * Extracts active modifiers from a raw bitmask.
-   *
-   * @param `mask` bitmask of active modifiers
-   * @return set of active modifiers
-   */
   public static Set<Modifier> fromMask(int mask) {
     Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
     for (Modifier modifier : values()) {

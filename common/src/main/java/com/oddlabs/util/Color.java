@@ -36,7 +36,7 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
 
   float a();
 
-  /// stores color in the provided float buffer in RGBA order
+  /// Stores this color in `dest` starting at `offset` in RGBA order.
   default void get(int offset, FloatBuffer dest) {
     dest.put(offset++, r());
     dest.put(offset++, g());
@@ -109,13 +109,7 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
       return new Linear(r, g, b, alpha);
     }
 
-    /**
-     * Linearly interpolates between this color and another color.
-     *
-     * @param `other` destination color to interpolate towards
-     * @param `t` interpolation factor, typically in [0, 1]
-     * @return a new Linear color representing the interpolated state
-     */
+    /// Linearly interpolates toward `other` by `t` (typically in `[0, 1]`).
     public Linear lerp(Color.Linear other, float t) {
       return new Linear(
           r + (other.r() - r) * t, g + (other.g() - g) * t, b + (other.b() - b) * t, a + (other.a() - a) * t);
@@ -160,9 +154,7 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
           color.a());
     }
 
-    /**
-     * @param `color` The 32-bit ARGB integer color.
-     */
+    /// Creates an sRGB color from a packed 32-bit ARGB integer.
     public Standard(int color) {
       this(
           ((color >> 16) & 0xFF) / NORMALIZE_8_BIT,
@@ -205,14 +197,7 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
       return new Standard(this.linear().saturate(factor));
     }
 
-    /**
-     * Converts hue, saturation, and brightness values to an sRGB color.
-     *
-     * @param `hue` the hue component, typically in range [0, 1]
-     * @param `saturation` the saturation component, typically in range [0, 1]
-     * @param `brightness` the brightness component, typically in range [0, 1]
-     * @return a new standard sRGB color with alpha set to 1.0
-     */
+    /// Converts HSB components (each in `[0, 1]`) to an opaque sRGB color (`alpha = 1.0`).
     public static Color.Standard hsbToRgb(float hue, float saturation, float brightness) {
       float r = 0, g = 0, b = 0;
       if (saturation == 0) {
@@ -259,13 +244,7 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
       return new Color.Standard(r, g, b, 1.0f);
     }
 
-    /**
-     * Converts the standard sRGB color values to hue, saturation, and brightness.
-     *
-     * @param `color` the standard sRGB color to convert
-     * @return a new 3-element float array containing the HSB values in order: index 0: hue (in range [0, 1]), index 1:
-     *     saturation (in range [0, 1]), index 2: brightness (in range [0, 1])
-     */
+    /// Converts `color` to a 3-element array `{hue, saturation, brightness}`, with each component in `[0, 1]`.
     public static float[] rgbToHsb(Color.Standard color) {
       float r = color.r();
       float g = color.g();

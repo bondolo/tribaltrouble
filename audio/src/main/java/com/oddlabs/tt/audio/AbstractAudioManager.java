@@ -19,7 +19,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     implements AudioManager, AutoCloseable {
   private static final Logger logger = Logger.getLogger(AudioManager.class.getSimpleName());
 
-  /// The interval (in seconds) between ambient sound proximity checks.
+  // Interval (in seconds) between ambient sound proximity checks.
   private static final float AMBIENT_UPDATE_INTERVAL = 0.1f;
 
   private final AudioSettings audioSettings;
@@ -63,12 +63,6 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
 
   protected abstract Iterable<AS> getSources();
 
-  /**
-   * Controls the gain for ALL audio sources.
-   *
-   * @param `gain` the master gain for ALL audio sources.
-   * @return this
-   */
   @Override
   public AM setMasterGain(float gain) {
     this.masterGain = gain;
@@ -157,13 +151,6 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
 
   public abstract int getEFXEffectSlot();
 
-  /**
-   * Update the listener orientation using forward and up vectors
-   *
-   * @param `forward` listener forward vector
-   * @param `up` listener up vector
-   * @return this
-   */
   @Override
   public AudioManager setListenerOrientation(Vector3fc forward, Vector3fc up) {
     listenerForward.set(forward);
@@ -184,26 +171,12 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     return listenerPosition;
   }
 
-  /**
-   * Update the listener position.
-   *
-   * @param `x` listener x position
-   * @param `y` listener y position
-   * @param `z` listener z position
-   * @return this
-   */
   @Override
   public AM setListenerPosition(float x, float y, float z) {
     listenerPosition.set(x, y, z);
     return self();
   }
 
-  /**
-   * Create an Audio instance for the specified file.
-   *
-   * @param `file` The audio resource file.
-   * @return the created instance
-   */
   @Override
   public abstract Audio createAudio(URL file) throws IOException;
 
@@ -273,7 +246,6 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     }
   }
 
-  /// {@return true if sound effects are enabled and global mute is not enabled.}
   @Override
   public final boolean startPlaying() {
     return sfxEnabled && sound_play_counter.intValue() > 0;
@@ -502,12 +474,8 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     return best_source;
   }
 
-  /**
-   * Enqueues a task to be executed when the audio implementation's native context is current. This is used by native
-   * resources (like buffers or sources) to ensure context-safe cleanup.
-   *
-   * @param `task` The cleanup task to enqueue.
-   */
+  /// Enqueues a task to execute when the audio implementation's native context is current, enabling context-safe
+  /// cleanup of native resources such as buffers or sources.
   public abstract void enqueueCleanup(Runnable task);
 
   protected abstract void processCleanupTasks();
@@ -596,6 +564,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     currentMusicPlayer = newAudio(0f, 0f, 0f, currentMusicAudio);
   }
 
+  /// Starts delayed music playback when the timer expires.
   private final class MusicTimer implements Updatable<TimerAnimation> {
     @Override
     public void update(TimerAnimation anim) {
@@ -625,6 +594,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     }
   }
 
+  /// Tracks proximity fade and playback state for an active ambient audio source.
   private class AmbientAudioSource {
     private final AS source;
     private float gain_target = 0f;

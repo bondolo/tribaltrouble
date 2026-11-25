@@ -11,65 +11,33 @@ public interface ProgressListener {
   /// Scoped value containing the active {@link ProgressListener} for the current execution context.
   ScopedValue<ProgressListener> CURRENT = ScopedValue.newInstance();
 
-  /**
-   * Returns the active progress listener in the current scope, or {@link #NONE} if none is bound.
-   *
-   * @return the active progress listener
-   */
+  /// Returns the active progress listener in the current scope, or {@link #NONE} if unbound.
   static ProgressListener current() {
     return CURRENT.orElse(NONE);
   }
 
-  /// Notifies the current progress listener of progress with a default step.
   static void progress() {
     CURRENT.orElse(NONE).onProgress();
   }
 
-  /**
-   * Notifies the current progress listener of progress with the given step or fraction.
-   *
-   * @param `step` the progress step or advance amount
-   */
+  /// Advances progress for the current scope by `step`.
   static void progress(float step) {
     CURRENT.orElse(NONE).onAdvance(step);
   }
 
-  /**
-   * Advances progress by the given delta amount.
-   *
-   * @param `delta` the advance delta amount
-   */
   static void advance(float delta) {
     CURRENT.orElse(NONE).onAdvance(delta);
   }
 
-  /**
-   * Sets absolute progress within the current scope.
-   *
-   * @param `fraction` the absolute progress fraction (0.0 to 1.0)
-   */
+  /// Sets absolute progress in `[0.0, 1.0]` within the current scope.
   static void set(float fraction) {
     CURRENT.orElse(NONE).onProgress(fraction);
   }
 
-  /**
-   * Executes a runnable operation within the context of the specified {@link ProgressListener}.
-   *
-   * @param `listener` the progress listener to bind
-   * @param `operation` the operation to execute
-   */
   static void run(ProgressListener listener, Runnable operation) {
     ScopedValue.where(CURRENT, listener).run(operation);
   }
 
-  /**
-   * Executes a supplier within the context of the specified {@link ProgressListener}.
-   *
-   * @param `listener` the progress listener to bind
-   * @param `supplier` the supplier to compute
-   * @param <T> the return type
-   * @return the computed value
-   */
   static <T> T supply(ProgressListener listener, Supplier<T> supplier) {
     var ref =
         new Object() {
@@ -79,36 +47,17 @@ public interface ProgressListener {
     return ref.value;
   }
 
-  /**
-   * Executes a callable operation within the context of the specified {@link ProgressListener}.
-   *
-   * @param `listener` the progress listener to bind
-   * @param `operation` the callable operation to execute
-   * @param <T> the return type
-   * @param <X> the exception type
-   * @return the result of the callable operation
-   * @throws `X` if unable to compute a result
-   */
   static <T, X extends Throwable> T call(ProgressListener listener, ScopedValue.CallableOp<T, X> operation) throws X {
     return ScopedValue.where(CURRENT, listener).call(operation);
   }
 
-  /**
-   * Creates a scoped sub-task listener allocating a portion of progress with the given weight.
-   *
-   * @param `weight` the weight fraction of the parent task
-   * @return the sub-task progress listener
-   */
+  /// Creates a sub-task listener allocated `weight` (in `[0.0, 1.0]`) of this task's progress.
   default ProgressListener subTask(float weight) {
     return new SubTask(this, weight);
   }
 
-  /**
-   * Executes an operation as a scoped sub-task allocated the given weight of the current task.
-   *
-   * @param `weight` the weight fraction of the sub-task (e.g. 0.25f for 25%)
-   * @param `operation` the operation to execute
-   */
+  /// Runs `operation` in a scoped sub-task allocated `weight` (in `[0.0, 1.0]`) of the current task's progress,
+  /// completing the sub-task on exit.
   static void subTask(float weight, Runnable operation) {
     SubTask sub = new SubTask(current(), weight);
     try {
@@ -118,14 +67,8 @@ public interface ProgressListener {
     }
   }
 
-  /**
-   * Executes a supplier as a scoped sub-task allocated the given weight of the current task.
-   *
-   * @param `weight` the weight fraction of the sub-task
-   * @param `supplier` the supplier to execute
-   * @param <T> the return type
-   * @return the result of the supplier
-   */
+  /// Evaluates `supplier` in a scoped sub-task allocated `weight` (in `[0.0, 1.0]`) of the current task's progress,
+  /// completing the sub-task on exit.
   static <T> T subTask(float weight, Supplier<T> supplier) {
     SubTask sub = new SubTask(current(), weight);
     var ref =
@@ -148,6 +91,7 @@ public interface ProgressListener {
 
   default void onProgress() {}
 
+  /// Sub-task listener that scales clamped `[0.0, 1.0]` progress updates by a weight of a parent listener.
   final class SubTask implements ProgressListener {
     private final ProgressListener parent;
     private final float weight;

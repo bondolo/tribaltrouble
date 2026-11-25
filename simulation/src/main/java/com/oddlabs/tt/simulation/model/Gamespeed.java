@@ -19,22 +19,10 @@ public enum Gamespeed {
     this.value = value;
   }
 
-  /**
-   * Gets the legacy integer value associated with this gamespeed.
-   *
-   * @return the legacy integer value
-   */
   public int getValue() {
     return value;
   }
 
-  /**
-   * Resolves the {@link Gamespeed} associated with the given legacy integer value.
-   *
-   * @param `value` legacy integer value
-   * @return the corresponding {@link Gamespeed}
-   * @throws `IllegalArgumentException` if the legacy value is unrecognized
-   */
   public static Gamespeed fromValue(int value) {
     for (Gamespeed speed : VALUES) {
       if (speed.value == value) {

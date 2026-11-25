@@ -52,14 +52,9 @@ public final class UnitGrid {
     return occ != null && filter.filter(x, y, occ);
   }
 
-  /**
-   * Finds a single open landscape target without allocating filter or array objects.
-   *
-   * @param `center_grid_x` the center x coordinate
-   * @param `center_grid_y` the center y coordinate
-   * @param `grid_targets_only` whether to restrict to checkerboard grid coordinates ((x + y) & 1 == 0)
-   * @return the nearest valid Target, or null if none found
-   */
+  /// Finds the nearest open landscape target without allocating filter or array objects, or null if none exists.
+  ///
+  /// @param grid_targets_only whether to restrict to checkerboard coordinates (`((x + y) & 1) == 0`)
   public @Nullable Target findGridTarget(int center_grid_x, int center_grid_y, boolean grid_targets_only) {
     if (isValidTarget(center_grid_x, center_grid_y, grid_targets_only)) {
       return new LandscapeTarget(center_grid_x, center_grid_y);

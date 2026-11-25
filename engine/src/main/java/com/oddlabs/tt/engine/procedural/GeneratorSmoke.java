@@ -18,18 +18,10 @@ public final class GeneratorSmoke extends TextureGenerator {
   private final float baseBrightness;
   private final float alphaMultiplier;
 
-  /// Standard smoke.
   public GeneratorSmoke() {
     this(42, 0.6f, 1.0f);
   }
 
-  /**
-   * Parameterized constructor for specialized effects.
-   *
-   * @param `seed` random seed for noise.
-   * @param `baseBrightness` base grayscale value [0, 1].
-   * @param `alphaMultiplier` scaling factor for the alpha channel.
-   */
   public GeneratorSmoke(int seed, float baseBrightness, float alphaMultiplier) {
     this.seed = seed;
     this.baseBrightness = baseBrightness;

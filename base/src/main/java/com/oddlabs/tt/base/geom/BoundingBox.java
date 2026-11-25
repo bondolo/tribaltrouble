@@ -150,13 +150,7 @@ public class BoundingBox {
     this.bmax_z = bmax_z;
   }
 
-  /**
-   * Sets this bounding box to the minimal axis-aligned bounding box enclosing the source bounding box transformed by an
-   * affine matrix.
-   *
-   * @param `source` the source bounding box to transform
-   * @param `matrix` the affine transformation matrix
-   */
+  /// Sets this bounding box to the minimal axis-aligned bounding box enclosing `source` transformed by affine `matrix`.
   public final void setTransformedBounds(BoundingBox source, Matrix4fc matrix) {
     float minX = matrix.m30();
     float maxX = minX;
@@ -248,7 +242,7 @@ public class BoundingBox {
     return (float) Math.sqrt(longest_x * longest_x + longest_y * longest_y);
   }
 
-  /// Make the bounding box contain all rotation of the current box, in the XY plane
+  /// Expands the XY bounds to enclose any rotation of this box in the XY plane.
   public final void maximizeXYPlane() {
     float len = computeXYRadius();
 
@@ -258,40 +252,19 @@ public class BoundingBox {
     bmax_y = len;
   }
 
-  /**
-   * Tests whether this bounding box is partly or completely within the frustum.
-   *
-   * @param `frustum` the frustum intersection culler
-   * @return {@code true} if inside or intersecting; {@code false} if completely outside
-   */
   public final boolean testFrustum(FrustumIntersection frustum) {
     return frustum.testAab(bmin_x, bmin_y, bmin_z, bmax_x, bmax_y, bmax_z);
   }
 
-  /**
-   * Tests this bounding box against the frustum.
-   *
-   * @param `frustum` the frustum intersection culler
-   * @return index of the culling plane (&gt;= 0) if outside; {@link FrustumIntersection#INSIDE} (-2) if completely
-   *     inside; or {@link FrustumIntersection#INTERSECT} (-1) if intersecting.
-   */
+  /// Tests this bounding box against `frustum`.
+  ///
+  /// @return culling plane index (`>= 0`) if outside, {@link FrustumIntersection#INSIDE} (`-2`) if inside, or {@link
+  ///   FrustumIntersection#INTERSECT} (`-1`) if intersecting
   public final int intersectFrustum(FrustumIntersection frustum) {
     return frustum.intersectAab(bmin_x, bmin_y, bmin_z, bmax_x, bmax_y, bmax_z);
   }
 
-  /**
-   * Tests whether the given ray intersects this bounding box and stores the near and far ray parameter values in {@code
-   * result}.
-   *
-   * @param `originX` ray origin X
-   * @param `originY` ray origin Y
-   * @param `originZ` ray origin Z
-   * @param `dirX` ray direction X
-   * @param `dirY` ray direction Y
-   * @param `dirZ` ray direction Z
-   * @param `result` vector receiving {@code (tNear, tFar)} on intersection
-   * @return {@code true} if the ray intersects this bounding box
-   */
+  /// Tests whether a ray intersects this bounding box, storing `(tNear, tFar)` in `result` on intersection.
   public final boolean intersectsRay(
       float originX, float originY, float originZ, float dirX, float dirY, float dirZ, Vector2f result) {
     return Intersectionf.intersectRayAab(

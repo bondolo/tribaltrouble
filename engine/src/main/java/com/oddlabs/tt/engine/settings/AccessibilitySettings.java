@@ -20,12 +20,6 @@ import java.util.stream.Collectors;
 public final class AccessibilitySettings implements Serializable, PropertiesSerializer {
   @Serial private static final long serialVersionUID = 1L;
 
-  /**
-   * Retrieves the {@link AccessibilitySettings} instance registered with the given settings registry.
-   *
-   * @param `settings` the settings registry
-   * @return the registered accessibility settings
-   */
   public static AccessibilitySettings from(SettingsRegistry settings) {
     return settings.get(AccessibilitySettings.class);
   }
@@ -56,18 +50,11 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
   public transient Color.Linear[] linear_player_colours =
       Arrays.stream(player_colours).map(Color.Linear::new).toArray(Color.Linear[]::new);
 
-  /**
-   * Sets the player color at the specified index and updates linear player colors.
-   *
-   * @param `index` the player index
-   * @param `colour` the standard color
-   */
   public void setPlayerColour(int index, Color.Standard colour) {
     player_colours[index] = colour;
     updateLinearColors();
   }
 
-  /// Synchronizes linear player colors from current standard player colors.
   public void updateLinearColors() {
     if (linear_player_colours == null || linear_player_colours.length != player_colours.length) {
       linear_player_colours = new Color.Linear[player_colours.length];

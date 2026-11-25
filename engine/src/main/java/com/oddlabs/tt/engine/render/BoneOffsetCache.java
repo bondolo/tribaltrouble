@@ -43,14 +43,7 @@ final class BoneOffsetCache {
     this.size = 0;
   }
 
-  /**
-   * Retrieves the evaluated bone offset for the given skeletal pose, or -1 if not cached.
-   *
-   * @param `key` cache key identifying the skeletal model or sprite list
-   * @param `animation` animation index
-   * @param `animTicks` animation progress in ticks
-   * @return non-negative bone offset, or -1 on cache miss
-   */
+  /// Returns the cached bone offset using reference equality on `key`, or `-1` on a miss.
   int get(Object key, int animation, float animTicks) {
     int index = hash(key, animation, animTicks) & mask;
     while (true) {
@@ -67,14 +60,7 @@ final class BoneOffsetCache {
     }
   }
 
-  /**
-   * Caches the evaluated bone offset for the given skeletal pose.
-   *
-   * @param `key` cache key identifying the skeletal model or sprite list
-   * @param `animation` animation index
-   * @param `animTicks` animation progress in ticks
-   * @param `offset` evaluated bone offset
-   */
+  /// Caches `offset` using reference equality on `key`, ignoring new entries once the load threshold is reached.
   void put(Object key, int animation, float animTicks, int offset) {
     int index = hash(key, animation, animTicks) & mask;
     while (true) {
@@ -100,7 +86,6 @@ final class BoneOffsetCache {
     }
   }
 
-  /// Clears the cache for the start of a new frame.
   void clear() {
     if (size > 0) {
       Arrays.fill(keys, null);

@@ -5,12 +5,8 @@ package com.oddlabs.tt.simulation.player;
 @FunctionalInterface
 public interface CommandRejectedListener {
 
-  /**
-   * Called when a player command is rejected and dropped.
-   *
-   * @param `action` the action name
-   * @param `entityId` the primary entity ID involved, or -1 if none
-   * @param `reason` the descriptive reason for rejection
-   */
+  /// Called when a player command is rejected and dropped.
+  ///
+  /// @param entityId primary entity ID involved, or -1 if none
   void onCommandRejected(String action, int entityId, String reason);
 }

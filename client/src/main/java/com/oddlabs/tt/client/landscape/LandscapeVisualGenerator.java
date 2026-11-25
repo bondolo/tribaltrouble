@@ -47,33 +47,19 @@ final class LandscapeVisualGenerator {
   private static final Color BLEND_LIGHTING_COLOR = new Color.Standard(0xFF_FF_E6_99); // 1.0, 0.9, 0.6
   private static final float LINEAR_ALPHA_POWER = 1.0f;
 
+  /// Paired diffuse and normal map layers for a terrain structure.
   private record StructureLayers(Layer diffuse, Layer normal) {}
 
+  /// Generated terrain structure layers and high-frequency detail textures.
   private record GeneratedStructures(StructureLayers[] layers, Layer detail, Layer detailNormal) {}
 
   private LandscapeVisualGenerator() {}
 
-  /**
-   * Generates the baking data required to bake landscape colormaps and detail textures using canonical scene lighting.
-   *
-   * @param `landscape` the landscape containing topography and island configuration
-   * @param `detailAlphaValue` the alpha multiplier for the high-frequency detail layer
-   * @param `grassAlphaPower` the alpha exponent for the grass blending layer
-   * @return the generated visual baking data
-   */
   static LandscapeBakingData generate(Landscape landscape, float detailAlphaValue, float grassAlphaPower) {
     return generate(landscape, SceneLighting.CANONICAL, detailAlphaValue, grassAlphaPower);
   }
 
-  /**
-   * Generates the baking data required to bake landscape colormaps and detail textures.
-   *
-   * @param `landscape` the landscape containing topography and island configuration
-   * @param `lighting` scene lighting defining light direction for directional hill shading
-   * @param `detailAlphaValue` the alpha multiplier for the high-frequency detail layer
-   * @param `grassAlphaPower` the alpha exponent for the grass blending layer
-   * @return the generated visual baking data
-   */
+  /// Generates terrain splatting, normal, and detail baking data with directional hill shading from `lighting`.
   static LandscapeBakingData generate(
       Landscape landscape, SceneLighting lighting, float detailAlphaValue, float grassAlphaPower) {
     IslandConfig config = landscape.config();

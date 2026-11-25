@@ -5,13 +5,9 @@ import com.oddlabs.tt.engine.render.AnimatedAccessory;
 import java.util.Collection;
 import org.jspecify.annotations.Nullable;
 
-/// An accessory that hosts one or more particle {@link Emitter}s.
+/// An accessory that hosts one or more particle [Emitter]s.
 public interface EmitterAccessory extends AnimatedAccessory {
-  /**
-   * Appends any particle emitters managed by this accessory to the destination collection.
-   *
-   * @param `dest` The collection to append emitters to.
-   */
+  /// Appends any particle emitters managed by this accessory to `dest`.
   default void addEmitters(Collection<Emitter<?>> dest) {
     Emitter<?> emitter = getEmitter();
     if (emitter != null) {
@@ -19,11 +15,6 @@ public interface EmitterAccessory extends AnimatedAccessory {
     }
   }
 
-  /**
-   * Returns the primary emitter managed by this accessory, or null if managed individually.
-   *
-   * @return the emitter, or null
-   */
   default @Nullable Emitter<?> getEmitter() {
     return null;
   }

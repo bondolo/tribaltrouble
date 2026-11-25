@@ -8,7 +8,7 @@ import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
-/// Utilities for rendering debug shapes (boxes, lines, spheres, etc.) using a {@link DebugShaderRenderer}.
+/// Utilities for rendering debug shapes (boxes, lines, spheres, etc.) using a `DebugShaderRenderer`.
 public final class DebugRender {
   private static final Color.Linear AXIS_X_COLOR = Color.Linear.RED;
   private static final Color.Linear AXIS_Y_COLOR = Color.Linear.GREEN;
@@ -37,20 +37,11 @@ public final class DebugRender {
 
   private DebugRender() {}
 
-  /**
-   * Sets the {@link DebugShaderRenderer} to be used for drawing debug shapes.
-   *
-   * @param `renderer` The renderer to use, or {@code null} to disable debug rendering.
-   */
   public static void setShaderRenderer(@Nullable DebugShaderRenderer renderer) {
     shaderRenderer = renderer;
   }
 
-  /**
-   * Flushes the batched debug primitives to the renderer. Should be called at the end of the debug rendering phase.
-   *
-   * @param `modelView` The view matrix for transformation.
-   */
+  /// Flushes batched debug primitives to the configured renderer and clears the queues.
   public static void flush(Matrix4fc modelView) {
     if (shaderRenderer == null) {
       linesBuffer.clear();
@@ -96,12 +87,10 @@ public final class DebugRender {
     }
   }
 
-  /// Draws a wireframe box.
   public static void drawBox(BoundingBox box, Color color) {
     drawBox(box.bmin_x, box.bmax_x, box.bmin_y, box.bmax_y, box.bmin_z, box.bmax_z, color);
   }
 
-  /// Draws a wireframe box.
   public static void drawBox(
       float bmin_x, float bmax_x, float bmin_y, float bmax_y, float bmin_z, float bmax_z, Color color) {
     if (null == shaderRenderer) return;
@@ -125,7 +114,6 @@ public final class DebugRender {
     drawLine(bmin_x, bmax_y, bmin_z, bmin_x, bmax_y, bmax_z, color);
   }
 
-  /// Draws a point.
   public static void drawPoint(float x, float y, float z, float size, Color color) {
     if (null == shaderRenderer) return;
     currentPointSize = size;
@@ -138,7 +126,6 @@ public final class DebugRender {
     pointsBuffer.add(color.b());
   }
 
-  /// Draws a line segment.
   public static void drawLine(float x1, float y1, float z1, float x2, float y2, float z2, Color color) {
     if (null == shaderRenderer) return;
     linesBuffer.add(x1);
@@ -156,7 +143,7 @@ public final class DebugRender {
     linesBuffer.add(color.b());
   }
 
-  /// Draws the classic OpenGL axes at ground level at the center of the map
+  /// Draws length-10 XYZ coordinate axes at `(center, center, z)`.
   public static void drawAxes(float center, float z) {
     if (null == shaderRenderer) return;
     // X axis - red
@@ -167,7 +154,6 @@ public final class DebugRender {
     drawLine(center, center, z, center, center, z + 10, AXIS_Z_COLOR);
   }
 
-  /// Draws a wireframe quad.
   public static void drawQuad(
       float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float z, Color color) {
     if (null == shaderRenderer) return;
@@ -177,7 +163,6 @@ public final class DebugRender {
     drawLine(x4, y4, z, x1, y1, z, color);
   }
 
-  /// Draws a wireframe cylinder composed of multiple circles.
   public static void drawCylinder(
       float origin_x, float origin_y, float origin_z, float radius, int num_circles, Color color) {
     if (null == shaderRenderer) return;
@@ -188,7 +173,6 @@ public final class DebugRender {
     }
   }
 
-  /// Draws a wireframe circle.
   private static void drawCircle(float radius, float origin_x, float origin_y, float origin_z, Color color) {
     if (null == shaderRenderer) return;
     float prevX = radius * (float) Math.cos(0) + origin_x;
@@ -206,7 +190,6 @@ public final class DebugRender {
     drawLine(prevX, prevY, origin_z, startX, startY, origin_z, color);
   }
 
-  /// Draws a wireframe sphere.
   public static void drawSphere(float origin_x, float origin_y, float origin_z, float radius, Color color) {
     if (null == shaderRenderer) return;
     for (float phi = 0; phi < (float) Math.PI; phi += CIRCLE_DELTA) {
@@ -243,6 +226,7 @@ public final class DebugRender {
     drawCircle(radius, origin_x, origin_y, origin_z, color);
   }
 
+  /// Growable primitive float list for batching debug vertices.
   private static class FloatList {
     private float[] elements;
     private int size;

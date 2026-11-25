@@ -11,12 +11,6 @@ import java.util.Properties;
 public final class LocaleSettings implements Serializable, PropertiesSerializer {
   @Serial private static final long serialVersionUID = 1L;
 
-  /**
-   * Retrieves the {@link LocaleSettings} instance registered with the given settings registry.
-   *
-   * @param `settings` the settings registry
-   * @return the registered locale settings
-   */
   public static LocaleSettings from(SettingsRegistry settings) {
     return settings.get(LocaleSettings.class);
   }

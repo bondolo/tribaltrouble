@@ -21,68 +21,38 @@ import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL21;
 import org.lwjgl.opengl.GL30;
 
-/// Defines the properties and loading parameters for a texture resource. This class specifies how a texture should be
-/// loaded and configured in OpenGL.
+/// Resource descriptor specifying how a texture asset is loaded and configured in OpenGL.
 public final class TextureFile extends File<Texture> {
   private static final Logger logger = Logger.getLogger(TextureFile.class.getSimpleName());
 
   /// Logical pixel format for texture assets.
   public enum Format {
-    /// 3-component red, green, blue color format.
     RGB,
-    /// 4-component red, green, blue, alpha color format.
     RGBA,
-    /// Single-component red channel format.
     RED
   }
 
   private static final String[] EXTENSIONS = {".dds", ".image", ".png", ".jpg", ".jpeg"};
 
-  /// The logical pixel format of the texture.
   private final Format format;
-
-  /// The minification filter, used when the texture is scaled down.
   private final int min_filter;
-
-  /// The magnification filter, used when the texture is scaled up.
   private final int mag_filter;
-
-  /// The wrap mode for the S (U) texture coordinate.
   private final int wrap_s;
-
-  /// The wrap mode for the T (V) texture coordinate.
   private final int wrap_t;
-
-  /// The base mipmap level for fadeout effects.
   private final int base_fadeout_level;
-
-  /// The maximum mipmap level to generate and use.
   private final int max_mipmap_level;
-
-  /// The factor by which mipmap levels fade out.
   private final float fadeout_factor;
-
-  /// If true, alpha values are maximized during processing.
   private final boolean max_alpha;
-
-  /// If true, the texture contains non-color data (e.g., normal maps, height maps) and should not be treated as sRGB.
+  // Non-color data (e.g., normal or height maps) that must not be sRGB-decoded
   private final boolean is_data;
-
-  /// If true, the texture contains color data in sRGB space and should be hardware-decoded to Linear space on fetch.
+  // Color data in sRGB space decoded to linear on hardware fetch
   private final boolean is_srgb;
-
-  /// If true, the texture is a DXT compressed image.
   private final boolean is_dxt;
 
-  /**
-   * Creates a texture file for 2D UI elements, icon atlases, and bitmap fonts.
-   *
-   * <p>Uses un-mipmapped bilinear filtering with edge-clamping to prevent texture bleeding across sprite atlas quad
-   * boundaries.
-   *
-   * @param `location` path to the texture asset without file extension
-   * @return configured {@code TextureFile}
-   */
+  /// Creates a texture file for 2D UI elements, icon atlases, and bitmap fonts using un-mipmapped bilinear filtering
+  /// with edge clamping to prevent atlas bleeding.
+  ///
+  /// @param location asset path without file extension
   public static TextureFile forUI(String location) {
     return new TextureFile(
         location,
@@ -99,15 +69,11 @@ public final class TextureFile extends File<Texture> {
         true);
   }
 
-  /**
-   * Creates a texture file for UI panels, full-screen backgrounds, or repeating UI images.
-   *
-   * <p>Uses un-mipmapped bilinear filtering with repeating texture coordinates.
-   *
-   * @param `location` path to the texture asset without file extension
-   * @param `isSrgb` true if the image contains sRGB color data to decode to linear space; false otherwise
-   * @return configured {@code TextureFile}
-   */
+  /// Creates a texture file for UI panels, backgrounds, or repeating UI images using un-mipmapped bilinear filtering
+  /// with repeating coordinates.
+  ///
+  /// @param location asset path without file extension
+  /// @param isSrgb true if the image contains sRGB color data to decode to linear space
   public static TextureFile forUIImage(String location, boolean isSrgb) {
     return new TextureFile(
         location,
@@ -124,14 +90,9 @@ public final class TextureFile extends File<Texture> {
         isSrgb);
   }
 
-  /**
-   * Creates a texture file for visual effect particles (e.g. musical notes, stars, magic sparks).
-   *
-   * <p>Uses compressed RGBA format with trilinear mipmapping (GL_LINEAR_MIPMAP_LINEAR) and edge clamping.
-   *
-   * @param `location` path to the texture asset without file extension
-   * @return configured {@code TextureFile}
-   */
+  /// Creates a texture file for visual effect particles using trilinear mipmapping and edge clamping.
+  ///
+  /// @param location asset path without file extension
   public static TextureFile forEffect(String location) {
     return new TextureFile(
         location,
@@ -148,22 +109,13 @@ public final class TextureFile extends File<Texture> {
         true);
   }
 
-  /**
-   * Creates a texture file for 3D models, units, buildings, and world scenery sprites.
-   *
-   * <p>Applies trilinear mipmapping (GL_LINEAR_MIPMAP_LINEAR), distance fadeout, and automatic sRGB color-space
-   * conversion based on whether the asset represents non-color data (e.g. normal maps).
-   *
-   * @param `location` path to the texture asset without file extension
-   * @param `format` logical pixel format (e.g. {@link Format#RGBA} or {@link Format#RGB})
-   * @param `clampEdges` if true, clamps texture coordinates to edges (e.g. foliage) to avoid border artifacts;
-   *     otherwise repeats texture coordinates (GL_REPEAT)
-   * @param `mipmapCutoff` maximum mipmap level cutoff
-   * @param `maxAlpha` if true, maximizes alpha values during image processing
-   * @param `isData` true if this texture contains non-color data (e.g. normal, bump, or team masks) and should not be
-   *     hardware sRGB decoded; false for standard sRGB color textures
-   * @return configured {@code TextureFile}
-   */
+  /// Creates a texture file for 3D models, units, buildings, and world scenery sprites using trilinear mipmapping,
+  /// distance fadeout, and automatic sRGB decoding for non-data textures.
+  ///
+  /// @param location asset path without file extension
+  /// @param clampEdges true to clamp coordinates (e.g. foliage); false to repeat
+  /// @param maxAlpha true to maximize alpha values during mipmap processing
+  /// @param isData true for non-color data (normal, bump, team masks) that should skip sRGB decoding
   public static TextureFile forModel(
       String location, Format format, boolean clampEdges, int mipmapCutoff, boolean maxAlpha, boolean isData) {
     int wrapMode = clampEdges ? GL12.GL_CLAMP_TO_EDGE : GL11.GL_REPEAT;
@@ -183,38 +135,15 @@ public final class TextureFile extends File<Texture> {
         isSrgb);
   }
 
-  /**
-   * Creates a texture file for 3D models with format determined by alpha channel presence.
-   *
-   * @param `location` path to the texture asset without file extension
-   * @param `hasAlpha` true for RGBA format; false for RGB format
-   * @param `clampEdges` if true, clamps texture coordinates to edges
-   * @param `mipmapCutoff` maximum mipmap level cutoff
-   * @param `maxAlpha` if true, maximizes alpha values during image processing
-   * @param `isData` true if this texture contains non-color data
-   * @return configured {@code TextureFile}
-   */
+  /// Creates a texture file for 3D models using `Format.RGBA` when `hasAlpha` is true or `Format.RGB` otherwise.
   public static TextureFile forModel(
       String location, boolean hasAlpha, boolean clampEdges, int mipmapCutoff, boolean maxAlpha, boolean isData) {
     return forModel(location, hasAlpha ? Format.RGBA : Format.RGB, clampEdges, mipmapCutoff, maxAlpha, isData);
   }
 
-  /**
-   * Canonical escape-hatch constructor providing direct control over all texture loading and filtering parameters.
-   *
-   * @param `location` path to the texture asset without file extension
-   * @param `format` logical pixel format (e.g. {@link Format#RGBA})
-   * @param `min_filter` OpenGL minification filter (e.g. GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
-   * @param `mag_filter` OpenGL magnification filter (e.g. GL_LINEAR, GL_NEAREST)
-   * @param `wrap_s` OpenGL wrap mode for horizontal texture coordinate S
-   * @param `wrap_t` OpenGL wrap mode for vertical texture coordinate T
-   * @param `max_mipmap_level` maximum mipmap level to generate and use
-   * @param `base_fadeout_level` base mipmap level for distance fadeout effects
-   * @param `fadeout_factor` factor by which mipmap levels fade out with distance
-   * @param `max_alpha` if true, alpha values are maximized during image processing
-   * @param `is_data` if true, texture contains non-color data (e.g. normal maps) and will not be sRGB-decoded
-   * @param `is_srgb` if true, texture contains sRGB color data decoded to linear space on hardware fetch
-   */
+  /// Creates a texture descriptor with explicit OpenGL filtering, wrapping, mipmap, and color-space settings.
+  ///
+  /// @param location asset path without file extension
   public TextureFile(
       String location,
       Format format,
@@ -243,12 +172,7 @@ public final class TextureFile extends File<Texture> {
     this.is_srgb = is_srgb;
   }
 
-  /**
-   * Checks if a texture asset exists at the specified location with any supported extension.
-   *
-   * @param `location` path to the texture asset without file extension
-   * @return true if the texture asset exists; false otherwise
-   */
+  /// Checks whether a texture asset exists at `location` (without file extension) with any supported extension.
   public static boolean exists(String location) {
     return Arrays.stream(EXTENSIONS).map(ext -> locate(location + ext)).anyMatch(Optional::isPresent);
   }

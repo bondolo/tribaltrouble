@@ -5,12 +5,6 @@ import com.oddlabs.util.Color;
 /// Maps a spectrum position and base color to a Linear Color.
 @FunctionalInterface
 public interface ColorSpectrum {
-  /**
-   * Resolves the color for a given spectrum value.
-   *
-   * @param `spectrum` The current spectrum value (typically between 0.0 and 1.0).
-   * @param `baseColor` The base color of the emitter (must be in linear space).
-   * @return The resolved linear Color value.
-   */
+  /// Resolves the linear color for a spectrum position (typically 0.0 to 1.0) from a linear-space base color.
   Color.Linear getColor(float spectrum, Color.Linear baseColor);
 }

@@ -16,6 +16,7 @@ import org.lwjgl.system.MemoryStack;
 /// A stream used to decode OGG Vorbis audio data.
 public final class OGGStream extends NativeResource<OGGStream.Decoder> {
 
+  /// Native `stb_vorbis` decoder state and backing direct buffers.
   protected static class Decoder extends NativeResource.NativeState {
     private static final int ALLOC_BUFFER_SIZE = 256 * 1024;
 
@@ -64,7 +65,7 @@ public final class OGGStream extends NativeResource<OGGStream.Decoder> {
     this(source.openStream());
   }
 
-  /// Reads OGG from the stream and in all cases closes the stream
+  /// Reads OGG data from `stream` and closes `stream` in all cases.
   public OGGStream(InputStream stream) throws IOException {
     byte[] bytes;
     try (stream) {
@@ -93,12 +94,10 @@ public final class OGGStream extends NativeResource<OGGStream.Decoder> {
     STBVorbis.stb_vorbis_seek(state.decoder, sample);
   }
 
-  /**
-   * Decodes samples directly into the provided ShortBuffer.
-   *
-   * @param `buffer` Destination buffer. Must be direct and have remaining space.
-   * @return The number of short values written to the buffer.
-   */
+  /// Decodes interleaved samples directly into `buffer` and advances its position.
+  ///
+  /// @param buffer direct destination buffer with remaining space
+  /// @return number of short values written to `buffer`
   public int read(ShortBuffer buffer) {
     assert buffer.hasRemaining() : "Buffer must have remaining space";
     int samplesRead = STBVorbis.stb_vorbis_get_samples_short_interleaved(state.decoder, state.channels, buffer);

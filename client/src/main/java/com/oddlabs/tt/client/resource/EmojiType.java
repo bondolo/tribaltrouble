@@ -19,21 +19,11 @@ public enum EmojiType {
     this.duration = duration;
   }
 
-  /**
-   * The standard display duration for this emoji in seconds.
-   *
-   * @return the display duration in seconds
-   */
+  /// Returns the display duration in seconds.
   public float getDuration() {
     return duration;
   }
 
-  /**
-   * Map a SupplyType to its corresponding harvest EmojiType.
-   *
-   * @param `supplyType` The type of supply harvested.
-   * @return The corresponding EmojiType.
-   */
   public static EmojiType fromSupply(SupplyType supplyType) {
     return switch (supplyType) {
       case WOOD -> HARVEST_WOOD;

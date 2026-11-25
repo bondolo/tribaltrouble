@@ -37,7 +37,7 @@ final class EFXManager implements AutoCloseable {
   private int reverbEffect;
   private boolean supported = false;
 
-  // Reverb Snapshot record for parameter interpolation
+  /// Reverb parameter snapshot used for preset interpolation.
   private record ReverbSnapshot(
       float density,
       float diffusion,
@@ -116,13 +116,7 @@ final class EFXManager implements AutoCloseable {
     setReverb(type, type, 1.0f);
   }
 
-  /**
-   * Blends between two reverb environments.
-   *
-   * @param `from` The source reverb environment.
-   * @param `to` The target reverb environment.
-   * @param `factor` Blending factor [0.0 - 1.0]. 0.0 is fully 'from', 1.0 is fully 'to'.
-   */
+  /// Blends between two reverb presets (`factor` in `[0.0, 1.0]`, from `from` at `0.0` to `to` at `1.0`).
   public void setReverb(ReverbType from, ReverbType to, float factor) {
     if (!supported || ALC10.alcGetCurrentContext() == 0) return;
     // Small epsilon for factor comparison to avoid redundant GL updates
@@ -178,12 +172,6 @@ final class EFXManager implements AutoCloseable {
     }
   }
 
-  /**
-   * Checks if the OpenAL EFX extension is supported.
-   *
-   * @param `device` The OpenAL device.
-   * @return True if EFX is supported, false otherwise.
-   */
   public static boolean isEfxSupported(long device) {
     ALCCapabilities caps = ALC.createCapabilities(device);
     return caps.ALC_EXT_EFX;

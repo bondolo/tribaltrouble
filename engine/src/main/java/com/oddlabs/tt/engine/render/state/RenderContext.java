@@ -125,8 +125,7 @@ public interface RenderContext {
 
   void setBlendEquation(int equation);
 
-  /// Resets the blend functions for all draw buffers to the current global setBlendFunc state. This is useful to clear
-  /// per-buffer blend states (e.g. from glBlendFunci) after complex composite operations.
+  /// Resets per-buffer blend functions for all draw buffers to the current global `setBlendFunc` state.
   void resetBlendFunc();
 
   void setDrawBuffers(boolean mask);
@@ -147,31 +146,14 @@ public interface RenderContext {
 
   boolean isMultisampleEnabled();
 
-  /**
-   * Sets the effective sample count for multisampling.
-   *
-   * @param `samples` the sample count (e.g. 0, 2, 4)
-   */
   void setEffectiveSamples(int samples);
 
-  /**
-   * Returns the effective sample count for multisampling.
-   *
-   * @return the sample count (0 if multisampling is disabled)
-   */
   int getEffectiveSamples();
 
-  /**
-   * Returns the maximum number of samples supported for multisampling by the hardware.
-   *
-   * @return the maximum hardware sample count
-   */
   int getMaxSamples();
 
-  /**
-   * Verifies that the tracked state matches the actual OpenGL state.
-   *
-   * @throws `IllegalStateException` if a mismatch is found.
-   */
+  /// Verifies that the tracked state matches the actual OpenGL state.
+  ///
+  /// @throws IllegalStateException if a mismatch is found
   void validate();
 }

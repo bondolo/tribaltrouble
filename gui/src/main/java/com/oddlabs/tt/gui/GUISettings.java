@@ -11,12 +11,6 @@ import java.util.Properties;
 public final class GUISettings implements Serializable, PropertiesSerializer {
   @Serial private static final long serialVersionUID = 1L;
 
-  /**
-   * Retrieves the {@link GUISettings} instance registered with the given settings registry.
-   *
-   * @param `settings` the settings registry
-   * @return the registered GUI settings
-   */
   public static GUISettings from(SettingsRegistry settings) {
     return settings.get(GUISettings.class);
   }

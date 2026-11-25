@@ -31,30 +31,6 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
   protected Color.LinearDelta delta_color;
   protected float energy;
 
-  /**
-   * Constructs a new LinearEmitter with linear particle dynamics.
-   *
-   * @param `world` game world this emitter belongs to
-   * @param `position` base 3D position of the emitter
-   * @param `offset_z` vertical offset applied to the emitter position
-   * @param `emitter_radius` radius of the horizontal spawning region
-   * @param `emitter_height` height of the vertical spawning region
-   * @param `num_particles` maximum particle budget, or -1 for infinite
-   * @param `particles_per_second` rate at which particles spawn per second
-   * @param `velocity` initial velocity vector of spawned particles
-   * @param `acceleration` acceleration vector applied to particles
-   * @param `color` base color of the particles
-   * @param `delta_color` color delta applied to particles per second
-   * @param `particle_radius` initial 3D size radius of the particles
-   * @param `growth_rate` rate at which particle size changes per second
-   * @param `energy` starting energy (lifetime) of each particle
-   * @param `friction` damping factor applied to particles colliding with terrain
-   * @param `src_blend_func` OpenGL source blend function
-   * @param `dst_blend_func` OpenGL destination blend function
-   * @param `textures` textures to assign to spawned particles
-   * @param `sprite_renderers` sprite renderers to assign to spawned particles
-   * @param `types` number of different particle types/textures
-   */
   protected LinearEmitter(
       World world,
       Vector3f position,
@@ -247,25 +223,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     return initiated;
   }
 
-  /**
-   * Initializes and adds a linear particle using discrete color and delta components in linear RGB space.
-   *
-   * @param `position` base position
-   * @param `velocity` initial velocity vector
-   * @param `acceleration` acceleration vector
-   * @param `colorR` linear red channel
-   * @param `colorG` linear green channel
-   * @param `colorB` linear blue channel
-   * @param `colorA` alpha channel
-   * @param `deltaR` linear red delta per second
-   * @param `deltaG` linear green delta per second
-   * @param `deltaB` linear blue delta per second
-   * @param `deltaA` alpha delta per second
-   * @param `particle_radius` particle radius dimensions
-   * @param `growth_rate` particle radius growth rate
-   * @param `energy` particle lifetime/energy
-   * @return number of particles initiated
-   */
+  /// Initializes and adds linear particles using linear RGB color and delta components, returning the count spawned.
   protected abstract int initParticle(
       Vector3f position,
       Vector3fc velocity,

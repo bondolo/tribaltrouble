@@ -96,12 +96,7 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
     }
   }
 
-  /**
-   * Window or, in fullscreen mode the display, dimensions changed.
-   *
-   * @param `width` width of the window/display in pixels
-   * @param `height` height of the window/display in pixels.
-   */
+  /// Called when the window or display dimensions change.
   protected void displayChangedNotify(int width, int height) {}
 
   public final void render(GUIRenderer renderer) {
@@ -153,14 +148,8 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
     }
   }
 
-  /**
-   * Renders the geometry of this object. This method should only issue drawing commands for this specific object. It
-   * should operate in its own local coordinate space, from (0,0) to (getWidth(), getHeight()). The parent {@link
-   * #render(GUIRenderer, float, float, float, float)} method is responsible for setting up the transformation matrix
-   * and clipping.
-   *
-   * @param `renderer` The renderer to use for drawing.
-   */
+  /// Renders this component's geometry in local `(0, 0)` to `(getWidth(), getHeight())` coordinates; transforms and
+  /// clipping are managed by [#render(GUIRenderer, float, float, float, float)].
   protected void renderGeometry(GUIRenderer renderer) {
     // nothing to show
   }

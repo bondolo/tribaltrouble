@@ -10,6 +10,7 @@ import org.lwjgl.opengl.GL30;
 /// Wraps a native Framebuffer Object
 public final class FBO extends NativeResource<FBO.Buffer> {
 
+  /// Native OpenGL framebuffer handle.
   static final class Buffer extends NativeResource.NativeState {
 
     private final int handle;
@@ -103,13 +104,6 @@ public final class FBO extends NativeResource<FBO.Buffer> {
     return fbo;
   }
 
-  /**
-   * Creates an FBO configured with a 24-bit depth texture attachment and no color attachments.
-   *
-   * @param `width` the width in pixels
-   * @param `height` the height in pixels
-   * @return the configured depth-only FBO
-   */
   public static FBO createDepthOnlyFBO(int width, int height) {
     FBO fbo = new FBO(width, height);
     fbo.bind();
@@ -341,11 +335,6 @@ public final class FBO extends NativeResource<FBO.Buffer> {
     }
   }
 
-  /**
-   * Returns the sample count configured for this FBO.
-   *
-   * @return the sample count (1 for non-multisample FBOs)
-   */
   public int getSamples() {
     return samples;
   }

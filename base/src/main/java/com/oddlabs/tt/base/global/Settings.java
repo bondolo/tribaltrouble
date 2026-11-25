@@ -38,7 +38,7 @@ public final class Settings implements Serializable, PropertiesSerializer, Setti
   // FIXME: Replace with build version metadata
   private int last_revision = -1;
 
-  /// If true then the previous run crashed and we should restore "safe" defaults
+  // If true then the previous run crashed and we should restore "safe" defaults
   private boolean crashed = false;
 
   public Path getLastEventLogDir() {
@@ -65,12 +65,7 @@ public final class Settings implements Serializable, PropertiesSerializer, Setti
     this.crashed = crashed;
   }
 
-  /**
-   * Arms the crash tripwire on disk for the current session.
-   *
-   * @param `logDir` the directory where current run event logs are stored
-   * @return true if the previous run crashed and was restored with safe defaults
-   */
+  /// Persists the crash flag on disk for the current session, returning whether the previous run crashed.
   public boolean armCrashTripwire(Path logDir) {
     boolean previouslyCrashed = this.crashed;
     this.last_event_log_dir = logDir.toAbsolutePath();
@@ -79,7 +74,7 @@ public final class Settings implements Serializable, PropertiesSerializer, Setti
     return previouslyCrashed;
   }
 
-  /// Disarms the crash tripwire on disk upon a clean shutdown.
+  /// Clears the crash flag and saves settings to disk upon a clean shutdown.
   public void disarmCrashTripwire() {
     this.crashed = false;
     save();
@@ -113,7 +108,6 @@ public final class Settings implements Serializable, PropertiesSerializer, Setti
     }
   }
 
-  /// Retrieves a registered {@link PropertiesSerializer} by its class.
   @Override
   @SuppressWarnings("unchecked")
   public <T extends PropertiesSerializer> T get(Class<T> type) {
@@ -133,7 +127,7 @@ public final class Settings implements Serializable, PropertiesSerializer, Setti
             });
   }
 
-  /// Registers a custom or dynamic {@link PropertiesSerializer}.
+  /// Registers a {@link PropertiesSerializer}, immediately loading already-read properties into it if present.
   public void registerSerializer(PropertiesSerializer serializer) {
     if (!loadedProperties.isEmpty()) {
       serializer.loadFromProperties(loadedProperties);

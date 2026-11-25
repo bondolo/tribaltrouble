@@ -9,11 +9,6 @@ import org.lwjgl.opengl.GL30;
 public final class HeightMapVisual {
   private final Texture heightTexture;
 
-  /**
-   * Constructs the visual representation of the height map, creating the OpenGL texture.
-   *
-   * @param `heightMap` The simulation height map instance
-   */
   public HeightMapVisual(HeightMap heightMap) {
     this.heightTexture =
         new Texture(
@@ -26,11 +21,6 @@ public final class HeightMapVisual {
             GL11.GL_REPEAT);
   }
 
-  /**
-   * Returns the underlying OpenGL Texture instance.
-   *
-   * @return Non-null Texture instance
-   */
   public Texture getHeightTexture() {
     return heightTexture;
   }

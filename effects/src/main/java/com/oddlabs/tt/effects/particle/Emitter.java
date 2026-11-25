@@ -33,7 +33,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
   // Spawning State
   private float particles_per_second;
 
-  /// Budget of particles to spawn. -1 for infinite.
+  // Budget of particles to spawn; -1 for infinite.
   private int remaining_particles;
 
   private float particle_counter = 0;
@@ -62,20 +62,6 @@ public abstract class Emitter<P extends Particle> implements Animated {
 
   private ColorSpectrum colorSpectrum = (spectrum, baseColor) -> Color.Linear.WHITE;
 
-  /**
-   * Constructs a new Emitter with the specified world, position, blending functions, textures, sprite renderers,
-   * particle types, and spawn settings.
-   *
-   * @param `world` game world this emitter belongs to
-   * @param `position` base 3D position of the emitter
-   * @param `src_blend_func` OpenGL source blend function
-   * @param `dst_blend_func` OpenGL destination blend function
-   * @param `textures` textures to assign to spawned particles
-   * @param `sprite_renderers` sprite renderers to assign to spawned particles
-   * @param `types` number of different particle types/textures
-   * @param `remaining_particles` maximum number of particles to spawn, or -1 for infinite
-   * @param `particles_per_second` rate at which particles are spawned per second
-   */
   @SuppressWarnings("unchecked")
   public Emitter(
       World world,
@@ -118,20 +104,10 @@ public abstract class Emitter<P extends Particle> implements Animated {
     this.current_spectrum = Math.clamp(current_spectrum, min, max);
   }
 
-  /**
-   * Sets current spectrum position.
-   *
-   * @param `spectrum` spectrum position, clamped between min and max bounds
-   */
   public final void setSpectrum(float spectrum) {
     this.current_spectrum = Math.clamp(spectrum, spectrum_min, spectrum_max);
   }
 
-  /**
-   * Returns current spectrum position.
-   *
-   * @return current spectrum position
-   */
   public final float getSpectrum() {
     return current_spectrum;
   }
@@ -180,13 +156,8 @@ public abstract class Emitter<P extends Particle> implements Animated {
   protected float nextColorB;
   protected float nextColorA;
 
-  /**
-   * Calculates the jittered and modulated linear color components for the next particle, writing them to {@link
-   * #nextColorR}, {@link #nextColorG}, {@link #nextColorB}, and {@link #nextColorA}.
-   *
-   * @param `clusterColor` base cluster color in linear RGB space
-   * @param `templateColor` emitter template color in linear RGB space
-   */
+  /// Calculates jittered, modulated linear RGB color components into [#nextColorR], [#nextColorG], [#nextColorB], and
+  /// [#nextColorA] from linear `clusterColor` and `templateColor`.
   protected final void computeNextParticleColor(Color.Linear clusterColor, Color.Linear templateColor) {
     float jitter = (float) ThreadLocalRandom.current().nextGaussian() * jitter_intensity;
     float r = Math.clamp(clusterColor.r() + jitter, 0, 1);
@@ -233,11 +204,6 @@ public abstract class Emitter<P extends Particle> implements Animated {
     return dst_blend_func;
   }
 
-  /**
-   * Returns true if there are any particles currently active in this emitter.
-   *
-   * @return true if there are active particles.
-   */
   public final boolean hasActiveParticles() {
     for (int i = 0; i < particles.length; i++) {
       if (!particles[i].isEmpty()) {
@@ -293,14 +259,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
     return scale_z;
   }
 
-  /**
-   * Adjusts the color of all active particles by applying the specified delta components in linear RGB space.
-   *
-   * @param `r` linear red delta
-   * @param `g` linear green delta
-   * @param `b` linear blue delta
-   * @param `a` alpha delta
-   */
+  /// Adds the linear RGB and alpha deltas to all active particles.
   public final void adjustColor(float r, float g, float b, float a) {
     for (int i = 0; i < particles.length; i++) {
       List<P> list = particles[i];
@@ -311,11 +270,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
     }
   }
 
-  /**
-   * Adjusts the color of all active particles by applying the specified color delta.
-   *
-   * @param `delta` color delta in linear RGB space
-   */
+  /// Adds the linear color delta to all active particles.
   public final void adjustColor(Color.LinearDelta delta) {
     adjustColor(delta.r(), delta.g(), delta.b(), delta.a());
   }
@@ -361,7 +316,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
     this.remaining_particles = remaining;
   }
 
-  /// Core spawning loop. Should be called in {@link #animate(float dt)}.
+  /// Core spawning loop; must be called from [#animate(float)].
   protected final void updateSpawning(float dt) {
     if (started) particle_counter += particles_per_second * dt;
 
@@ -373,12 +328,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
     }
   }
 
-  /**
-   * Subclasses must implement this to initialize and add new particles.
-   *
-   * @param `count` Requested number of particles to spawn (usually 1 based on updateSpawning loop).
-   * @return The actual number of particles spawned.
-   */
+  /// Initializes and adds up to `count` new particles, returning the actual number spawned.
   protected abstract int initParticles(int count);
 
   protected final int getTypes() {
@@ -388,11 +338,6 @@ public abstract class Emitter<P extends Particle> implements Animated {
   @Override
   public final void updateChecksum(StateChecksum checksum) {}
 
-  /**
-   * Returns true if the emitter has finished spawning and all its particles have died.
-   *
-   * @return true if the emitter is finished.
-   */
   public final boolean isFinished() {
     return remaining_particles == 0 && !hasActiveParticles();
   }
@@ -400,10 +345,5 @@ public abstract class Emitter<P extends Particle> implements Animated {
   /// Renders debug information for this emitter.
   public void debugRender() {}
 
-  /**
-   * Returns the bounding box containing all active particles of this emitter.
-   *
-   * @return the bounding box of active particles
-   */
   public abstract BoundingBox getBounds();
 }

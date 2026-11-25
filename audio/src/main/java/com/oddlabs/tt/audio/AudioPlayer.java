@@ -17,22 +17,13 @@ public interface AudioPlayer {
 
   AudioPlayer stop();
 
-  /**
-   * Stops playback of this audio instance by fading the volume out exponentially.
-   *
-   * <p>The gain decays according to the formula: {@code G(t) = G(0) * e^(-decayRate * t)}, where {@code t} is the
-   * elapsed time in seconds. Perceptual silence is reached when the gain drops below a low threshold, at which point
-   * the audio source is stopped.
-   *
-   * <p>For reference:
-   *
-   * <ul>
-   *   <li>A decay rate of {@code 15.0} results in a very fast fade-out (~0.2 seconds).
-   *   <li>A decay rate of {@code 1.2} results in a slow, gradual fade-out (~2.5 seconds).
-   * </ul>
-   *
-   * @param `decayRate` the rate of exponential decay (higher values result in a faster fade-out)
-   * @return this player instance for chaining
-   */
+  /// Stops playback by fading volume out exponentially according to `G(t) = G(0) * e^(-decayRate * t)`, where `t` is
+  /// elapsed time in seconds, stopping the source once gain drops below the silence threshold.
+  ///
+  /// For reference:
+  /// - `15.0` produces a fast fade-out (~0.2 seconds).
+  /// - `1.2` produces a gradual fade-out (~2.5 seconds).
+  ///
+  /// @param decayRate exponential decay rate (higher values result in a faster fade-out)
   AudioPlayer stop(float decayRate);
 }

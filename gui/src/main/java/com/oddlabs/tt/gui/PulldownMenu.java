@@ -127,26 +127,17 @@ public final class PulldownMenu<T> extends Group {
     return chosen_item_index >= 0 && chosen_item_index < items.size() && items.get(chosen_item_index) == item;
   }
 
-  /// {@return index of the chosen item, or -1 if no item is chosen}
   public int getChosenItemIndex() {
     return chosen_item_index;
   }
 
-  /**
-   * Chooses an item by its index.
-   *
-   * @param `index` index of the item to choose or -1 to clear the chosen item
-   */
+  /// Selects the item at `index` (or `-1` to clear) and notifies chosen listeners.
   public void chooseItem(int index) {
     chosen_item_index = index;
     itemChosenAll();
   }
 
-  /**
-   * Chooses an item by its instance.
-   *
-   * @param `item` the item to choose, or null to clear the chosen item
-   */
+  /// Selects `item` (or `null` to clear) and notifies chosen listeners.
   public void chooseItem(@Nullable PulldownItem<T> item) {
     chooseItem(item != null ? items.indexOf(item) : -1);
   }

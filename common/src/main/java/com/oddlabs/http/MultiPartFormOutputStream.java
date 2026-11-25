@@ -15,38 +15,14 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import org.jspecify.annotations.Nullable;
 
-/**
- * <code>MultiPartFormOutputStream</code> is used to write "multipart/form-data" to a <code>java.net.URLConnection
- * </code> for POSTing. This is primarily for file uploading to HTTP servers.
- *
- * @since JDK1.3
- *     <p><a href="http://forum.java.sun.com/thread.jsp?forum=31&thread=451245">...</a>
- */
+/// Writes `multipart/form-data` payloads to an output stream for HTTP POST uploads.
 public class MultiPartFormOutputStream {
 
-  /// The line end characters.
   private static final String NEWLINE = "\r\n";
-
-  /// The boundary prefix.
   private static final String PREFIX = "--";
-
-  /// The output stream to write to.
   private final DataOutputStream out;
-
-  /// The multipart boundary string.
   private final String boundary;
 
-  /**
-   * Creates a new <code>MultiPartFormOutputStream</code> object using the specified output stream and boundary. The
-   * boundary is required to be created before using this method, as described in the description for the <code>
-   * getContentType(String)</code> method. The boundary is only checked for <code>null</code> or empty string, but it is
-   * recommended to be at least 6 characters. (Or use the static createBoundary() method to create one.)
-   *
-   * @param `os` the output stream
-   * @param `boundary` the boundary
-   * @see #createBoundary()
-   * @see #getContentType(String)
-   */
   public MultiPartFormOutputStream(OutputStream os, String boundary) {
     if (boundary.isEmpty()) {
       throw new IllegalArgumentException("Boundary stream is required.");
@@ -55,90 +31,35 @@ public class MultiPartFormOutputStream {
     this.boundary = boundary;
   }
 
-  /**
-   * Writes a boolean field value.
-   *
-   * @param `name` the field name (required)
-   * @param `value` the field value
-   * @throws `IOException` on input/output errors
-   */
   public void writeField(String name, boolean value) throws IOException {
     writeField(name, Boolean.toString(value));
   }
 
-  /**
-   * Writes a double field value.
-   *
-   * @param `name` the field name (required)
-   * @param `value` the field value
-   * @throws `IOException` on input/output errors
-   */
   public void writeField(String name, double value) throws IOException {
     writeField(name, Double.toString(value));
   }
 
-  /**
-   * Writes a float field value.
-   *
-   * @param `name` the field name (required)
-   * @param `value` the field value
-   * @throws `IOException` on input/output errors
-   */
   public void writeField(String name, float value) throws IOException {
     writeField(name, Float.toString(value));
   }
 
-  /**
-   * Writes a long field value.
-   *
-   * @param `name` the field name (required)
-   * @param `value` the field value
-   * @throws `IOException` on input/output errors
-   */
   public void writeField(String name, long value) throws IOException {
     writeField(name, Long.toString(value));
   }
 
-  /**
-   * Writes an int field value.
-   *
-   * @param `name` the field name (required)
-   * @param `value` the field value
-   * @throws `IOException` on input/output errors
-   */
   public void writeField(String name, int value) throws IOException {
     writeField(name, Integer.toString(value));
   }
 
-  /**
-   * Writes a short field value.
-   *
-   * @param `name` the field name (required)
-   * @param `value` the field value
-   * @throws `IOException` on input/output errors
-   */
   public void writeField(String name, short value) throws IOException {
     writeField(name, Short.toString(value));
   }
 
-  /**
-   * Writes a char field value.
-   *
-   * @param `name` the field name (required)
-   * @param `value` the field value
-   * @throws `IOException` on input/output errors
-   */
   public void writeField(String name, char value) throws IOException {
     writeField(name, Character.toString(value));
   }
 
-  /**
-   * Writes a string field value. If the value is null, an empty string is sent ("").
-   *
-   * @param `name` the field name (required)
-   * @param `value` the field value
-   * @throws `IOException` on input/output errors
-   */
+  /// Writes a string field value, sending an empty string if `value` is `null`.
   public void writeField(String name, @Nullable String value) throws IOException {
     if (value == null) {
       value = "";
@@ -163,16 +84,6 @@ public class MultiPartFormOutputStream {
     out.flush();
   }
 
-  /**
-   * Writes a file's contents. If the file is null, does not exist, or is a directory, an <code>IllegalArgumentException
-   * </code> will be thrown.
-   *
-   * @param `name` the field name
-   * @param `mimeType` the file content type (optional, recommended)
-   * @param `file` the file (the file must exist)
-   * @throws `IOException` on input/output errors
-   * @throws `IllegalArgumentException` if the file does not exist or is a directory
-   */
   public void writeFile(String name, @Nullable String mimeType, File file)
       throws IllegalArgumentException, IOException {
     if (!file.exists()) {
@@ -198,16 +109,7 @@ public class MultiPartFormOutputStream {
     out.writeBytes(NEWLINE);
   }
 
-  /**
-   * Writes an input stream's contents.
-   *
-   * @param `name` the field name
-   * @param `mimeType` the file content type (optional, recommended)
-   * @param `fileName` the file name (required)
-   * @param `is` the input stream
-   * @throws `IOException` on input/output errors
-   * @throws `IllegalArgumentException` if the filename is empty
-   */
+  /// Writes the contents of `is` as a multipart file entry and closes `is`.
   public void writeFile(String name, @Nullable String mimeType, String fileName, InputStream is)
       throws IllegalArgumentException, IOException {
     if (fileName.isEmpty()) {
@@ -234,16 +136,6 @@ public class MultiPartFormOutputStream {
     out.flush();
   }
 
-  /**
-   * Writes the given bytes. The bytes are assumed to be the contents of a file, and will be sent as such.
-   *
-   * @param `name` the field name
-   * @param `mimeType` the file content type (optional, recommended)
-   * @param `fileName` the file name (required)
-   * @param `data` the file data
-   * @throws `IOException` on input/output errors
-   * @throws `IllegalArgumentException` if the filename is empty
-   */
   public void writeFile(String name, String mimeType, String fileName, byte[] data)
       throws IllegalArgumentException, IOException {
     if (fileName.isEmpty()) {
@@ -264,23 +156,12 @@ public class MultiPartFormOutputStream {
     out.flush();
   }
 
-  /**
-   * Flushes the stream. Actually, this method does nothing, as the only write methods are highly specialized and
-   * automatically flush.
-   *
-   * @throws `IOException` on input/output errors
-   */
+  /// No-op; `writeField` and `writeFile` flush automatically.
   public void flush() throws IOException {
     // out.flush();
   }
 
-  /**
-   * Closes the stream.
-   *
-   * <p><b>NOTE:</b> This method <b>MUST</b> be called to finalize the multipart stream.
-   *
-   * @throws `IOException` on input/output errors
-   */
+  /// Writes the final multipart boundary and closes the underlying stream; must be called to finalize the payload.
   public void close() throws IOException {
     // write final boundary
     out.writeBytes(PREFIX);
@@ -291,23 +172,11 @@ public class MultiPartFormOutputStream {
     out.close();
   }
 
-  /**
-   * Gets the multipart boundary string being used by this stream.
-   *
-   * @return the boundary
-   */
   public String getBoundary() {
     return this.boundary;
   }
 
-  /**
-   * Creates a new <code>java.net.URLConnection</code> object from the specified <code>java.net.URL</code>. This is a
-   * convenience method which will set the <code>doInput</code>, <code>doOutput</code>, <code>useCaches</code> and
-   * <code>defaultUseCaches</code> fields to the appropriate settings in the correct order.
-   *
-   * @return a <code>java.net.URLConnection</code> object for the URL
-   * @throws `IOException` on input/output errors
-   */
+  /// Opens a `URLConnection` configured for non-cached HTTP `POST` input/output.
   public static URLConnection createConnection(URL url) throws IOException {
     URLConnection urlConn = url.openConnection();
     if (urlConn instanceof HttpURLConnection httpConn) {
@@ -320,30 +189,10 @@ public class MultiPartFormOutputStream {
     return urlConn;
   }
 
-  /**
-   * Creates a multipart boundary string by concatenating 20 hyphens (-) and the hexadecimal (base-16) representation of
-   * the current time in milliseconds.
-   *
-   * @return a multipart boundary string
-   * @see #getContentType(String)
-   */
   public static String createBoundary() {
     return "--------------------" + Long.toString(System.currentTimeMillis(), 16);
   }
 
-  /**
-   * Gets the content type string suitable for the <code>java.net.URLConnection</code> which includes the multipart
-   * boundary string. <br>
-   * <br>
-   * This method is static because, due to the nature of the <code>java.net.URLConnection</code> class, once the output
-   * stream for the connection is acquired, it's too late to set the content type (or any other request parameter). So
-   * one has to create a multipart boundary string first before using this class, such as with the <code>
-   * createBoundary()</code> method.
-   *
-   * @param `boundary` the boundary string
-   * @return the content type string
-   * @see #createBoundary()
-   */
   public static String getContentType(String boundary) {
     return "multipart/form-data; boundary=" + boundary;
   }

@@ -42,22 +42,10 @@ public final class AccessibilityPanel extends Panel {
       this.value = value;
     }
 
-    /**
-     * Gets the legacy integer value associated with this CVD mode.
-     *
-     * @return the legacy integer value
-     */
     public int getValue() {
       return value;
     }
 
-    /**
-     * Resolves the {@link CVDMode} associated with the given legacy integer value.
-     *
-     * @param `value` legacy integer value
-     * @return the corresponding {@link CVDMode}
-     * @throws `IllegalArgumentException` if the legacy value is unrecognized
-     */
     public static CVDMode fromValue(int value) {
       for (CVDMode mode : VALUES) {
         if (mode.value == value) {

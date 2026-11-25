@@ -24,13 +24,7 @@ public final class Main {
 
   private Main() {}
 
-  /**
-   * Decodes a map key or code into a complete {@link HeadlessMatchConfig}.
-   *
-   * @param `mapCode` encoded map code string
-   * @param `maxTicks` maximum ticks limit
-   * @return populated headless match configuration
-   */
+  /// Decodes an encoded map code into a [HeadlessMatchConfig].
   public static HeadlessMatchConfig parseMapKey(String mapCode, int maxTicks) {
     var params = MapCode.decode(mapCode);
 

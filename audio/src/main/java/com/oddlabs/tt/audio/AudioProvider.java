@@ -9,22 +9,9 @@ import java.util.logging.Logger;
 public interface AudioProvider {
   Logger logger = Logger.getLogger(AudioProvider.class.getName());
 
-  /**
-   * Creates and initializes an {@link AudioManager} instance.
-   *
-   * @param `settings` audio configuration settings
-   * @param `animationManager` animation manager for scheduling fade and audio tasks
-   * @return an initialized {@link AudioManager} instance
-   */
   AudioManager create(AudioSettings settings, AnimationManager animationManager);
 
-  /**
-   * Loads the preferred {@link AudioManager} instance via {@link ServiceLoader}.
-   *
-   * @param `settings` audio configuration settings
-   * @param `animationManager` animation manager for scheduling fade and audio tasks
-   * @return an initialized {@link AudioManager} instance
-   */
+  /// Loads the {@link AudioManager} via {@link ServiceLoader}, falling back to OpenAL if none is registered.
   static AudioManager load(AudioSettings settings, AnimationManager animationManager) {
     Optional<AudioProvider> provider =
         ServiceLoader.load(AudioProvider.class, AudioProvider.class.getClassLoader()).findFirst();

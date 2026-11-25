@@ -13,16 +13,16 @@ import org.jspecify.annotations.Nullable;
 
 /// Viewport camera managing position, orientation, smoothing, and terrain collision avoidance.
 public abstract class Camera implements Animated {
-  /// The distance to project outwards from the screen corners when checking for landscape collisions. This ensures the
-  /// camera pulls up before the terrain goes off-screen.
+  // The distance to project outwards from the screen corners when checking for landscape collisions. This ensures the
+  // camera pulls up before the terrain goes off-screen.
   private static final float LANDSCAPE_OFFSET = 5f;
 
-  /// Controls the interpolation speed for camera movements. A higher value results in faster, more responsive movement,
-  /// while a lower value provides a smoother, more dampened feel.
+  // Controls the interpolation speed for camera movements. A higher value results in faster, more responsive movement,
+  // while a lower value provides a smoother, more dampened feel.
   private static final float SMOOTHNESS_FACTOR = 15;
 
-  /// Minimum vertical distance to maintain between the camera's center and the ground below it. This prevents the
-  /// camera from sinking into the terrain.
+  // Minimum vertical distance to maintain between the camera's center and the ground below it. This prevents the
+  // camera from sinking into the terrain.
   private static final float GROUND_CLEARANCE = 1.0f;
 
   private final Matrix4f proj = new Matrix4f();
@@ -89,15 +89,8 @@ public abstract class Camera implements Animated {
     }
   }
 
-  /**
-   * Applies perspective projection transformation for this camera at the specified altitude and dimensions.
-   *
-   * @param `matrix` the target matrix to transform
-   * @param `z` the camera altitude in meters
-   * @param `width` the viewport width in pixels
-   * @param `height` the viewport height in pixels
-   * @return the transformed matrix
-   */
+  /// Mutates `matrix` in place with a dynamic-FOV perspective projection for altitude `z` (in meters); no-op if `height
+  /// <= 0`.
   public Matrix4f applyPerspective(Matrix4f matrix, float z, int width, int height) {
     if (height > 0) {
       float aspect = (float) width / height;
@@ -109,14 +102,6 @@ public abstract class Camera implements Animated {
     return matrix;
   }
 
-  /**
-   * Applies perspective projection transformation for this camera using its current altitude.
-   *
-   * @param `matrix` the target matrix to transform
-   * @param `width` the viewport width in pixels
-   * @param `height` the viewport height in pixels
-   * @return the transformed matrix
-   */
   public Matrix4f applyPerspective(Matrix4f matrix, int width, int height) {
     return applyPerspective(matrix, state.getCurrentZ(), width, height);
   }
@@ -203,6 +188,7 @@ public abstract class Camera implements Animated {
 
   public void mouseMoved(int x, int y) {}
 
+  /// Field-of-view calculation mode for camera perspective projection.
   public enum FOVMode {
     FIXED,
     DIAGONAL,

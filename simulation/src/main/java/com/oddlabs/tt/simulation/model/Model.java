@@ -8,10 +8,10 @@ import org.jspecify.annotations.Nullable;
 public abstract class Model extends Element<Model> implements Shadowable, Distributable {
   private final World world;
 
-  /// ground height if {@link #groundBased}
+  // Ground height when groundBased is true.
   private float baseZ;
 
-  /// if true then the Model is positioned relative to the terrain at (x, y)
+  // If true, the model is positioned relative to the terrain at (x, y).
   private boolean groundBased = true;
 
   private int distributable_id = Distributable.NO_ID;
@@ -42,16 +42,10 @@ public abstract class Model extends Element<Model> implements Shadowable, Distri
     this.distributable_id = id;
   }
 
-  /// {@return the client-side presentation state bound to this model, or null if none or headless}
   public final @Nullable ClientModel getClientModel() {
     return clientModel;
   }
 
-  /**
-   * Sets the client-side presentation state bound to this model.
-   *
-   * @param `clientModel` the client model, or null to detach
-   */
   public final void setClientModel(@Nullable ClientModel clientModel) {
     this.clientModel = clientModel;
   }
@@ -62,7 +56,6 @@ public abstract class Model extends Element<Model> implements Shadowable, Distri
     return 0f;
   }
 
-  /// {@return rendering position offset to the base z of the model
   public float getOffsetZ() {
     return 0f;
   }
@@ -75,7 +68,7 @@ public abstract class Model extends Element<Model> implements Shadowable, Distri
     return 0f;
   }
 
-  /// {@return the bounds of the model in the local coordinate system for each animation}
+  /// Returns local-space bounding boxes indexed by animation index, or null if unbounded.
   protected abstract BoundingBox @Nullable [] getLocalBounds();
 
   protected void updateBounds() {
@@ -133,7 +126,7 @@ public abstract class Model extends Element<Model> implements Shadowable, Distri
     super.register();
   }
 
-  /// update positions related to model position
+  /// Called after the model's position or bounds are updated.
   protected void onReinsert() {
     // No-op by default
   }

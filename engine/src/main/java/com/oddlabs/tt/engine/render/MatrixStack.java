@@ -3,7 +3,7 @@ package com.oddlabs.tt.engine.render;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 
-/// Maintains a stack of transformation matrix that are applied to the drawing.
+/// Maintains a stack of transformation matrices applied during rendering.
 final class MatrixStack {
   private static final int DEFAULT_CAPACITY = 32;
 
@@ -63,15 +63,7 @@ final class MatrixStack {
     return this;
   }
 
-  /**
-   * Applies a rotation to the current matrix.
-   *
-   * @param `angle` The angle to rotate, in DEGREES.
-   * @param `x` The x component of the rotation axis.
-   * @param `y` The y component of the rotation axis.
-   * @param `z` The z component of the rotation axis.
-   * @return This matrix stack for chaining.
-   */
+  /// Rotates the current matrix by `angle` degrees around the axis `(x, y, z)`.
   public MatrixStack rotate(float angle, float x, float y, float z) {
     current().rotate((float) Math.toRadians(angle), x, y, z);
     return this;

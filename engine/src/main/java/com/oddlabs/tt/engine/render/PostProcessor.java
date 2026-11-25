@@ -61,13 +61,6 @@ public final class PostProcessor implements AutoCloseable {
     return sceneFBO;
   }
 
-  /**
-   * Resizes internal framebuffers and updates shader viewport dimensions.
-   *
-   * @param `width` the new width in pixels
-   * @param `height` the new height in pixels
-   * @return {@code true} if dimensions changed; {@code false} otherwise
-   */
   public boolean resize(int width, int height) {
     if (this.currentWidth == width && this.currentHeight == height) return false;
     this.currentWidth = width;
@@ -101,35 +94,19 @@ public final class PostProcessor implements AutoCloseable {
     return depthCopyFBO.getDepthTexture();
   }
 
-  /**
-   * Binds the active scene framebuffer for 3D rendering and returns a scoped handle that unbinds back to the default
-   * framebuffer upon exit.
-   *
-   * @param `width` the viewport width in pixels
-   * @param `height` the viewport height in pixels
-   * @return a scoped handle restoring framebuffer 0 upon closure
-   */
+  /// Resizes buffers if needed, binds the active scene framebuffer, and returns a scope that restores framebuffer 0 on
+  /// close.
   public ScopedState withScene(int width, int height) {
     resize(width, height);
     getActiveSceneFBO().bind();
     return () -> RenderContext.current().bindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
   }
 
-  /**
-   * Resolves multisample buffers if enabled and composites post-processing effects onto the default framebuffer.
-   *
-   * @param `context` the active render context
-   */
   public void renderComposite(RenderContext context) {
     renderComposite(context, false);
   }
 
-  /**
-   * Resolves multisample buffers if enabled and composites post-processing effects onto the default framebuffer.
-   *
-   * @param `context` the active render context
-   * @param `inNoDetailMode` whether the camera is in strategic overview (no detail) mode
-   */
+  /// Resolves multisample scene buffers if active and composites post-processing onto framebuffer 0.
   public void renderComposite(RenderContext context, boolean inNoDetailMode) {
     FBO activeSceneFBO = getActiveSceneFBO();
 

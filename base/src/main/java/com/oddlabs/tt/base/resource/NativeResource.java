@@ -9,43 +9,31 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jspecify.annotations.Nullable;
 
-/**
- * A class with associated native state that is not reclaimed automatically by the garbage collector.
- *
- * @param <R> The native state type
- */
+/// Base class for objects holding native state not automatically reclaimed by the garbage collector.
+///
+/// @param <R> native state type
 public abstract class NativeResource<R extends NativeResource.NativeState> implements AutoCloseable {
 
   private static final Logger logger = Logger.getLogger(NativeResource.class.getSimpleName());
   private static final Cleaner cleaner = Cleaner.create();
 
-  /// Queue for cleanup tasks to be executed on the app thread via {@link #processCleanupTasks()}. This is usually the
-  /// thread with a specific context such as the OpenGL context.
+  // Cleanup tasks executed on the thread owning the required native context (e.g., OpenGL context) via
+  // processCleanupTasks().
   private static final Queue<Runnable> cleanupTasks = new ConcurrentLinkedQueue<>();
 
   private static volatile @Nullable Consumer<String> errorChecker = null;
 
-  /**
-   * Sets an error checker callback to check for errors after running a cleanup task.
-   *
-   * @param `checker` The error checker callback.
-   */
   public static void setErrorChecker(@Nullable Consumer<String> checker) {
     errorChecker = checker;
   }
 
-  /**
-   * Adds an OpenGL cleanup task to a queue to be processed on the GL thread. This is used to avoid "No OpenGL context
-   * found" errors when cleanup is triggered by the Cleaner.
-   *
-   * @param `task` The Runnable task to execute on the GL thread for cleanup.
-   */
+  /// Enqueues a cleanup task to run on the context-owning thread, avoiding missing-context errors when triggered by the
+  /// garbage collector `Cleaner`.
   public static void addCleanupTask(Runnable task) {
     cleanupTasks.add(task);
   }
 
-  /// Processes all pending cleanup tasks. This method must be called from the thread that has the appropriate context
-  /// current (e.g., the main rendering thread).
+  /// Executes all pending cleanup tasks; must be called on the thread holding the required native context.
   public static void processCleanupTasks() {
     Runnable task;
     while ((task = cleanupTasks.poll()) != null) {
@@ -63,14 +51,13 @@ public abstract class NativeResource<R extends NativeResource.NativeState> imple
 
   /// Holds native state for a resource.
   public abstract static class NativeState implements AutoCloseable, Runnable {
-    /// Count of unfinalized native resources
+    // Count of unfinalized native resources.
     static final AtomicInteger count = new AtomicInteger(0);
 
     protected NativeState() {
       count.incrementAndGet();
     }
 
-    /// clean up native resource
     @Override
     public abstract void close();
 

@@ -8,20 +8,6 @@ import java.util.Objects;
 public final class IconQuad extends Quad {
   private final Texture atlas;
 
-  /**
-   * Creates an IconQuad from explicit normalized texture coordinates.
-   *
-   * @param `u1` the starting U coordinate
-   * @param `v1` the starting V coordinate
-   * @param `u2` the ending U coordinate
-   * @param `v2` the ending V coordinate
-   * @param `width` the width of the quad in pixels
-   * @param `height` the height of the quad in pixels
-   * @param `texture` the source texture
-   * @throws `IllegalArgumentException` if width or height are negative, if texture coordinates are not finite, or if
-   *     u1/v1 are greater than u2/v2.
-   * @throws `NullPointerException` if the texture is null
-   */
   public IconQuad(float u1, float v1, float u2, float v2, int width, int height, Texture texture)
       throws IllegalArgumentException, NullPointerException {
     if (!Float.isFinite(u1) || !Float.isFinite(v1) || !Float.isFinite(u2) || !Float.isFinite(v2)) {
@@ -39,17 +25,6 @@ public final class IconQuad extends Quad {
     this.atlas = texture;
   }
 
-  /**
-   * Creates an IconQuad from pixel coordinates within a texture.
-   *
-   * @param `x` the x-offset in pixels from the top-left of the texture
-   * @param `y` the y-offset in pixels from the top-left of the texture
-   * @param `width` the width of the icon in pixels
-   * @param `height` the height of the icon in pixels
-   * @param `texture` the source texture atlas
-   * @throws `IndexOutOfBoundsException` if the defined area is outside the texture bounds
-   * @throws `NullPointerException` if the texture is null
-   */
   public IconQuad(int x, int y, int width, int height, Texture texture)
       throws IndexOutOfBoundsException, NullPointerException {
     this(

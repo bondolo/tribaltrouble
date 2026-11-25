@@ -8,17 +8,7 @@ import com.oddlabs.tt.engine.resource.TextureFile;
 /// Displays a texture or a region of a texture.
 public final class GUIImage extends GUIIcon {
 
-  /**
-   * Creates a new GUIImage from a texture file.
-   *
-   * @param `width` The width of the image or negative value to use texture width and height.
-   * @param `height` The height of the image or negative value to use texture width and height.
-   * @param `u1` The u-coordinate of the top-left corner of the texture region.
-   * @param `v1` The v-coordinate of the top-left corner of the texture region.
-   * @param `u2` The u-coordinate of the bottom-right corner of the texture region.
-   * @param `v2` The v-coordinate of the bottom-right corner of the texture region.
-   * @param `texture_name` The name of the texture file to load.
-   */
+  /// Displays a texture file region; negative `width` or `height` uses the texture's dimensions.
   public GUIImage(int width, int height, float u1, float v1, float u2, float v2, String texture_name) {
     this(width, height, u1, v1, u2, v2, texture_name, true);
   }
@@ -27,17 +17,6 @@ public final class GUIImage extends GUIIcon {
     this(width, height, u1, v1, u2, v2, Resources.findResource(TextureFile.forUIImage(texture_name, isSrgb)));
   }
 
-  /**
-   * Creates a new GUIImage from an existing texture.
-   *
-   * @param `width` The width of the image or negative value to use texture width and height.
-   * @param `height` The height of the image or negative value to use texture width and height.
-   * @param `u1` The u-coordinate of the top-left corner of the texture region.
-   * @param `v1` The v-coordinate of the top-left corner of the texture region.
-   * @param `u2` The u-coordinate of the bottom-right corner of the texture region.
-   * @param `v2` The v-coordinate of the bottom-right corner of the texture region.
-   * @param `texture` The texture to display.
-   */
   private GUIImage(int width, int height, float u1, float v1, float u2, float v2, Texture texture) {
     boolean useTexture = width < 0 || height < 0;
     int useHeight = useTexture ? texture.getHeight() : height;

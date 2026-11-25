@@ -18,6 +18,7 @@ public final class Cursor extends NativeResource<Cursor.NativeCursor> {
   private static final Logger logger = Logger.getLogger(Cursor.class.getName());
   public static final Cursor NULL_CURSOR = new Cursor(MemoryUtil.NULL);
 
+  /// Native SDL cursor handle wrapper.
   static final class NativeCursor extends NativeResource.NativeState {
     private final long cursor;
 
@@ -25,13 +26,6 @@ public final class Cursor extends NativeResource<Cursor.NativeCursor> {
       this.cursor = cursor;
     }
 
-    /**
-     * Create a new cursor instance from an image
-     *
-     * @param `image` source cursor image
-     * @param `xHot` x location from top left of cursor hot spot
-     * @param `yHot` y location from top left of cursor hot spot
-     */
     NativeCursor(GLImage image, int xHot, int yHot) {
       int width = image.getWidth();
       int height = image.getHeight();
@@ -64,13 +58,7 @@ public final class Cursor extends NativeResource<Cursor.NativeCursor> {
     super(new NativeCursor(nativeCursor));
   }
 
-  /**
-   * Create a new cursor instance from an image
-   *
-   * @param `image` source cursor image
-   * @param `xHot` x location from top left of cursor hot spot
-   * @param `yHot` y location from top left of cursor hot spot
-   */
+  /// Creates a hardware cursor with hotspot coordinates relative to the top-left corner of `image`.
   public Cursor(GLImage image, int xHot, int yHot) {
     super(new NativeCursor(image, xHot, yHot));
   }

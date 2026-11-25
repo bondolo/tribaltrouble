@@ -1,17 +1,15 @@
 package com.oddlabs.net;
 
-/**
- * Configuration parameters for {@link JitterTimeManager}.
- *
- * @param `baseClock` monotonic time source
- * @param `seed` PRNG seed for deterministic repeatability
- * @param `jitterProbability` probability in [0.0, 1.0] of jitter occurring per tick transition
- * @param `meanDelayMillis` mean latency in milliseconds added during an active jitter event
- * @param `maxDelayMillis` upper bound clamp on synthetic delay in milliseconds
- * @param `burstProbability` probability in [0.0, 1.0] that an active jitter event initiates a burst
- * @param `burstContinuationProbability` probability in [0.0, 1.0] that a burst persists across consecutive ticks
- * @param `driftPpm` parts-per-million clock skew rate (0.0 = zero drift)
- */
+/// Configuration parameters for {@link JitterTimeManager}.
+///
+/// @param baseClock monotonic time source
+/// @param seed PRNG seed for deterministic repeatability
+/// @param jitterProbability probability in `[0.0, 1.0]` of jitter occurring per tick transition
+/// @param meanDelayMillis mean latency in milliseconds added during an active jitter event
+/// @param maxDelayMillis upper bound clamp on synthetic delay in milliseconds
+/// @param burstProbability probability in `[0.0, 1.0]` that an active jitter event initiates a burst
+/// @param burstContinuationProbability probability in `[0.0, 1.0]` that a burst persists across consecutive ticks
+/// @param driftPpm parts-per-million clock skew rate (`0.0` for zero drift)
 public record JitterConfig(
     TimeManager baseClock,
     long seed,
@@ -48,12 +46,7 @@ public record JitterConfig(
     }
   }
 
-  /**
-   * Preset for zero jitter, returning the underlying baseline clock source directly.
-   *
-   * @param `baseClock` underlying clock source
-   * @return zero-jitter configuration
-   */
+  /// Preset with zero jitter and zero drift.
   public static JitterConfig clean(TimeManager baseClock) {
     return builder(baseClock, 0L)
         .jitterProbability(0.0)
@@ -65,24 +58,12 @@ public record JitterConfig(
         .build();
   }
 
-  /**
-   * Preset for mild baseline jitter (~2ms mean latency, rare bursts).
-   *
-   * @param `baseClock` underlying clock source
-   * @param `seed` PRNG seed
-   * @return mild jitter configuration
-   */
+  /// Preset for mild baseline jitter (~2 ms mean latency, rare bursts).
   public static JitterConfig mild(TimeManager baseClock, long seed) {
     return builder(baseClock, seed).build();
   }
 
-  /**
-   * Preset for heavy network congestion (25% jitter probability, 10ms mean delay, frequent bursts).
-   *
-   * @param `baseClock` underlying clock source
-   * @param `seed` PRNG seed
-   * @return heavy jitter configuration
-   */
+  /// Preset for heavy network congestion (25% jitter probability, 10 ms mean delay, frequent bursts).
   public static JitterConfig heavy(TimeManager baseClock, long seed) {
     return builder(baseClock, seed)
         .jitterProbability(0.25)
@@ -93,14 +74,7 @@ public record JitterConfig(
         .build();
   }
 
-  /**
-   * Preset for low-performance, high-latency, laggy network conditions (50% jitter probability, 80ms mean delay,
-   * persistent bursts).
-   *
-   * @param `baseClock` underlying clock source
-   * @param `seed` PRNG seed
-   * @return laggy network jitter configuration
-   */
+  /// Preset for high-latency, laggy network conditions (50% jitter probability, 80 ms mean delay, persistent bursts).
   public static JitterConfig laggy(TimeManager baseClock, long seed) {
     return builder(baseClock, seed)
         .jitterProbability(0.50)
@@ -111,14 +85,8 @@ public record JitterConfig(
         .build();
   }
 
-  /**
-   * Preset for local loopback networking subject to non-realtime consumer OS thread scheduling and low CPU core
-   * availability (fast baseline with occasional thread preemption stalls).
-   *
-   * @param `baseClock` underlying clock source
-   * @param `seed` PRNG seed
-   * @return loopback scheduling jitter configuration
-   */
+  /// Preset for local loopback networking subject to OS thread-scheduling stalls (8% jitter probability, 15 ms mean
+  /// delay).
   public static JitterConfig loopback(TimeManager baseClock, long seed) {
     return builder(baseClock, seed)
         .jitterProbability(0.08)
@@ -130,13 +98,6 @@ public record JitterConfig(
         .build();
   }
 
-  /**
-   * Creates a builder initialized with the given base clock and seed.
-   *
-   * @param `baseClock` underlying clock source
-   * @param `seed` PRNG seed
-   * @return new builder instance
-   */
   public static Builder builder(TimeManager baseClock, long seed) {
     return new Builder(baseClock, seed);
   }

@@ -22,15 +22,7 @@ import java.util.logging.Logger;
 public final class HeadlessMatchRunner {
   private static final Logger logger = Logger.getLogger(HeadlessMatchRunner.class.getName());
 
-  /**
-   * Executes a headless match until only one team remains alive, or until the maximum tick threshold is reached.
-   *
-   * @param `config` configuration for the match
-   * @return summary result containing the winning team and termination metrics
-   * @throws `TimeoutException` if network synchronization fails to complete
-   * @throws `InterruptedException` if interrupted while executing
-   * @throws `IOException` if network harness initialization fails
-   */
+  /// Executes a headless match until one team remains alive or `config.maxTicks()` is reached.
   public HeadlessMatchResult run(HeadlessMatchConfig config)
       throws TimeoutException, InterruptedException, IOException {
     int numPlayers = config.players().size();

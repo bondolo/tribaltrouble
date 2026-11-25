@@ -258,43 +258,20 @@ public final class SpriteList implements AutoCloseable {
     return skeleton_data != null && getBoneCount() > 0;
   }
 
-  /**
-   * Checks if this sprite list has a skeleton with the specified bone or socket name.
-   *
-   * @param `socketName` the socket or bone name
-   * @return true if the socket is present
-   */
   public boolean hasSocket(String socketName) {
     return skeleton_data != null && skeleton_data.hasBone(socketName);
   }
 
-  /**
-   * Returns the number of bones in this sprite list's skeleton, or 0 if non-skeletal.
-   *
-   * @return the number of bones
-   */
   public int getBoneCount() {
     return skeleton_data != null ? skeleton_data.boneNames().length : 0;
   }
 
-  /**
-   * Resolves the bone index for a named socket.
-   *
-   * @param `socketName` the socket or bone name
-   * @return the bone index, or -1 if not found
-   */
+  /// Returns the bone index for `socketName`, or `-1` if not found.
   public int getSocketIndex(String socketName) {
     return skeleton_data != null ? skeleton_data.findBoneIndex(socketName) : -1;
   }
 
-  /**
-   * Evaluates all bone skinning matrices for the given animation and frame ticks into the destination array.
-   *
-   * @param `animationIndex` the animation index
-   * @param `animTicks` the animation ticks
-   * @param `dest` the array of matrices to receive evaluated bone transforms
-   * @return true if successfully evaluated, false if animation or skeleton data is missing
-   */
+  /// Evaluates bone skinning matrices into `dest` for the given animation and ticks, returning `false` if unavailable.
   public boolean evaluateSkeleton(int animationIndex, float animTicks, Matrix4f[] dest) {
     if (initial_pose_matrices == null
         || animation_infos == null
@@ -351,14 +328,7 @@ public final class SpriteList implements AutoCloseable {
     return true;
   }
 
-  /**
-   * Resolves the animated transform for a bone socket in sprite model space from pre-evaluated bone matrices.
-   *
-   * @param `boneIndex` the bone index
-   * @param `evaluatedBones` the pre-evaluated bone skinning matrices
-   * @param `dest` the matrix to receive the result
-   * @return true if successfully resolved, false if socket bone not found
-   */
+  /// Writes the sprite-model-space transform for `boneIndex` into `dest` from pre-evaluated bone matrices.
   public boolean getSocketTransform(int boneIndex, Matrix4fc[] evaluatedBones, Matrix4f dest) {
     if (initial_pose_matrices == null
         || boneIndex < 0
@@ -374,43 +344,19 @@ public final class SpriteList implements AutoCloseable {
     return true;
   }
 
-  /**
-   * Resolves the animated transform for a bone socket in sprite model space from pre-evaluated bone matrices by socket
-   * name.
-   *
-   * @param `socketName` the socket or bone name
-   * @param `evaluatedBones` the pre-evaluated bone skinning matrices
-   * @param `dest` the matrix to receive the result
-   * @return true if successfully resolved, false if socket not found
-   */
+  /// Writes the sprite-model-space transform for `socketName` into `dest` from pre-evaluated bone matrices.
   public boolean getSocketTransform(String socketName, Matrix4fc[] evaluatedBones, Matrix4f dest) {
     int boneIndex = getSocketIndex(socketName);
     return getSocketTransform(boneIndex, evaluatedBones, dest);
   }
 
-  /**
-   * Resolves the animated transform for a bone socket in sprite model space by socket name.
-   *
-   * @param `socketName` the socket or bone name
-   * @param `animationIndex` the animation index
-   * @param `animTicks` the animation ticks
-   * @param `dest` the matrix to receive the result
-   * @return true if successfully resolved, false if socket or animation not found
-   */
+  /// Evaluates and writes the sprite-model-space transform for `socketName` into `dest`.
   public boolean getSocketTransform(String socketName, int animationIndex, float animTicks, Matrix4f dest) {
     int boneIndex = getSocketIndex(socketName);
     return getSocketTransform(boneIndex, animationIndex, animTicks, dest);
   }
 
-  /**
-   * Resolves the animated transform for a bone socket in sprite model space by bone index.
-   *
-   * @param `boneIndex` the bone index
-   * @param `animationIndex` the animation index
-   * @param `animTicks` the animation ticks
-   * @param `dest` the matrix to receive the result
-   * @return true if successfully resolved, false if socket or animation not found
-   */
+  /// Evaluates and writes the sprite-model-space transform for `boneIndex` into `dest`.
   public boolean getSocketTransform(int boneIndex, int animationIndex, float animTicks, Matrix4f dest) {
     if (initial_pose_matrices == null
         || animation_infos == null

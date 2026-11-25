@@ -72,12 +72,6 @@ public final class MapCode {
     return result.toString();
   }
 
-  /**
-   * Encodes procedural map parameters into a map code string.
-   *
-   * @param `params` parameters to encode
-   * @return encoded map code string
-   */
   public static String encode(MapParameters params) {
     BigInteger max_val = BigInteger.ONE;
     BigInteger result = BigInteger.ZERO;
@@ -122,22 +116,10 @@ public final class MapCode {
     return createString(result);
   }
 
-  /**
-   * Decodes a map code string into procedural map parameters.
-   *
-   * @param `mapCode` the string code to decode
-   * @return decoded map parameters
-   */
   public static MapParameters decode(String mapCode) {
     return decode(parseBits(mapCode.toUpperCase()));
   }
 
-  /**
-   * Decodes raw bit-packed integer into procedural map parameters.
-   *
-   * @param `bits` raw BigInteger bits
-   * @return decoded map parameters
-   */
   public static MapParameters decode(BigInteger bits) {
     BigInteger result = bits;
     BigInteger max_val = MAX_VALUE;

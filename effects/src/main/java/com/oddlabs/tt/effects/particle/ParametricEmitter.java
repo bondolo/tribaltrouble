@@ -32,28 +32,6 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
   protected Color.LinearDelta delta_color;
   protected float energy;
 
-  /**
-   * Constructs a new ParametricEmitter using the specified parametric function for particle movement.
-   *
-   * @param `world` game world this emitter belongs to
-   * @param `function` parametric function defining particle trajectories
-   * @param `position` base 3D position of the emitter
-   * @param `area_xy` horizontal bounds for random spawn offsets
-   * @param `area_z` vertical bounds for random spawn offsets
-   * @param `velocity_u` initial u-velocity component along the parametric function
-   * @param `velocity_v` initial v-velocity component along the parametric function
-   * @param `velocity_random_margin` random deviation added to velocity components
-   * @param `num_particles` maximum particle budget, or -1 for infinite
-   * @param `particles_per_second` rate at which particles spawn per second
-   * @param `color` base color of the particles
-   * @param `delta_color` color delta applied to particles per second
-   * @param `particle_radius` initial 3D size radius of the particles
-   * @param `growth_rate` rate at which particle size changes per second
-   * @param `energy` starting energy (lifetime) of each particle
-   * @param `src_blend_func` OpenGL source blend function
-   * @param `dst_blend_func` OpenGL destination blend function
-   * @param `textures` textures to assign to spawned particles
-   */
   public ParametricEmitter(
       World world,
       ParametricFunction function,
@@ -188,25 +166,8 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
     return initiated;
   }
 
-  /**
-   * Initializes and adds a parametric particle using discrete color and delta components in linear RGB space.
-   *
-   * @param `function` parametric function defining trajectory
-   * @param `velocity_u` initial u velocity
-   * @param `velocity_v` initial v velocity
-   * @param `colorR` linear red channel
-   * @param `colorG` linear green channel
-   * @param `colorB` linear blue channel
-   * @param `colorA` alpha channel
-   * @param `deltaR` linear red delta per second
-   * @param `deltaG` linear green delta per second
-   * @param `deltaB` linear blue delta per second
-   * @param `deltaA` alpha delta per second
-   * @param `particle_radius` particle radius dimensions
-   * @param `growth_rate` particle radius growth rate
-   * @param `energy` particle lifetime/energy
-   * @return number of particles initiated
-   */
+  /// Initializes and adds parametric particles using linear RGB color and delta components, returning the count
+  /// spawned.
   protected int initParticle(
       ParametricFunction function,
       float velocity_u,

@@ -48,8 +48,8 @@ public final class SerializableDisplayMode implements Serializable, Comparable<S
     this.freq = freq;
   }
 
-  /// Elias: sort after largest bpp first, then lowest freq to accommodate broken monitors lying about their
-  /// capabilities
+  // Elias: sort after largest bpp first, then lowest freq to accommodate broken monitors lying about their
+  // capabilities
   @Override
   public int compareTo(SerializableDisplayMode o) {
     return COMPARATOR.compare(this, o);
@@ -61,13 +61,7 @@ public final class SerializableDisplayMode implements Serializable, Comparable<S
     return dx + dy;
   }
 
-  /**
-   * A mode is valid if at least one dimension is as large as the minimum size, has at least as many pixels as the
-   * minimum size, and has at least as many bits per pixel as the minimum size and meets a minimum refresh rate.
-   *
-   * @param `mode` mode to check
-   * @return true if the mode is valid, false otherwise
-   */
+  /// Returns whether a display mode meets minimum resolution, pixel count, bit depth, and refresh rate requirements.
   public static boolean isModeValid(SerializableDisplayMode mode) {
     return (mode.getWidth() >= MIN_WIDTH || mode.getHeight() >= MIN_HEIGHT)
         && (mode.getWidth() * mode.getHeight()) >= MIN_PIXELS

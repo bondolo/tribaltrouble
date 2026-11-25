@@ -11,12 +11,6 @@ import java.util.Properties;
 public final class CameraSettings implements Serializable, PropertiesSerializer {
   @Serial private static final long serialVersionUID = 1L;
 
-  /**
-   * Retrieves the {@link CameraSettings} instance registered with the given settings registry.
-   *
-   * @param `settings` the settings registry
-   * @return the registered camera settings
-   */
   public static CameraSettings from(SettingsRegistry settings) {
     return settings.get(CameraSettings.class);
   }

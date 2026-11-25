@@ -13,12 +13,6 @@ import java.util.Properties;
 public final class AccountSettings implements Serializable, PropertiesSerializer {
   @Serial private static final long serialVersionUID = 1L;
 
-  /**
-   * Retrieves the {@link AccountSettings} instance registered with the given settings registry.
-   *
-   * @param `settings` the settings registry
-   * @return the registered account settings
-   */
   public static AccountSettings from(SettingsRegistry settings) {
     return settings.get(AccountSettings.class);
   }

@@ -9,20 +9,9 @@ public record Cost(Map<SupplyType, Integer> costs, int[] amounts) {
   /// Functional consumer for iterating supply costs without allocation.
   @FunctionalInterface
   public interface CostConsumer {
-    /**
-     * Consumes a supply type and required amount.
-     *
-     * @param `type` supply type
-     * @param `amount` required quantity
-     */
     void accept(SupplyType type, int amount);
   }
 
-  /**
-   * Constructs a Cost instance with the specified map of required supplies.
-   *
-   * @param `costs` map of supply types to amounts
-   */
   public Cost(Map<SupplyType, Integer> costs) {
     this(new EnumMap<>(costs), createAmounts(costs));
   }
@@ -40,11 +29,7 @@ public record Cost(Map<SupplyType, Integer> costs, int[] amounts) {
     return amounts[supplyType.ordinal()];
   }
 
-  /**
-   * Executes the given action for each supply type with a non-zero required cost without allocating iterators.
-   *
-   * @param `action` consumer for supply types and amounts
-   */
+  /// Invokes action for each supply type with a non-zero required cost without allocating an iterator.
   public void forEachCost(CostConsumer action) {
     SupplyType[] types = SupplyType.getValues();
     for (SupplyType type : types) {

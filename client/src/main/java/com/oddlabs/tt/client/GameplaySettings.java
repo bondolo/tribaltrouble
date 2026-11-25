@@ -11,12 +11,6 @@ import java.util.Properties;
 public final class GameplaySettings implements Serializable, PropertiesSerializer {
   @Serial private static final long serialVersionUID = 1L;
 
-  /**
-   * Retrieves the {@link GameplaySettings} instance registered with the given settings registry.
-   *
-   * @param `settings` the settings registry
-   * @return the registered gameplay settings
-   */
   public static GameplaySettings from(SettingsRegistry settings) {
     return settings.get(GameplaySettings.class);
   }

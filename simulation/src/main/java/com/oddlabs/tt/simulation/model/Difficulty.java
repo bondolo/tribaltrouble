@@ -19,30 +19,14 @@ public enum Difficulty {
     this.campaignValue = campaignValue;
   }
 
-  /**
-   * Returns the integer value representing this difficulty in AI difficulty arrays.
-   *
-   * @return AI difficulty value
-   */
   public int getAiValue() {
     return aiValue;
   }
 
-  /**
-   * Returns the integer value representing this difficulty in campaign serialization.
-   *
-   * @return campaign difficulty value
-   */
   public int getCampaignValue() {
     return campaignValue;
   }
 
-  /**
-   * Resolves the {@link Difficulty} associated with the given AI integer value.
-   *
-   * @param `aiValue` AI difficulty integer
-   * @return corresponding {@link Difficulty}
-   */
   public static Difficulty fromAiValue(int aiValue) {
     for (Difficulty diff : VALUES) {
       if (diff.aiValue == aiValue) {
@@ -52,12 +36,6 @@ public enum Difficulty {
     throw new IllegalArgumentException("Unknown AI difficulty value: " + aiValue);
   }
 
-  /**
-   * Resolves the {@link Difficulty} associated with the given campaign serialization integer value.
-   *
-   * @param `campaignValue` campaign serialization difficulty integer
-   * @return corresponding {@link Difficulty}
-   */
   public static Difficulty fromCampaignValue(int campaignValue) {
     for (Difficulty diff : VALUES) {
       if (diff.campaignValue == campaignValue) {

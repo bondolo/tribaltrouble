@@ -13,25 +13,10 @@ public final class CursorFile extends File<Cursor> {
   private final int xHot, yHot;
   private final float scale;
 
-  /**
-   * Create a new cursor instance from an image
-   *
-   * @param `source` resource path of cursor image
-   * @param `xHot` x location from top left of cursor hot spot
-   * @param `yHot` y location from top left of cursor hot spot
-   */
   public CursorFile(String source, int xHot, int yHot) {
     this(source, xHot, yHot, 1.0f);
   }
 
-  /**
-   * Create a new cursor instance from an image with a specific scale.
-   *
-   * @param `source` resource path of cursor image
-   * @param `xHot` x location from top left of cursor hot spot
-   * @param `yHot` y location from top left of cursor hot spot
-   * @param `scale` scale factor to apply to the cursor image
-   */
   public CursorFile(String source, int xHot, int yHot, float scale) {
     super(source);
     this.xHot = xHot;

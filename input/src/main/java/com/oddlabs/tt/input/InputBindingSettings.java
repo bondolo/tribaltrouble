@@ -27,12 +27,6 @@ import org.jspecify.annotations.Nullable;
 public final class InputBindingSettings implements Serializable, PropertiesSerializer {
   @Serial private static final long serialVersionUID = 1L;
 
-  /**
-   * Retrieves the {@link InputBindingSettings} instance registered with the given settings registry.
-   *
-   * @param `settings` the settings registry
-   * @return the registered input binding settings
-   */
   public static InputBindingSettings from(SettingsRegistry settings) {
     return settings.get(InputBindingSettings.class);
   }

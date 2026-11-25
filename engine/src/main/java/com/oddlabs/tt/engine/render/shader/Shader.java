@@ -13,11 +13,13 @@ public interface Shader {
       precision highp int;
       """;
 
+  /// Common shader uniform names.
   interface Uniforms {
     String MODEL_VIEW_MATRIX = "u_modelViewMatrix";
     String PROJECTION_MATRIX = "u_projectionMatrix";
   }
 
+  /// Common vertex attribute names.
   interface Attributes {
     String POSITION = "in_Position";
     String NORMAL = "in_Normal";
@@ -84,11 +86,7 @@ public interface Shader {
 
   void setUniform(int location, float x, float y, float z);
 
-  /**
-   * set the named uniform to the specified color.
-   *
-   * @param `color` should be in linear space but is converted if necessary
-   */
+  /// Sets the named uniform to `color`, converting to linear space if necessary.
   void setUniform(String name, Color color);
 
   void setUniform(int location, Color color);

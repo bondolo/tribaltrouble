@@ -6,6 +6,7 @@ import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 /// Renders full-screen post-processing effects for Color Vision Deficiency (CVD) correction and High Contrast Mode.
 final class PostProcessShader extends ShaderProgram {
 
+  /// Shader uniform names.
   private interface Uniforms {
     String SCENE_TEXTURE = "u_sceneTexture";
     String MASK_TEXTURE = "u_maskTexture";
@@ -275,12 +276,6 @@ final class PostProcessShader extends ShaderProgram {
     }
   }
 
-  /**
-   * Updates the inverse viewport resolution uniform used for unsharp mask filtering and stencil outlines.
-   *
-   * @param `width` the viewport width in pixels
-   * @param `height` the viewport height in pixels
-   */
   void updateDimensions(int width, int height) {
     setUniform(locTexelSize, 1.0f / width, 1.0f / height);
   }
@@ -289,12 +284,6 @@ final class PostProcessShader extends ShaderProgram {
     updateAccessibility(settings, true);
   }
 
-  /**
-   * Uploads accessibility and visual filter uniform values, uploading only parameters that have changed.
-   *
-   * @param `settings` the active accessibility settings
-   * @param `allowTeamStencil` whether the team stencil overlay is permitted in the current camera mode
-   */
   void updateAccessibility(AccessibilitySettings settings, boolean allowTeamStencil) {
     if (!initialized || lastCvdMode != settings.cvd_mode) {
       setUniform(locCvdMode, settings.cvd_mode);

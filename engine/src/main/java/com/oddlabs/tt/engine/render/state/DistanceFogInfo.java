@@ -41,13 +41,6 @@ public final class DistanceFogInfo extends FogInfo {
     this(mode, color, density, height_factor, 50.0f, start, end);
   }
 
-  /**
-   * Creates distance fog configuration corresponding to the specified terrain type and world size.
-   *
-   * @param `terrain` the landscape terrain type
-   * @param `meters_per_world` world size in meters
-   * @return distance fog parameters
-   */
   public static DistanceFogInfo forTerrain(Terrain terrain, int meters_per_world) {
     return switch (terrain) {
       case NATIVE ->

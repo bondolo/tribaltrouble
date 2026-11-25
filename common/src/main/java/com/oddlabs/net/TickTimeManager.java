@@ -29,21 +29,10 @@ public final class TickTimeManager implements TimeManager {
     return currentMillis;
   }
 
-  /**
-   * Advances the clock by the configured milliseconds per tick.
-   *
-   * @return the new elapsed milliseconds value
-   */
   public long advance() {
     return advance(millisPerTick);
   }
 
-  /**
-   * Advances the clock by the specified delta milliseconds.
-   *
-   * @param `deltaMillis` non-negative duration to advance
-   * @return the new elapsed milliseconds value
-   */
   public long advance(long deltaMillis) {
     if (deltaMillis < 0) {
       throw new IllegalArgumentException("deltaMillis must be non-negative: " + deltaMillis);
@@ -52,12 +41,10 @@ public final class TickTimeManager implements TimeManager {
     return currentMillis;
   }
 
-  /// {@return the current tick index computed from elapsed milliseconds}
   public long getTick() {
     return currentMillis / millisPerTick;
   }
 
-  /// {@return the configured step duration in milliseconds per tick}
   public long getMillisPerTick() {
     return millisPerTick;
   }

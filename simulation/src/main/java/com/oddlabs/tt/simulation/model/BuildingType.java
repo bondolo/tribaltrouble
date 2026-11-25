@@ -18,23 +18,10 @@ public enum BuildingType {
     this.value = value;
   }
 
-  /**
-   * Gets the legacy integer value associated with this building type. Used to maintain compatibility with legacy
-   * serialization and network protocols.
-   *
-   * @return the legacy integer value
-   */
   public int getValue() {
     return value;
   }
 
-  /**
-   * Resolves the {@link BuildingType} associated with the given legacy integer value.
-   *
-   * @param `value` legacy integer value
-   * @return the corresponding {@link BuildingType}
-   * @throws `IllegalArgumentException` if the legacy value is unrecognized
-   */
   public static BuildingType fromValue(int value) {
     for (BuildingType type : VALUES) {
       if (type.value == value) {

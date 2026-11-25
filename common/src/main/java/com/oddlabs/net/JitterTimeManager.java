@@ -103,11 +103,7 @@ public final class JitterTimeManager implements TimeManager {
     return outputMillis;
   }
 
-  /**
-   * Injects an exact delay in milliseconds to be applied on the next base clock advance.
-   *
-   * @param `millis` delay duration in milliseconds
-   */
+  /// Injects an exact delay in milliseconds to apply on the next base clock advance.
   public synchronized void injectDelay(long millis) {
     if (millis < 0L) {
       throw new IllegalArgumentException("Injected delay must be non-negative: " + millis);
@@ -115,11 +111,7 @@ public final class JitterTimeManager implements TimeManager {
     this.pendingInjectedDelayMillis = millis;
   }
 
-  /**
-   * Forces the clock into the congested burst state for a specified number of base clock advances.
-   *
-   * @param `ticks` number of ticks to remain in burst state
-   */
+  /// Forces the clock into the congested burst state for `ticks` base clock advances.
   public synchronized void forceBurst(int ticks) {
     if (ticks < 0) {
       throw new IllegalArgumentException("Burst ticks must be non-negative: " + ticks);
@@ -128,26 +120,19 @@ public final class JitterTimeManager implements TimeManager {
     this.inBurst = true;
   }
 
-  /// {@return the current synthetic latency delay in milliseconds applied on the latest tick}
   public synchronized long getCurrentDelayMillis() {
     return currentDelayMillis;
   }
 
-  /// {@return true if the clock is currently in a congested burst state}
   public synchronized boolean isInBurst() {
     return inBurst;
   }
 
-  /// {@return the raw unjittered time from the underlying base supplier}
   public long getBaseMillis() {
     return config.baseClock().getMillis();
   }
 
-  /**
-   * Advances the underlying base clock if it is an instance of {@link TickTimeManager}.
-   *
-   * @return the new elapsed milliseconds value from the base clock
-   */
+  /// Advances the underlying base clock if it is a {@link TickTimeManager}, returning the base clock's milliseconds.
   public long advance() {
     if (config.baseClock() instanceof TickTimeManager tickTimeManager) {
       return tickTimeManager.advance();
@@ -155,12 +140,8 @@ public final class JitterTimeManager implements TimeManager {
     return getBaseMillis();
   }
 
-  /**
-   * Advances the underlying base clock by the specified delta if it is an instance of {@link TickTimeManager}.
-   *
-   * @param `deltaMillis` duration in milliseconds to advance
-   * @return the new elapsed milliseconds value from the base clock
-   */
+  /// Advances the underlying base clock by `deltaMillis` if it is a {@link TickTimeManager}, returning the base clock's
+  /// milliseconds.
   public long advance(long deltaMillis) {
     if (config.baseClock() instanceof TickTimeManager tickTimeManager) {
       return tickTimeManager.advance(deltaMillis);
@@ -168,7 +149,6 @@ public final class JitterTimeManager implements TimeManager {
     return getBaseMillis();
   }
 
-  /// {@return the configuration record driving this jitter clock}
   public JitterConfig getConfig() {
     return config;
   }

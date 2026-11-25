@@ -11,15 +11,12 @@ public final class TreeNormalMapGenerator {
 
   private TreeNormalMapGenerator() {}
 
-  /**
-   * Generates a normal map from an input diffuse texture and writes it as an RGBA PNG.
-   *
-   * @param `inputPath` path to the input diffuse image
-   * @param `outputPath` path for the output normal map image
-   * @param `strength` bump depth scale for normal map calculation
-   * @param `isTropical` true if processing tropical trees (smooth jungle and extra-smooth palm)
-   * @throws `IOException` if reading or writing images fails
-   */
+  /// Generates a tangent-space normal map with wood specular metadata in alpha from a diffuse image and writes it as an
+  /// RGBA PNG.
+  ///
+  /// @param strength bump depth scale
+  /// @param isTropical true for tropical trees (applies extra smoothing to palm stems)
+  /// @throws IOException if reading or writing images fails
   public static void generateNormalMap(Path inputPath, Path outputPath, float strength, boolean isTropical)
       throws IOException {
     BufferedImage diffuse = ImageIO.read(inputPath.toFile());

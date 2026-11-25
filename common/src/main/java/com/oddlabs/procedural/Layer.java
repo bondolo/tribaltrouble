@@ -30,13 +30,7 @@ public final class Layer {
   public Channel b;
   public @Nullable Channel a;
 
-  /**
-   * Constructs a new, opaque white Layer with the specified dimensions.
-   *
-   * @param `width` the width of the layer in pixels.
-   * @param `height` the height of the layer in pixels.
-   * @throws `IllegalArgumentException` if width or height are not positive.
-   */
+  /// Creates an opaque white layer with the given dimensions.
   public Layer(int width, int height) throws IllegalArgumentException {
     if (width <= 0 || height <= 0) {
       throw new IllegalArgumentException("Width and height must be positive.");
@@ -51,16 +45,6 @@ public final class Layer {
     this.a = null;
   }
 
-  /**
-   * Constructs a new Layer from the given R, G, B, and optional A channels.
-   *
-   * @param `r` the red channel.
-   * @param `g` the green channel.
-   * @param `b` the blue channel.
-   * @param `a` the alpha channel (optional, can be null).
-   * @throws `NullPointerException` if R, G, or B channels are null.
-   * @throws `IllegalArgumentException` if channels have mismatching dimensions.
-   */
   public Layer(Channel r, Channel g, Channel b, @Nullable Channel a)
       throws NullPointerException, IllegalArgumentException {
 
@@ -79,27 +63,10 @@ public final class Layer {
     this.a = a;
   }
 
-  /**
-   * Constructs a new opaque Layer from the given R, G, and B channels.
-   *
-   * @param `r` the red channel.
-   * @param `g` the green channel.
-   * @param `b` the blue channel.
-   * @throws `NullPointerException` if R, G, or B channels are null.
-   * @throws `IllegalArgumentException` if channels have mismatching dimensions.
-   */
   public Layer(Channel r, Channel g, Channel b) throws NullPointerException, IllegalArgumentException {
     this(r, g, b, null);
   }
 
-  /**
-   * Constructs a new Layer from an existing RGB Layer and a new alpha channel.
-   *
-   * @param `rgb` the source RGB layer.
-   * @param `a` the new alpha channel.
-   * @throws `NullPointerException` if the rgb layer or alpha channel is null.
-   * @throws `IllegalArgumentException` if the alpha channel's dimensions do not match the layer's.
-   */
   public Layer(Layer rgb, Channel a) throws NullPointerException, IllegalArgumentException {
     this(rgb.r, rgb.g, rgb.b, a);
   }
@@ -189,33 +156,12 @@ public final class Layer {
     return a;
   }
 
-  /**
-   * Sets the RGB values of a pixel at the specified coordinates.
-   *
-   * @param `x` the x-coordinate of the pixel.
-   * @param `y` the y-coordinate of the pixel.
-   * @param `r` the new red value.
-   * @param `g` the new green value.
-   * @param `b` the new blue value.
-   * @throws `IndexOutOfBoundsException` if the coordinates are out of bounds.
-   */
   public void putPixel(int x, int y, float r, float g, float b) throws IndexOutOfBoundsException {
     this.r.putPixel(x, y, r);
     this.g.putPixel(x, y, g);
     this.b.putPixel(x, y, b);
   }
 
-  /**
-   * Sets the RGBA values of a pixel at the specified coordinates.
-   *
-   * @param `x` the x-coordinate of the pixel.
-   * @param `y` the y-coordinate of the pixel.
-   * @param `r` the new red value.
-   * @param `g` the new green value.
-   * @param `b` the new blue value.
-   * @param `a` the new alpha value.
-   * @throws `IndexOutOfBoundsException` if the coordinates are out of bounds.
-   */
   public void putPixel(int x, int y, float r, float g, float b, float a) throws IndexOutOfBoundsException {
     this.r.putPixel(x, y, r);
     this.g.putPixel(x, y, g);

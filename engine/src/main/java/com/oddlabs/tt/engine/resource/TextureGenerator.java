@@ -35,12 +35,8 @@ public abstract class TextureGenerator implements Supplier<Texture[]> {
     }
   }
 
-  /**
-   * Looks up a registered {@link TextureGenerator} by its {@link NamedGenerator} name.
-   *
-   * @param `name` the generator name
-   * @return a new instance of the texture generator, or null if not found
-   */
+  /// Looks up and instantiates a registered `TextureGenerator` by its `@NamedGenerator` name, returning `null` if not
+  /// found.
   public static @Nullable TextureGenerator findNamed(String name) {
     ensureProvidersLoaded();
     Supplier<TextureGenerator> supplier = NAMED_GENERATORS.get(name);

@@ -54,15 +54,7 @@ public final class KeyboardInput {
     return left_meta_down || right_meta_down;
   }
 
-  /**
-   * process playback controls.
-   *
-   * @param `event_key_down` true if the key is down
-   * @param `event_key` the key
-   * @param `playback` if true allow magic keys without developer mode or control-shift modifier
-   * @param `repeat` not an initial key-press
-   * @return true if the key was handled
-   */
+  /// Processes playback and developer magic keys; when `playback` is true, ignores developer mode and modifier checks.
   private boolean checkMagicKey(
       boolean event_key_down,
       Key event_key,

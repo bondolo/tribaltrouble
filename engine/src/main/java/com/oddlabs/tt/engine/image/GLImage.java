@@ -125,19 +125,11 @@ public abstract class GLImage {
     }
   }
 
-  /**
-   * Applies a progressive alpha fade-out effect to a series of mipmaps. This is used to smoothly fade objects out of
-   * view at a distance.
-   *
-   * @param `mipmaps` An array of GLImages representing the mipmap levels.
-   * @param `base_fadeout_level` The mipmap level at which to start the fade-out.
-   * @param `fadeout_factor` The factor by which to reduce the alpha at each successive level.
-   * @param `start_x` The starting X coordinate of the area to modify.
-   * @param `start_y` The starting Y coordinate of the area to modify.
-   * @param `width` The width of the area to modify.
-   * @param `height` The height of the area to modify.
-   * @param `max_alpha` If true, only pixels with full alpha (255) are faded.
-   */
+  /// Recomputes mipmap levels within the specified pixel rectangle after modifying level 0.
+  ///
+  /// @param base_fadeout_level mipmap level at which distance fade-out begins
+  /// @param fadeout_factor per-level multiplier applied from `base_fadeout_level` onward
+  /// @param max_alpha if true, preserves maximum block alpha and snaps values above 128 to 255
   public static void updateMipMapsArea(
       GLImage[] mipmaps,
       int base_fadeout_level,
@@ -209,22 +201,7 @@ public abstract class GLImage {
     }
   }
 
-  /**
-   * Calculates the average pixel value from a block of pixels in a source image, used for generating mipmap levels. It
-   * can apply a fadeout effect and uses the maximum alpha value from the source block instead of averaging if
-   * specified.
-   *
-   * @param `last_img` The source image (previous mipmap level).
-   * @param `x` The top-left x-coordinate of the block in the source image.
-   * @param `y` The top-left y-coordinate of the block in the source image.
-   * @param `height_div` The height of the pixel block to average.
-   * @param `width_div` The width of the pixel block to average.
-   * @param `base_fadeout_level` The mipmap level at which to begin applying fadeout.
-   * @param `fadeout_factor` The factor by which to reduce color components for fading.
-   * @param `current_level` The current mipmap level being generated.
-   * @param `max_alpha` If true, the resulting alpha is the maximum from the source block; otherwise, it's the average.
-   * @return The calculated 32-bit ARGB pixel value.
-   */
+  /// Averages a `width_div` x `height_div` pixel block using alpha-weighted RGB accumulation.
   private static int averagePixel(
       GLImage last_img,
       int x,
@@ -298,22 +275,7 @@ public abstract class GLImage {
     return (a_acc << 24) | (r_avg << 16) | (g_avg << 8) | b_avg;
   }
 
-  /**
-   * Calculates the average pixel value from a block of pixels in a source image. This alternative implementation
-   * averages all channels, including alpha, and then applies a simple threshold to the averaged alpha if {@code
-   * max_alpha} is true.
-   *
-   * @param `last_img` The source image (previous mipmap level).
-   * @param `x` The top-left x-coordinate of the block in the source image.
-   * @param `y` The top-left y-coordinate of the block in the source image.
-   * @param `height_div` The height of the pixel block to average.
-   * @param `width_div` The width of the pixel block to average.
-   * @param `base_fadeout_level` The mipmap level at which to begin applying fadeout.
-   * @param `fadeout_factor` The factor by which to reduce color components for fading.
-   * @param `current_level` The current mipmap level being generated.
-   * @param `max_alpha` If true, sets alpha to 255 if the average is >= 128.
-   * @return The calculated 32-bit ARGB pixel value.
-   */
+  /// Averages all channels uniformly across a pixel block, thresholding alpha at 128 when `max_alpha` is true.
   private static int averagePixelThreshold(
       GLImage last_img,
       int x,
@@ -354,12 +316,10 @@ public abstract class GLImage {
     return (col1 << 24) + (col2 << 16) + (col3 << 8) + col4;
   }
 
-  /// Clear the entire image to the specified color.
   public final void clearAll(int color) {
     clear(0, 0, width, height, color);
   }
 
-  /// Clear a specified rectangle of the image to the specified color.
   public final void clear(int x, int y, int width, int height, int color) {
     int yy = y;
     for (; yy < y + height; yy++) {
@@ -429,13 +389,6 @@ public abstract class GLImage {
     return pixel_data;
   }
 
-  /**
-   * Scales the image to the specified dimensions.
-   *
-   * @param `newWidth` The new width.
-   * @param `newHeight` The new height.
-   * @return A new GLImage with the scaled content.
-   */
   public abstract GLImage scale(int newWidth, int newHeight);
 
   public final void drawImage(GLImage img, int dx, int dy, int sx, int sy, int w, int h) {

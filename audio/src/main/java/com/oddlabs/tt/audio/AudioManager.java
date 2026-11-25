@@ -54,26 +54,21 @@ public interface AudioManager extends AudioImplementation, AutoCloseable {
 
   Audio createAudio(URL file) throws IOException;
 
-  /// Toggles music playback on or off based on current settings.
   default void toggleMusic() {}
 
-  /// Enables or disables music playback.
   default void setMusicEnabled(boolean enabled) {}
 
-  /// Returns true if music playback is currently enabled in settings.
   default boolean isMusicEnabled() {
     return false;
   }
 
-  /// Sets the background music track with an optional start delay in seconds.
+  /// Sets the background music track after waiting `delay` seconds.
   default void setMusic(AudioParameters musicAudio, float delay) {}
 
-  /// Sets the background music track immediately.
   default void setMusic(AudioParameters musicAudio) {
     setMusic(musicAudio, 0f);
   }
 
-  /// Returns the currently active music audio player, or null if no track is playing.
   default @Nullable AudioPlayer getMusicPlayer() {
     return null;
   }
@@ -81,29 +76,13 @@ public interface AudioManager extends AudioImplementation, AutoCloseable {
   /// Default exponential decay rate for music fade-out (~2.5 seconds).
   float DEFAULT_MUSIC_DECAY_RATE = 1.2f;
 
-  /// Stops the current music track immediately.
   default void stopMusic() {}
 
-  /**
-   * Stops the current music track with the given fade-out rate.
-   *
-   * @param `decayRate` the rate of exponential decay (higher values result in a faster fade-out)
-   */
+  /// Stops the current music track by fading out at the given exponential decay rate.
   default void stopMusic(float decayRate) {}
 
-  /**
-   * Sets the active environmental reverb preset.
-   *
-   * @param `type` The reverb type to apply.
-   */
   default void setReverb(ReverbType type) {}
 
-  /**
-   * Blends between two environmental reverb presets.
-   *
-   * @param `from` The source reverb environment.
-   * @param `to` The target reverb environment.
-   * @param `factor` Blending factor [0.0 - 1.0].
-   */
+  /// Blends between two environmental reverb presets (`factor` in `[0.0, 1.0]`).
   default void setReverb(ReverbType from, ReverbType to, float factor) {}
 }
