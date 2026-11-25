@@ -528,17 +528,17 @@ public record WorldMerkleTree(long rootHash, int tick, SubsystemsNode subsystems
     SupplyType supplyType = supplyContainer != null ? supplyContainer.getSupplyType().orElse(null) : null;
     int supplyCount = supplyContainer != null ? supplyContainer.getNumSupplies() : 0;
 
-    boolean hasMagic = unit.getAbilities().hasAbilities(Abilities.MAGIC);
+    MagicCapability magicCapability = unit.getMagicCapability().orElse(null);
     float magicProgress0 = 0f;
     float magicProgress1 = 0f;
-    MagicType lastMagicType = hasMagic ? unit.getLastMagicType() : null;
-    if (hasMagic) {
+    MagicType lastMagicType = magicCapability != null ? magicCapability.getLastMagicType() : null;
+    if (magicCapability != null) {
       List<MagicType> magics = unit.getOwner().getRaceInfo().getMagics();
       if (!magics.isEmpty()) {
-        magicProgress0 = unit.getMagicProgress(magics.getFirst());
+        magicProgress0 = magicCapability.getProgress(magics.getFirst());
       }
       if (magics.size() > 1) {
-        magicProgress1 = unit.getMagicProgress(magics.get(1));
+        magicProgress1 = magicCapability.getProgress(magics.get(1));
       }
     }
 
@@ -669,18 +669,20 @@ public record WorldMerkleTree(long rootHash, int tick, SubsystemsNode subsystems
   }
 
   private static int supplyCount(Building building, SupplyType type) {
-    if (building.isDead() || !building.getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER)) {
-      return 0;
-    }
-    SupplyContainer container = building.getSupplyContainerDirect(type);
-    return container != null ? container.getNumSupplies() : 0;
+    return building.isDead()
+        ? 0
+        : building
+            .getRole()
+            .getSupplyStorage()
+            .map(storage -> storage.getSupplyContainerDirect(type))
+            .map(SupplyContainer::getNumSupplies)
+            .orElse(0);
   }
 
   private static int weaponCount(Building building, WeaponTier tier) {
-    if (building.isDead() || !building.getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER)) {
-      return 0;
-    }
-    return building.getWeaponSupplyCount(tier);
+    return building.isDead()
+        ? 0
+        : building.getRole().getWeaponsWorkshop().map(w -> w.getWeaponSupplyCount(tier)).orElse(0);
   }
 
   private static @Nullable String stateName(@Nullable UnitState state) {

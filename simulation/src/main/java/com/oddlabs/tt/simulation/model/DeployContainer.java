@@ -21,6 +21,10 @@ public final class DeployContainer {
     this.required_supply = required_supply;
   }
 
+  DeployContainer(Building building, DeployType deploy_type, @Nullable SupplyContainer required_supply) {
+    this(building, deploy_type.getDeploySeconds(), deploy_type, required_supply);
+  }
+
   /// {@return the required supply container (e.g. weapons for warriors or raw materials for transporters), or null if
   /// none}
   public @Nullable SupplyContainer getRequiredSupply() {

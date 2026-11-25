@@ -116,4 +116,8 @@ public final class UnitTemplate extends Template {
   public int getStatusValue() {
     return status_value;
   }
+
+  public boolean hasMagic() {
+    return getAbilities().hasAbilities(Abilities.MAGIC);
+  }
 }

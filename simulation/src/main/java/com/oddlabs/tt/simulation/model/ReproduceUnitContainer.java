@@ -2,23 +2,21 @@ package com.oddlabs.tt.simulation.model;
 
 import org.jspecify.annotations.Nullable;
 
+/// Manages passive peon reproduction and chieftain training ticks inside quarters.
 public final class ReproduceUnitContainer extends UnitContainer {
   private final Building building;
+  private final ChieftainContainer chieftainContainer;
 
   private float unit_reproduction = 0f;
 
-  public ReproduceUnitContainer(Building building) {
+  public ReproduceUnitContainer(Building building, ChieftainContainer chieftainContainer) {
     super(building.getOwner().getWorld().getMaxUnitCount());
     this.building = building;
+    this.chieftainContainer = chieftainContainer;
   }
 
   public float getBuildProgress() {
-    ChieftainContainer chieftain_container = building.getChieftainContainer().orElseThrow();
-    if (chieftain_container.isTraining()) {
-      return 0;
-    } else {
-      return unit_reproduction;
-    }
+    return chieftainContainer.isTraining() ? 0f : unit_reproduction;
   }
 
   public void resetProgress() {
@@ -58,17 +56,15 @@ public final class ReproduceUnitContainer extends UnitContainer {
 
   @Override
   public void animate(float t) {
-    ChieftainContainer chieftain_container = building.getChieftainContainer().orElseThrow();
-
     if ((building.getOwner().getUnitCountContainer().getNumSupplies() < getMaxSupplyCount()
             && getTotalSupplies() != getMaxSupplyCount())
-        || chieftain_container.isTraining()) {
-      float units = Math.max(building.getUnitContainer().orElseThrow().getNumSupplies(), .5f);
+        || chieftainContainer.isTraining()) {
+      float units = Math.max(getNumSupplies(), .5f);
       unit_reproduction += ((1f / 11f) * Math.pow(units, 1f / 3f)) * t;
       while (unit_reproduction >= 1f) {
         unit_reproduction -= 1f;
-        if (chieftain_container.isTraining()) {
-          chieftain_container.progress();
+        if (chieftainContainer.isTraining()) {
+          chieftainContainer.progress();
         } else {
           increaseSupply(1);
         }

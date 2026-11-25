@@ -9,7 +9,7 @@ import java.util.Random;
 import org.jspecify.annotations.Nullable;
 
 /// Manages the production of weapons in an armory building.
-public class WeaponsProducer {
+final class WeaponsForge {
   private static final float MAX_BREAK_TIME = .25f;
   private static final float BREAK_PROBABILITY = .2f;
 
@@ -21,7 +21,7 @@ public class WeaponsProducer {
   private float break_time = 0f;
   private boolean producing;
 
-  public WeaponsProducer(
+  WeaponsForge(
       Building building, WorkerUnitContainer unit_container, BuildProductionContainer[] production_containers) {
     this.building = building;
     this.unit_container = unit_container;
@@ -34,17 +34,17 @@ public class WeaponsProducer {
     }
   }
 
-  public final boolean isProducing() {
+  boolean isProducing() {
     return producing;
   }
 
-  public void remove() {
+  void remove() {
     if (legacySmokeEmitter != null) {
       building.getOwner().getWorld().getAnimationManagerRealTime().removeAnimation(legacySmokeEmitter);
     }
   }
 
-  public final void animate(float t) {
+  void animate(float t) {
     Deque<BuildProductionContainer> build_list = new ArrayDeque<>();
     for (var production_container : production_containers) {
       if (production_container.getNumSupplies() > 0 && production_container.hasEnoughSupplies()) {

@@ -1,15 +1,18 @@
 package com.oddlabs.tt.simulation.model;
 
+/// Manages chieftain training state and progress inside a quarters building.
 public final class ChieftainContainer {
   private static final float PROGRESS_AMOUNT = 1f / 40f;
 
   private final Building building;
+  private final Runnable onResetReproduction;
 
   private boolean training = false;
   private float progress = 0f;
 
-  public ChieftainContainer(Building building) {
+  public ChieftainContainer(Building building, Runnable onResetReproduction) {
     this.building = building;
+    this.onResetReproduction = onResetReproduction;
   }
 
   public float getBuildProgress() {
@@ -18,13 +21,13 @@ public final class ChieftainContainer {
 
   public void startTraining() {
     training = true;
-    ((ReproduceUnitContainer) building.getUnitContainer().orElseThrow()).resetProgress();
+    onResetReproduction.run();
   }
 
   public void stopTraining() {
     training = false;
     progress = 0f;
-    ((ReproduceUnitContainer) building.getUnitContainer().orElseThrow()).resetProgress();
+    onResetReproduction.run();
   }
 
   public boolean isTraining() {

@@ -26,7 +26,7 @@ class RaceDataTest {
         assertNotNull(buildingTemplate, "BuildingTemplate missing for " + buildingType);
         assertEquals(buildingType, buildingTemplate.getBuildingType());
         assertTrue(buildingTemplate.getMaxHitPoints() > 0);
-        assertNotNull(buildingTemplate.getUnitContainerFactory());
+        assertNotNull(buildingTemplate.getRoleFactory());
         assertNotNull(buildingTemplate.getBuiltBounds());
         assertTrue(buildingTemplate.getBuiltBounds().length > 0);
         assertNotNull(buildingTemplate.getHalfbuiltBounds());

@@ -30,6 +30,18 @@ public enum UnitType {
     return weaponTier;
   }
 
+  public boolean isPeon() {
+    return this == PEON;
+  }
+
+  public boolean isWarrior() {
+    return weaponTier != null;
+  }
+
+  public boolean isChieftain() {
+    return this == CHIEFTAIN;
+  }
+
   public static UnitType fromValue(int value) {
     for (UnitType type : VALUES) {
       if (type.value == value) {

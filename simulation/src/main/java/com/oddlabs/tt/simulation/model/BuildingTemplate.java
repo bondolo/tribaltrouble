@@ -14,7 +14,7 @@ public final class BuildingTemplate extends Template {
   private final BoundingBox[] halfbuilt_bounds;
   private final BoundingBox[] start_bounds;
   private final int max_hit_points;
-  private final UnitContainerFactory unit_container_factory;
+  private final BuildingRoleFactory roleFactory;
   private final float mount_offset;
   private final float built_selection_radius;
   private final float built_selection_height;
@@ -42,7 +42,7 @@ public final class BuildingTemplate extends Template {
       float start_selection_radius,
       float start_selection_height,
       int max_hit_points,
-      UnitContainerFactory unit_container_factory,
+      BuildingRoleFactory roleFactory,
       Abilities abilities,
       float[] hit_offset_z,
       float mount_offset,
@@ -67,7 +67,7 @@ public final class BuildingTemplate extends Template {
     this.start_bounds = start_bounds;
 
     this.max_hit_points = max_hit_points;
-    this.unit_container_factory = unit_container_factory;
+    this.roleFactory = roleFactory;
     this.mount_offset = mount_offset;
     this.rally = rally;
     this.chimney = chimney;
@@ -149,8 +149,8 @@ public final class BuildingTemplate extends Template {
     return max_hit_points;
   }
 
-  public UnitContainerFactory getUnitContainerFactory() {
-    return unit_container_factory;
+  public BuildingRoleFactory getRoleFactory() {
+    return roleFactory;
   }
 
   public float getMountOffset() {

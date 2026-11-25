@@ -1,16 +1,27 @@
 package com.oddlabs.tt.simulation.model;
 
+/// Unit deployment orders supported by buildings.
 public enum DeployType {
-  ROCK_WARRIOR,
-  IRON_WARRIOR,
-  RUBBER_WARRIOR,
-  PEON,
-  PEON_HARVEST_TREE,
-  PEON_TRANSPORT_TREE,
-  PEON_HARVEST_ROCK,
-  PEON_TRANSPORT_ROCK,
-  PEON_HARVEST_IRON,
-  PEON_TRANSPORT_IRON,
-  PEON_HARVEST_RUBBER,
-  PEON_TRANSPORT_RUBBER
+  ROCK_WARRIOR(1f),
+  IRON_WARRIOR(1.5f),
+  RUBBER_WARRIOR(2f),
+  PEON(0.5f),
+  PEON_HARVEST_TREE(0.5f),
+  PEON_TRANSPORT_TREE(0.5f),
+  PEON_HARVEST_ROCK(0.5f),
+  PEON_TRANSPORT_ROCK(0.5f),
+  PEON_HARVEST_IRON(0.5f),
+  PEON_TRANSPORT_IRON(0.5f),
+  PEON_HARVEST_RUBBER(0.5f),
+  PEON_TRANSPORT_RUBBER(0.5f);
+
+  private final float deploySeconds;
+
+  DeployType(float deploySeconds) {
+    this.deploySeconds = deploySeconds;
+  }
+
+  public float getDeploySeconds() {
+    return deploySeconds;
+  }
 }

@@ -164,7 +164,9 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
   }
 
   public void removeDying() {
-    disable();
+    if (getId() != Distributable.NO_ID) {
+      disable();
+    }
     dead = true;
   }
 

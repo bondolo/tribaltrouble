@@ -30,10 +30,9 @@ import com.oddlabs.tt.simulation.state.UnitState;
 import com.oddlabs.tt.simulation.state.UnitStateMachine;
 import com.oddlabs.tt.simulation.state.Walking;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
 /// Represents a mobile unit in the game world.
@@ -46,13 +45,6 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
   private static final int PENALTY_INCREMENT = 3;
   private static final int INITIAL_PATH_PENALTY = 5;
-  private static final EnumMap<MagicType, Float> MAX_MAGIC_ENERGY =
-      new EnumMap<>(
-          Map.of(
-              MagicType.POISON_FOG, 40f,
-              MagicType.LIGHTNING_CLOUD, 70f,
-              MagicType.STUN, 40f,
-              MagicType.SONIC_BLAST, 70f));
 
   /// Animation clip indices for unit models.
   public enum Animation {
@@ -66,11 +58,10 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
   // Non-null for peons, which can carry resources.
   private final @Nullable UnitSupplyContainer supply_container;
+  private final @Nullable MagicCapability magicCapability;
 
   private final @Nullable String name;
   private final PathTracker path_tracker;
-  private final EnumMap<MagicType, Float> magic_energy = new EnumMap<>(MagicType.class);
-  private @Nullable MagicType last_magic_type;
 
   private int hit_points;
   private Animation animation = Animation.IDLING;
@@ -78,11 +69,8 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
   private float anim_time;
   private int path_penalty;
 
-  // Non-null while this unit is mounted in a tower.
-  private @Nullable Building mounted_building;
-
-  private float mount_offset;
-  private float range_bonus;
+  private @Nullable UnitMount mount;
+  private boolean legacyDeferMountRangeBonus;
   private float deathOffsetZ;
   private @Nullable FinderTrackerAlgorithm<? extends Supply> activeSupplyFinderTracker;
   private @Nullable FinderTrackerAlgorithm<Building> activeBuildingFinderTracker;
@@ -121,10 +109,11 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     this.path_tracker = new PathTracker(getUnitGrid(), this);
     UnitSupplyContainerFactory factory = unit_template.getUnitSupplyContainerFactory();
     supply_container = factory != null ? (UnitSupplyContainer) factory.createContainer(this) : null;
+    magicCapability = unit_template.hasMagic() ? new MagicCapability() : null;
 
     findInitialPosition(x, y, grid_targets_only);
     this.stateMachine = new UnitStateMachine(defaultState, this);
-    if (!getAbilities().hasAbilities(Abilities.MAGIC)) {
+    if (!isChieftain()) {
       int result = getOwner().getUnitCountContainer().increaseSupply(1);
       assert (result == 1) : "No room for new unit in player unit container.";
     } else if (notify_by_chieftain) {
@@ -171,6 +160,26 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     return supply_container;
   }
 
+  public Optional<MagicCapability> getMagicCapability() {
+    return Optional.ofNullable(magicCapability);
+  }
+
+  public Optional<UnitMount> getMount() {
+    return Optional.ofNullable(mount);
+  }
+
+  public boolean isPeon() {
+    return getTemplate().getUnitType().isPeon();
+  }
+
+  public boolean isWarrior() {
+    return getTemplate().getUnitType().isWarrior();
+  }
+
+  public boolean isChieftain() {
+    return getTemplate().getUnitType().isChieftain();
+  }
+
   @Override
   public String toString() {
     if (!isDead())
@@ -213,21 +222,14 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
   @Override
   public int getStatusValue() {
-    int tower_factor = isMounted() ? 3 : 1;
-    return getTemplate().getStatusValue() * tower_factor;
-  }
-
-  public void increaseRange(float amount) {
-    assert !isDead();
-    range_bonus += amount;
+    int mountFactor = mount != null ? mount.statusValueMultiplier() : 1;
+    return getTemplate().getStatusValue() * mountFactor;
   }
 
   @Override
   public AttackScanFilter.Priority getAttackPriority() {
     assert !isDead();
-    return getTemplate().getAbilities().hasAbilities(Abilities.BUILD)
-        ? AttackScanFilter.Priority.PEON
-        : AttackScanFilter.Priority.WARRIOR;
+    return isPeon() ? AttackScanFilter.Priority.PEON : AttackScanFilter.Priority.WARRIOR;
   }
 
   public @Nullable String getName() {
@@ -240,26 +242,46 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
   public void unmount() {
     assert !isDead();
-    replaceDefaultAndRequestOrder(new Idling(AttackScanFilter.UNIT_RANGE, true));
-    mount_offset = 0;
-    mounted_building = null;
+    assert mount != null : "Unit is not mounted";
+    UnitMount previous = mount;
+    float exitX = previous.unmountPositionX();
+    float exitY = previous.unmountPositionY();
+    if (AppConfig.LEGACY_DETERMINISTIC) {
+      replaceDefaultAndRequestOrder(new Idling(AttackScanFilter.UNIT_RANGE, true));
+      mount = null;
+    } else {
+      mount = null;
+      replaceDefaultAndRequestOrder(new Idling(AttackScanFilter.UNIT_RANGE, true));
+    }
     enable();
-    findInitialPosition(getPositionX(), getPositionY(), true);
+    findInitialPosition(exitX, exitY, true);
   }
 
   public void mount(Building building) {
+    mount(new TowerMount(building));
+  }
+
+  public void mount(UnitMount newMount) {
     assert !isDead();
-    assert null == mounted_building : "Unit is already in mounted in building " + mounted_building;
-    mounted_building = building;
-    mount_offset = building.getTemplate().getMountOffset();
+    assert mount == null : "Unit is already mounted in " + mount;
+    mount = newMount;
     disable();
     free();
-    setPosition(building.getPositionX(), building.getPositionY());
-    replaceDefaultAndRequestOrder(new Idling(AttackScanFilter.TOWER_RANGE, false));
+    setPosition(newMount.host().getPositionX(), newMount.host().getPositionY());
+    if (AppConfig.LEGACY_DETERMINISTIC) {
+      legacyDeferMountRangeBonus = true;
+      try {
+        replaceDefaultAndRequestOrder(newMount.mountedDefaultState());
+      } finally {
+        legacyDeferMountRangeBonus = false;
+      }
+    } else {
+      replaceDefaultAndRequestOrder(newMount.mountedDefaultState());
+    }
   }
 
   public boolean isMounted() {
-    return mounted_building != null;
+    return mount != null;
   }
 
   @Override
@@ -279,9 +301,9 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
   public float getMetersPerSecond() {
     assert !isDead();
-    if (getAbilities().hasAbilities(Abilities.HARVEST) && supply_container.getNumSupplies() > 0)
-      return TRANSPORT_SPEED_SCALE * getTemplate().getMetersPerSecond();
-    else return getTemplate().getMetersPerSecond();
+    return supply_container != null && supply_container.getNumSupplies() > 0
+        ? TRANSPORT_SPEED_SCALE * getTemplate().getMetersPerSecond()
+        : getTemplate().getMetersPerSecond();
   }
 
   @Override
@@ -314,7 +336,8 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
   public float getRange(Target target) {
     assert !isDead();
-    return getWeaponFactory().getRange() + range_bonus + target.getSize();
+    float rangeBonus = (mount != null && !legacyDeferMountRangeBonus) ? mount.rangeBonus() : 0f;
+    return getWeaponFactory().getRange() + rangeBonus + target.getSize();
   }
 
   @Override
@@ -335,26 +358,21 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     if (isDead() || isMounted()) reinsert();
     getOwner().getWorld().updateGlobalChecksum(animation.ordinal());
 
-    if (getAbilities().hasAbilities(Abilities.MAGIC)) {
-      getOwner().getRaceInfo().getMagics().forEach(magic -> increaseMagicEnergy(magic, t));
+    if (magicCapability != null) {
+      magicCapability.rechargeAll(getOwner().getRaceInfo().getMagics(), t);
     }
   }
 
-  private float getMagicEnergy(MagicType type) {
-    return magic_energy.getOrDefault(type, 0f);
-  }
-
-  private void setMagicEnergy(MagicType type, float value) {
-    magic_energy.put(type, value);
-  }
-
   public void increaseMagicEnergy(MagicType type, float amount) {
-    float nextVal = Math.min(MAX_MAGIC_ENERGY.get(type), getMagicEnergy(type) + amount);
-    setMagicEnergy(type, nextVal);
+    if (magicCapability != null) {
+      magicCapability.increaseEnergy(type, amount);
+    }
   }
 
   public void maxMagicEnergy(MagicType type) {
-    setMagicEnergy(type, MAX_MAGIC_ENERGY.get(type));
+    if (magicCapability != null) {
+      magicCapability.maxEnergy(type);
+    }
   }
 
   @Override
@@ -377,11 +395,15 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
   @Override
   public void removeDying() {
-    if (getAbilities().hasAbilities(Abilities.MAGIC)) {
+    if (isChieftain()) {
       getOwner().setActiveChieftain(null);
     }
-    free();
-    if (!getAbilities().hasAbilities(Abilities.MAGIC)) {
+    if (mount != null) {
+      mount = null;
+    } else {
+      free();
+    }
+    if (!isChieftain()) {
       int result = getOwner().getUnitCountContainer().increaseSupply(-1);
       assert result == -1;
     }
@@ -420,8 +442,8 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
   @Override
   public void hit(int damage, float direction_x, float direction_y, Player owner) {
     super.hit(damage, direction_x, direction_y, owner);
-    if (isMounted()) {
-      mounted_building.hit(damage, direction_x, direction_y, owner);
+    if (mount != null && mount.forwardsDamageToHost()) {
+      mount.host().hit(damage, direction_x, direction_y, owner);
     } else if (!isDead()) {
       hit_points = Math.clamp(hit_points - damage, 0, getTemplate().getMaxHitPoints());
       if (hit_points == 0) {
@@ -483,7 +505,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
   private boolean canEnter(Target target) {
     return target instanceof Building building
-        && !getAbilities().hasAbilities(Abilities.MAGIC)
+        && !isChieftain()
         && getOwner() == building.getOwner()
         && building.getUnitContainer().map(c -> c.canEnter(this)).orElse(false);
   }
@@ -553,7 +575,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
   private void applyTarget(Target target, Action action, boolean aggressive, boolean replaceOrder) {
     if (target == this) return;
     assert !target.isDead() : "Setting dead target";
-    assert !isMounted() : "Unit is mounted in building " + mounted_building;
+    assert mount == null : "Unit is mounted in " + mount;
     UnitState fallback = replaceOrder ? getDefaultState() : getCurrentState();
     switch (action) {
       case DEFAULT -> {
@@ -608,17 +630,17 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
   public void printDebugInfo() {
     IO.println("-----------------------------------");
     IO.println("Primary State = " + getStateMachine().getActiveOrPendingState());
-    if (getAbilities().hasAbilities(Abilities.MAGIC)) {
+    if (magicCapability != null) {
       IO.println("Hit Points = " + hit_points);
       for (MagicType type : getOwner().getRaceInfo().getMagics()) {
-        IO.println("Magic Energy " + type.name() + " = " + getMagicEnergy(type));
+        IO.println("Magic Energy " + type.name() + " = " + magicCapability.getEnergy(type));
       }
       IO.println("State = " + getStateMachine().getActiveOrPendingState());
     }
   }
 
   public boolean canDoMagic(MagicType type) {
-    return !isDead() && getOwner().canDoMagic(type) && getMagicEnergy(type) == MAX_MAGIC_ENERGY.get(type);
+    return !isDead() && magicCapability != null && getOwner().canDoMagic(type) && magicCapability.isReady(type);
   }
 
   public boolean canDoMagic(int slotIndex) {
@@ -626,7 +648,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
   }
 
   public void doMagic(MagicType type, boolean clear_stack) {
-    if (canDoMagic(type)) {
+    if (canDoMagic(type) && magicCapability != null) {
       UnitState fallback = clear_stack ? getDefaultState() : getStateMachine().getActiveOrPendingState();
       CastingMagic magicState = new CastingMagic(getOwner().getRaceInfo().getMagicFactory(type), fallback);
       if (clear_stack) {
@@ -634,8 +656,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
       } else {
         pushOrder(magicState);
       }
-      magic_energy.clear();
-      last_magic_type = type;
+      magicCapability.consumeAll(type);
 
       // stats
       getOwner().magicCast();
@@ -643,11 +664,11 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
   }
 
   public @Nullable MagicType getLastMagicType() {
-    return last_magic_type;
+    return magicCapability != null ? magicCapability.getLastMagicType() : null;
   }
 
   public float getMagicProgress(MagicType type) {
-    return getMagicEnergy(type) / MAX_MAGIC_ENERGY.get(type);
+    return magicCapability != null ? magicCapability.getProgress(type) : 0f;
   }
 
   @Override
@@ -674,13 +695,12 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
   public float getMountOffset() {
     assert !isDead();
-    return mount_offset;
+    return mount != null ? mount.offsetZ() : 0f;
   }
 
   @Override
   public float getOffsetZ() {
-    if (isMounted()) return mounted_building.getOffsetZ() + mount_offset;
-    else return isDead() ? deathOffsetZ : 0f;
+    return mount != null ? mount.host().getOffsetZ() + mount.offsetZ() : isDead() ? deathOffsetZ : 0f;
   }
 
   public PathTracker getPathTracker() {
@@ -858,8 +878,8 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
   @Override
   public void launchWeaponAttack(Selectable<?> target) {
-    if (isMounted()) {
-      getWeaponFactory().attack(this, target, 3f);
+    if (mount != null) {
+      getWeaponFactory().attack(this, target, mount.attackSpeedMultiplier());
     } else {
       getWeaponFactory().attack(this, target);
     }
@@ -947,9 +967,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
       return;
     }
     if (building.getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER)) {
-      if (getAbilities().hasAbilities(Abilities.HARVEST)
-          && supply_container != null
-          && supply_container.getNumSupplies() > 0) {
+      if (supply_container != null && supply_container.getNumSupplies() > 0) {
         supply_container
             .getSupplyType()
             .ifPresent(type ->

@@ -5,22 +5,23 @@ public final class BuildProductionContainer extends SupplyContainer {
   public static final int INFINITE_LIMIT = 30;
 
   private final SupplyContainer dest_container;
-  private final Building building;
+  private final SupplyStorage supplyStorage;
   private final WeaponTier tier;
 
   private float man_seconds = 0;
   private boolean infinite = false;
   private int num_orders = 0;
 
-  BuildProductionContainer(int max_supply_count, SupplyContainer dest_container, Building building, WeaponTier tier) {
+  BuildProductionContainer(
+      int max_supply_count, SupplyContainer dest_container, SupplyStorage supplyStorage, WeaponTier tier) {
     super(max_supply_count);
     this.dest_container = dest_container;
-    this.building = building;
+    this.supplyStorage = supplyStorage;
     this.tier = tier;
   }
 
-  BuildProductionContainer(SupplyContainer dest_container, Building building, WeaponTier tier) {
-    this(INFINITE_LIMIT, dest_container, building, tier);
+  BuildProductionContainer(SupplyContainer dest_container, SupplyStorage supplyStorage, WeaponTier tier) {
+    this(INFINITE_LIMIT, dest_container, supplyStorage, tier);
   }
 
   public WeaponTier getTier() {
@@ -58,7 +59,7 @@ public final class BuildProductionContainer extends SupplyContainer {
     for (SupplyType type : types) {
       int needed = tier.getCost().getCost(type);
       if (needed > 0) {
-        SupplyContainer sc = building.getSupplyContainerDirect(type);
+        SupplyContainer sc = supplyStorage.getSupplyContainerDirect(type);
         if (sc == null || sc.getNumSupplies() < needed) {
           return false;
         }
@@ -74,7 +75,7 @@ public final class BuildProductionContainer extends SupplyContainer {
       if (!dest_container.isSupplyFull()) {
         tier.getCost()
             .forEachCost((type, amount) -> {
-              SupplyContainer sc = building.getSupplyContainerDirect(type);
+              SupplyContainer sc = supplyStorage.getSupplyContainerDirect(type);
               if (sc != null) {
                 sc.increaseSupply(-amount);
               }

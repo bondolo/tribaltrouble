@@ -16,8 +16,7 @@ public final class MountUnitContainer extends UnitContainer {
   @Override
   public void enter(Unit unit) {
     this.unit = unit;
-    unit.mount(building);
-    unit.increaseRange(ATTACK_RANGE_INCREASE);
+    unit.mount(new TowerMount(building));
     increaseSupply(1);
     building.getAbilities().addAbilities(Abilities.TARGET);
   }
@@ -26,7 +25,6 @@ public final class MountUnitContainer extends UnitContainer {
   public Unit exit() {
     assert unit != null;
     unit.unmount();
-    unit.increaseRange(-ATTACK_RANGE_INCREASE);
     Unit result = unit;
     unit = null;
     increaseSupply(-1);
