@@ -6,8 +6,6 @@ import com.oddlabs.tt.simulation.model.WeaponTier;
 
 /// A throwing spear weapon made of rock.
 public final class RockSpearWeapon extends DirectedThrowingWeapon {
-  private static final float METERS_PER_SECOND = 20f; // multiplied by meters/second (in 2D)
-
   public RockSpearWeapon(boolean hit, Unit src, Selectable<?> target) {
     super(hit, src, target);
   }
@@ -15,11 +13,6 @@ public final class RockSpearWeapon extends DirectedThrowingWeapon {
   @Override
   public WeaponTier getWeaponTier() {
     return WeaponTier.ROCK;
-  }
-
-  @Override
-  public float getMetersPerSecond() {
-    return METERS_PER_SECOND;
   }
 
   @Override

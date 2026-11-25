@@ -9,7 +9,6 @@ import com.oddlabs.tt.simulation.player.Player;
 /// A throwing axe weapon made of rubber.
 public final class RubberAxeWeapon extends RotatingThrowingWeapon {
   private static final int MAX_BOUNDS_LENGTH = 3;
-  private static final float METERS_PER_SECOND = 30; // multiplied by meters/second (in 2D)
   private static final float BOUNCING_METERS_PER_SECOND = 10; // multiplied by meters/second (in 2D)
 
   private boolean bouncing = false;
@@ -37,7 +36,7 @@ public final class RubberAxeWeapon extends RotatingThrowingWeapon {
 
   @Override
   public float getMetersPerSecond() {
-    return bouncing ? BOUNCING_METERS_PER_SECOND : METERS_PER_SECOND;
+    return bouncing ? BOUNCING_METERS_PER_SECOND : super.getMetersPerSecond();
   }
 
   @Override

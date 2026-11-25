@@ -41,7 +41,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
   private static final float IDLE_SPEED = 1f / 2.5f;
 
-  /// Unit speed when transporting
+  // Unit speed scale when transporting resources.
   private static final float TRANSPORT_SPEED_SCALE = 4f / 5f;
 
   private static final int PENALTY_INCREMENT = 3;
@@ -54,6 +54,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
               MagicType.STUN, 40f,
               MagicType.SONIC_BLAST, 70f));
 
+  /// Animation clip indices for unit models.
   public enum Animation {
     IDLING,
     MOVING,
@@ -63,7 +64,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     THOR
   }
 
-  /// peons can carry resources
+  // Non-null for peons, which can carry resources.
   private final @Nullable UnitSupplyContainer supply_container;
 
   private final @Nullable String name;
@@ -77,7 +78,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
   private float anim_time;
   private int path_penalty;
 
-  /// unit is mounted in a tower
+  // Non-null while this unit is mounted in a tower.
   private @Nullable Building mounted_building;
 
   private float mount_offset;
@@ -264,6 +265,16 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
   @Override
   public boolean isEnabled() {
     return !isDead() && !isMounted();
+  }
+
+  @Override
+  public float getSelectionRadius() {
+    return getTemplate().getSelectionRadius();
+  }
+
+  @Override
+  public float getSelectionHeight() {
+    return getTemplate().getSelectionHeight();
   }
 
   public float getMetersPerSecond() {

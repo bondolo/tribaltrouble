@@ -1,18 +1,22 @@
 package com.oddlabs.tt.simulation.landscape;
 
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.geom.BoundsProvider;
 import com.oddlabs.tt.base.geom.SpriteGeometry;
+import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup.TreeType;
 import com.oddlabs.tt.simulation.model.Terrain;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
-/// Pure CPU landscape geometry provider supplying physical bounding boxes for rocks, iron, plants, and chickens.
+/// Pure CPU landscape geometry provider supplying physical bounding boxes for rocks, iron, plants, chickens, and trees.
 public final class LandscapeGeometry implements LandscapeBoundsProvider {
   private final SpriteGeometry[] rock_fragment_bounds;
   private final SpriteGeometry[] iron_fragment_bounds;
   private final EnumMap<Terrain, SpriteGeometry[]> plant_bounds;
   private final SpriteGeometry chicken_bounds;
+  private final EnumMap<TreeType, BoundsProvider> tree_bounds;
 
   public LandscapeGeometry() {
     this.rock_fragment_bounds =
@@ -38,6 +42,36 @@ public final class LandscapeGeometry implements LandscapeBoundsProvider {
             .toArray(SpriteGeometry[]::new));
 
     this.chicken_bounds = SpriteGeometry.load("/geometry/misc/chicken.binsprite");
+
+    this.tree_bounds = new EnumMap<>(TreeType.class);
+    for (TreeType type : TreeType.values()) {
+      SpriteGeometry trunk = SpriteGeometry.load(trunkPath(type));
+      SpriteGeometry crown = SpriteGeometry.load(crownPath(type));
+      BoundingBox combined = new BoundingBox();
+      combined.setBounds(trunk.bounds()[0]);
+      combined.expandBounds(crown.bounds()[0]);
+      combined.expandBoundsZ(0f);
+      BoundingBox[] boxArray = new BoundingBox[] {combined};
+      this.tree_bounds.put(type, () -> boxArray);
+    }
+  }
+
+  public static String trunkPath(TreeType type) {
+    return switch (type) {
+      case JUNGLE -> "/geometry/misc/jungle_tree_trunk.binsprite";
+      case PALM -> "/geometry/misc/palm_trunk.binsprite";
+      case OAK -> "/geometry/misc/oak_tree_trunk.binsprite";
+      case PINE -> "/geometry/misc/pine_tree_trunk.binsprite";
+    };
+  }
+
+  public static String crownPath(TreeType type) {
+    return switch (type) {
+      case JUNGLE -> "/geometry/misc/jungle_tree_crown.binsprite";
+      case PALM -> "/geometry/misc/palm_crown.binsprite";
+      case OAK -> "/geometry/misc/oak_tree_crown.binsprite";
+      case PINE -> "/geometry/misc/pine_tree_crown.binsprite";
+    };
   }
 
   @Override
@@ -59,5 +93,10 @@ public final class LandscapeGeometry implements LandscapeBoundsProvider {
   @Override
   public BoundsProvider getChickenBounds() {
     return chicken_bounds;
+  }
+
+  @Override
+  public BoundsProvider getTreeBounds(TreeType type) {
+    return Objects.requireNonNull(tree_bounds.get(type), () -> "Missing tree bounds for " + type);
   }
 }

@@ -8,7 +8,6 @@ import com.oddlabs.tt.simulation.player.Player;
 
 /// A throwing spear weapon made of rubber.
 public final class RubberSpearWeapon extends DirectedThrowingWeapon {
-  private static final float METERS_PER_SECOND = 30; // multiplied by meters/second (in 2D)
   private static final int MAX_BOUNDS_LENGTH = 3;
 
   public RubberSpearWeapon(boolean hit, Unit src, Selectable<?> target) {
@@ -29,11 +28,6 @@ public final class RubberSpearWeapon extends DirectedThrowingWeapon {
   @Override
   public WeaponTier getWeaponTier() {
     return WeaponTier.RUBBER;
-  }
-
-  @Override
-  public float getMetersPerSecond() {
-    return METERS_PER_SECOND;
   }
 
   @Override

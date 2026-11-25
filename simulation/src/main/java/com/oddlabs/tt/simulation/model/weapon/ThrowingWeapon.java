@@ -16,7 +16,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated
   private final boolean hit;
   private final Unit src;
 
-  /// the target of the weapon. Mutable because rubber weapons bounce and change targets *
+  // Mutable because rubber weapons bounce and change targets.
   private Selectable<?> target;
 
   private float start_x;
@@ -113,7 +113,9 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated
     time = 0;
   }
 
-  public abstract float getMetersPerSecond();
+  public float getMetersPerSecond() {
+    return getWeaponTier().getMetersPerSecond();
+  }
 
   private void updateTarget() {
     end_x = target.getPositionX();

@@ -189,6 +189,16 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     return !isDead();
   }
 
+  @Override
+  public float getSelectionRadius() {
+    return getTemplate().getSelectionRadius(getBuildStage());
+  }
+
+  @Override
+  public float getSelectionHeight() {
+    return getTemplate().getSelectionHeight(getBuildStage());
+  }
+
   public int getUnitCount() {
     assert !isDead();
     return unit_container != null ? unit_container.getNumSupplies() : 0;
@@ -324,13 +334,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
 
   void createWarriors(WeaponTier tier, int amount) {
     assert !isDead();
-    UnitType template =
-        switch (tier) {
-          case ROCK -> UnitType.WARRIOR_ROCK;
-          case IRON -> UnitType.WARRIOR_IRON;
-          case RUBBER -> UnitType.WARRIOR_RUBBER;
-        };
-    createArmy(amount, template);
+    createArmy(amount, tier.getUnitType());
   }
 
   void createPeons(int amount) {
@@ -438,18 +442,15 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         && doIsPlacingLegal(getUnitGrid(), getGridX(), getGridY(), getTemplate().getPlacingSize() - PLACING_BORDER);
   }
 
-  /// {@return true if the building is placed, false otherwise}
   public boolean isPlaced() {
     assert !isDead();
     return getBuildStage() != BuildStage.UNPLACED;
   }
 
-  /// {@return true if construction is complete, false otherwise}
   public boolean isBuilt() {
     return build_points == getTemplate().getMaxHitPoints();
   }
 
-  /// Returns true if this building is completed and operating normally.
   public boolean isOperating() {
     return !isDead() && isBuilt();
   }
@@ -820,6 +821,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
   }
 
+  /// Simulates legacy deterministic smoke emitter particle timing and PRNG draws for damaged buildings.
   private static final class LegacyDamagedSmokeEmitter implements Animated {
     private final World world;
     private float particleCounter = 0f;

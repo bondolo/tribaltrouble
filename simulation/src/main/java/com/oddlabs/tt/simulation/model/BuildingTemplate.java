@@ -101,6 +101,22 @@ public final class BuildingTemplate extends Template {
     return start_selection_height;
   }
 
+  public float getSelectionRadius(Building.BuildStage stage) {
+    return switch (stage) {
+      case START -> start_selection_radius;
+      case HALFBUILT -> halfbuilt_selection_radius;
+      case UNPLACED, BUILT -> built_selection_radius;
+    };
+  }
+
+  public float getSelectionHeight(Building.BuildStage stage) {
+    return switch (stage) {
+      case START -> start_selection_height;
+      case HALFBUILT -> halfbuilt_selection_height;
+      case UNPLACED, BUILT -> built_selection_height;
+    };
+  }
+
   public int getPlacingSize() {
     return placing_size;
   }

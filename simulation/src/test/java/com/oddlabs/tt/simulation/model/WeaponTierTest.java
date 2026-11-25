@@ -62,4 +62,18 @@ final class WeaponTierTest {
     assertNull(WeaponTier.fromDeployType(DeployType.PEON));
     assertNull(WeaponTier.fromDeployType(DeployType.PEON_HARVEST_TREE));
   }
+
+  @Test
+  void testUnitTypeRoundTripAndSpeeds() {
+    for (WeaponTier tier : WeaponTier.values()) {
+      UnitType unitType = tier.getUnitType();
+      assertSame(tier, unitType.getWeaponTier());
+      assertSame(unitType, unitType.getWeaponTier().getUnitType());
+    }
+    assertNull(UnitType.PEON.getWeaponTier());
+    assertNull(UnitType.CHIEFTAIN.getWeaponTier());
+    assertEquals(20f, WeaponTier.ROCK.getMetersPerSecond());
+    assertEquals(25f, WeaponTier.IRON.getMetersPerSecond());
+    assertEquals(30f, WeaponTier.RUBBER.getMetersPerSecond());
+  }
 }

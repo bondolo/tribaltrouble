@@ -41,6 +41,10 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
 
   public abstract boolean isEnabled();
 
+  public abstract float getSelectionRadius();
+
+  public abstract float getSelectionHeight();
+
   public float getHitOffsetZ() {
     return template.getHitOffsetZ(0);
   }

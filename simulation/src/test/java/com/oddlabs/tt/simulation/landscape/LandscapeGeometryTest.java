@@ -45,6 +45,15 @@ class LandscapeGeometryTest {
     BoundingBox[] chickenBoxes = chickenBounds.bounds();
     assertNotNull(chickenBoxes);
     assertTrue(chickenBoxes.length > 0);
+
+    for (AbstractTreeGroup.TreeType type : AbstractTreeGroup.TreeType.values()) {
+      BoundsProvider treeBounds = geometry.getTreeBounds(type);
+      assertNotNull(treeBounds);
+      BoundingBox[] treeBoxes = treeBounds.bounds();
+      assertNotNull(treeBoxes);
+      assertEquals(1, treeBoxes.length);
+      assertTrue(treeBoxes[0].bmax_z > 0f);
+    }
   }
 
   @Test

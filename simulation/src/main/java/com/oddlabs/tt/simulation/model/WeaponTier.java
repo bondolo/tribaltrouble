@@ -14,7 +14,8 @@ public enum WeaponTier {
               SupplyType.WOOD, 2,
               SupplyType.ROCK, 1)),
       40f,
-      1),
+      1,
+      20f),
 
   /// Tier-2 iron weaponry (Iron Axe / Iron Spear).
   IRON(
@@ -25,7 +26,8 @@ public enum WeaponTier {
               SupplyType.WOOD, 2,
               SupplyType.IRON, 1)),
       80f,
-      3),
+      3,
+      25f),
 
   /// Tier-3 rubber weaponry (Rubber Axe / Rubber Spear).
   RUBBER(
@@ -38,53 +40,63 @@ public enum WeaponTier {
               SupplyType.IRON, 1,
               SupplyType.RUBBER, 1)),
       120f,
-      8);
+      8,
+      30f);
 
   private final SupplyType supplyType;
   private final DeployType deployType;
   private final Cost cost;
   private final float buildTime;
   private final int statusMultiplier;
+  private final float metersPerSecond;
 
-  WeaponTier(SupplyType supplyType, DeployType deployType, Cost cost, float buildTime, int statusMultiplier) {
+  WeaponTier(
+      SupplyType supplyType,
+      DeployType deployType,
+      Cost cost,
+      float buildTime,
+      int statusMultiplier,
+      float metersPerSecond) {
     this.supplyType = supplyType;
     this.deployType = deployType;
     this.cost = cost;
     this.buildTime = buildTime;
     this.statusMultiplier = statusMultiplier;
+    this.metersPerSecond = metersPerSecond;
   }
 
-  /// {@return the required raw resource supplies cost to forge one weapon of this tier}
   public Cost getCost() {
     return cost;
   }
 
-  /// {@return the required raw resource supply type used to forge this weapon}
   public SupplyType getSupplyType() {
     return supplyType;
   }
 
-  /// {@return the corresponding warrior deployment type equipped with this weapon tier}
   public DeployType getDeployType() {
     return deployType;
   }
 
-  /// {@return the base time in seconds required to produce one unit of this weapon tier}
+  public UnitType getUnitType() {
+    return switch (this) {
+      case ROCK -> UnitType.WARRIOR_ROCK;
+      case IRON -> UnitType.WARRIOR_IRON;
+      case RUBBER -> UnitType.WARRIOR_RUBBER;
+    };
+  }
+
   public float getBuildTime() {
     return buildTime;
   }
 
-  /// {@return the status value weight multiplier contributed by this weapon tier}
   public int getStatusMultiplier() {
     return statusMultiplier;
   }
 
-  /**
-   * Maps a warrior deploy type to its corresponding weapon tier.
-   *
-   * @param `deployType` the warrior deploy type
-   * @return the matching weapon tier, or null if not a warrior deploy type
-   */
+  public float getMetersPerSecond() {
+    return metersPerSecond;
+  }
+
   public static @Nullable WeaponTier fromDeployType(DeployType deployType) {
     return switch (deployType) {
       case ROCK_WARRIOR -> ROCK;

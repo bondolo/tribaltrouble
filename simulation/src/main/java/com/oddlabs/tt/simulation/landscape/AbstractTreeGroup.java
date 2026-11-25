@@ -12,17 +12,19 @@ import org.jspecify.annotations.Nullable;
 public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeGroup, TreeLeaf, TreeSupply {
 
   public enum TreeType {
-    JUNGLE(6.8f, 16.0f),
-    PALM(7.0f, 20.0f),
-    OAK(7.0f, 20.0f),
-    PINE(5.0f, 12.0f);
+    JUNGLE(6.8f, 16.0f, 0.9f),
+    PALM(7.0f, 20.0f, 0.95f),
+    OAK(7.0f, 20.0f, 0.7f),
+    PINE(5.0f, 12.0f, 0.65f);
 
     private final float canopyRadius;
     private final float nominalHeight;
+    private final float pickHeightScale;
 
-    TreeType(float canopyRadius, float nominalHeight) {
+    TreeType(float canopyRadius, float nominalHeight, float pickHeightScale) {
       this.canopyRadius = canopyRadius;
       this.nominalHeight = nominalHeight;
+      this.pickHeightScale = pickHeightScale;
     }
 
     public float canopyRadius() {
@@ -31,6 +33,10 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
 
     public float nominalHeight() {
       return nominalHeight;
+    }
+
+    public float pickHeightScale() {
+      return pickHeightScale;
     }
   }
 
