@@ -2,7 +2,7 @@ package com.oddlabs.tt.content.tutorial;
 
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.content.tutorial.trigger.TutorialTrigger;
 import com.oddlabs.tt.gui.GUIObject;
@@ -78,10 +78,7 @@ public final class Tutorial {
     viewer.getGUIRoot().addChild(info);
     var audioManager = viewer.getAudioManager();
     audioManager.newAudio(
-        0f,
-        0f,
-        0f,
-        AssetRegistry.getInstance().getBuildingNotificationAudio(viewer.getLocalPlayer().getPlayerInfo().race()));
+        0f, 0f, 0f, AudioRegistry.getBuildingNotificationAudio(viewer.getLocalPlayer().getPlayerInfo().race()));
     timer =
         new TimerAnimation(
             viewer.getAnimationManagerLocal(), _ -> trigger.run(Tutorial.this), trigger.getCheckInterval());

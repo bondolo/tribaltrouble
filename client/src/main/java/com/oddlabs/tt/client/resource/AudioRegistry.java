@@ -2,6 +2,7 @@ package com.oddlabs.tt.client.resource;
 
 import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import java.util.Arrays;
 import java.util.Collections;
@@ -351,6 +352,71 @@ public final class AudioRegistry {
                   AUDIO_GAIN_SUPPLY_ACTION,
                   AUDIO_RADIUS_SUPPLY_ACTION))
           .toArray(AudioParameters[]::new);
+
+  static final AudioParameters ATTACK_NOTIFY_NATIVE =
+      new AudioParameters(
+          SFX_ATTACKNOTIFY_NATIVE,
+          AUDIO_RANK_NOTIFICATION,
+          AUDIO_DISTANCE_NOTIFICATION,
+          AUDIO_GAIN_NOTIFICATION,
+          AUDIO_RADIUS_NOTIFICATION,
+          1f,
+          false,
+          true);
+
+  static final AudioParameters BUILDING_NOTIFY_NATIVE =
+      new AudioParameters(
+          SFX_BUILDINGNOTIFY_NATIVE,
+          AUDIO_RANK_NOTIFICATION,
+          AUDIO_DISTANCE_NOTIFICATION,
+          AUDIO_GAIN_NOTIFICATION,
+          AUDIO_RADIUS_NOTIFICATION,
+          1f,
+          false,
+          true);
+
+  static final AudioParameters ATTACK_NOTIFY_VIKING =
+      new AudioParameters(
+          SFX_ATTACKNOTIFY_VIKING,
+          AUDIO_RANK_NOTIFICATION,
+          AUDIO_DISTANCE_NOTIFICATION,
+          AUDIO_GAIN_NOTIFICATION,
+          AUDIO_RADIUS_NOTIFICATION,
+          1f,
+          false,
+          true);
+
+  static final AudioParameters BUILDING_NOTIFY_VIKING =
+      new AudioParameters(
+          SFX_BUILDINGNOTIFY_VIKING,
+          AUDIO_RANK_NOTIFICATION,
+          AUDIO_DISTANCE_NOTIFICATION,
+          AUDIO_GAIN_NOTIFICATION,
+          AUDIO_RADIUS_NOTIFICATION,
+          1f,
+          false,
+          true);
+
+  public static AudioParameters getAttackNotificationAudio(Race race) {
+    return switch (race) {
+      case NATIVES -> ATTACK_NOTIFY_NATIVE;
+      case VIKINGS -> ATTACK_NOTIFY_VIKING;
+    };
+  }
+
+  public static AudioParameters getBuildingNotificationAudio(Race race) {
+    return switch (race) {
+      case NATIVES -> BUILDING_NOTIFY_NATIVE;
+      case VIKINGS -> BUILDING_NOTIFY_VIKING;
+    };
+  }
+
+  public static AudioParameters getMusic(Race race) {
+    return switch (race) {
+      case NATIVES -> MUSIC_NATIVE;
+      case VIKINGS -> MUSIC_VIKING;
+    };
+  }
 
   private AudioRegistry() {
     // No instances

@@ -2,7 +2,7 @@ package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.base.animation.AnimationManager;
-import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.net.BeaconListener;
@@ -71,7 +71,7 @@ public final class NotificationManager implements BeaconListener {
 
   private void newNotification(
       AnimationManager manager, Player local_player, float x, float y, Color color, boolean show_always) {
-    var params = AssetRegistry.getInstance().getBuildingNotificationAudio(local_player.getPlayerInfo().race());
+    var params = AudioRegistry.getBuildingNotificationAudio(local_player.getPlayerInfo().race());
     var notification =
         new Notification(
             local_player.getWorld().getHeightMap(), audio, gui_root, x, y, this, color, params, show_always, manager);

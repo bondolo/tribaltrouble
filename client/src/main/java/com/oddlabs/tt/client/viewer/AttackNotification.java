@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.viewer;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.TimerAnimation;
-import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Target;
@@ -32,7 +32,7 @@ final class AttackNotification extends Notification {
         center.getPositionY(),
         manager,
         Color.Standard.RED,
-        AssetRegistry.getInstance().getAttackNotificationAudio(local_player.getPlayerInfo().race()),
+        AudioRegistry.getAttackNotificationAudio(local_player.getPlayerInfo().race()),
         false,
         animation_manager);
   }

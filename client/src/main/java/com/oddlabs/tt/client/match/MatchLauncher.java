@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.match;
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.client.Peer;
-import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.client.screen.ScreenManager;
 import com.oddlabs.tt.client.trigger.GameOverTrigger;
 import com.oddlabs.tt.client.viewer.InGameInfo;
@@ -35,16 +35,11 @@ public final class MatchLauncher {
 
   private MatchLauncher() {}
 
-  /**
-   * Completes post-initialization delegate wiring and background audio for a running world.
-   *
-   * @param `worldViewer` the world viewer instance being initialized
-   */
   public static void completeGameSetup(WorldViewer worldViewer) {
     worldViewer.getGUIRoot().pushDelegate(worldViewer.getDelegate());
     worldViewer
         .getAudioManager()
-        .setMusic(AssetRegistry.getInstance().getMusic(worldViewer.getLocalPlayer().getPlayerInfo().race()), 10f);
+        .setMusic(AudioRegistry.getMusic(worldViewer.getLocalPlayer().getPlayerInfo().race()), 10f);
   }
 
   /// Default world initialization action attaching standard game-over triggers and setting up presentation.
@@ -56,17 +51,6 @@ public final class MatchLauncher {
     }
   }
 
-  /**
-   * Connects to a remote or existing multiplayer match and displays the connecting progress form.
-   *
-   * @param `peer` the active client peer
-   * @param `guiRoot` the root GUI container
-   * @param `screenManager` the active screen manager
-   * @param `hostId` the remote host ID
-   * @param `owner` the parent lobby form
-   * @param `inGameInfo` multiplayer match metadata
-   * @return the initialized game network coordinator
-   */
   public static GameNetwork joinGame(
       Peer peer,
       GUIRoot guiRoot,
@@ -103,20 +87,6 @@ public final class MatchLauncher {
     return gameNetwork;
   }
 
-  /**
-   * Starts a new single-player or multiplayer match, instantiating simulation server, client, and world loaders.
-   *
-   * @param `peer` the active client peer
-   * @param `guiRoot` the root GUI container
-   * @param `screenManager` the active screen manager
-   * @param `owner` the parent multiplayer lobby if applicable
-   * @param `worldParams` world simulation parameters
-   * @param `inGameInfo` match metadata
-   * @param `initAction` initial trigger and post-load hook
-   * @param `islandConfig` procedural island parameters
-   * @param `aiNames` bot player display names
-   * @return the initialized game network coordinator
-   */
   public static GameNetwork startNewGame(
       Peer peer,
       GUIRoot guiRoot,
