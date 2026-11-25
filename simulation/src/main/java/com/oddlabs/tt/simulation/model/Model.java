@@ -46,6 +46,10 @@ public abstract class Model extends Element<Model> implements Shadowable, Distri
     return clientModel;
   }
 
+  public final <C extends ClientModel> @Nullable C getClientModel(Class<C> type) {
+    return type.cast(clientModel);
+  }
+
   public final void setClientModel(@Nullable ClientModel clientModel) {
     this.clientModel = clientModel;
   }

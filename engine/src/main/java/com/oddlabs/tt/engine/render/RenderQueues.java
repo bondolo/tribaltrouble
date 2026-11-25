@@ -25,7 +25,7 @@ public final class RenderQueues implements AutoCloseable {
 
   private final List<SpriteRenderer> sprite_list_lookup = new ArrayList<>();
   private final List<ShadowListRenderer> shadow_renderer_lookup = new ArrayList<>();
-  private final Map<Supplier<Texture[]>, ShadowListKey> desc_to_shadow_key = new HashMap<>();
+  private final Map<Supplier<Texture[]>, ShadowListKey<?>> desc_to_shadow_key = new HashMap<>();
   private final List<Texture> texture_lookup = new ArrayList<>();
 
   // Shared array for particle effects
@@ -148,23 +148,32 @@ public final class RenderQueues implements AutoCloseable {
     return texture_lookup.get(key.key());
   }
 
-  public ShadowListKey registerShadowRenderer(
-      Supplier<Texture[]> desc, Supplier<? extends ShadowListRenderer> rendererFactory) {
-    ShadowListKey key = desc_to_shadow_key.get(desc);
-    if (key != null) return key;
-    return register(desc, rendererFactory.get());
+  public <R extends ShadowListRenderer> ShadowListKey<R> registerShadowRenderer(
+      Supplier<Texture[]> desc, Class<R> type, Supplier<? extends R> rendererFactory) {
+    ShadowListKey<?> existing = desc_to_shadow_key.get(desc);
+    if (existing != null) {
+      if (existing.type() != type) {
+        throw new IllegalStateException(
+            "Shadow renderer already registered as " + existing.type().getName() + ", requested " + type.getName());
+      }
+      @SuppressWarnings("unchecked")
+      ShadowListKey<R> typed = (ShadowListKey<R>) existing;
+      return typed;
+    }
+    return register(desc, type, rendererFactory.get());
   }
 
-  private ShadowListKey register(Supplier<Texture[]> desc, ShadowListRenderer renderer) {
+  private <R extends ShadowListRenderer> ShadowListKey<R> register(
+      Supplier<Texture[]> desc, Class<R> type, R renderer) {
     int index = shadow_renderer_lookup.size();
     shadow_renderer_lookup.add(renderer);
-    ShadowListKey key = new ShadowListKey(index);
+    ShadowListKey<R> key = new ShadowListKey<>(index, type);
     desc_to_shadow_key.put(desc, key);
     return key;
   }
 
-  public ShadowListRenderer getShadowRenderer(ShadowListKey key) {
-    return shadow_renderer_lookup.get(key.key());
+  public <R extends ShadowListRenderer> R getShadowRenderer(ShadowListKey<R> key) {
+    return key.type().cast(shadow_renderer_lookup.get(key.key()));
   }
 
   public SpriteKey register(SpriteFile sprite_file) {

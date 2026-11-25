@@ -174,7 +174,7 @@ final class AttachedRenderStateTest {
 
   @Test
   void testWhiteModelVisitorHasTransparentTeamColor() {
-    WhiteModelVisitor<Model> visitor = WhiteModelVisitor.getInstance();
+    WhiteModelVisitor<Model> visitor = new WhiteModelVisitor<>();
     ElementSceneContext<Model> context = new ElementSceneContext<>(new DummySceneContext());
     assertEquals(Color.Linear.TRANSPARENT, visitor.getTeamColor(context));
   }

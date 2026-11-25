@@ -3,7 +3,6 @@ package com.oddlabs.tt.client.render;
 import com.oddlabs.tt.engine.render.Accessory;
 import com.oddlabs.tt.engine.render.AnimatedAccessory;
 import com.oddlabs.tt.engine.render.ElementSceneContext;
-import com.oddlabs.tt.engine.render.WhiteModelVisitor;
 import com.oddlabs.tt.simulation.model.Model;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -101,8 +100,7 @@ abstract class AbstractVisualModel implements VisualModel {
   @Override
   public void visit(RenderState rs) {
     float z_offset = rs.getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY());
-    ElementSceneContext<Model> state =
-        (ElementSceneContext<Model>) rs.getCachedState(WhiteModelVisitor.getInstance(), model, z_offset);
+    ElementSceneContext<Model> state = rs.getCachedState(rs.getDefaultModelVisitor(), model, z_offset);
     rs.visitAccessories(model, state);
   }
 }

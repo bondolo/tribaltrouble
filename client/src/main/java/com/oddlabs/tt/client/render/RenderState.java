@@ -76,6 +76,7 @@ public final class RenderState implements SceneContext, AutoCloseable {
   private final AssetRegistry assets;
   private final VisualModelFactory visualModelFactory;
   private final ModelVisitor<Selectable<?>> selectable_visitor;
+  private final WhiteModelVisitor<Model> default_model_visitor = new WhiteModelVisitor<>();
   private final Set<VisualModel> activeVisualModels = new LinkedHashSet<>();
   private final Deque<VisualModel> detachedVisualModels = new ArrayDeque<>();
 
@@ -95,15 +96,17 @@ public final class RenderState implements SceneContext, AutoCloseable {
     this.assets = assets;
     this.visualModelFactory = visualModelFactory;
     this.selectable_visitor = new SelectableVisitor<>(assets);
-    var respondKey = render_queues.registerShadowRenderer(RESPOND_DESC, () -> new TargetRespondRenderer(RESPOND_DESC));
-    this.target_respond_renderer = (TargetRespondRenderer) render_queues.getShadowRenderer(respondKey);
+    var respondKey =
+        render_queues.registerShadowRenderer(
+            RESPOND_DESC, TargetRespondRenderer.class, () -> new TargetRespondRenderer(RESPOND_DESC));
+    this.target_respond_renderer = render_queues.getShadowRenderer(respondKey);
 
-    this.default_shadow_renderer =
-        (SelectableShadowRenderer) render_queues.getShadowRenderer(assets.getDefaultShadow());
+    this.default_shadow_renderer = render_queues.getShadowRenderer(assets.getDefaultShadow());
 
     var crackKey =
-        render_queues.registerShadowRenderer(CRACK_DECAL_DESC, () -> new CrackDecalRenderer(CRACK_DECAL_DESC));
-    this.crack_shadow_renderer = (CrackDecalRenderer) render_queues.getShadowRenderer(crackKey);
+        render_queues.registerShadowRenderer(
+            CRACK_DECAL_DESC, CrackDecalRenderer.class, () -> new CrackDecalRenderer(CRACK_DECAL_DESC));
+    this.crack_shadow_renderer = render_queues.getShadowRenderer(crackKey);
     this.render_state_cache = new RenderStateCache<>(() -> new ElementSceneContext<>(RenderState.this));
     this.attached_state_cache = new RenderStateCache<>(AttachedRenderState::new);
     this.crack_state_cache = new RenderStateCache<>(CrackDecalShadowable::new);
@@ -234,8 +237,7 @@ public final class RenderState implements SceneContext, AutoCloseable {
   private void prepareDetachedVisualEffects() {
     for (VisualModel vm : detachedVisualModels) {
       Model model = vm.getModel();
-      ElementSceneContext<Model> parentState =
-          (ElementSceneContext<Model>) getCachedState(WhiteModelVisitor.getInstance(), model);
+      ElementSceneContext<Model> parentState = getCachedState(default_model_visitor, model);
       for (Accessory accessory : vm.getAccessories()) {
         if (!accessory.isExpired()) {
           if (accessory.isVisible(model, camera)) {
@@ -263,6 +265,11 @@ public final class RenderState implements SceneContext, AutoCloseable {
     return camera;
   }
 
+  WhiteModelVisitor<Model> getDefaultModelVisitor() {
+    return default_model_visitor;
+  }
+
+  @SuppressWarnings("unchecked")
   private <M extends Model> ElementSceneContext<M> doGetCachedState() {
     return (ElementSceneContext<M>) render_state_cache.get();
   }
@@ -300,9 +307,8 @@ public final class RenderState implements SceneContext, AutoCloseable {
     } else {
       state.addToRenderList();
       if (selectable.isEnabled()) {
-        ShadowListKey shadowKey = assets.getSelectableShadow(selectable);
-        SelectableShadowRenderer shadow_renderer =
-            (SelectableShadowRenderer) render_queues.getShadowRenderer(shadowKey);
+        ShadowListKey<SelectableShadowRenderer> shadowKey = assets.getSelectableShadow(selectable);
+        SelectableShadowRenderer shadow_renderer = render_queues.getShadowRenderer(shadowKey);
         if (isHovered(selectable) || isSelected(selectable)) {
           shadow_renderer.addToSelectionList(state);
         } else if (selectable instanceof Unit && selectable.getShadowDiameter() > 0f) {
@@ -314,7 +320,7 @@ public final class RenderState implements SceneContext, AutoCloseable {
   }
 
   VisualModel getOrCreateVisualModel(Model model) {
-    VisualModel vm = (VisualModel) model.getClientModel();
+    VisualModel vm = model.getClientModel(VisualModel.class);
     if (vm == null) {
       vm = visualModelFactory.create(model);
       model.setClientModel(vm);
@@ -427,8 +433,7 @@ public final class RenderState implements SceneContext, AutoCloseable {
       };
 
   void visitSupplyModel(final SupplyModel model) {
-    ElementSceneContext<SupplyModel> state =
-        (ElementSceneContext<SupplyModel>) getCachedState(supply_model_visitor, model);
+    ElementSceneContext<SupplyModel> state = getCachedState(supply_model_visitor, model);
     state.addToRenderList();
     if (getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
       var decal = svm.getDecalProperties();
@@ -465,8 +470,7 @@ public final class RenderState implements SceneContext, AutoCloseable {
 
   void visitRubberSupply(final RubberSupply model) {
     float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY()) + model.getOffsetZ();
-    ElementSceneContext<RubberSupply> state =
-        (ElementSceneContext<RubberSupply>) getCachedState(rubber_model_visitor, model, z_offset);
+    ElementSceneContext<RubberSupply> state = getCachedState(rubber_model_visitor, model, z_offset);
     state.addToRenderList();
     if (!model.isHit()) default_shadow_renderer.addToShadowList(state);
     visitAccessories(model, state);
@@ -600,7 +604,7 @@ public final class RenderState implements SceneContext, AutoCloseable {
   }
 
   private void detachOrCloseVisualModel(Model model) {
-    VisualModel vm = (VisualModel) model.getClientModel();
+    VisualModel vm = model.getClientModel(VisualModel.class);
     if (vm != null) {
       model.setClientModel(null);
       activeVisualModels.remove(vm);

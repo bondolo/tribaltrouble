@@ -1,4 +1,4 @@
 package com.oddlabs.tt.engine.render;
 
-/// A render queue key identifying a shadow list.
-public record ShadowListKey(int key) implements RenderQueueKey {}
+/// Typed render queue key identifying a registered shadow renderer.
+public record ShadowListKey<R extends ShadowListRenderer>(int key, Class<R> type) implements RenderQueueKey {}

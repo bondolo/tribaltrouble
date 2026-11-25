@@ -8,13 +8,6 @@ import org.jspecify.annotations.Nullable;
 /// A specialized {@link ModelVisitor} that renders models with a neutral white team color. Used as a base for custom
 /// visitors or for temporary visual effects.
 public class WhiteModelVisitor<M extends Model> extends ModelVisitor<M> {
-  private static final WhiteModelVisitor<Model> INSTANCE = new WhiteModelVisitor<>();
-
-  @SuppressWarnings("unchecked")
-  public static <M extends Model> WhiteModelVisitor<M> getInstance() {
-    return (WhiteModelVisitor<M>) INSTANCE;
-  }
-
   @Override
   public @Nullable SpriteKey getSpriteKey(ElementSceneContext<M> render_state) {
     return null;

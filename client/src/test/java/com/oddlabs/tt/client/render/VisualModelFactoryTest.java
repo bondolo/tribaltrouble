@@ -76,7 +76,7 @@ final class VisualModelFactoryTest {
             List.of(ironSprite),
             Map.of(Terrain.NATIVE, List.of(plantSprite), Terrain.VIKING, List.of(plantSprite)),
             chickenSprite,
-            new ShadowListKey(0));
+            new ShadowListKey<>(0, SelectableShadowRenderer.class));
     this.factory = new VisualModelFactory(createDummyAudio(), AssetRegistry.forLandscape(landscapeAssets));
   }
 
@@ -88,8 +88,8 @@ final class VisualModelFactoryTest {
     return new TextureKey(nextKeyId.getAndIncrement());
   }
 
-  private ShadowListKey newShadowKey() {
-    return new ShadowListKey(nextKeyId.getAndIncrement());
+  private ShadowListKey<SelectableShadowRenderer> newShadowKey() {
+    return new ShadowListKey<>(nextKeyId.getAndIncrement(), SelectableShadowRenderer.class);
   }
 
   private AssetRegistry.RaceVisuals createRaceVisuals() {
@@ -179,13 +179,16 @@ final class VisualModelFactoryTest {
   void modelDirectClientModelBinding() {
     DummyModel model = new DummyModel(world);
     assertNull(model.getClientModel());
+    assertNull(model.getClientModel(VisualModel.class));
 
     VisualModel vm = factory.create(model);
     model.setClientModel(vm);
     assertSame(vm, model.getClientModel());
+    assertSame(vm, model.getClientModel(VisualModel.class));
 
     model.setClientModel(null);
     assertNull(model.getClientModel());
+    assertNull(model.getClientModel(VisualModel.class));
   }
 
   @Test

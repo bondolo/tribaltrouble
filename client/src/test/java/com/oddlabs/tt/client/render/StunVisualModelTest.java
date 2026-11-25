@@ -126,8 +126,10 @@ final class StunVisualModelTest {
                 (proxy, method, args) -> method.getName().equals("getInterpolationAlpha") ? 0.5f : null);
     com.oddlabs.tt.engine.render.ElementSceneContext<com.oddlabs.tt.simulation.model.Model> esc =
         new com.oddlabs.tt.engine.render.ElementSceneContext<>(sc);
-    esc.setup(com.oddlabs.tt.engine.render.WhiteModelVisitor.getInstance(), stun);
-    com.oddlabs.tt.engine.render.WhiteModelVisitor.getInstance().getTransform(esc, transform);
+    com.oddlabs.tt.engine.render.WhiteModelVisitor<com.oddlabs.tt.simulation.model.Model> visitor =
+        new com.oddlabs.tt.engine.render.WhiteModelVisitor<>();
+    esc.setup(visitor, stun);
+    visitor.getTransform(esc, transform);
     System.out.println(
         "Stun transform translation: x=" + transform.m30() + " y=" + transform.m31() + " z=" + transform.m32());
     assertTrue(transform.m32() > 0f, "Z should be above ground");

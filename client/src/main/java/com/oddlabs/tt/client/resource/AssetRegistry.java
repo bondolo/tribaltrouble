@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.resource;
 
+import com.oddlabs.tt.client.render.SelectableShadowRenderer;
 import com.oddlabs.tt.engine.render.ShadowListKey;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.TextureKey;
@@ -36,7 +37,11 @@ import org.jspecify.annotations.Nullable;
 public final class AssetRegistry {
   /// Visual asset keys and no-detail size for a building type across construction stages.
   public record BuildingVisuals(
-      SpriteKey start, SpriteKey halfbuilt, SpriteKey built, ShadowListKey shadow, float noDetailSize) {
+      SpriteKey start,
+      SpriteKey halfbuilt,
+      SpriteKey built,
+      ShadowListKey<SelectableShadowRenderer> shadow,
+      float noDetailSize) {
     public BuildingVisuals {
       Objects.requireNonNull(start, "start");
       Objects.requireNonNull(halfbuilt, "halfbuilt");
@@ -51,7 +56,7 @@ public final class AssetRegistry {
       List<SpriteKey> ironFragments,
       Map<Terrain, List<SpriteKey>> plantSprites,
       SpriteKey chickenSprite,
-      ShadowListKey defaultShadow) {
+      ShadowListKey<SelectableShadowRenderer> defaultShadow) {
     public LandscapeAssets {
       rockFragments = copyNonEmpty(rockFragments, "rockFragments");
       ironFragments = copyNonEmpty(ironFragments, "ironFragments");
@@ -212,7 +217,7 @@ public final class AssetRegistry {
     return Optional.ofNullable(emojis.sprites().get(type));
   }
 
-  public ShadowListKey getDefaultShadow() {
+  public ShadowListKey<SelectableShadowRenderer> getDefaultShadow() {
     return landscape.defaultShadow();
   }
 
@@ -287,7 +292,7 @@ public final class AssetRegistry {
     };
   }
 
-  public ShadowListKey getSelectableShadow(Selectable<?> selectable) {
+  public ShadowListKey<SelectableShadowRenderer> getSelectableShadow(Selectable<?> selectable) {
     Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
     return switch (selectable) {
       case Unit _ -> getDefaultShadow();

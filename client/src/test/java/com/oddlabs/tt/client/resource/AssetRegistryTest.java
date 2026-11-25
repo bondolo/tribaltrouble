@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.base.geom.BoundingBox;
+import com.oddlabs.tt.client.render.SelectableShadowRenderer;
 import com.oddlabs.tt.engine.render.ShadowListKey;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.TextureKey;
@@ -55,8 +56,8 @@ final class AssetRegistryTest {
     return new TextureKey(nextKeyId.getAndIncrement());
   }
 
-  private ShadowListKey newShadowKey() {
-    return new ShadowListKey(nextKeyId.getAndIncrement());
+  private ShadowListKey<SelectableShadowRenderer> newShadowKey() {
+    return new ShadowListKey<>(nextKeyId.getAndIncrement(), SelectableShadowRenderer.class);
   }
 
   private AssetRegistry.LandscapeAssets createLandscapeAssets() {

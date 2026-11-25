@@ -63,8 +63,11 @@ public final class LandscapeAssetsLoader {
     SpriteFile sprite_list_chicken =
         new SpriteFile("/geometry/misc/chicken.binsprite", RenderConfig.NO_MIPMAP_CUTOFF, true, true, true, false);
     SpriteKey chicken = queues.register(sprite_list_chicken);
-    ShadowListKey defaultShadow =
-        queues.registerShadowRenderer(DEFAULT_SHADOW_DESC, () -> new SelectableShadowRenderer(DEFAULT_SHADOW_DESC));
+    ShadowListKey<SelectableShadowRenderer> defaultShadow =
+        queues.registerShadowRenderer(
+            DEFAULT_SHADOW_DESC,
+            SelectableShadowRenderer.class,
+            () -> new SelectableShadowRenderer(DEFAULT_SHADOW_DESC));
 
     ProgressListener.progress(1f / num_progress);
     return new AssetRegistry.LandscapeAssets(

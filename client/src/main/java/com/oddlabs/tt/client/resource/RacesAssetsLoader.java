@@ -56,8 +56,11 @@ public final class RacesAssetsLoader {
               {ring_mid + ring_thickness / 2, 1f},
               {ring_mid + ring_thickness / 2 + fadeout, 0f}
             });
-    ShadowListKey shadow_renderer =
-        queues.registerShadowRenderer(building_shadow_desc, () -> new SelectableShadowRenderer(building_shadow_desc));
+    ShadowListKey<SelectableShadowRenderer> shadow_renderer =
+        queues.registerShadowRenderer(
+            building_shadow_desc,
+            SelectableShadowRenderer.class,
+            () -> new SelectableShadowRenderer(building_shadow_desc));
     SpriteFile building = new SpriteFile(built_name, RenderConfig.NO_MIPMAP_CUTOFF, true, true, true, false);
     SpriteFile building_halfbuilt =
         new SpriteFile(halfbuilt_name, RenderConfig.NO_MIPMAP_CUTOFF, true, true, true, false);
