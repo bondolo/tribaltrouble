@@ -1,6 +1,5 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
@@ -9,7 +8,6 @@ import com.oddlabs.tt.client.GameplaySettings;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.camera.MapCamera;
 import com.oddlabs.tt.client.gui.GUIIcons;
-import com.oddlabs.tt.client.viewer.Selection;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -101,9 +99,6 @@ public final class Picker implements Updatable<TimerAnimation> {
   private final TimerAnimation tool_tip_timer;
   private final LandscapeRenderer landscape_renderer;
   private final @Nullable GUIIcons icons;
-  private final ElementRenderer<?> element_renderer;
-  private final TreePicker tree_renderer;
-  private final RenderQueues render_queues;
   private final RespondManager respond_manager;
   private final Player local_player;
   private final GUIRoot gui_root;
@@ -138,35 +133,21 @@ public final class Picker implements Updatable<TimerAnimation> {
 
   private @Nullable Target old_set_target_target;
 
-  public Picker(
-      AnimationManager manager,
-      Player local_player,
-      GUIRoot gui_root,
-      RenderQueues render_queues,
-      LandscapeRenderer landscape_renderer,
-      Selection selection,
-      AudioImplementation audio) {
-    this(manager, local_player, gui_root, render_queues, landscape_renderer, selection, audio, null);
+  public Picker(AnimationManager manager, Player local_player, GUIRoot gui_root, LandscapeRenderer landscape_renderer) {
+    this(manager, local_player, gui_root, landscape_renderer, null);
   }
 
   public Picker(
       AnimationManager manager,
       Player local_player,
       GUIRoot gui_root,
-      RenderQueues render_queues,
       LandscapeRenderer landscape_renderer,
-      Selection selection,
-      AudioImplementation audio,
       @Nullable GUIIcons icons) {
     this.manager = manager;
     this.tool_tip_timer = new TimerAnimation(manager, this, TOOL_TIP_DELAY);
     this.local_player = local_player;
     this.gui_root = gui_root;
-    this.render_queues = render_queues;
     this.respond_manager = new RespondManager(manager);
-    this.element_renderer = new ElementRenderer<>(local_player, render_queues, this, true, selection, audio);
-    this.tree_renderer = new TreePicker(respond_manager);
-    this.tree_renderer.initTreeBounds(local_player.getWorld().getTreeRoot());
     this.landscape_renderer = landscape_renderer;
     this.icons = icons;
   }
@@ -540,10 +521,6 @@ public final class Picker implements Updatable<TimerAnimation> {
     return current_hovered;
   }
 
-  void addPick(Target target) {
-    element_pick_list.add(target);
-  }
-
   private boolean canRenderToolTip() {
     return render_tool_tip;
   }
@@ -596,15 +573,12 @@ public final class Picker implements Updatable<TimerAnimation> {
 
   private void pickObjects() {
     element_pick_list.clear();
-    element_renderer.setup(tmp_camera);
-    element_renderer.visit(local_player.getWorld().getElementRoot());
+    ElementPicker.pick(local_player.getWorld(), tmp_camera, element_pick_list);
   }
 
   private void pickResources() {
     tree_pick_list.clear();
-    tree_renderer.setup(tmp_camera);
-    tree_renderer.visit(local_player.getWorld().getTreeRoot());
-    tree_renderer.getAllPicks(tree_pick_list);
+    TreePicker.pick(local_player.getWorld(), tmp_camera, tree_pick_list);
   }
 
   public void debugRender() {

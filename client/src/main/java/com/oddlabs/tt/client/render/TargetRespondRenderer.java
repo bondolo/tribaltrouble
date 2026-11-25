@@ -14,18 +14,18 @@ import java.util.function.Supplier;
 import org.joml.Matrix4fc;
 
 /// Renders target click response indicators on the landscape.
-public final class TargetRespondRenderer extends ShadowListRenderer {
+final class TargetRespondRenderer extends ShadowListRenderer {
   private static final float SHADOW_SIZE = 1.6f;
   private final Texture ring;
 
   private final Deque<LandscapeTargetRespond> target_list = new ArrayDeque<>();
 
-  public TargetRespondRenderer(Supplier<Texture[]> desc) {
+  TargetRespondRenderer(Supplier<Texture[]> desc) {
     ring = Resources.findResource(desc)[0];
     setRadial(true);
   }
 
-  public void addToTargetList(LandscapeTargetRespond target) {
+  void addToTargetList(LandscapeTargetRespond target) {
     if (DebugFlags.process_shadows) target_list.push(target);
   }
 

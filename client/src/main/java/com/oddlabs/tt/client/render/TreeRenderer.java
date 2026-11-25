@@ -1,12 +1,16 @@
 package com.oddlabs.tt.client.render;
 
+import static com.oddlabs.tt.simulation.landscape.AbstractTreeGroup.TreeType;
+
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.client.viewer.Cheat;
 import com.oddlabs.tt.engine.render.BoundingMode;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.InstancedSpriteRenderer;
+import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderTools;
 import com.oddlabs.tt.engine.render.Sprite;
 import com.oddlabs.tt.engine.render.SpriteList;
@@ -14,14 +18,21 @@ import com.oddlabs.tt.engine.render.SubSceneRenderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.WaveAnimation;
 import com.oddlabs.tt.engine.render.state.ScenePassContext;
+import com.oddlabs.tt.engine.resource.Resources;
+import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
+import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
+import com.oddlabs.tt.simulation.landscape.TreeGroup;
+import com.oddlabs.tt.simulation.landscape.TreeLeaf;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.util.Color;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import org.joml.Matrix4f;
@@ -29,20 +40,28 @@ import org.jspecify.annotations.Nullable;
 
 /// Specialized renderer for forest elements, coordinating the efficient drawing of crown and trunk sprite lists using
 /// hardware instancing.
-final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoCloseable, Animated {
+final class TreeRenderer implements SubSceneRenderer, AutoCloseable, Animated {
+  private static final int CROWN_MIPMAP_CUTOFF = RenderConfig.NO_MIPMAP_CUTOFF;
   private static final float TREE_FALL_DURATION = 3f;
   private static final float TREE_SPAWN_DURATION = 3f;
   private static final float TREE_WAVE_SCALE = 0.035f;
 
-  private final InstancedSpriteRenderer instancedSpriteRenderer;
+  private final EnumMap<TreeType, List<TreeSupply>> render_lists = createTreeListMap();
+  private final EnumMap<TreeType, List<TreeSupply>> respond_render_lists = createTreeListMap();
+  private final Map<TreeType, Tree> trees = loadTrees();
+  private final IdentityHashMap<TreeSupply, TreeRenderState> render_states = new IdentityHashMap<>();
+  private final RespondManager respond_manager;
   private final WaveAnimation wave_animation = new WaveAnimation(TREE_WAVE_SCALE);
   private final @Nullable Cheat cheat;
   private final Matrix4f tempMatrix = new Matrix4f();
   private final AnimationManager animationManager;
   private final @Nullable LandscapeRenderer landscapeRenderer;
-  private final Map<AbstractTreeGroup.TreeType, TreeRenderBatches> treeBatches;
+  private final Map<TreeType, TreeRenderBatches> treeBatches;
   private final Map<TreeSupply, Float> fallingTrees = new HashMap<>();
   private final Map<TreeSupply, Float> spawningTrees = new HashMap<>();
+  private final TreeTraversal.Visitor treeVisitor = this::visitTree;
+
+  private @Nullable CameraState camera;
   private int lastRenderedTreeCount;
 
   private record TreeRenderBatches(
@@ -57,18 +76,44 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
       InstancedSpriteRenderer instancedSpriteRenderer,
       AnimationManager animationManager,
       @Nullable LandscapeRenderer landscapeRenderer) {
-    super(respond_manager);
     this.cheat = cheat;
-    this.instancedSpriteRenderer = instancedSpriteRenderer;
+    this.respond_manager = respond_manager;
     this.animationManager = animationManager;
     this.landscapeRenderer = landscapeRenderer;
     this.treeBatches = createTreeBatches(instancedSpriteRenderer);
     animationManager.registerAnimation(this);
   }
 
-  private Map<AbstractTreeGroup.TreeType, TreeRenderBatches> createTreeBatches(InstancedSpriteRenderer renderer) {
-    var map = new EnumMap<AbstractTreeGroup.TreeType, TreeRenderBatches>(AbstractTreeGroup.TreeType.class);
-    for (var entry : getTrees().entrySet()) {
+  private static EnumMap<TreeType, List<TreeSupply>> createTreeListMap() {
+    var map = new EnumMap<TreeType, List<TreeSupply>>(TreeType.class);
+    for (TreeType type : TreeType.values()) {
+      map.put(type, new ArrayList<>());
+    }
+    return map;
+  }
+
+  private static Tree loadTree(TreeType type, float shadowDiameter, float shadowOpacity, float shadowVerticalCenter) {
+    SpriteList crown =
+        Resources.findResource(
+            new SpriteFile(LandscapeGeometry.crownPath(type), CROWN_MIPMAP_CUTOFF, false, false, true, false, true));
+    SpriteList trunk =
+        Resources.findResource(
+            new SpriteFile(LandscapeGeometry.trunkPath(type), CROWN_MIPMAP_CUTOFF, true, true, true, false));
+    return new Tree(trunk, crown, shadowDiameter, shadowOpacity, shadowVerticalCenter);
+  }
+
+  private static Map<TreeType, Tree> loadTrees() {
+    var trees = new EnumMap<TreeType, Tree>(TreeType.class);
+    trees.put(TreeType.JUNGLE, loadTree(TreeType.JUNGLE, 16.0f, 0.5f, 0.6f));
+    trees.put(TreeType.PALM, loadTree(TreeType.PALM, 20.0f, 0.3f, 1.0f));
+    trees.put(TreeType.OAK, loadTree(TreeType.OAK, 20.0f, 0.5f, 0.6f));
+    trees.put(TreeType.PINE, loadTree(TreeType.PINE, 12.0f, 0.6f, 0.3f));
+    return Collections.unmodifiableMap(trees);
+  }
+
+  private Map<TreeType, TreeRenderBatches> createTreeBatches(InstancedSpriteRenderer renderer) {
+    var map = new EnumMap<TreeType, TreeRenderBatches>(TreeType.class);
+    for (var entry : trees.entrySet()) {
       Tree tree = entry.getValue();
       SpriteList crownList = tree.crown();
       SpriteList trunkList = tree.trunk();
@@ -92,6 +137,63 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
     return Collections.unmodifiableMap(map);
   }
 
+  void initTreeBounds(AbstractTreeGroup root) {
+    populateStatesRecursive(root);
+  }
+
+  private void populateStatesRecursive(AbstractTreeGroup node) {
+    switch (node) {
+      case TreeGroup group -> {
+        for (AbstractTreeGroup child : group.children()) {
+          populateStatesRecursive(child);
+        }
+      }
+      case TreeLeaf leaf -> {
+        for (TreeSupply tree : leaf.getTrees()) {
+          getOrCreateState(tree);
+        }
+      }
+      case TreeSupply tree -> getOrCreateState(tree);
+    }
+  }
+
+  private TreeRenderState getOrCreateState(TreeSupply tree) {
+    return render_states.computeIfAbsent(tree, this::createRenderState);
+  }
+
+  private TreeRenderState createRenderState(TreeSupply tree) {
+    Tree visual = trees.get(tree.getTreeType());
+    BoundingBox visualBounds = new BoundingBox();
+    if (visual != null) {
+      visualBounds.setTransformedBounds(visual.modelBounds(), tree.getMatrix());
+    }
+    return new TreeRenderState(new Matrix4f(tree.getMatrix()), visualBounds);
+  }
+
+  void setup(CameraState camera_state) {
+    this.camera = camera_state;
+  }
+
+  void visit(AbstractTreeGroup node) {
+    if (camera != null) {
+      TreeTraversal.visit(node, camera, treeVisitor);
+    }
+  }
+
+  private void visitTree(TreeSupply tree_supply, boolean fullyInside) {
+    if (tree_supply.isEmpty() && !fallingTrees.containsKey(tree_supply)) {
+      return;
+    }
+
+    TreeRenderState state = getOrCreateState(tree_supply);
+    boolean in_view = fullyInside || (camera != null && state.visualBounds().testFrustum(camera.getFrustum()));
+    if (in_view && camera != null) {
+      (respond_manager.isResponding(tree_supply) ? respond_render_lists : render_lists)
+          .get(tree_supply.getTreeType())
+          .add(tree_supply);
+    }
+  }
+
   void onTreeFelled(TreeSupply tree) {
     spawningTrees.remove(tree);
     fallingTrees.put(tree, 0f);
@@ -104,11 +206,6 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
     getOrCreateState(tree);
     fallingTrees.remove(tree);
     spawningTrees.put(tree, 0f);
-  }
-
-  @Override
-  protected boolean isFalling(TreeSupply tree_supply) {
-    return fallingTrees.containsKey(tree_supply);
   }
 
   @Override
@@ -151,7 +248,7 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
     for (var entry : fallingTrees.entrySet()) {
       TreeSupply tree = entry.getKey();
       float p = entry.getValue();
-      Tree visual = getTrees().get(tree.getTreeType());
+      Tree visual = trees.get(tree.getTreeType());
       float scale;
       float opacity;
       final float pHit = 0.65f;
@@ -174,7 +271,7 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
       TreeSupply tree = entry.getKey();
       if (!tree.isEmpty()) {
         float spawnProgress = entry.getValue();
-        Tree visual = getTrees().get(tree.getTreeType());
+        Tree visual = trees.get(tree.getTreeType());
         float inv = 1f - spawnProgress;
         float scale = 1f - inv * inv * inv * inv * inv * inv;
         shadowRenderer.addToShadowList(new TreeShadow(tree, visual, scale, 1.0f, windX, windY));
@@ -228,14 +325,14 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
     debugRender();
 
     int count = 0;
-    for (var entry : getRenderLists().entrySet()) {
+    for (var entry : render_lists.entrySet()) {
       List<TreeSupply> list = entry.getValue();
       if (!list.isEmpty()) {
         count += list.size();
         renderList(entry.getKey(), list, false);
       }
     }
-    for (var entry : getRespondRenderLists().entrySet()) {
+    for (var entry : respond_render_lists.entrySet()) {
       List<TreeSupply> list = entry.getValue();
       if (!list.isEmpty()) {
         count += list.size();
@@ -250,10 +347,10 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
   }
 
   private void clearLists() {
-    for (List<TreeSupply> list : getRenderLists().values()) {
+    for (List<TreeSupply> list : render_lists.values()) {
       list.clear();
     }
-    for (List<TreeSupply> list : getRespondRenderLists().values()) {
+    for (List<TreeSupply> list : respond_render_lists.values()) {
       list.clear();
     }
   }
@@ -277,8 +374,7 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
     }
   }
 
-  private void renderList(AbstractTreeGroup.TreeType type, List<TreeSupply> render_list, boolean respond) {
-    CameraState camera = getCamera();
+  private void renderList(TreeType type, List<TreeSupply> render_list, boolean respond) {
     if (camera != null && render_list.size() > 1) {
       float camX = camera.getCurrentX();
       float camY = camera.getCurrentY();
@@ -305,22 +401,17 @@ final class TreeRenderer extends TreePicker implements SubSceneRenderer, AutoClo
 
   void debugRender() {
     if (DebugFlags.isBoundsEnabled(BoundingMode.TREES)) {
-      for (List<TreeSupply> list : getRenderLists().values()) {
+      for (List<TreeSupply> list : render_lists.values()) {
         for (TreeSupply tree : list) {
           RenderTools.draw(getOrCreateState(tree).visualBounds(), BoundingMode.TREES, Color.Linear.GREEN);
         }
       }
-      for (List<TreeSupply> list : getRespondRenderLists().values()) {
+      for (List<TreeSupply> list : respond_render_lists.values()) {
         for (TreeSupply tree : list) {
           RenderTools.draw(getOrCreateState(tree).visualBounds(), BoundingMode.TREES, Color.Linear.GREEN);
         }
       }
     }
-  }
-
-  @Override
-  boolean isPicking() {
-    return false;
   }
 
   @Override

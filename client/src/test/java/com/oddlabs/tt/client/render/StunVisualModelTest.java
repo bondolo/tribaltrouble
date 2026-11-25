@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.oddlabs.tt.audio.AudioImplementation;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.tt.simulation.landscape.FlatLandscape;
@@ -32,6 +31,7 @@ final class StunVisualModelTest {
   private World world;
   private Player player;
   private Unit chieftain;
+  private TextureKey[] noteTextures;
 
   @BeforeEach
   void setUp() {
@@ -44,11 +44,10 @@ final class StunVisualModelTest {
     this.player = world.getPlayers().getFirst();
     this.chieftain = new Unit(player, 16f, 16f, null, player.getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN));
 
-    TextureKey[] noteTextures = new TextureKey[8];
+    this.noteTextures = new TextureKey[8];
     for (int i = 0; i < 8; i++) {
       noteTextures[i] = new TextureKey(i);
     }
-    AssetRegistry.getInstance().registerNoteTextures(noteTextures);
   }
 
   private static AudioImplementation createDummyAudio() {
@@ -60,7 +59,7 @@ final class StunVisualModelTest {
   @Test
   void stunVisualModelSpawnsParticlesAndAnimates() {
     Stun stun = new Stun(2.57f, 0f, 3.8f, 36f, 30f, 10f, chieftain);
-    StunVisualModel visualModel = new StunVisualModel(stun, createDummyAudio());
+    StunVisualModel visualModel = new StunVisualModel(stun, createDummyAudio(), noteTextures);
 
     Emitter<?> emitter = visualModel.getEmitter();
     assertNotNull(emitter);
@@ -107,7 +106,7 @@ final class StunVisualModelTest {
   @Test
   void testStunAnimationLifecycle() {
     Stun stun = new Stun(2.57f, 0f, 3.8f, 36f, 30f, 10f, chieftain);
-    StunVisualModel visualModel = new StunVisualModel(stun, createDummyAudio());
+    StunVisualModel visualModel = new StunVisualModel(stun, createDummyAudio(), noteTextures);
     stun.setClientModel(visualModel);
 
     assertFalse(stun.isDead(), "Stun should be alive before release animation executes");
@@ -137,7 +136,7 @@ final class StunVisualModelTest {
   @Test
   void testStunVisualModelDetachedLifecycle() {
     Stun stun = new Stun(2.57f, 0f, 3.8f, 36f, 30f, 10f, chieftain);
-    StunVisualModel visualModel = new StunVisualModel(stun, createDummyAudio());
+    StunVisualModel visualModel = new StunVisualModel(stun, createDummyAudio(), noteTextures);
     stun.setClientModel(visualModel);
 
     for (int i = 0; i < 10; i++) {

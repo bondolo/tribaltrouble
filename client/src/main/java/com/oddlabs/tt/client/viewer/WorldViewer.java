@@ -88,6 +88,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
   private final ChatListener chat_listener;
   private final ChatSender chat_sender;
   private final InGameChatHistory in_game_chat_history;
+  private final AssetRegistry assets;
   private final Map<Player, AI> ai_bots = new LinkedHashMap<>();
 
   public WorldViewer(
@@ -115,14 +116,10 @@ public final class WorldViewer implements Animated, AutoCloseable {
         new NotificationManager(
             gui_root, audioManager, icons.getNotifyArrow(), icons.getNotifyArrowHeadX(), icons.getNotifyArrowHeadY());
     RenderQueues render_queues = new RenderQueues();
-    ProgressListener.subTask(0.15f, () -> new LandscapeAssetsLoader(render_queues));
-    ProgressListener.subTask(
-        0.35f,
-        () -> {
-          RacesAssetsLoader.load(render_queues);
-          return null;
-        });
-    registerHarvestEmojis(render_queues, icons);
+    var landscapeAssets = ProgressListener.subTask(0.15f, () -> LandscapeAssetsLoader.load(render_queues));
+    var harvestEmojis = createHarvestEmojis(render_queues, icons);
+    var gameAssets = ProgressListener.subTask(0.35f, () -> RacesAssetsLoader.load(render_queues, harvestEmojis));
+    this.assets = AssetRegistry.forGame(landscapeAssets, gameAssets);
     var player_infos = player_slots.stream().map(PlayerSlot::getInfo).toList();
     Landscape landscape =
         ProgressListener.subTask(
@@ -168,16 +165,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
     this.selection = new Selection(local_player);
     peer.setPathfindCountSupplier(world.getUnitGrid()::getAndResetPathfindCount);
     landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
-    this.picker =
-        new Picker(
-            animation_manager_local,
-            local_player,
-            gui_root,
-            render_queues,
-            landscape_renderer,
-            selection,
-            audioManager,
-            icons);
+    this.picker = new Picker(animation_manager_local, local_player, gui_root, landscape_renderer, icons);
     this.renderer =
         new FullSceneRenderer(
             cheat,
@@ -188,6 +176,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
             picker,
             selection,
             audioManager,
+            assets,
             peer.getSettings(),
             gui_root.getWidth(),
             gui_root.getHeight());
@@ -267,6 +256,10 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
   public GUIIcons getIcons() {
     return icons;
+  }
+
+  public AssetRegistry getAssets() {
+    return assets;
   }
 
   public AudioManager getAudioManager() {
@@ -417,12 +410,12 @@ public final class WorldViewer implements Animated, AutoCloseable {
     return gui_root.getTime();
   }
 
-  private static void registerHarvestEmojis(RenderQueues queues, GUIIcons icons) {
-    AssetRegistry ar = AssetRegistry.getInstance();
-    ar.registerEmoji(EmojiType.HARVEST_WOOD, registerIconSprite(queues, icons.getTreeStatusIcon()));
-    ar.registerEmoji(EmojiType.HARVEST_ROCK, registerIconSprite(queues, icons.getRockStatusIcon()));
-    ar.registerEmoji(EmojiType.HARVEST_IRON, registerIconSprite(queues, icons.getIronStatusIcon()));
-    ar.registerEmoji(EmojiType.HARVEST_RUBBER, registerIconSprite(queues, icons.getRubberStatusIcon()));
+  private static Map<EmojiType, SpriteKey> createHarvestEmojis(RenderQueues queues, GUIIcons icons) {
+    return Map.of(
+        EmojiType.HARVEST_WOOD, registerIconSprite(queues, icons.getTreeStatusIcon()),
+        EmojiType.HARVEST_ROCK, registerIconSprite(queues, icons.getRockStatusIcon()),
+        EmojiType.HARVEST_IRON, registerIconSprite(queues, icons.getIronStatusIcon()),
+        EmojiType.HARVEST_RUBBER, registerIconSprite(queues, icons.getRubberStatusIcon()));
   }
 
   private static SpriteKey registerIconSprite(RenderQueues queues, IconQuad icon) {

@@ -7,6 +7,7 @@ import com.oddlabs.tt.simulation.TickListener;
 import com.oddlabs.tt.simulation.model.AbstractElementNode;
 import com.oddlabs.tt.simulation.model.Distributable;
 import com.oddlabs.tt.simulation.model.DistributableTable;
+import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.SupplyManager;
 import com.oddlabs.tt.simulation.model.SupplyManagers;
@@ -52,7 +53,7 @@ public final class World implements SimulationClock {
   private final UnitGrid unit_grid;
   private final PatchGroup patch_root;
   private final AbstractTreeGroup tree_root;
-  private final AbstractElementNode<?> element_root;
+  private final AbstractElementNode<Model> element_root;
   private final WorldParameters worldParameters;
   private final RaceData races_resources = new RaceData();
   private final LandscapeBoundsProvider landscape_resources = new LandscapeGeometry();
@@ -166,18 +167,15 @@ public final class World implements SimulationClock {
     return getAnimationManagerRealTime().getTick();
   }
 
-  /// Constructs a simulation world with default geometry bounds, normal game speed, and no-op notification listener.
   public World(WorldParameters worldParams, Landscape landscape, List<PlayerConfig> playerConfigs) {
     this(worldParams, landscape, playerConfigs, NotificationListener.EMPTY, Game.GAMESPEED_NORMAL);
   }
 
-  /// Constructs a simulation world with the given initial game speed and no-op notification listener.
   public World(
       WorldParameters worldParams, Landscape landscape, List<PlayerConfig> playerConfigs, int initialGameSpeed) {
     this(worldParams, landscape, playerConfigs, NotificationListener.EMPTY, initialGameSpeed);
   }
 
-  /// Constructs a simulation world with default normal game speed.
   public World(
       WorldParameters world_params,
       Landscape landscape,
@@ -186,8 +184,6 @@ public final class World implements SimulationClock {
     this(world_params, landscape, playerConfigs, notification_listener, Game.GAMESPEED_NORMAL);
   }
 
-  /// Constructs a simulation world with the given parameters, terrain, player configurations, notification listener,
-  /// and initial game speed.
   public World(
       WorldParameters world_params,
       Landscape landscape,
@@ -241,7 +237,7 @@ public final class World implements SimulationClock {
     activeWorlds.add(new WeakReference<>(this));
   }
 
-  public AbstractElementNode getElementRoot() {
+  public AbstractElementNode<Model> getElementRoot() {
     return element_root;
   }
 
@@ -314,11 +310,6 @@ public final class World implements SimulationClock {
     return random.captureState();
   }
 
-  /**
-   * Updates the player colours of all players in this world.
-   *
-   * @param `playerColors` the array of linear player colors
-   */
   public void updatePlayerColors(Color.Linear[] playerColors) {
     for (int i = 0; i < players.size(); i++) {
       players.get(i).setColor(playerColors[i % playerColors.length]);
@@ -327,11 +318,6 @@ public final class World implements SimulationClock {
 
   private static final Set<WeakReference<World>> activeWorlds = new CopyOnWriteArraySet<>();
 
-  /**
-   * Updates the player colors across all active world instances.
-   *
-   * @param `playerColors` the array of linear player colors
-   */
   public static void updateAllPlayerColors(Color.Linear[] playerColors) {
     for (var ref : activeWorlds) {
       World w = ref.get();
@@ -347,7 +333,6 @@ public final class World implements SimulationClock {
     return distributable_table;
   }
 
-  /// Returns the buffer for commands scheduled by tick.
   public TurnCommandBuffer getTurnCommandBuffer() {
     return turnCommandBuffer;
   }

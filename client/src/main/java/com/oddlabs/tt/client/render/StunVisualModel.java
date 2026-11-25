@@ -2,12 +2,12 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.weapon.Stun;
@@ -17,14 +17,14 @@ import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
 /// {@link VisualModel} implementation for the stun spell managing musical note particle emitters and audio.
-public final class StunVisualModel extends AbstractVisualModel implements EmitterAccessory {
+final class StunVisualModel extends AbstractVisualModel implements EmitterAccessory {
   private final Stun stun;
   private final RandomVelocityEmitter emitter;
   private final AudioPlayer sound;
 
   private float age = 0f;
 
-  public StunVisualModel(Stun stun, AudioImplementation audio) {
+  StunVisualModel(Stun stun, AudioImplementation audio, TextureKey[] noteTextures) {
     super(stun);
     this.stun = stun;
     World world = stun.getWorld();
@@ -54,7 +54,7 @@ public final class StunVisualModel extends AbstractVisualModel implements Emitte
             1f,
             GL11.GL_SRC_ALPHA,
             GL11.GL_ONE_MINUS_SRC_ALPHA,
-            AssetRegistry.getInstance().getNoteTextures());
+            noteTextures);
 
     this.sound =
         audio.newAudio(

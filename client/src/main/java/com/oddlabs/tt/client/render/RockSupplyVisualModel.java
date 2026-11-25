@@ -2,36 +2,41 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.util.Color;
 import java.util.Collection;
+import java.util.function.Supplier;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 /// {@link VisualModel} implementation for rock supplies managing eruption smoke particles and rumble audio.
-public final class RockSupplyVisualModel extends AbstractSupplyVisualModel<RockSupply> implements EmitterAccessory {
+final class RockSupplyVisualModel extends AbstractSupplyVisualModel<RockSupply> implements EmitterAccessory {
   private static final Color.Linear ROCK_COLOR_ERUPTION = new Color.Standard(0xFF_FF_CC_00).linear();
   private static final Color.Linear ROCK_COLOR_COOLING = new Color.Standard(0xFF_FF_BE_94).linear();
   private static final Color.Linear ROCK_COLOR_DECAL_COOLED = new Color.Standard(0.3f, 0.3f).linear();
 
   private final RockSupply rockSupply;
   private final AudioImplementation audio;
+  private final Supplier<TextureKey[]> smokeTextures;
   private @Nullable RandomVelocityEmitter smokeEmitter = null;
   private boolean soundPlayed = false;
 
-  public RockSupplyVisualModel(RockSupply rockSupply, AudioImplementation audio) {
-    super(rockSupply);
+  RockSupplyVisualModel(
+      RockSupply rockSupply, AudioImplementation audio, SpriteKey rockSprite, Supplier<TextureKey[]> smokeTextures) {
+    super(rockSupply, rockSprite);
     this.rockSupply = rockSupply;
     this.audio = audio;
+    this.smokeTextures = smokeTextures;
   }
 
   @Override
@@ -92,7 +97,7 @@ public final class RockSupplyVisualModel extends AbstractSupplyVisualModel<RockS
   @Override
   public DecalProperties getDecalProperties() {
     if (!isSpawning()) {
-      return new DecalProperties(null, 0.0f, 0.0f, 0.0f);
+      return DecalProperties.NONE;
     }
     float progress = getSpawnProgress();
     if (progress < 0.3f) {
@@ -178,7 +183,7 @@ public final class RockSupplyVisualModel extends AbstractSupplyVisualModel<RockS
               0.2f,
               GL11.GL_SRC_ALPHA,
               GL11.GL_ONE_MINUS_SRC_ALPHA,
-              AssetRegistry.getInstance().getSmokeTextures());
+              smokeTextures.get());
       smokeEmitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
       smokeEmitter.setSpectrumRange(0.2f, 1.0f);
     }

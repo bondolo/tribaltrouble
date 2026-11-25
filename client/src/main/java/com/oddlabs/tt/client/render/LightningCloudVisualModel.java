@@ -3,7 +3,6 @@ package com.oddlabs.tt.client.render;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.effects.particle.CloudFunction;
 import com.oddlabs.tt.effects.particle.Emitter;
@@ -11,6 +10,7 @@ import com.oddlabs.tt.effects.particle.Lightning;
 import com.oddlabs.tt.effects.particle.ParametricEmitter;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
@@ -24,8 +24,7 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 /// {@link VisualModel} implementation for lightning clouds managing cloud particle emitters and lightning strikes.
-public final class LightningCloudVisualModel extends AbstractVisualModel
-    implements EmitterAccessory, LightningAccessory {
+final class LightningCloudVisualModel extends AbstractVisualModel implements EmitterAccessory, LightningAccessory {
   private static final float BRIGHTNESS = Color.toLinear(.2f);
   private static final float LIGHTNING_TIME = .15f;
   private static final Color.LinearDelta DELTA_COLOR = Color.LinearDelta.ZERO.alpha(-1f / LIGHTNING_TIME);
@@ -39,6 +38,7 @@ public final class LightningCloudVisualModel extends AbstractVisualModel
   private final LightningCloud cloud;
   private final ParametricEmitter emitter;
   private final AudioImplementation audio;
+  private final TextureKey lightningTexture;
   private @Nullable AudioPlayer cloudSound;
 
   private final Deque<Lightning> activeLightnings = new ArrayDeque<>();
@@ -48,10 +48,12 @@ public final class LightningCloudVisualModel extends AbstractVisualModel
   private boolean firstRun = true;
   private float strikeAudioCooldown = 0f;
 
-  public LightningCloudVisualModel(LightningCloud cloud, AudioImplementation audio) {
+  LightningCloudVisualModel(
+      LightningCloud cloud, AudioImplementation audio, TextureKey[] smokeTextures, TextureKey lightningTexture) {
     super(cloud);
     this.cloud = cloud;
     this.audio = audio;
+    this.lightningTexture = lightningTexture;
     World world = cloud.getWorld();
     Vector3f pos = new Vector3f(cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ());
 
@@ -76,7 +78,7 @@ public final class LightningCloudVisualModel extends AbstractVisualModel
             energy,
             GL11.GL_SRC_ALPHA,
             GL11.GL_ONE_MINUS_SRC_ALPHA,
-            AssetRegistry.getInstance().getSmokeTextures());
+            smokeTextures);
 
     this.emitter.setBaseColor(new Color.Standard(.3f, 1f).linear());
     this.emitter.setColorSpectrum((spectrum, baseColor) -> baseColor);
@@ -125,7 +127,7 @@ public final class LightningCloudVisualModel extends AbstractVisualModel
             15,
             Color.Linear.WHITE,
             DELTA_COLOR,
-            AssetRegistry.getInstance().getLightningTexture(),
+            lightningTexture,
             LIGHTNING_TIME);
     activeLightnings.add(lightning);
   }

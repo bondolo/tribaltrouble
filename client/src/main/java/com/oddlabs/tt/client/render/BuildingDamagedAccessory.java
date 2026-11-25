@@ -1,7 +1,6 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.effects.particle.ColorSpectrum;
 import com.oddlabs.tt.effects.particle.Emitter;
@@ -24,7 +23,7 @@ import org.lwjgl.opengl.GL11;
 
 /// An accessory that manages the damage smoke for a building. Dynamically scales its effect based on the parent
 /// building's health.
-public final class BuildingDamagedAccessory implements EmitterAccessory {
+final class BuildingDamagedAccessory implements EmitterAccessory {
   private static final Color.Linear PARTICULATE_COLOR = new Color.Standard(0.08f, 0.06f, 0.05f, 0.8f).linear();
   private static final Color.Linear DAMAGE_BASE_COLOR = new Color.Standard(0.3f, 0.8f).linear();
   private static final float INITIAL_PARTICLE_ALPHA = 0.8f;
@@ -46,13 +45,23 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
   private final LinearEmitter emitter;
   private final float hitOffsetZ;
   private final AudioImplementation audio;
+  private final TextureKey[] smokeTextures;
+  private final SpriteKey[] woodFragments;
   private final Deque<Emitter<?>> transientEmitters = new ArrayDeque<>();
   private boolean hasCollapsed = false;
 
-  public BuildingDamagedAccessory(Building building, float hitOffsetZ, AudioImplementation audio) {
+  BuildingDamagedAccessory(
+      Building building,
+      float hitOffsetZ,
+      AudioImplementation audio,
+      TextureKey[] damageSmokeTextures,
+      TextureKey[] smokeTextures,
+      SpriteKey[] woodFragments) {
     this.building = building;
     this.hitOffsetZ = hitOffsetZ;
     this.audio = audio;
+    this.smokeTextures = smokeTextures;
+    this.woodFragments = woodFragments;
     this.emitter =
         new RandomVelocityEmitter(
             building.getOwner().getWorld(),
@@ -75,7 +84,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
             .75f,
             GL11.GL_SRC_ALPHA,
             GL11.GL_ONE_MINUS_SRC_ALPHA,
-            AssetRegistry.getInstance().getDamageSmokeTextures());
+            damageSmokeTextures);
     this.emitter.stop();
     this.emitter.setBaseColor(new Color.Standard(0.3f, INITIAL_PARTICLE_ALPHA).linear());
     this.emitter.setSpectrumRange(0.0f, 1.0f);
@@ -193,7 +202,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
             0.75f,
             GL11.GL_SRC_ALPHA,
             GL11.GL_ONE_MINUS_SRC_ALPHA,
-            AssetRegistry.getInstance().getSmokeTextures());
+            smokeTextures);
     collapse_emitter.setColorSpectrum(spectrumCallback);
     collapse_emitter.setTransition(0f, 1.5f, 1.0f, 1.0f);
     transientEmitters.add(collapse_emitter);
@@ -221,7 +230,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
               new Vector3f(0f, 0f, 0f),
               energy,
               .75f,
-              AssetRegistry.getInstance().getWoodFragments(),
+              woodFragments,
               true,
               true);
       transientEmitters.add(fragments_emitter);

@@ -3,7 +3,6 @@ package com.oddlabs.tt.content.campaign;
 import com.oddlabs.tt.ai.AI;
 import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.tt.client.match.MatchLauncher;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.client.viewer.WorldInitAction;
 import com.oddlabs.tt.client.viewer.WorldViewer;
@@ -272,9 +271,8 @@ public abstract class Island {
     }
   }
 
-  /// Instantiates and registers statue scenery objects according to the given placement specifications.
   protected final StatueScenery[] placeStatues(String name, StatuePlacement... placements) {
-    var treasures = AssetRegistry.getInstance().getTreasures();
+    var treasures = getViewer().getAssets().getTreasures();
     var world = getViewer().getWorld();
     return Arrays.stream(placements)
         .map(p ->
@@ -285,7 +283,7 @@ public abstract class Island {
                 p.dirX(),
                 p.dirY(),
                 p.treasureIndex(),
-                treasures[p.treasureIndex()].bounds(),
+                treasures.get(p.treasureIndex()).bounds(),
                 p.shadowDiameter(),
                 true,
                 name))

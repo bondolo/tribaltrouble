@@ -61,7 +61,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
   private final SeaBottom seaBottom;
   private final LandscapeRenderer landscape_renderer;
   private final World world;
-  private final ElementRenderer<?> element_renderer;
+  private final RenderState renderState;
   private final TreeRenderer tree_renderer;
   private final RenderQueues render_queues;
   private final Selection selection;
@@ -71,6 +71,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
   private final PostProcessor postProcessor;
   private final @Nullable Cheat cheat;
   private final AmbientAudio ambient;
+  private final AssetRegistry assets;
 
   private final GlobalUniforms globalUniforms = new GlobalUniforms();
 
@@ -90,16 +91,19 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
       Picker picker,
       Selection selection,
       AudioManager audioManager,
+      AssetRegistry assets,
       Settings settings,
       int width,
       int height) {
     this.world = local_player.getWorld();
     this.cheat = cheat;
     this.ambient = new AmbientAudio(audioManager);
+    this.assets = assets;
     this.render_queues = render_queues;
     this.picker = picker;
     this.selection = selection;
-    this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false, selection, audioManager);
+    var visualModelFactory = new VisualModelFactory(audioManager, assets);
+    this.renderState = new RenderState(local_player, render_queues, picker, selection, assets, visualModelFactory);
     this.tree_renderer =
         new TreeRenderer(
             cheat,
@@ -139,7 +143,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
   }
 
   public RenderState getRenderState() {
-    return element_renderer.getRenderState();
+    return renderState;
   }
 
   public void setSelectedBuilding(@Nullable Building building) {
@@ -152,7 +156,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
           context,
           camera_state,
           selected_building.getRallyPoint(),
-          AssetRegistry.getInstance().getRallyPoint(selected_building.getOwner().getRaceInfo().getRaceType()),
+          assets.getRallyPoint(selected_building.getOwner().getRaceInfo().getRaceType()),
           SelectableVisitor.getTeamColor(selected_building));
   }
 
@@ -221,7 +225,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
   private void renderDebugElements(CameraState frustum_state) {
     if (DebugFlags.draw_axes) drawAxes();
     landscape_renderer.debugRender(frustum_state);
-    emitterRenderer.debugRender(element_renderer.getRenderState().getEmitterQueue());
+    emitterRenderer.debugRender(renderState.getEmitterQueue());
 
     if (DebugFlags.isBoundsEnabled(BoundingMode.REGIONS))
       PathfinderDebugRenderer.renderRegions(
@@ -292,12 +296,8 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
       lastTreeVisitNanos = 0L;
     }
     if (DebugFlags.process_misc) {
-      element_renderer.setup(frustum_state, currentTime);
-      element_renderer.visit(world.getElementRoot());
-    }
-
-    if (DebugFlags.process_misc) {
-      var renderState = element_renderer.getRenderState();
+      renderState.setup(frustum_state, currentTime);
+      renderState.visit(world.getElementRoot());
       emitterRenderer.prepare(
           render_queues, renderState.getEmitterQueue(), frustum_state, frustum_state.getModelView());
       lightningRenderer.prepare(renderState.getLightningQueue());
@@ -351,7 +351,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
     if (DebugFlags.process_shadows && (cheat == null || cheat.draw_shadows)) {
       gpu.begin(GpuPass.SHADOWS);
       if (DebugFlags.process_trees) {
-        tree_renderer.renderShadows(element_renderer.getRenderState().getDefaultShadowRenderer(), currentTime);
+        tree_renderer.renderShadows(renderState.getDefaultShadowRenderer(), currentTime);
       }
       render_queues.renderShadows(
           context,
@@ -475,7 +475,7 @@ public final class FullSceneRenderer implements WorldSceneRenderer, SceneHoverPr
     if (!closed) {
       closed = true;
       ambient.close();
-      element_renderer.close();
+      renderState.close();
       lightningRenderer.close();
       sonicBlastRenderer.close();
       emitterRenderer.close();

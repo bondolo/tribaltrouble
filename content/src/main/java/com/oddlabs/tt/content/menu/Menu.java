@@ -15,6 +15,7 @@ import com.oddlabs.tt.client.landscape.LandscapeBaker;
 import com.oddlabs.tt.client.match.ProgressForm;
 import com.oddlabs.tt.client.render.FullSceneRenderer;
 import com.oddlabs.tt.client.render.Picker;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.client.resource.LandscapeAssetsLoader;
 import com.oddlabs.tt.client.screen.DefaultScreen;
@@ -336,7 +337,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
         ProgressListener.subTask(0.40f, () -> generator.generate(players.size(), world_params.initialUnitCount(), 0f));
     WorldInfo<Texture> world_info = ProgressListener.subTask(0.30f, () -> LandscapeBaker.bakeWorld(landscape));
     RenderQueues render_queues = new RenderQueues();
-    ProgressListener.subTask(0.15f, () -> new LandscapeAssetsLoader(render_queues));
+    var landscapeAssets = ProgressListener.subTask(0.15f, () -> LandscapeAssetsLoader.load(render_queues));
+    var assets = AssetRegistry.forLandscape(landscapeAssets);
     World world =
         new World(
             world_params,
@@ -354,16 +356,10 @@ public abstract class Menu extends CameraDelegate<Camera> {
             render_queues,
             world_info,
             landscape_renderer,
-            new Picker(
-                menuAnimationManager,
-                local_player,
-                gui_root,
-                render_queues,
-                landscape_renderer,
-                selection,
-                peer.getAudioManager()),
+            new Picker(menuAnimationManager, local_player, gui_root, landscape_renderer),
             selection,
             peer.getAudioManager(),
+            assets,
             peer.getSettings(),
             gui_root.getWidth(),
             gui_root.getHeight());

@@ -2,7 +2,6 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
@@ -10,6 +9,7 @@ import com.oddlabs.tt.effects.particle.RingEmitter;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.Model;
@@ -17,13 +17,14 @@ import com.oddlabs.util.Color;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.function.Supplier;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 /// {@link VisualModel} implementation for iron supply meteors managing trail, impact explosion, and cooling smoke
 /// emitters.
-public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronSupply> implements EmitterAccessory {
+final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronSupply> implements EmitterAccessory {
   private static final float FALL_DURATION_RATIO = 0.12f;
   private static final float SMOKE_PARTICLES_PER_SECOND = 30.0f;
   private static final float AIRBURST_HEIGHT = 25.0f;
@@ -41,6 +42,8 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
 
   private final IronSupply ironSupply;
   private final AudioImplementation audio;
+  private final SpriteKey rockSprite;
+  private final Supplier<TextureKey[]> smokeTextures;
 
   private boolean landed = false;
   private boolean cooling = false;
@@ -49,10 +52,17 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
   private @Nullable RandomVelocityEmitter coolingEmitter = null;
   private final Deque<Emitter<?>> oneShotEmitters = new ArrayDeque<>();
 
-  public IronSupplyVisualModel(IronSupply ironSupply, AudioImplementation audio) {
-    super(ironSupply);
+  IronSupplyVisualModel(
+      IronSupply ironSupply,
+      AudioImplementation audio,
+      SpriteKey rockSprite,
+      SpriteKey ironSprite,
+      Supplier<TextureKey[]> smokeTextures) {
+    super(ironSupply, ironSprite);
     this.ironSupply = ironSupply;
     this.audio = audio;
+    this.rockSprite = rockSprite;
+    this.smokeTextures = smokeTextures;
   }
 
   @Override
@@ -106,7 +116,7 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
   @Override
   public DecalProperties getDecalProperties() {
     if (!isSpawning()) {
-      return new DecalProperties(null, 0.0f, 0.0f, 0.0f);
+      return DecalProperties.NONE;
     }
     float progress = getSpawnProgress();
     float crackDuration = 0.6f;
@@ -118,7 +128,7 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
       Color.Linear color = Color.Linear.WHITE.lerp(IRON_COLOR_DECAL_COOLED, crackProgress);
       return new DecalProperties(color, opacity, diameter, pattern);
     }
-    return new DecalProperties(null, 0.0f, 0.0f, 0.0f);
+    return DecalProperties.NONE;
   }
 
   @Override
@@ -127,10 +137,10 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
       float progress = getSpawnProgress();
       float coolProgress = Math.min(1.0f, (progress - FALL_DURATION_RATIO) / (0.85f - FALL_DURATION_RATIO));
       if (coolProgress < 0.9f) {
-        return AssetRegistry.getInstance().getRockFragmentSprite(ironSupply.getFragmentIndex());
+        return rockSprite;
       }
     }
-    return AssetRegistry.getInstance().getIronFragmentSprite(ironSupply.getFragmentIndex());
+    return super.getSpriteKey();
   }
 
   @Override
@@ -204,7 +214,7 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
                   0.0f,
                   GL11.GL_SRC_ALPHA,
                   GL11.GL_ONE,
-                  AssetRegistry.getInstance().getSmokeTextures());
+                  smokeTextures.get());
           oneShotEmitters.add(flash);
 
           RingEmitter puff =
@@ -226,7 +236,7 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
                   0.1f,
                   GL11.GL_SRC_ALPHA,
                   GL11.GL_ONE_MINUS_SRC_ALPHA,
-                  AssetRegistry.getInstance().getSmokeTextures());
+                  smokeTextures.get());
 
           puff.setSpectrumRange(0.0f, 0.9f);
           puff.setBaseColor(world.getTerrainType().getDustColor());
@@ -255,7 +265,7 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
                   0.45f,
                   GL11.GL_SRC_ALPHA,
                   GL11.GL_ONE_MINUS_SRC_ALPHA,
-                  AssetRegistry.getInstance().getSmokeTextures());
+                  smokeTextures.get());
           debris.setBaseColor(world.getTerrainType().getDustColor());
           debris.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum * 0.4f));
           debris.setSpectrumRange(0.1f, 0.9f);
@@ -317,6 +327,7 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
       World world = ironSupply.getWorld();
       float visualZ = ironSupply.getPositionZ() + getOffsetZ();
       Vector3f pos = new Vector3f(ironSupply.getPositionX(), ironSupply.getPositionY(), visualZ);
+      var textures = smokeTextures.get();
       trailEmitter =
           new RandomVelocityEmitter(
               world,
@@ -339,9 +350,9 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
               0.1f,
               GL11.GL_SRC_ALPHA,
               GL11.GL_ONE_MINUS_SRC_ALPHA,
-              AssetRegistry.getInstance().getSmokeTextures(),
+              textures,
               null,
-              AssetRegistry.getInstance().getSmokeTextures().length,
+              textures.length,
               true,
               true);
       trailEmitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
@@ -378,7 +389,7 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
               0.1f,
               GL11.GL_SRC_ALPHA,
               GL11.GL_ONE_MINUS_SRC_ALPHA,
-              AssetRegistry.getInstance().getSmokeTextures());
+              smokeTextures.get());
       coolingEmitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
       coolingEmitter.setSpectrumRange(0.2f, 0.8f);
       coolingEmitter.setJitterIntensity(0.02f);

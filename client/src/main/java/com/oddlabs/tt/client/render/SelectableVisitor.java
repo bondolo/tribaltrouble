@@ -6,7 +6,6 @@ import com.oddlabs.tt.engine.render.ModelVisitor;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.VisualPattern;
 import com.oddlabs.tt.simulation.model.Building;
-import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
@@ -17,25 +16,29 @@ import org.jspecify.annotations.Nullable;
 
 /// ModelVisitor implementation that resolves visual properties and sprite keys for selectable entities
 /// (units/buildings).
-class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
+final class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
+  private final AssetRegistry assets;
+
+  SelectableVisitor(AssetRegistry assets) {
+    this.assets = assets;
+  }
 
   @Override
   public @Nullable SpriteKey getSpriteKey(ElementSceneContext<S> render_state) {
     Selectable<?> selectable = render_state.getModel();
     Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
-    if (selectable instanceof Unit unit) {
-      return AssetRegistry.getInstance().getUnitSprite(race, unit.getTemplate().getUnitType());
-    } else if (selectable instanceof Building building) {
-      BuildingType bvt = building.getTemplate().getBuildingType();
-      var visuals = AssetRegistry.getInstance().getBuildingVisuals(race, bvt);
-      return switch (building.getBuildStage()) {
-        case UNPLACED -> null;
-        case START -> visuals.start();
-        case HALFBUILT -> visuals.halfbuilt();
-        case BUILT -> visuals.built();
-      };
-    }
-    return null;
+    return switch (selectable) {
+      case Unit unit -> assets.getUnitSprite(race, unit.getTemplate().getUnitType());
+      case Building building -> {
+        var visuals = assets.getBuildingVisuals(race, building.getTemplate().getBuildingType());
+        yield switch (building.getBuildStage()) {
+          case UNPLACED -> null;
+          case START -> visuals.start();
+          case HALFBUILT -> visuals.halfbuilt();
+          case BUILT -> visuals.built();
+        };
+      }
+    };
   }
 
   @Override
@@ -101,14 +104,12 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
   @Override
   public float getNoDetailSize(ElementSceneContext<S> render_state) {
     Selectable<?> selectable = render_state.getModel();
-    if (selectable instanceof Unit) {
-      return 1.0f;
-    } else if (selectable instanceof Building building) {
-      Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
-      BuildingType bvt = building.getTemplate().getBuildingType();
-      var visuals = AssetRegistry.getInstance().getBuildingVisuals(race, bvt);
-      return visuals != null ? visuals.noDetailSize() : 0f;
-    }
-    return 0f;
+    return switch (selectable) {
+      case Unit _ -> 1.0f;
+      case Building building -> {
+        Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
+        yield assets.getBuildingVisuals(race, building.getTemplate().getBuildingType()).noDetailSize();
+      }
+    };
   }
 }

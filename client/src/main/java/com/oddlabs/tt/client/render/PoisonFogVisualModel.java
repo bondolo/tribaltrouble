@@ -2,12 +2,12 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.weapon.PoisonFog;
@@ -29,6 +29,7 @@ final class PoisonFogVisualModel extends AbstractVisualModel implements EmitterA
 
   private final PoisonFog poisonFog;
   private final AudioImplementation audio;
+  private final TextureKey[] poisonTextures;
   private final AudioPlayer bubblingSound;
   private final Deque<Emitter<?>> burstEmitters = new ArrayDeque<>();
 
@@ -38,10 +39,11 @@ final class PoisonFogVisualModel extends AbstractVisualModel implements EmitterA
 
   private boolean soundStopped = false;
 
-  PoisonFogVisualModel(PoisonFog poisonFog, AudioImplementation audio) {
+  PoisonFogVisualModel(PoisonFog poisonFog, AudioImplementation audio, TextureKey[] poisonTextures) {
     super(poisonFog);
     this.poisonFog = poisonFog;
     this.audio = audio;
+    this.poisonTextures = poisonTextures;
     World world = poisonFog.getWorld();
     this.bubblingSound =
         audio.newAudio(
@@ -92,7 +94,7 @@ final class PoisonFogVisualModel extends AbstractVisualModel implements EmitterA
                 1f,
                 GL11.GL_SRC_ALPHA,
                 GL11.GL_ONE_MINUS_SRC_ALPHA,
-                AssetRegistry.getInstance().getPoisonTextures());
+                poisonTextures);
         burstEmitters.add(emitter);
 
         if (bursts % nextSound == 0) {

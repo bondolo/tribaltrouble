@@ -8,7 +8,6 @@ import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.render.FullSceneRenderer;
 import com.oddlabs.tt.client.render.VisualSoundAccessory;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.client.resource.EmojiType;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
@@ -257,7 +256,8 @@ final class WorldNotificationHandler implements NotificationListener {
   }
 
   private void addVisualSound(Model model, EmojiType emoji, float audioDistance) {
-    AssetRegistry.getInstance()
+    viewer
+        .getAssets()
         .getEmojiSprite(emoji)
         .map(sprite -> new VisualSoundAccessory(sprite, emoji.getDuration(), audioDistance))
         .ifPresent(accessory -> renderer.getRenderState().addAccessory(model, accessory));

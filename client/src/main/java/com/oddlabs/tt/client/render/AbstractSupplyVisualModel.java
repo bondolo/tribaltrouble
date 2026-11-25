@@ -1,20 +1,13 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.simulation.model.IronSupply;
-import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.tt.simulation.model.RubberSupply;
 import com.oddlabs.tt.simulation.model.SupplyModel;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Base implementation of {@link SupplyVisualModel} providing spawn progress tracking and common transforms.
- *
- * @param <S> the specific SupplyModel type
- */
-public abstract class AbstractSupplyVisualModel<S extends SupplyModel> extends AbstractVisualModel
+/// Base implementation of {@link SupplyVisualModel} providing spawn progress tracking and common transforms.
+abstract class AbstractSupplyVisualModel<S extends SupplyModel> extends AbstractVisualModel
     implements SupplyVisualModel {
   private static final int ROTATION_HASH_X = 73;
   private static final int ROTATION_HASH_Y = 37;
@@ -22,13 +15,15 @@ public abstract class AbstractSupplyVisualModel<S extends SupplyModel> extends A
   private static final double DEGREES_TO_RADIANS = Math.PI / 180.0;
 
   private final S supplyModel;
+  private final SpriteKey spriteKey;
   private final float rotation;
   private float spawnProgress = 1.0f;
   private boolean spawning = false;
 
-  protected AbstractSupplyVisualModel(S supplyModel) {
+  AbstractSupplyVisualModel(S supplyModel, SpriteKey spriteKey) {
     super(supplyModel);
     this.supplyModel = supplyModel;
+    this.spriteKey = spriteKey;
     int hash = (supplyModel.getGridX() * ROTATION_HASH_X + supplyModel.getGridY() * ROTATION_HASH_Y) & ROTATION_MASK;
     this.rotation = (float) ((hash % 360) * DEGREES_TO_RADIANS);
   }
@@ -63,21 +58,12 @@ public abstract class AbstractSupplyVisualModel<S extends SupplyModel> extends A
 
   @Override
   public DecalProperties getDecalProperties() {
-    return new DecalProperties(null, 0.0f, 0.0f, 0.0f);
+    return DecalProperties.NONE;
   }
 
   @Override
   public SpriteKey getSpriteKey() {
-    return switch (supplyModel.getSupplyType()) {
-      case ROCK ->
-          AssetRegistry.getInstance()
-              .getRockFragmentSprite(supplyModel instanceof RockSupply rock ? rock.getFragmentIndex() : 0);
-      case IRON ->
-          AssetRegistry.getInstance()
-              .getIronFragmentSprite(supplyModel instanceof IronSupply iron ? iron.getFragmentIndex() : 0);
-      case RUBBER -> AssetRegistry.getInstance().getChickenSprite();
-      case WOOD -> throw new UnsupportedOperationException("Tree supply visuals handled separately");
-    };
+    return spriteKey;
   }
 
   @Override

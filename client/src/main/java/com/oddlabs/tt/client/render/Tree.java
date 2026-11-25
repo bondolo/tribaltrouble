@@ -10,29 +10,21 @@ record Tree(
     float shadowDiameter,
     float shadowOpacity,
     float shadowVerticalCenter,
-    float heightScale,
     BoundingBox modelBounds) {
-  Tree(
-      SpriteList trunk,
-      SpriteList crown,
-      float shadowDiameter,
-      float shadowOpacity,
-      float shadowVerticalCenter,
-      float heightScale) {
+  Tree(SpriteList trunk, SpriteList crown, float shadowDiameter, float shadowOpacity, float shadowVerticalCenter) {
     this(
         trunk,
         crown,
         shadowDiameter,
         shadowOpacity,
         shadowVerticalCenter,
-        heightScale,
-        computeModelBounds(trunk, crown));
+        computeModelBounds(trunk.getBounds()[0], crown.getBounds()[0]));
   }
 
-  private static BoundingBox computeModelBounds(SpriteList trunk, SpriteList crown) {
+  private static BoundingBox computeModelBounds(BoundingBox trunkBounds, BoundingBox crownBounds) {
     BoundingBox box = new BoundingBox();
-    box.setBounds(trunk.getBounds()[0]);
-    box.expandBounds(crown.getBounds()[0]);
+    box.setBounds(trunkBounds);
+    box.expandBounds(crownBounds);
     box.expandBoundsZ(0f);
     return box;
   }

@@ -1,6 +1,5 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.ModelState;
 import com.oddlabs.tt.engine.render.SpriteKey;
@@ -95,6 +94,7 @@ final class WeaponAccessory implements StaticAccessory {
 
   private final Unit unit;
   private final UnitVisualModel visualModel;
+  private final @Nullable SpriteKey weaponSprite;
   private final boolean isViking;
   private final Matrix4f socketTransform = new Matrix4f();
   private final Matrix4f adjustedTransform = new Matrix4f();
@@ -104,32 +104,19 @@ final class WeaponAccessory implements StaticAccessory {
   private int socketBoneIndex = -1;
   private int handBoneIndex = -1;
 
-  WeaponAccessory(Unit unit, UnitVisualModel visualModel) {
+  WeaponAccessory(Unit unit, UnitVisualModel visualModel, @Nullable SpriteKey weaponSprite) {
     this.unit = unit;
     this.visualModel = visualModel;
+    this.weaponSprite = weaponSprite;
     Race race = unit.getOwner().getPlayerInfo().race();
     this.isViking = (race == Race.VIKINGS);
     this.localTransform = isViking ? VIKING_AXE_LOCAL : NATIVE_SPEAR_LOCAL;
     this.handLocalTransform = isViking ? VIKING_AXE_HAND_LOCAL : null;
   }
 
-  private @Nullable WeaponTier getWeaponTier() {
-    return switch (unit.getTemplate().getUnitType()) {
-      case WARRIOR_ROCK -> WeaponTier.ROCK;
-      case WARRIOR_IRON -> WeaponTier.IRON;
-      case WARRIOR_RUBBER -> WeaponTier.RUBBER;
-      default -> null;
-    };
-  }
-
   @Override
   public @Nullable SpriteKey getSpriteRenderer() {
-    WeaponTier tier = getWeaponTier();
-    if (tier != null) {
-      Race race = unit.getOwner().getPlayerInfo().race();
-      return AssetRegistry.getInstance().getWeaponSprite(race, tier);
-    }
-    return null;
+    return weaponSprite;
   }
 
   @Override
@@ -147,15 +134,8 @@ final class WeaponAccessory implements StaticAccessory {
   }
 
   private float getSpearMetersPerSecond() {
-    WeaponTier tier = getWeaponTier();
-    if (tier != null) {
-      return switch (tier) {
-        case ROCK -> 20f;
-        case IRON -> 25f;
-        case RUBBER -> 30f;
-      };
-    }
-    return 20f;
+    WeaponTier tier = unit.getTemplate().getUnitType().getWeaponTier();
+    return tier != null ? tier.getMetersPerSecond() : WeaponTier.ROCK.getMetersPerSecond();
   }
 
   private float computeSpearTargetPitch() {

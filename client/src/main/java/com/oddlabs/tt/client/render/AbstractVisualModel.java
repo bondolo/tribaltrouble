@@ -12,7 +12,7 @@ import java.util.SequencedCollection;
 import java.util.function.Predicate;
 
 /// Abstract base implementation of {@link VisualModel} providing common accessory management and lifecycle operations.
-public abstract class AbstractVisualModel implements VisualModel {
+abstract class AbstractVisualModel implements VisualModel {
   private final Model model;
   private final SequencedCollection<Accessory> accessories = new ArrayList<>();
 
@@ -48,11 +48,7 @@ public abstract class AbstractVisualModel implements VisualModel {
     return model;
   }
 
-  /**
-   * Determines whether the primary model or visual effect represented directly by this visual model has expired.
-   *
-   * @return true if the primary model/effect is dead or finished
-   */
+  /// Returns whether the primary model or visual effect represented directly by this visual model has expired.
   protected boolean isSelfExpired() {
     return model.isDead();
   }
@@ -103,9 +99,7 @@ public abstract class AbstractVisualModel implements VisualModel {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public void visit(RenderState rs) {
-    if (rs.isPicking()) return;
     float z_offset = rs.getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY());
     ElementSceneContext<Model> state =
         (ElementSceneContext<Model>) rs.getCachedState(WhiteModelVisitor.getInstance(), model, z_offset);

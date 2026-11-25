@@ -1,32 +1,32 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Model;
+import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitSupplyContainer;
+import java.util.Map;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
 /// An accessory representing resources (wood, rock, iron, rubber) currently being carried by a unit.
-public final class CarriedResourceAccessory implements StaticAccessory {
+final class CarriedResourceAccessory implements StaticAccessory {
   private final Unit unit;
+  private final Map<SupplyType, SpriteKey> carriedSupplySprites;
 
-  public CarriedResourceAccessory(Unit unit) {
+  CarriedResourceAccessory(Unit unit, Map<SupplyType, SpriteKey> carriedSupplySprites) {
     assert null != unit.getSupplyContainer() : "Unit must have a supply container";
     this.unit = unit;
+    this.carriedSupplySprites = carriedSupplySprites;
   }
 
   @Override
   public @Nullable SpriteKey getSpriteRenderer() {
     UnitSupplyContainer supply_container = unit.getSupplyContainer();
     if (supply_container != null) {
-      return supply_container
-          .getSupplyType()
-          .map(type -> AssetRegistry.getInstance().getCarriedSupplySprite(unit.getOwner().getPlayerInfo().race(), type))
-          .orElse(null);
+      return supply_container.getSupplyType().map(carriedSupplySprites::get).orElse(null);
     }
     return null;
   }

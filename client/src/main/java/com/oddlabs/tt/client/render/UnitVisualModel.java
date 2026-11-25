@@ -1,15 +1,18 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.effects.particle.BalancedParametricEmitter;
 import com.oddlabs.tt.effects.particle.StunFunction;
 import com.oddlabs.tt.effects.render.EmitterAttachedAccessory;
 import com.oddlabs.tt.engine.render.Accessory;
+import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.SpriteList;
+import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.util.Color;
+import java.util.Map;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector3f;
@@ -18,41 +21,30 @@ import org.lwjgl.opengl.GL11;
 
 /// {@link VisualModel} implementation for units managing carried resources, stun particle effects, and dynamic status
 /// accessories.
-public final class UnitVisualModel extends SelectableVisualModel<Unit> {
+final class UnitVisualModel extends SelectableVisualModel<Unit> {
   private final Unit unit;
+  private final TextureKey[] starTextures;
   private Matrix4f @Nullable [] evaluatedBones;
   private int evaluatedAnimation = -1;
   private float evaluatedTicks = -1f;
 
-  public UnitVisualModel(Unit unit) {
+  UnitVisualModel(
+      Unit unit,
+      @Nullable Map<SupplyType, SpriteKey> carriedSupplySprites,
+      @Nullable SpriteKey weaponSprite,
+      TextureKey[] starTextures) {
     super(unit);
     this.unit = unit;
-    if (unit.getAbilities().hasAbilities(Abilities.BUILD)) {
-      addAccessory(new CarriedResourceAccessory(unit));
+    this.starTextures = starTextures;
+    if (unit.getAbilities().hasAbilities(Abilities.BUILD) && carriedSupplySprites != null) {
+      addAccessory(new CarriedResourceAccessory(unit, carriedSupplySprites));
     }
-    if (unit.getAbilities().hasAbilities(Abilities.THROW)) {
-      addAccessory(new WeaponAccessory(unit, this));
+    if (unit.getAbilities().hasAbilities(Abilities.THROW) && weaponSprite != null) {
+      addAccessory(new WeaponAccessory(unit, this, weaponSprite));
     }
   }
 
-  @Override
-  public float getSelectionRadius() {
-    return unit.getTemplate().getSelectionRadius();
-  }
-
-  @Override
-  public float getSelectionHeight() {
-    return unit.getTemplate().getSelectionHeight();
-  }
-
-  /**
-   * Resolves the evaluated bone skinning matrices for the given animation and tick time, caching within the frame.
-   *
-   * @param `spriteList` the sprite list containing skeleton data
-   * @param `animation` the animation index
-   * @param `ticks` the animation tick position
-   * @return the evaluated bone matrices, or null if non-skeletal or invalid
-   */
+  /// Evaluates and caches bone skinning matrices for the current animation and tick, or returns null if non-skeletal.
   public Matrix4fc @Nullable [] getEvaluatedBones(SpriteList spriteList, int animation, float ticks) {
     int boneCount = spriteList.getBoneCount();
     if (boneCount == 0) {
@@ -75,11 +67,6 @@ public final class UnitVisualModel extends SelectableVisualModel<Unit> {
     return evaluatedBones;
   }
 
-  /**
-   * Updates stun star emitter attachment based on the unit's active stun state.
-   *
-   * @param `world` the active game world
-   */
   public void updateStunStars(World world) {
     float timeLeft = unit.getStunTimeLeft();
     if (timeLeft > 0f) {
@@ -111,7 +98,7 @@ public final class UnitVisualModel extends SelectableVisualModel<Unit> {
                 timeLeft,
                 GL11.GL_SRC_ALPHA,
                 GL11.GL_ONE_MINUS_SRC_ALPHA,
-                AssetRegistry.getInstance().getStarTextures());
+                starTextures);
 
         float mountOffset = unit.getMountOffset();
         var offset =

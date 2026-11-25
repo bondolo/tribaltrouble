@@ -2,7 +2,6 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.effects.particle.LinearEmitter;
 import com.oddlabs.tt.effects.particle.RandomAccelerationEmitter;
@@ -21,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 /// An accessory that manages the chimney smoke during building production.
-public final class BuildingProductionAccessory implements EmitterAccessory {
+final class BuildingProductionAccessory implements EmitterAccessory {
   private static final float EMITTER_ENERGY = 5.0f;
   private static final float EMITTER_ALPHA = 0.75f;
   private static final float GO_IDLE_DURATION = 1.0f;
@@ -52,7 +51,7 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
   private float goingIdleTimer = 0f;
   private @Nullable AudioPlayer productionPlayer = null;
 
-  public BuildingProductionAccessory(Building building, AudioImplementation audio) {
+  BuildingProductionAccessory(Building building, AudioImplementation audio, TextureKey[] smokeTextures) {
     this.building = building;
     this.audio = audio;
     this.chimneyOffset = building.getTemplate().getChimney();
@@ -78,7 +77,7 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
             0.7f,
             GL11.GL_SRC_ALPHA,
             GL11.GL_ONE_MINUS_SRC_ALPHA,
-            AssetRegistry.getInstance().getSmokeTextures());
+            smokeTextures);
     this.emitter.stop();
     this.emitter.setBaseColor(new Color.Linear(0.0992f, 0.0992f, 0.0992f, EMITTER_ALPHA));
     this.emitter.setSpectrumRange(0.0f, 1.0f);

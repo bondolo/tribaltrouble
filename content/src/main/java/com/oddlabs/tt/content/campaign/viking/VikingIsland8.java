@@ -2,7 +2,6 @@ package com.oddlabs.tt.content.campaign.viking;
 
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.delegate.JumpDelegate;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.content.campaign.Campaign;
 import com.oddlabs.tt.content.campaign.CampaignDialogForm;
 import com.oddlabs.tt.content.campaign.CampaignState;
@@ -155,7 +154,7 @@ final class VikingIsland8 extends Island {
         });
 
     // Insert rally point
-    var rallySprite = AssetRegistry.getInstance().getRallyPoint(local_player.getRaceInfo().getRaceType());
+    var rallySprite = getViewer().getAssets().getRallyPoint(local_player.getRaceInfo().getRaceType());
     new RallyPointScenery(
         getViewer().getWorld(),
         354 * 2,

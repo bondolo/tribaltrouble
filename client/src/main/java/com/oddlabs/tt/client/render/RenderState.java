@@ -1,6 +1,5 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.client.resource.AssetRegistry;
@@ -10,6 +9,7 @@ import com.oddlabs.tt.effects.particle.Lightning;
 import com.oddlabs.tt.effects.particle.SonicBlastEffect;
 import com.oddlabs.tt.effects.render.CrackDecalRenderer;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
+import com.oddlabs.tt.engine.procedural.GeneratorCrack;
 import com.oddlabs.tt.engine.procedural.GeneratorRing;
 import com.oddlabs.tt.engine.render.Accessory;
 import com.oddlabs.tt.engine.render.AttachedRenderState;
@@ -27,7 +27,8 @@ import com.oddlabs.tt.engine.render.StaticAccessory;
 import com.oddlabs.tt.engine.render.WaveAnimation;
 import com.oddlabs.tt.engine.render.WhiteModelVisitor;
 import com.oddlabs.tt.net.PeerHub;
-import com.oddlabs.tt.simulation.model.Element;
+import com.oddlabs.tt.simulation.model.AbstractElementNode;
+import com.oddlabs.tt.simulation.model.ElementNode;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Plants;
 import com.oddlabs.tt.simulation.model.Race;
@@ -42,22 +43,28 @@ import com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.util.Color;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Queue;
 import java.util.SequencedCollection;
+import java.util.Set;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
 /// Manages the rendering state and visit logic for world entities and their accessories.
-public final class RenderState implements SceneContext {
+public final class RenderState implements SceneContext, AutoCloseable {
+  private static final GeneratorRing RESPOND_DESC =
+      new GeneratorRing(
+          DecalRenderer.HALO_LUT_RESOLUTION, new float[][] {{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
+  private static final GeneratorCrack CRACK_DECAL_DESC = new GeneratorCrack();
+
   private final Queue<Emitter<?>> emitter_queue = new ArrayDeque<>();
   private final Queue<Lightning> lightning_queue = new ArrayDeque<>();
   private final Queue<SonicBlastEffect> sonic_blast_queue = new ArrayDeque<>();
   private final RenderStateCache<ElementSceneContext<Model>> render_state_cache;
   private final RenderStateCache<AttachedRenderState> attached_state_cache;
+  private final RenderStateCache<CrackDecalShadowable> crack_state_cache;
   private final RenderQueues render_queues;
   private final TargetRespondRenderer target_respond_renderer;
   private final SelectableShadowRenderer default_shadow_renderer;
@@ -66,64 +73,79 @@ public final class RenderState implements SceneContext {
   private final @Nullable Selection selection;
   private final Player local_player;
   private final Matrix4f emitterTransform = new Matrix4f();
-  private final AudioImplementation audio;
-  private final List<VisualModel> activeVisualModels = new ArrayList<>();
+  private final AssetRegistry assets;
+  private final VisualModelFactory visualModelFactory;
+  private final ModelVisitor<Selectable<?>> selectable_visitor;
+  private final Set<VisualModel> activeVisualModels = new LinkedHashSet<>();
   private final Deque<VisualModel> detachedVisualModels = new ArrayDeque<>();
 
-  private boolean picking;
-  private boolean visible_override;
   private @Nullable CameraState camera;
 
-  public RenderState(
+  RenderState(
       Player local_player,
       RenderQueues render_queues,
       Picker picker,
       @Nullable Selection selection,
-      AudioImplementation audio) {
+      AssetRegistry assets,
+      VisualModelFactory visualModelFactory) {
     this.local_player = local_player;
     this.selection = selection;
     this.picker = picker;
     this.render_queues = render_queues;
-    this.audio = audio;
-    var respondDesc =
-        new GeneratorRing(
-            DecalRenderer.HALO_LUT_RESOLUTION, new float[][] {{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
-    var respondKey = render_queues.registerShadowRenderer(respondDesc, new TargetRespondRenderer(respondDesc));
+    this.assets = assets;
+    this.visualModelFactory = visualModelFactory;
+    this.selectable_visitor = new SelectableVisitor<>(assets);
+    var respondKey = render_queues.registerShadowRenderer(RESPOND_DESC, () -> new TargetRespondRenderer(RESPOND_DESC));
     this.target_respond_renderer = (TargetRespondRenderer) render_queues.getShadowRenderer(respondKey);
 
-    var defaultShadowKey =
-        render_queues.registerShadowRenderer(
-            AssetRegistry.DEFAULT_SHADOW_DESC, new SelectableShadowRenderer(AssetRegistry.DEFAULT_SHADOW_DESC));
-    this.default_shadow_renderer = (SelectableShadowRenderer) render_queues.getShadowRenderer(defaultShadowKey);
+    this.default_shadow_renderer =
+        (SelectableShadowRenderer) render_queues.getShadowRenderer(assets.getDefaultShadow());
 
     var crackKey =
-        render_queues.registerShadowRenderer(
-            AssetRegistry.CRACK_DECAL_DESC, new CrackDecalRenderer(AssetRegistry.CRACK_DECAL_DESC));
+        render_queues.registerShadowRenderer(CRACK_DECAL_DESC, () -> new CrackDecalRenderer(CRACK_DECAL_DESC));
     this.crack_shadow_renderer = (CrackDecalRenderer) render_queues.getShadowRenderer(crackKey);
     this.render_state_cache = new RenderStateCache<>(() -> new ElementSceneContext<>(RenderState.this));
     this.attached_state_cache = new RenderStateCache<>(AttachedRenderState::new);
+    this.crack_state_cache = new RenderStateCache<>(CrackDecalShadowable::new);
   }
 
-  public void visit(Element<?> element) {
-    if (!element.isRegistered() || element.isFinished()) {
-      if (picking) {
+  void visit(AbstractElementNode<Model> root) {
+    if (camera != null) {
+      visitNode(root, camera.inNoDetailMode(), camera.getFrustum());
+    }
+  }
+
+  private void visitNode(AbstractElementNode<Model> node, boolean fullyInside, FrustumIntersection frustum) {
+    if (!fullyInside) {
+      int res = node.intersectFrustum(frustum);
+      if (res >= 0) {
         return;
       }
-      element.remove();
-      if (element instanceof Animated animated) {
+      fullyInside = (res == FrustumIntersection.INSIDE);
+    }
+    for (Model model = node.getModels().getFirst(); model != null; model = model.getNext()) {
+      visitModel(model);
+    }
+    if (node instanceof ElementNode<Model> elementNode) {
+      for (AbstractElementNode<Model> child : elementNode.children()) {
+        visitNode(child, fullyInside, frustum);
+      }
+    }
+  }
+
+  private void visitModel(Model model) {
+    if (!model.isRegistered() || model.isFinished()) {
+      model.remove();
+      if (model instanceof Animated animated) {
         local_player.getWorld().getAnimationManagerGameTime().removeAnimation(animated);
       }
-      if (element instanceof Model model) {
-        detachOrCloseVisualModel(model);
-      }
+      detachOrCloseVisualModel(model);
       return;
     }
-    if (element instanceof SceneryModel scenery) {
+    if (model instanceof SceneryModel scenery) {
       visitScenery(scenery);
-    } else if (element instanceof Model model) {
-      getOrCreateVisualModel(model).visit(this);
     } else {
-      throw new UnsupportedOperationException("element has no rendering defined " + element);
+      getOrCreateVisualModel(model).visit(this);
     }
   }
 
@@ -153,28 +175,20 @@ public final class RenderState implements SceneContext {
     return render_queues;
   }
 
-  public void setVisibleOverride(boolean override) {
-    this.visible_override = override;
-  }
-
   private float lastFrameTime = -1f;
   private final WaveAnimation plantWaveAnimation = new WaveAnimation(PLANT_WAVE_SCALE);
 
-  public void setup(boolean picking, CameraState camera_state) {
-    setup(picking, camera_state, -1f);
-  }
-
-  public void setup(boolean picking, CameraState camera_state, float currentTime) {
-    this.picking = picking;
+  void setup(CameraState camera_state, float currentTime) {
     this.camera = camera_state;
     render_state_cache.clear();
     attached_state_cache.clear();
+    crack_state_cache.clear();
     // Clear queues for new frame
     emitter_queue.clear();
     lightning_queue.clear();
     sonic_blast_queue.clear();
 
-    if (!picking && currentTime >= 0f && lastFrameTime >= 0f) {
+    if (currentTime >= 0f && lastFrameTime >= 0f) {
       float dt = Math.clamp(currentTime - lastFrameTime, 0.001f, 0.1f);
       float gameSpeedFactor = local_player.getWorld().getSecondsPerTick() / AnimationManager.ANIMATION_SECONDS_PER_TICK;
       float gameDt = dt * gameSpeedFactor;
@@ -188,7 +202,7 @@ public final class RenderState implements SceneContext {
         return false;
       });
     }
-    if (!picking && currentTime >= 0f) {
+    if (currentTime >= 0f) {
       lastFrameTime = currentTime;
       plantWaveAnimation.setTime(currentTime);
     }
@@ -198,7 +212,6 @@ public final class RenderState implements SceneContext {
   }
 
   private void prepareEffects() {
-    if (picking) return;
     collectEffects(activeVisualModels);
     collectEffects(detachedVisualModels);
   }
@@ -219,7 +232,6 @@ public final class RenderState implements SceneContext {
   }
 
   private void prepareDetachedVisualEffects() {
-    if (picking) return;
     for (VisualModel vm : detachedVisualModels) {
       Model model = vm.getModel();
       ElementSceneContext<Model> parentState =
@@ -237,11 +249,10 @@ public final class RenderState implements SceneContext {
   }
 
   private void prepareTargetResponds() {
-    if (picking) return;
     var responds = picker.getTargetResponds();
     responds.removeIf(LandscapeTargetRespond::isFinished);
     for (LandscapeTargetRespond respond : responds) {
-      if (visible_override || camera.inNoDetailMode() || respond.getBounds().testFrustum(camera.getFrustum())) {
+      if (camera.inNoDetailMode() || respond.getBounds().testFrustum(camera.getFrustum())) {
         target_respond_renderer.addToTargetList(respond);
       }
     }
@@ -251,16 +262,6 @@ public final class RenderState implements SceneContext {
   public @Nullable CameraState getCamera() {
     return camera;
   }
-
-  boolean overrideVisibility() {
-    return visible_override;
-  }
-
-  boolean isPicking() {
-    return picking;
-  }
-
-  private static final ModelVisitor<Selectable<?>> selectable_visitor = new SelectableVisitor<>();
 
   private <M extends Model> ElementSceneContext<M> doGetCachedState() {
     return (ElementSceneContext<M>) render_state_cache.get();
@@ -278,19 +279,6 @@ public final class RenderState implements SceneContext {
     return state;
   }
 
-  private static boolean pickingInFrustum(
-      Target target, FrustumIntersection frustum, float z_offset, float selection_radius, float selection_height) {
-    float posX = target.getPositionX();
-    float posY = target.getPositionY();
-    return frustum.testAab(
-        posX - selection_radius,
-        posY - selection_radius,
-        z_offset,
-        posX + selection_radius,
-        posY + selection_radius,
-        z_offset + selection_height);
-  }
-
   boolean isHovered(Selectable<?> selectable) {
     return selectable == picker.getCurrentHovered();
   }
@@ -299,53 +287,37 @@ public final class RenderState implements SceneContext {
     return selection != null && selection.getCurrentSelection().contains(selectable);
   }
 
-  void visitSelectable(Selectable<?> selectable, float z_offset, float selection_radius, float selection_height) {
-    boolean in_view =
-        !picking
-            || (selectable.isEnabled()
-                && (visible_override
-                    || pickingInFrustum(
-                        selectable, camera.getFrustum(), z_offset, selection_radius, selection_height)));
-    if (in_view) {
-      if (picking) {
-        picker.addPick(selectable);
-        return;
-      }
-      Player owner = selectable.getOwnerNoCheck();
-      boolean isMapPoint =
-          camera != null
-              && camera.inNoDetailMode()
-              && (!local_player.isEnemy(owner)
-                  || (!owner.teamHasBuilding() && PeerHub.getFreeQuitTimeLeft(local_player.getWorld()) < 0f));
-      ElementSceneContext<Selectable<?>> state = getCachedState(selectable_visitor, selectable, z_offset);
-      if (isMapPoint) {
-        state.markDetailPoint();
-      } else {
-        state.addToRenderList();
-        if (selectable.isEnabled()) {
-          ShadowListKey shadowKey = AssetRegistry.getInstance().getSelectableShadow(selectable);
-          if (shadowKey != null) {
-            SelectableShadowRenderer shadow_renderer =
-                (SelectableShadowRenderer) render_queues.getShadowRenderer(shadowKey);
-            if (isHovered(selectable) || isSelected(selectable)) {
-              shadow_renderer.addToSelectionList(state);
-            } else if (selectable instanceof Unit && selectable.getShadowDiameter() > 0f) {
-              shadow_renderer.addToShadowList(state);
-            }
-          }
+  void visitSelectable(Selectable<?> selectable, float z_offset) {
+    Player owner = selectable.getOwnerNoCheck();
+    boolean isMapPoint =
+        camera != null
+            && camera.inNoDetailMode()
+            && (!local_player.isEnemy(owner)
+                || (!owner.teamHasBuilding() && PeerHub.getFreeQuitTimeLeft(local_player.getWorld()) < 0f));
+    ElementSceneContext<Selectable<?>> state = getCachedState(selectable_visitor, selectable, z_offset);
+    if (isMapPoint) {
+      state.markDetailPoint();
+    } else {
+      state.addToRenderList();
+      if (selectable.isEnabled()) {
+        ShadowListKey shadowKey = assets.getSelectableShadow(selectable);
+        SelectableShadowRenderer shadow_renderer =
+            (SelectableShadowRenderer) render_queues.getShadowRenderer(shadowKey);
+        if (isHovered(selectable) || isSelected(selectable)) {
+          shadow_renderer.addToSelectionList(state);
+        } else if (selectable instanceof Unit && selectable.getShadowDiameter() > 0f) {
+          shadow_renderer.addToShadowList(state);
         }
-        visitAccessories(selectable, state);
       }
+      visitAccessories(selectable, state);
     }
   }
 
   VisualModel getOrCreateVisualModel(Model model) {
     VisualModel vm = (VisualModel) model.getClientModel();
     if (vm == null) {
-      vm = VisualModelRegistry.getDefault().createVisualModel(model, audio);
+      vm = visualModelFactory.create(model);
       model.setClientModel(vm);
-    }
-    if (!picking && !activeVisualModels.contains(vm)) {
       activeVisualModels.add(vm);
     }
     return vm;
@@ -367,8 +339,6 @@ public final class RenderState implements SceneContext {
   }
 
   private <M extends Model> void visitAccessory(Accessory accessory, ElementSceneContext<M> parentState) {
-    if (picking) return;
-
     switch (accessory) {
       case EmitterAccessory ea -> {
         Emitter<?> emitter = ea.getEmitter();
@@ -430,12 +400,12 @@ public final class RenderState implements SceneContext {
   private final ModelVisitor<SupplyModel> supply_model_visitor =
       new WhiteModelVisitor<>() {
         @Override
-        public @Nullable SpriteKey getSpriteKey(ElementSceneContext<SupplyModel> render_state) {
+        public SpriteKey getSpriteKey(ElementSceneContext<SupplyModel> render_state) {
           SupplyModel model = render_state.getModel();
           if (getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
             return svm.getSpriteKey();
           }
-          return AssetRegistry.getInstance().getSupplySprite(model);
+          return assets.getSupplySprite(model);
         }
 
         @Override
@@ -457,62 +427,25 @@ public final class RenderState implements SceneContext {
       };
 
   void visitSupplyModel(final SupplyModel model) {
-    float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY());
-    if (picking) {
-      if (pickingInFrustum(model, camera.getFrustum(), z_offset, Math.max(1.0f, model.getSize()), 2.0f)) {
-        picker.addPick(model);
-      }
-      return;
-    }
     ElementSceneContext<SupplyModel> state =
         (ElementSceneContext<SupplyModel>) getCachedState(supply_model_visitor, model);
     state.addToRenderList();
     if (getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
       var decal = svm.getDecalProperties();
       if (decal.opacity() > 0.0f) {
-        crack_shadow_renderer.addToCrackList(
-            new Shadowable() {
-              @Override
-              public float getPositionX() {
-                return model.getPositionX();
-              }
-
-              @Override
-              public float getPositionY() {
-                return model.getPositionY();
-              }
-
-              @Override
-              public float getShadowDiameter() {
-                return decal.diameter();
-              }
-
-              @Override
-              public float getShadowOpacity() {
-                return decal.opacity();
-              }
-
-              @Override
-              public Color.Linear getShadowColor() {
-                Color.Linear color = decal.color();
-                return color != null ? color : Color.Linear.BLACK;
-              }
-
-              @Override
-              public float getShadowPattern() {
-                return decal.pattern();
-              }
-            });
+        CrackDecalShadowable crackState = crack_state_cache.get();
+        crackState.setup(model, decal);
+        crack_shadow_renderer.addToCrackList(crackState);
       }
     }
     visitAccessories(model, state);
   }
 
-  private static final ModelVisitor<RubberSupply> rubber_model_visitor =
+  private final ModelVisitor<RubberSupply> rubber_model_visitor =
       new WhiteModelVisitor<>() {
         @Override
-        public @Nullable SpriteKey getSpriteKey(ElementSceneContext<RubberSupply> render_state) {
-          return AssetRegistry.getInstance().getChickenSprite();
+        public SpriteKey getSpriteKey(ElementSceneContext<RubberSupply> render_state) {
+          return assets.getChickenSprite();
         }
 
         @Override
@@ -532,12 +465,6 @@ public final class RenderState implements SceneContext {
 
   void visitRubberSupply(final RubberSupply model) {
     float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY()) + model.getOffsetZ();
-    if (picking) {
-      if (pickingInFrustum(model, camera.getFrustum(), z_offset, Math.max(1.0f, model.getSize()), 2.0f)) {
-        picker.addPick(model);
-      }
-      return;
-    }
     ElementSceneContext<RubberSupply> state =
         (ElementSceneContext<RubberSupply>) getCachedState(rubber_model_visitor, model, z_offset);
     state.addToRenderList();
@@ -545,21 +472,15 @@ public final class RenderState implements SceneContext {
     visitAccessories(model, state);
   }
 
-  private static final ModelVisitor<SceneryModel> scenery_model_visitor =
+  private final ModelVisitor<SceneryModel> scenery_model_visitor =
       new WhiteModelVisitor<>() {
         @Override
         public SpriteKey getSpriteKey(ElementSceneContext<SceneryModel> render_state) {
-          return AssetRegistry.getInstance().getScenerySprite(render_state.getModel());
+          return assets.getScenerySprite(render_state.getModel());
         }
       };
 
   private void visitSceneryModel(final SceneryModel model) {
-    if (picking) {
-      if (visible_override || model.testFrustum(camera.getFrustum())) {
-        picker.addPick(model);
-      }
-      return;
-    }
     ElementSceneContext<SceneryModel> state = getCachedState(scenery_model_visitor, model);
     state.addToRenderList();
   }
@@ -579,9 +500,9 @@ public final class RenderState implements SceneContext {
   private final ModelVisitor<Plants> plants_model_visitor =
       new WhiteModelVisitor<>() {
         @Override
-        public @Nullable SpriteKey getSpriteKey(ElementSceneContext<Plants> render_state) {
+        public SpriteKey getSpriteKey(ElementSceneContext<Plants> render_state) {
           Plants plants = render_state.getModel();
-          return AssetRegistry.getInstance().getPlantSprite(plants.getTerrain(), plants.getIndex());
+          return assets.getPlantSprite(plants.getTerrain(), plants.getIndex());
         }
 
         @Override
@@ -604,7 +525,7 @@ public final class RenderState implements SceneContext {
       };
 
   private void visitPlants(final Plants plants) {
-    if (!picking && DebugFlags.draw_plants) {
+    if (DebugFlags.draw_plants) {
       float camera_dist_sqr =
           RenderTools.getEyeDistanceSquared(plants, camera.getCurrentX(), camera.getCurrentY(), camera.getCurrentZ());
       if (camera_dist_sqr <= PLANTS_CUT_DIST * PLANTS_CUT_DIST)
@@ -612,13 +533,13 @@ public final class RenderState implements SceneContext {
     }
   }
 
-  private static final ModelVisitor<ThrowingWeapon> weapon_model_visitor =
+  private final ModelVisitor<ThrowingWeapon> weapon_model_visitor =
       new WhiteModelVisitor<>() {
         @Override
-        public @Nullable SpriteKey getSpriteKey(ElementSceneContext<ThrowingWeapon> render_state) {
+        public SpriteKey getSpriteKey(ElementSceneContext<ThrowingWeapon> render_state) {
           ThrowingWeapon model = render_state.getModel();
           Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
-          return AssetRegistry.getInstance().getWeaponSprite(race, model.getWeaponTier());
+          return assets.getWeaponSprite(race, model.getWeaponTier());
         }
 
         @Override
@@ -691,6 +612,7 @@ public final class RenderState implements SceneContext {
     }
   }
 
+  @Override
   public void close() {
     for (VisualModel vm : activeVisualModels) {
       vm.getModel().setClientModel(null);
@@ -699,5 +621,55 @@ public final class RenderState implements SceneContext {
     activeVisualModels.clear();
     detachedVisualModels.forEach(VisualModel::close);
     detachedVisualModels.clear();
+  }
+
+  /// Reusable {@link Shadowable} adapter avoiding per-frame allocations for supply crack decals.
+  private static final class CrackDecalShadowable implements Shadowable {
+    private float posX;
+    private float posY;
+    private float diameter;
+    private float opacity;
+    private Color.Linear color = Color.Linear.BLACK;
+    private float pattern;
+
+    void setup(SupplyModel model, SupplyVisualModel.DecalProperties decal) {
+      this.posX = model.getPositionX();
+      this.posY = model.getPositionY();
+      this.diameter = decal.diameter();
+      this.opacity = decal.opacity();
+      Color.Linear decalColor = decal.color();
+      this.color = decalColor != null ? decalColor : Color.Linear.BLACK;
+      this.pattern = decal.pattern();
+    }
+
+    @Override
+    public float getPositionX() {
+      return posX;
+    }
+
+    @Override
+    public float getPositionY() {
+      return posY;
+    }
+
+    @Override
+    public float getShadowDiameter() {
+      return diameter;
+    }
+
+    @Override
+    public float getShadowOpacity() {
+      return opacity;
+    }
+
+    @Override
+    public Color.Linear getShadowColor() {
+      return color;
+    }
+
+    @Override
+    public float getShadowPattern() {
+      return pattern;
+    }
   }
 }

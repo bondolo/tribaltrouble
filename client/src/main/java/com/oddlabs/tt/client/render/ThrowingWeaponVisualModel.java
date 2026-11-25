@@ -14,11 +14,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Abstract visual model for throwing weapons managing spatial flight audio and visual ballistic loft.
- *
- * @param <T> weapon type
- */
+/// Abstract visual model for throwing weapons managing spatial flight audio and visual ballistic loft.
 abstract sealed class ThrowingWeaponVisualModel<T extends ThrowingWeapon> extends AbstractVisualModel
     implements AnimatedAccessory permits DirectedThrowingWeaponVisualModel, RotatingThrowingWeaponVisualModel {
   protected static final float GRAVITY_MAGNITUDE = 3.0f * 9.82f;
@@ -73,11 +69,9 @@ abstract sealed class ThrowingWeaponVisualModel<T extends ThrowingWeapon> extend
 
   @Override
   public void visit(RenderState rs) {
-    if (!rs.isPicking()) {
-      ElementSceneContext<T> state = (ElementSceneContext<T>) rs.getCachedState(rs.getWeaponModelVisitor(), weapon);
-      state.addToRenderList();
-      rs.visitAccessories(weapon, state);
-    }
+    ElementSceneContext<T> state = (ElementSceneContext<T>) rs.getCachedState(rs.getWeaponModelVisitor(), weapon);
+    state.addToRenderList();
+    rs.visitAccessories(weapon, state);
   }
 
   @Override

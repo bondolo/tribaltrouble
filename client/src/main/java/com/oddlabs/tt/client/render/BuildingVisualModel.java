@@ -1,34 +1,22 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
+import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.tt.simulation.model.Building;
 
 /// {@link VisualModel} implementation for buildings managing damage and production accessories.
-public final class BuildingVisualModel extends SelectableVisualModel<Building> {
-  public BuildingVisualModel(Building building, AudioImplementation audio) {
+final class BuildingVisualModel extends SelectableVisualModel<Building> {
+  BuildingVisualModel(
+      Building building,
+      AudioImplementation audio,
+      TextureKey[] smokeTextures,
+      TextureKey[] damageSmokeTextures,
+      SpriteKey[] woodFragments) {
     super(building);
     float hitOffsetZ = building.getHitOffsetZ();
-    addAccessory(new BuildingDamagedAccessory(building, hitOffsetZ, audio));
-    addAccessory(new BuildingProductionAccessory(building, audio));
-  }
-
-  @Override
-  public float getSelectionRadius() {
-    var template = selectable.getTemplate();
-    return switch (selectable.getBuildStage()) {
-      case START -> template.getStartSelectionRadius();
-      case HALFBUILT -> template.getHalfbuiltSelectionRadius();
-      case UNPLACED, BUILT -> template.getBuiltSelectionRadius();
-    };
-  }
-
-  @Override
-  public float getSelectionHeight() {
-    var template = selectable.getTemplate();
-    return switch (selectable.getBuildStage()) {
-      case START -> template.getStartSelectionHeight();
-      case HALFBUILT -> template.getHalfbuiltSelectionHeight();
-      case UNPLACED, BUILT -> template.getBuiltSelectionHeight();
-    };
+    addAccessory(
+        new BuildingDamagedAccessory(building, hitOffsetZ, audio, damageSmokeTextures, smokeTextures, woodFragments));
+    addAccessory(new BuildingProductionAccessory(building, audio, smokeTextures));
   }
 }

@@ -28,7 +28,7 @@ public final class RenderQueues implements AutoCloseable {
   private final Map<Supplier<Texture[]>, ShadowListKey> desc_to_shadow_key = new HashMap<>();
   private final List<Texture> texture_lookup = new ArrayList<>();
 
-  /// Shared Array for particle effects
+  // Shared array for particle effects
   private @Nullable TextureArray effect_texture_array;
 
   private final Map<Integer, GLImage[]> pending_array_uploads = new HashMap<>();
@@ -148,10 +148,11 @@ public final class RenderQueues implements AutoCloseable {
     return texture_lookup.get(key.key());
   }
 
-  public ShadowListKey registerShadowRenderer(Supplier<Texture[]> desc, ShadowListRenderer renderer) {
+  public ShadowListKey registerShadowRenderer(
+      Supplier<Texture[]> desc, Supplier<? extends ShadowListRenderer> rendererFactory) {
     ShadowListKey key = desc_to_shadow_key.get(desc);
     if (key != null) return key;
-    return register(desc, renderer);
+    return register(desc, rendererFactory.get());
   }
 
   private ShadowListKey register(Supplier<Texture[]> desc, ShadowListRenderer renderer) {

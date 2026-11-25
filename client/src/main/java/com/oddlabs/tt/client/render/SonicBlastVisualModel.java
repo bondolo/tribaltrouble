@@ -14,14 +14,14 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 /// {@link VisualModel} implementation for sonic blasts managing expanding shockwaves and sound effects.
-public final class SonicBlastVisualModel extends AbstractVisualModel implements AnimatedAccessory, SonicBlastAccessory {
+final class SonicBlastVisualModel extends AbstractVisualModel implements AnimatedAccessory, SonicBlastAccessory {
   private final SonicBlast blast;
   private final AudioImplementation audio;
   private @Nullable SonicBlastEffect effect;
   private final AudioPlayer lur;
   private final AudioPlayer rumble;
 
-  public SonicBlastVisualModel(SonicBlast blast, AudioImplementation audio) {
+  SonicBlastVisualModel(SonicBlast blast, AudioImplementation audio) {
     super(blast);
     this.blast = blast;
     this.audio = audio;
