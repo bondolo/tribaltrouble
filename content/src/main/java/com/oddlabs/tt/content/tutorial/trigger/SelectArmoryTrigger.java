@@ -1,10 +1,10 @@
 package com.oddlabs.tt.content.tutorial.trigger;
 
 import com.oddlabs.tt.content.tutorial.Tutorial;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.player.Player;
 
+/// Tutorial trigger waiting for the player to select an armory building.
 public final class SelectArmoryTrigger extends TutorialTrigger {
   public SelectArmoryTrigger(Player player) {
     super(.1f, 0f, "select_armory");
@@ -28,7 +28,7 @@ public final class SelectArmoryTrigger extends TutorialTrigger {
         .getCurrentSelection()
         .getBuilding()
         .ifPresent(building -> {
-          if (building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES))
+          if (building.hasWeaponsWorkshop())
             tutorial.next(new HarvestMenuTrigger(tutorial.getViewer().getLocalPlayer()));
         });
   }

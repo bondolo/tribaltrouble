@@ -1,22 +1,19 @@
 package com.oddlabs.tt.content.tutorial.trigger;
 
+import static com.oddlabs.tt.simulation.model.Ability.ATTACK;
+
 import com.oddlabs.tt.content.tutorial.Tutorial;
-import com.oddlabs.tt.simulation.model.Abilities;
-import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.Nullable;
 
+/// Tutorial trigger waiting for the player to select a tower building.
 public final class SelectTowerTrigger extends TutorialTrigger {
-  private final @Nullable Building tower = null;
-
   public SelectTowerTrigger(Player player) {
     super(.1f, 0f, "select_tower");
     player.enableRepairing(false);
     player.enableAttacking(false);
     player.enableBuilding(BuildingType.QUARTERS, false);
     player.enableBuilding(BuildingType.ARMORY, false);
-    //	player.enableTower(false);
     player.enableHarvesting(false);
     player.enableWeapons(false);
     player.enableArmies(false);
@@ -34,7 +31,7 @@ public final class SelectTowerTrigger extends TutorialTrigger {
         .getCurrentSelection()
         .getBuilding()
         .ifPresent(building -> {
-          if (building.getAbilities().hasAbilities(Abilities.ATTACK)) {
+          if (building.hasAbility(ATTACK)) {
             tutorial.next(new UnitInTowerTrigger(building));
           }
         });

@@ -1,5 +1,8 @@
 package com.oddlabs.tt.client.render;
 
+import static com.oddlabs.tt.simulation.model.Ability.BUILD;
+import static com.oddlabs.tt.simulation.model.Ability.THROW;
+
 import com.oddlabs.tt.effects.particle.BalancedParametricEmitter;
 import com.oddlabs.tt.effects.particle.StunFunction;
 import com.oddlabs.tt.effects.render.EmitterAttachedAccessory;
@@ -8,7 +11,6 @@ import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.SpriteList;
 import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.util.Color;
@@ -36,10 +38,10 @@ final class UnitVisualModel extends SelectableVisualModel<Unit> {
     super(unit);
     this.unit = unit;
     this.starTextures = starTextures;
-    if (unit.getAbilities().hasAbilities(Abilities.BUILD) && carriedSupplySprites != null) {
+    if (unit.hasAbility(BUILD) && carriedSupplySprites != null) {
       addAccessory(new CarriedResourceAccessory(unit, carriedSupplySprites));
     }
-    if (unit.getAbilities().hasAbilities(Abilities.THROW) && weaponSprite != null) {
+    if (unit.hasAbility(THROW) && weaponSprite != null) {
       addAccessory(new WeaponAccessory(unit, this, weaponSprite));
     }
   }

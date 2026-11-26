@@ -1,5 +1,7 @@
 package com.oddlabs.tt.client.gui;
 
+import static com.oddlabs.tt.simulation.model.Ability.ATTACK;
+
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.camera.GameCamera;
@@ -27,7 +29,6 @@ import com.oddlabs.tt.gui.NonFocusIconButton;
 import com.oddlabs.tt.gui.Placement;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.DeployType;
@@ -645,13 +646,11 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
     int current_num_units = viewer.getSelection().getCurrentSelection().getNumUnits();
     int current_num_peons = viewer.getSelection().getCurrentSelection().getNumBuilders();
 
-    boolean new_quarters =
-        current_building != null && current_building.getAbilities().hasAbilities(Abilities.REPRODUCE);
-    boolean new_armory =
-        current_building != null && current_building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES);
+    boolean new_quarters = current_building != null && current_building.canReproduce();
+    boolean new_armory = current_building != null && current_building.hasWeaponsWorkshop();
     boolean new_unit = current_num_units > 0;
     boolean new_peon = current_num_peons > 0;
-    boolean new_tower = current_building != null && current_building.getAbilities().hasAbilities(Abilities.ATTACK);
+    boolean new_tower = current_building != null && current_building.hasAbility(ATTACK);
     boolean selection_changed =
         different_building
             || different_chieftain
@@ -717,7 +716,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
     } else if (active instanceof TowerActionController t) {
       addChild(tower_group);
       Building b = t.getBuilding();
-      tower_attack_button.setIconDisabler(() -> !b.getAbilities().hasAbilities(Abilities.ATTACK));
+      tower_attack_button.setIconDisabler(() -> !b.hasAbility(ATTACK));
       tower_exit_button.setIconDisabler(() -> !b.canExitTower());
     } else if (active instanceof QuartersActionController q) {
       addChild(quarters_status_group);
@@ -765,10 +764,10 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
   }
 
   private void updateButtons() {
-    if (current_building != null && current_building.getAbilities().hasAbilities(Abilities.ATTACK)) {
+    if (current_building != null && current_building.hasAbility(ATTACK)) {
       tower_attack_button.doUpdate();
       tower_exit_button.doUpdate();
-    } else if (current_building != null && current_building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+    } else if (current_building != null && current_building.hasWeaponsWorkshop()) {
       unit_status.doUpdate();
       weapon_rock_status.doUpdate();
       weapon_iron_status.doUpdate();
@@ -797,7 +796,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
       transport_rock_button.doUpdate();
       transport_iron_button.doUpdate();
       transport_rubber_button.doUpdate();
-    } else if (current_building != null && current_building.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
+    } else if (current_building != null && current_building.canReproduce()) {
       quarters_unit_status.doUpdate();
 
       quarters_peon_button.doUpdate();

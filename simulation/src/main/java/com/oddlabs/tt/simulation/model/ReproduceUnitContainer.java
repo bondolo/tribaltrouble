@@ -1,5 +1,7 @@
 package com.oddlabs.tt.simulation.model;
 
+import static com.oddlabs.tt.simulation.model.Ability.THROW;
+
 import org.jspecify.annotations.Nullable;
 
 /// Manages passive peon reproduction and chieftain training ticks inside quarters.
@@ -32,7 +34,7 @@ public final class ReproduceUnitContainer extends UnitContainer {
 
   @Override
   public boolean canEnter(Unit unit) {
-    return !unit.getAbilities().hasAbilities(Abilities.THROW) && getTotalSupplies() != getMaxSupplyCount();
+    return !unit.hasAbility(THROW) && getTotalSupplies() != getMaxSupplyCount();
   }
 
   private int getTotalSupplies() {

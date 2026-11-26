@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.trigger;
 
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.SupplyContainer;
@@ -26,9 +25,7 @@ public final class SupplyGatheredTrigger extends IntervalTrigger {
   protected void check() {
     int count = 0;
     for (Selectable<?> s : local_player.getUnits().getSet()) {
-      if (s instanceof Building building
-          && building.isOperating()
-          && building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+      if (s instanceof Building building && building.isOperating() && building.hasSupplyStorage()) {
         count += building.getSupplyContainer(type).map(SupplyContainer::getNumSupplies).orElse(0);
       }
     }

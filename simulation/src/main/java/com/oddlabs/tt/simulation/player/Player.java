@@ -1,11 +1,13 @@
 package com.oddlabs.tt.simulation.player;
 
+import static com.oddlabs.tt.simulation.model.Ability.BUILD;
+import static com.oddlabs.tt.simulation.model.Ability.MAGIC;
+
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.landscape.SpawnLocation;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.Army;
 import com.oddlabs.tt.simulation.model.Building;
@@ -522,7 +524,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
 
   public Optional<Building> getArmory() {
     for (Selectable<?> s : units.getSet()) {
-      if (s instanceof Building b && b.isOperating() && b.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+      if (s instanceof Building b && b.isOperating() && b.hasWeaponsWorkshop()) {
         return Optional.of(b);
       }
     }
@@ -531,7 +533,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
 
   public Optional<Building> getQuarters() {
     for (Selectable<?> s : units.getSet()) {
-      if (s instanceof Building b && b.isOperating() && b.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
+      if (s instanceof Building b && b.isOperating() && b.canReproduce()) {
         return Optional.of(b);
       }
     }
@@ -673,7 +675,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
       notifyRejected("doMagic", chieftain.getId(), "NOT_OWNED");
       return;
     }
-    if (!chieftain.getAbilities().hasAbilities(Abilities.MAGIC) || !getRaceInfo().getMagics().contains(magic)) {
+    if (!chieftain.hasAbility(MAGIC) || !getRaceInfo().getMagics().contains(magic)) {
       notifyRejected("doMagic", chieftain.getId(), "UNSUPPORTED_ACTION");
       return;
     }
@@ -744,7 +746,7 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
     for (var s : selection) {
       if (isValid(s)) {
         anyOwned = true;
-        if (s.getAbilities().hasAbilities(Abilities.BUILD)) {
+        if (s.hasAbility(BUILD)) {
           anyBuilder = true;
           break;
         }

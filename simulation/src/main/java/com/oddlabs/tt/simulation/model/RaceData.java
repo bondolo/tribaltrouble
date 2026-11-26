@@ -1,5 +1,12 @@
 package com.oddlabs.tt.simulation.model;
 
+import static com.oddlabs.tt.simulation.model.Ability.ATTACK;
+import static com.oddlabs.tt.simulation.model.Ability.BUILD;
+import static com.oddlabs.tt.simulation.model.Ability.HARVEST;
+import static com.oddlabs.tt.simulation.model.Ability.MAGIC;
+import static com.oddlabs.tt.simulation.model.Ability.TARGET;
+import static com.oddlabs.tt.simulation.model.Ability.THROW;
+
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.model.weapon.InstantHitFactory;
@@ -18,6 +25,7 @@ import com.oddlabs.tt.simulation.model.weapon.ThrowingFactory;
 import com.oddlabs.tt.simulation.model.weapon.WeaponFactory;
 import java.util.EnumMap;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.stream.IntStream;
 import org.joml.Vector3f;
 
@@ -83,7 +91,7 @@ public final class RaceData {
       int numFragments,
       int maxHitPoints,
       BuildingRoleFactory roleFactory,
-      Abilities abilities,
+      Set<Ability> abilities,
       float[] hitOffsetZ,
       float mountOffset,
       float rallyX,
@@ -139,7 +147,7 @@ public final class RaceData {
             30,
             QUARTERS_HIT_POINTS,
             QuartersRole::new,
-            new Abilities(Abilities.REPRODUCE | Abilities.RALLY_TO | Abilities.TARGET),
+            Set.of(TARGET),
             new float[] {0f, 1f, 3f},
             0f,
             3.65f,
@@ -167,7 +175,7 @@ public final class RaceData {
             30,
             ARMORY_HIT_POINTS,
             ArmoryRole::new,
-            new Abilities(Abilities.SUPPLY_CONTAINER | Abilities.BUILD_ARMIES | Abilities.RALLY_TO | Abilities.TARGET),
+            Set.of(TARGET),
             new float[] {0f, 1f, 3f},
             0f,
             0f,
@@ -195,7 +203,7 @@ public final class RaceData {
             20,
             TOWER_HIT_POINTS,
             TowerRole::new,
-            new Abilities(Abilities.ATTACK | Abilities.RALLY_TO | Abilities.TARGET),
+            Set.of(ATTACK, TARGET),
             new float[] {0f, 2f, 7.5f},
             9.55f,
             .85f,
@@ -225,7 +233,7 @@ public final class RaceData {
         new UnitTemplate(
             .4f,
             1.2f,
-            new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
+            Set.of(ATTACK, TARGET, THROW),
             4f,
             vikingWarriorRockWeapon,
             UnitType.WARRIOR_ROCK,
@@ -247,7 +255,7 @@ public final class RaceData {
         new UnitTemplate(
             .4f,
             1.2f,
-            new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
+            Set.of(ATTACK, TARGET, THROW),
             4f,
             vikingWarriorIronWeapon,
             UnitType.WARRIOR_IRON,
@@ -269,7 +277,7 @@ public final class RaceData {
         new UnitTemplate(
             .4f,
             1.2f,
-            new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
+            Set.of(ATTACK, TARGET, THROW),
             4f,
             vikingWarriorRubberWeapon,
             UnitType.WARRIOR_RUBBER,
@@ -291,7 +299,7 @@ public final class RaceData {
         new UnitTemplate(
             .4f,
             1.1f,
-            new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
+            Set.of(BUILD, HARVEST, ATTACK, TARGET),
             5f,
             new InstantHitFactory(1 / 5f, 0f, 11f / 38f),
             UnitType.PEON,
@@ -313,7 +321,7 @@ public final class RaceData {
         new UnitTemplate(
             .4f,
             1.4f,
-            new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
+            Set.of(ATTACK, TARGET, MAGIC),
             4f,
             new InstantHitFactory(3 / 4f, 0f, 75f / 119f),
             UnitType.CHIEFTAIN,
@@ -368,7 +376,7 @@ public final class RaceData {
             30,
             QUARTERS_HIT_POINTS,
             QuartersRole::new,
-            new Abilities(Abilities.REPRODUCE | Abilities.RALLY_TO | Abilities.TARGET),
+            Set.of(TARGET),
             new float[] {0f, 1f, 3f},
             0f,
             -1.15f,
@@ -396,7 +404,7 @@ public final class RaceData {
             30,
             ARMORY_HIT_POINTS,
             ArmoryRole::new,
-            new Abilities(Abilities.SUPPLY_CONTAINER | Abilities.BUILD_ARMIES | Abilities.RALLY_TO | Abilities.TARGET),
+            Set.of(TARGET),
             new float[] {0f, 1f, 3f},
             0f,
             0f,
@@ -424,7 +432,7 @@ public final class RaceData {
             20,
             TOWER_HIT_POINTS,
             TowerRole::new,
-            new Abilities(Abilities.ATTACK | Abilities.RALLY_TO | Abilities.TARGET),
+            Set.of(ATTACK, TARGET),
             new float[] {0f, 11.5f, 11.5f},
             13f,
             .95f,
@@ -455,7 +463,7 @@ public final class RaceData {
         new UnitTemplate(
             .4f,
             1.2f,
-            new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
+            Set.of(ATTACK, TARGET, THROW),
             4f,
             nativeWarriorRockWeapon,
             UnitType.WARRIOR_ROCK,
@@ -477,7 +485,7 @@ public final class RaceData {
         new UnitTemplate(
             .4f,
             1.2f,
-            new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
+            Set.of(ATTACK, TARGET, THROW),
             4f,
             nativeWarriorIronWeapon,
             UnitType.WARRIOR_IRON,
@@ -499,7 +507,7 @@ public final class RaceData {
         new UnitTemplate(
             .4f,
             1.2f,
-            new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
+            Set.of(ATTACK, TARGET, THROW),
             4f,
             nativeWarriorRubberWeapon,
             UnitType.WARRIOR_RUBBER,
@@ -521,7 +529,7 @@ public final class RaceData {
         new UnitTemplate(
             .4f,
             1.1f,
-            new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
+            Set.of(BUILD, HARVEST, ATTACK, TARGET),
             5f,
             new InstantHitFactory(1 / 5f, 0f, 51f / 83f),
             UnitType.PEON,
@@ -543,7 +551,7 @@ public final class RaceData {
         new UnitTemplate(
             .4f,
             1.4f,
-            new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
+            Set.of(ATTACK, TARGET, MAGIC),
             4f,
             new InstantHitFactory(3 / 4f, 0f, 75f / 129f),
             UnitType.CHIEFTAIN,

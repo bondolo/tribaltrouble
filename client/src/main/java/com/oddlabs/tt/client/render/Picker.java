@@ -1,5 +1,8 @@
 package com.oddlabs.tt.client.render;
 
+import static com.oddlabs.tt.simulation.model.Ability.HARVEST;
+import static com.oddlabs.tt.simulation.model.Ability.THROW;
+
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
@@ -16,7 +19,7 @@ import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
-import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.model.Ability;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.Army;
 import com.oddlabs.tt.simulation.model.Building;
@@ -187,7 +190,7 @@ public final class Picker implements Updatable<TimerAnimation> {
     setupPicking(camera, x * scale, y * scale, PICK_SIZE, PICK_SIZE, viewport);
     pickObjects();
     Target nearest_pickable = getNearestPick(element_pick_list, Target.class);
-    List<Selectable<?>> selection = selected_army.filter(Abilities.TARGET);
+    List<Selectable<?>> selection = selected_army.filter(Ability.TARGET);
     boolean aggressive = GameplaySettings.from(gui_root.getGUI().getSettings()).aggressive_units;
     if (nearest_pickable != null) {
       if (!(nearest_pickable instanceof SceneryModel sceneryModel) || sceneryModel.isOccupying())
@@ -276,11 +279,11 @@ public final class Picker implements Updatable<TimerAnimation> {
     Selectable<?> nearest = getNearestPick(element_pick_list, Selectable.class);
     if (nearest != null) {
       if (clicks > 1) {
-        if (nearest.getAbilities().hasAbilities(Abilities.THROW)) {
-          return pickAll(camera, Abilities.THROW);
+        if (nearest.hasAbility(THROW)) {
+          return pickAll(camera, THROW);
         }
-        if (nearest.getAbilities().hasAbilities(Abilities.HARVEST)) {
-          return pickAll(camera, Abilities.HARVEST);
+        if (nearest.hasAbility(HARVEST)) {
+          return pickAll(camera, HARVEST);
         }
       }
       return List.of(nearest);
@@ -298,9 +301,9 @@ public final class Picker implements Updatable<TimerAnimation> {
     return list;
   }
 
-  private List<Selectable<?>> pickAll(CameraState camera, int ability_filter) {
+  private List<Selectable<?>> pickAll(CameraState camera, Ability ability) {
     List<Selectable<?>> complete_list = pickBoxed(camera, 0, 0, gui_root.getWidth() - 1, gui_root.getHeight() - 1, 2);
-    return complete_list.stream().filter(s -> s.getAbilities().hasAbilities(ability_filter)).toList();
+    return complete_list.stream().filter(s -> s.hasAbility(ability)).toList();
   }
 
   public void pickRotate(GameCamera camera) {

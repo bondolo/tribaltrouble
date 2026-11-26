@@ -1,5 +1,9 @@
 package com.oddlabs.tt.simulation.model;
 
+import static com.oddlabs.tt.simulation.model.Ability.ATTACK;
+import static com.oddlabs.tt.simulation.model.Ability.BUILD;
+import static com.oddlabs.tt.simulation.model.Ability.THROW;
+
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.global.AppConfig;
@@ -103,7 +107,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
       boolean grid_targets_only) {
     super(owner, unit_template);
     this.name = name;
-    getAbilities().addAbilities(unit_template.getAbilities());
+    getAbilities().addAll(unit_template.getAbilities());
     register();
     hit_points = unit_template.getMaxHitPoints();
     this.path_tracker = new PathTracker(getUnitGrid(), this);
@@ -141,7 +145,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         }
       } else unit_target = rally_point;
 
-      boolean aggressive = unit_template.getAbilities().hasAbilities(Abilities.THROW);
+      boolean aggressive = unit_template.hasAbility(THROW);
       applyTarget(unit_target, Action.DEFAULT, aggressive, false);
     }
   }
@@ -479,23 +483,23 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
   public boolean canAttack(Target target, boolean kill_friendly) {
     assert !isDead();
-    if (!(target instanceof Selectable<?> selectable) || !getAbilities().hasAbilities(Abilities.ATTACK)) return false;
+    if (!(target instanceof Selectable<?> selectable) || !hasAbility(ATTACK)) return false;
     Player target_player = selectable.getOwner();
     return kill_friendly || getOwner().isEnemy(target_player);
   }
 
   private boolean canBuild(Target target) {
-    return target instanceof Building building && getAbilities().hasAbilities(Abilities.BUILD) && !building.isPlaced();
+    return target instanceof Building building && hasAbility(BUILD) && !building.isPlaced();
   }
 
   private boolean canGather(Target target) {
-    return target instanceof Supply && getAbilities().hasAbilities(Abilities.BUILD);
+    return target instanceof Supply && hasAbility(BUILD);
   }
 
   private boolean canRepair(Target target, boolean action_repair) {
     return target instanceof Building building
-        && getAbilities().hasAbilities(Abilities.BUILD)
-        && (action_repair || !building.getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER) || !building.isBuilt())
+        && hasAbility(BUILD)
+        && (action_repair || !building.hasSupplyStorage() || !building.isBuilt())
         &&
         // getOwner() == building.getOwner() && building.isPlaced() && building.isDamaged();
         !getOwner().isEnemy(building.getOwner())
@@ -786,11 +790,6 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
   }
 
   @Override
-  public boolean hasAbility(int abilityMask) {
-    return getAbilities().hasAbilities(abilityMask);
-  }
-
-  @Override
   public float getAttackRange(Target target) {
     return getRange(target);
   }
@@ -846,7 +845,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
   @Override
   public void initSupplyBuildingFinderWalk() {
     activeBuildingFinderTracker =
-        new FinderTrackerAlgorithm<>(getUnitGrid(), new BuildingFinder(getOwner(), Abilities.SUPPLY_CONTAINER));
+        new FinderTrackerAlgorithm<>(getUnitGrid(), new BuildingFinder(getOwner(), Building::hasSupplyStorage));
     path_tracker.setTarget(activeBuildingFinderTracker);
   }
 
@@ -952,7 +951,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
   @Override
   public boolean isFriendlySupplyContainerBuilding(Building building) {
-    return building.getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER) && getOwner() == building.getOwner();
+    return building.hasSupplyStorage() && getOwner() == building.getOwner();
   }
 
   @Override
@@ -966,7 +965,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     if (container == null || !container.canEnter(this)) {
       return;
     }
-    if (building.getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER)) {
+    if (building.hasSupplyStorage()) {
       if (supply_container != null && supply_container.getNumSupplies() > 0) {
         supply_container
             .getSupplyType()

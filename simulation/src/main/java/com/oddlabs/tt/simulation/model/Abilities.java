@@ -1,53 +1,75 @@
 package com.oddlabs.tt.simulation.model;
 
-// TODO convert to enum
-public final class Abilities {
-  // No abilities
-  public static final int NONE = 0;
-  // Can build/repair buildings
-  public static final int BUILD = 1;
-  // Can attack other units
-  public static final int ATTACK = 2;
-  // Can harvest resources
-  public static final int HARVEST = 4;
-  // contains supplies
-  public static final int SUPPLY_CONTAINER = 8;
-  // builds warriors
-  public static final int BUILD_ARMIES = 16;
-  // creates peons
-  public static final int REPRODUCE = 32;
-  // Can target other units
-  public static final int TARGET = 64;
-  // Can throw weapon
-  public static final int THROW = 128;
-  // Can be a rally target
-  public static final int RALLY_TO = 256;
-  // Can use magic
-  public static final int MAGIC = 512;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
-  private int abilities;
+/// Mutable set of {@link Ability} flags possessed by an entity.
+final class Abilities {
+  private final EnumSet<Ability> abilities;
 
-  public Abilities(int abilities) {
+  Abilities() {
+    this(EnumSet.noneOf(Ability.class));
+  }
+
+  private Abilities(EnumSet<Ability> abilities) {
     this.abilities = abilities;
   }
 
-  public boolean hasAbilities(int abilities) {
-    return (this.abilities | abilities) == this.abilities;
+  static Abilities of(Ability first, Ability... rest) {
+    return new Abilities(EnumSet.of(first, rest));
   }
 
-  public void addAbilities(Abilities abilities) {
-    addAbilities(abilities.abilities);
+  boolean has(Ability ability) {
+    return abilities.contains(ability);
   }
 
-  public void addAbilities(int abilities) {
-    this.abilities = this.abilities | abilities;
+  boolean hasAll(Abilities other) {
+    return abilities.containsAll(other.abilities);
   }
 
-  public void removeAbilities(Abilities abilities) {
-    removeAbilities(abilities.abilities);
+  boolean hasAll(Collection<Ability> required) {
+    return abilities.containsAll(required);
   }
 
-  public void removeAbilities(int abilities) {
-    this.abilities = this.abilities & ~abilities;
+  void add(Ability ability) {
+    abilities.add(ability);
+  }
+
+  void addAll(Abilities other) {
+    abilities.addAll(other.abilities);
+  }
+
+  void addAll(Collection<Ability> abilities) {
+    this.abilities.addAll(abilities);
+  }
+
+  void remove(Ability ability) {
+    abilities.remove(ability);
+  }
+
+  void removeAll(Abilities other) {
+    abilities.removeAll(other.abilities);
+  }
+
+  Set<Ability> asSet() {
+    return Collections.unmodifiableSet(abilities);
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    return this == obj || (obj instanceof Abilities other && abilities.equals(other.abilities));
+  }
+
+  @Override
+  public int hashCode() {
+    return abilities.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return abilities.toString();
   }
 }

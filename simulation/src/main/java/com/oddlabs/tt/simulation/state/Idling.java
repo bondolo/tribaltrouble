@@ -1,7 +1,8 @@
 package com.oddlabs.tt.simulation.state;
 
+import static com.oddlabs.tt.simulation.model.Ability.ATTACK;
+
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Selectable;
 
 /// Default resting state that periodically scans for nearby enemies and initiates combat or leashed pursuit.
@@ -28,7 +29,7 @@ public final class Idling implements UnitState {
     if (shouldSleep(0f)) {
       return Transition.stay();
     }
-    boolean canAttack = context.hasAbility(Abilities.ATTACK);
+    boolean canAttack = context.hasAbility(ATTACK);
     if (canAttack || context.isLegacyDeterministic()) {
       redecideTime = MIN_SCAN_DELAY + context.nextRandomFloat() * (MAX_SCAN_DELAY - MIN_SCAN_DELAY);
     } else {

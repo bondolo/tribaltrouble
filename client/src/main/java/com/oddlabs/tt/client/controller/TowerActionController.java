@@ -1,10 +1,11 @@
 package com.oddlabs.tt.client.controller;
 
+import static com.oddlabs.tt.simulation.model.Ability.ATTACK;
+
 import com.oddlabs.tt.client.delegate.TargetDelegate;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.Building;
 
@@ -19,7 +20,7 @@ public final class TowerActionController implements ActionController {
   }
 
   public void executeTowerAttack() {
-    if (!building.isDead() && building.getAbilities().hasAbilities(Abilities.ATTACK)) {
+    if (!building.isDead() && building.hasAbility(ATTACK)) {
       context.pushDelegate(new TargetDelegate(context.getViewer(), context.getCamera(), Action.ATTACK));
     }
   }

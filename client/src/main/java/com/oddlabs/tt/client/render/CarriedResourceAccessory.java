@@ -1,8 +1,9 @@
 package com.oddlabs.tt.client.render;
 
+import static com.oddlabs.tt.simulation.model.Ability.BUILD;
+
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
@@ -34,7 +35,7 @@ final class CarriedResourceAccessory implements StaticAccessory {
   @Override
   public boolean isVisible(Model parent, CameraState camera) {
     UnitSupplyContainer supply_container = unit.getSupplyContainer();
-    return unit.getAbilities().hasAbilities(Abilities.BUILD)
+    return unit.hasAbility(BUILD)
         && supply_container != null
         && supply_container.getSupplyType().isPresent()
         && supply_container.getNumSupplies() > 0;

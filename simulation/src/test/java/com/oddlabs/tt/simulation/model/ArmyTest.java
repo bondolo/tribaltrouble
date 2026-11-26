@@ -1,5 +1,9 @@
 package com.oddlabs.tt.simulation.model;
 
+import static com.oddlabs.tt.simulation.model.Ability.ATTACK;
+import static com.oddlabs.tt.simulation.model.Ability.BUILD;
+import static com.oddlabs.tt.simulation.model.Ability.MAGIC;
+import static com.oddlabs.tt.simulation.model.Ability.THROW;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -46,13 +50,13 @@ class ArmyTest {
     Army army = new Army();
     assertEquals(0, army.size());
     assertTrue(army.isEmpty());
-    assertFalse(army.containsAbility(Abilities.BUILD));
-    assertFalse(army.containsAbility(Abilities.ATTACK));
+    assertFalse(army.containsAbility(BUILD));
+    assertFalse(army.containsAbility(ATTACK));
 
-    List<Selectable<?>> filtered = army.filter(Abilities.BUILD);
+    List<Selectable<?>> filtered = army.filter(BUILD);
     assertEquals(0, filtered.size());
     assertTrue(filtered.isEmpty());
-    assertSame(filtered, army.filter(Abilities.ATTACK), "Empty filter should return shared empty list");
+    assertSame(filtered, army.filter(ATTACK), "Empty filter should return shared empty list");
   }
 
   @Test
@@ -70,25 +74,24 @@ class ArmyTest {
     assertTrue(army.contains(peon));
     assertTrue(army.contains(warrior));
 
-    assertTrue(army.containsAbility(Abilities.BUILD));
-    assertTrue(army.containsAbility(Abilities.ATTACK));
-    assertFalse(army.containsAbility(Abilities.MAGIC));
+    assertTrue(army.containsAbility(BUILD));
+    assertTrue(army.containsAbility(ATTACK));
+    assertFalse(army.containsAbility(MAGIC));
 
-    List<Selectable<?>> builders = army.filter(Abilities.BUILD);
+    List<Selectable<?>> builders = army.filter(BUILD);
     assertEquals(1, builders.size());
     assertSame(peon, builders.getFirst());
 
-    List<Selectable<?>> throwers = army.filter(Abilities.THROW);
+    List<Selectable<?>> throwers = army.filter(THROW);
     assertEquals(1, throwers.size());
     assertSame(warrior, throwers.getFirst());
 
-    List<Selectable<?>> attackers = army.filter(Abilities.ATTACK);
+    List<Selectable<?>> attackers = army.filter(ATTACK);
     assertEquals(2, attackers.size());
 
-    List<Selectable<?>> all = army.filter(Abilities.NONE);
-    assertEquals(2, all.size());
+    assertEquals(2, army.getSet().size());
 
-    List<Selectable<?>> magic = army.filter(Abilities.MAGIC);
+    List<Selectable<?>> magic = army.filter(MAGIC);
     assertEquals(0, magic.size());
     assertTrue(magic.isEmpty());
   }
@@ -108,6 +111,6 @@ class ArmyTest {
     assertEquals(2, army.stream().count());
 
     assertThrows(UnsupportedOperationException.class, () -> army.getSet().add(peon));
-    assertThrows(UnsupportedOperationException.class, () -> army.filter(Abilities.BUILD).add(peon));
+    assertThrows(UnsupportedOperationException.class, () -> army.filter(BUILD).add(peon));
   }
 }

@@ -12,7 +12,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
     permits Unit, Building {
 
   private final Player owner;
-  private final Abilities abilities = new Abilities(Abilities.NONE);
+  private final Abilities abilities = new Abilities();
   private final T template;
 
   private boolean dead;
@@ -109,8 +109,12 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
 
   public abstract int getStatusValue();
 
-  public final Abilities getAbilities() {
+  final Abilities getAbilities() {
     return abilities;
+  }
+
+  public final boolean hasAbility(Ability ability) {
+    return abilities.has(ability);
   }
 
   @Override

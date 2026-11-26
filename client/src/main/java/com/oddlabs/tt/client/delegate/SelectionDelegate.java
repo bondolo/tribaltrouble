@@ -1,5 +1,8 @@
 package com.oddlabs.tt.client.delegate;
 
+import static com.oddlabs.tt.simulation.model.Ability.BUILD;
+import static com.oddlabs.tt.simulation.model.Ability.TARGET;
+
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.GameCamera;
@@ -16,7 +19,6 @@ import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.Army;
 import com.oddlabs.tt.simulation.model.Building;
@@ -319,7 +321,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
       if (s.getOwner() != getViewer().getLocalPlayer()) {
         continue;
       }
-      if (s.getAbilities().hasAbilities(Abilities.BUILD) && s.getActivity() == EntityActivity.IDLE) {
+      if (s.hasAbility(BUILD) && s.getActivity() == EntityActivity.IDLE) {
         int id = s.getId();
         if (id < lowestId) {
           hasIdlePeon = true;
@@ -367,7 +369,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
     var idles =
         set.stream()
             .filter(s -> s.getOwner() == getViewer().getLocalPlayer())
-            .filter(s -> s.getAbilities().hasAbilities(Abilities.BUILD) && s.getActivity() == EntityActivity.IDLE)
+            .filter(s -> s.hasAbility(BUILD) && s.getActivity() == EntityActivity.IDLE)
             .toList();
 
     if (!idles.isEmpty()) {
@@ -530,7 +532,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
           }
           case RIGHT -> {
             Army selection = getViewer().getSelection().getCurrentSelection();
-            if (!selection.isEmpty() && selection.containsAbility(Abilities.TARGET)) {
+            if (!selection.isEmpty() && selection.containsAbility(TARGET)) {
               getViewer()
                   .getPicker()
                   .pickTarget(

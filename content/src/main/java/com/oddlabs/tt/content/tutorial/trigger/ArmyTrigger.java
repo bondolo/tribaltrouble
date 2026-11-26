@@ -1,8 +1,9 @@
 package com.oddlabs.tt.content.tutorial.trigger;
 
+import static com.oddlabs.tt.simulation.model.Ability.THROW;
+
 import com.oddlabs.tt.content.tutorial.Tutorial;
 import com.oddlabs.tt.content.tutorial.TutorialForm;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.player.Player;
 
@@ -19,7 +20,7 @@ final class ArmyTrigger extends TutorialTrigger {
   public void run(Tutorial tutorial) {
     var count =
         tutorial.getViewer().getLocalPlayer().getUnits().getSet().stream()
-            .filter(s -> s instanceof Unit && s.getAbilities().hasAbilities(Abilities.THROW))
+            .filter(s -> s instanceof Unit && s.hasAbility(THROW))
             .limit(ARMY_SIZE)
             .count();
 

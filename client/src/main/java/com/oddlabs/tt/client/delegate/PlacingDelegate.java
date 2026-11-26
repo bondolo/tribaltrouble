@@ -17,7 +17,7 @@ import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
-import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.model.Ability;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingTemplate;
 import com.oddlabs.tt.simulation.model.BuildingType;
@@ -65,7 +65,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
               int placing_grid_y = landscape_hit.getGridY();
               if (Building.isPlacingLegal(
                   getViewer().getWorld().getUnitGrid(), getTemplate(), placing_grid_x, placing_grid_y)) {
-                var peons = getViewer().getSelection().getCurrentSelection().filter(Abilities.BUILD);
+                var peons = getViewer().getSelection().getCurrentSelection().filter(Ability.BUILD);
                 if (!peons.isEmpty()) {
                   logger.info("placeObject: Placing building at " + placing_grid_x + "," + placing_grid_y);
                   getViewer()

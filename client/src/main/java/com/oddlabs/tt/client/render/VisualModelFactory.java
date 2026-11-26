@@ -1,9 +1,11 @@
 package com.oddlabs.tt.client.render;
 
+import static com.oddlabs.tt.simulation.model.Ability.BUILD;
+import static com.oddlabs.tt.simulation.model.Ability.THROW;
+
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.Model;
@@ -62,14 +64,13 @@ final class VisualModelFactory {
 
   private UnitVisualModel createUnitVisualModel(Unit unit) {
     Race race = unit.getOwnerNoCheck().getRaceInfo().getRaceType();
-    Map<SupplyType, SpriteKey> carriedSupplies =
-        unit.getAbilities().hasAbilities(Abilities.BUILD) ? assets.getCarriedSupplySprites(race) : null;
+    Map<SupplyType, SpriteKey> carriedSupplies = unit.hasAbility(BUILD) ? assets.getCarriedSupplySprites(race) : null;
     SpriteKey weaponSprite = resolveWeaponSprite(unit, race);
     return new UnitVisualModel(unit, carriedSupplies, weaponSprite, assets.getStarTextures());
   }
 
   private @Nullable SpriteKey resolveWeaponSprite(Unit unit, Race race) {
-    if (!unit.getAbilities().hasAbilities(Abilities.THROW)) {
+    if (!unit.hasAbility(THROW)) {
       return null;
     }
     WeaponTier tier = unit.getTemplate().getUnitType().getWeaponTier();

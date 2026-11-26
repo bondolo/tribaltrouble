@@ -151,6 +151,22 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     return role.getChieftainContainer();
   }
 
+  public boolean hasSupplyStorage() {
+    return role.getSupplyStorage().isPresent();
+  }
+
+  public boolean hasWeaponsWorkshop() {
+    return role.getWeaponsWorkshop().isPresent();
+  }
+
+  public boolean canReproduce() {
+    return role.canReproduce();
+  }
+
+  public boolean canAcceptRally() {
+    return role.canAcceptRally();
+  }
+
   @Override
   public boolean isEnabled() {
     return !isDead();
@@ -416,7 +432,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
 
   private void buildingCompleted() {
     getOwner().getWorld().getNotificationListener().newSelectableNotification(this);
-    getAbilities().addAbilities(getTemplate().getAbilities());
+    getAbilities().addAll(getTemplate().getAbilities());
     role = getTemplate().getRoleFactory().createRole(this);
   }
 

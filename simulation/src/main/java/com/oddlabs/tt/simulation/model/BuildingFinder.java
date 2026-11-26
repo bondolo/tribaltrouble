@@ -5,15 +5,16 @@ import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.player.Player;
 import java.util.Optional;
+import java.util.function.Predicate;
 
-/// Filter strategy for locating candidate buildings owned by a specific player with matching abilities.
+/// Filter strategy for locating candidate buildings owned by a specific player matching a predicate.
 final class BuildingFinder implements FinderFilter<Building> {
   private final Player owner;
-  private final int abilities;
+  private final Predicate<Building> filter;
 
-  BuildingFinder(Player owner, int abilities) {
+  BuildingFinder(Player owner, Predicate<Building> filter) {
     this.owner = owner;
-    this.abilities = abilities;
+    this.filter = filter;
   }
 
   @Override
@@ -32,7 +33,7 @@ final class BuildingFinder implements FinderFilter<Building> {
   }
 
   private boolean accept(Building building) {
-    return building.getOwner() == owner && building.getAbilities().hasAbilities(abilities);
+    return building.getOwner() == owner && filter.test(building);
   }
 
   @Override

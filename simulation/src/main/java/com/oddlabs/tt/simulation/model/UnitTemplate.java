@@ -1,8 +1,11 @@
 package com.oddlabs.tt.simulation.model;
 
+import static com.oddlabs.tt.simulation.model.Ability.MAGIC;
+
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.model.weapon.WeaponFactory;
+import java.util.Set;
 import org.jspecify.annotations.Nullable;
 
 /// Template defining the base characteristics and assets for a unit type.
@@ -25,7 +28,7 @@ public final class UnitTemplate extends Template {
   public UnitTemplate(
       float selection_radius,
       float selection_height,
-      Abilities abilities,
+      Set<Ability> abilities,
       float meters_per_second,
       WeaponFactory weapon_factory,
       UnitType unit_type,
@@ -118,6 +121,6 @@ public final class UnitTemplate extends Template {
   }
 
   public boolean hasMagic() {
-    return getAbilities().hasAbilities(Abilities.MAGIC);
+    return hasAbility(MAGIC);
   }
 }

@@ -38,6 +38,14 @@ public interface BuildingRole {
 
   default void exitTower() {}
 
+  default boolean canReproduce() {
+    return false;
+  }
+
+  default boolean canAcceptRally() {
+    return getRawUnitContainer() != null;
+  }
+
   default boolean canCreateHarvesters(long totalRequested) {
     return false;
   }

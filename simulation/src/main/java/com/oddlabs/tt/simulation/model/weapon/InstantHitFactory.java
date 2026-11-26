@@ -1,7 +1,8 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
+import static com.oddlabs.tt.simulation.model.Ability.ATTACK;
+
 import com.oddlabs.tt.base.global.AppConfig;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
@@ -21,7 +22,7 @@ public final class InstantHitFactory extends WeaponFactory {
   protected void doAttack(boolean hit, Unit src, Selectable<?> target) {
     int damage = 1;
 
-    if (target instanceof Building && target.getTemplate().getAbilities().hasAbilities(Abilities.ATTACK)) damage = 6;
+    if (target instanceof Building && target.getTemplate().hasAbility(ATTACK)) damage = 6;
     else if (!hit) return;
 
     float dx = target.getPositionX() - src.getPositionX();

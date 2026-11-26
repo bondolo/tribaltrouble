@@ -17,9 +17,7 @@ public final class UnitDeployment {
   }
 
   public static boolean isValidRallyPoint(Building source, Target target) {
-    return target instanceof Building b
-        && source.getOwner() == b.getOwner()
-        && b.getAbilities().hasAbilities(Abilities.RALLY_TO);
+    return target instanceof Building b && source.getOwner() == b.getOwner() && b.canAcceptRally();
   }
 
   public boolean hasRallyPoint() {

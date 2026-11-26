@@ -1,5 +1,7 @@
 package com.oddlabs.tt.client.delegate;
 
+import static com.oddlabs.tt.simulation.model.Ability.ATTACK;
+
 import com.oddlabs.tt.ai.AI;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.util.Utils;
@@ -12,13 +14,13 @@ import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -118,7 +120,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
     }
     if (actions.contains(GameAction.CHEAT_6)) {
       // F6 does massive damage on whatever is selected.
-      viewer.getLocalPlayer().killSelection(viewer.getSelection().getCurrentSelection().filter(Abilities.NONE));
+      viewer.getLocalPlayer().killSelection(List.copyOf(viewer.getSelection().getCurrentSelection().getSet()));
       return true;
     }
     if (actions.contains(GameAction.CHEAT_7)) {
@@ -194,7 +196,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
       if (!set.isEmpty()) {
         var s = set.iterator().next();
         if (s instanceof Building building) {
-          if (!building.isDead() && !building.getAbilities().hasAbilities(Abilities.ATTACK)) building.printDebugInfo();
+          if (!building.isDead() && !building.hasAbility(ATTACK)) building.printDebugInfo();
         } else if (s instanceof Unit unit) {
           if (!unit.isDead()) unit.printDebugInfo();
         }

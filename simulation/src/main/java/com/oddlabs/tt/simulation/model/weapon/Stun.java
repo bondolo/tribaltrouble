@@ -1,10 +1,11 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
+import static com.oddlabs.tt.simulation.model.Ability.ATTACK;
+
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.MountUnitContainer;
@@ -111,7 +112,7 @@ public final class Stun extends Model implements Magic {
       if (selectable instanceof Unit unit1) {
         unit = unit1;
       } else if (selectable instanceof Building building) {
-        if (!building.isDead() && building.getAbilities().hasAbilities(Abilities.ATTACK)) {
+        if (!building.isDead() && building.hasAbility(ATTACK)) {
           if (building.getRawUnitContainer() instanceof MountUnitContainer muc && muc.getNumSupplies() > 0) {
             unit = muc.getUnit();
           }

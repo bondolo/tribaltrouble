@@ -1,7 +1,11 @@
 package com.oddlabs.tt.simulation.model;
 
+import static com.oddlabs.tt.simulation.model.Ability.TARGET;
+import static com.oddlabs.tt.simulation.model.Ability.THROW;
+
 import org.jspecify.annotations.Nullable;
 
+/// Unit container mounted atop a defensive tower holding a single ranged warrior.
 public final class MountUnitContainer extends UnitContainer {
   public static final float ATTACK_RANGE_INCREASE = 8f;
 
@@ -18,7 +22,7 @@ public final class MountUnitContainer extends UnitContainer {
     this.unit = unit;
     unit.mount(new TowerMount(building));
     increaseSupply(1);
-    building.getAbilities().addAbilities(Abilities.TARGET);
+    building.getAbilities().add(TARGET);
   }
 
   @Override
@@ -28,13 +32,13 @@ public final class MountUnitContainer extends UnitContainer {
     Unit result = unit;
     unit = null;
     increaseSupply(-1);
-    building.getAbilities().removeAbilities(Abilities.TARGET);
+    building.getAbilities().remove(TARGET);
     return result;
   }
 
   @Override
   public boolean canEnter(Unit unit) {
-    return !isSupplyFull() && unit.getAbilities().hasAbilities(Abilities.THROW);
+    return !isSupplyFull() && unit.hasAbility(THROW);
   }
 
   public @Nullable Unit getUnit() {

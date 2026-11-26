@@ -1,7 +1,9 @@
 package com.oddlabs.tt.ai;
 
+import static com.oddlabs.tt.simulation.model.Ability.HARVEST;
+import static com.oddlabs.tt.simulation.model.Ability.MAGIC;
+
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
@@ -233,9 +235,9 @@ public final class AdvancedAI extends AI {
   }
 
   private int getUnitScore(Unit unit) {
-    if (unit.getAbilities().hasAbilities(Abilities.HARVEST)) {
+    if (unit.hasAbility(HARVEST)) {
       return SCORE_PEON;
-    } else if (unit.getAbilities().hasAbilities(Abilities.MAGIC)) {
+    } else if (unit.hasAbility(MAGIC)) {
       return SCORE_CHIEFTAIN;
     } else {
       var tier = unit.getWeaponFactory().getTier();
@@ -429,10 +431,7 @@ public final class AdvancedAI extends AI {
       nodeBuildQuarters();
     }
     Building quarters = !getQuarters().isEmpty() ? getQuarters().getFirst() : null;
-    if (!armoryUnderConstruction()
-        && getArmory().isEmpty()
-        && quarters != null
-        && quarters.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
+    if (!armoryUnderConstruction() && getArmory().isEmpty() && quarters != null && quarters.canReproduce()) {
       List<Selectable<?>> builders = getPeons(20);
       if (builders.size() < 20) {
         if (!quarters.isDead() && quarters.getUnitContainer().orElseThrow().getNumSupplies() >= 20)

@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.state;
 
-import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.model.Ability;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Supply;
@@ -14,6 +14,7 @@ import com.oddlabs.tt.simulation.pathfinder.PathTracker;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
@@ -29,7 +30,7 @@ final class FakeUnitContext implements UnitContext {
   private int gridX;
   private int gridY;
   private boolean dead;
-  private int abilities = Abilities.NONE;
+  private final EnumSet<Ability> abilities = EnumSet.noneOf(Ability.class);
 
   private float attackRange = 2f;
   private @Nullable Selectable<?> scannedEnemy;
@@ -97,16 +98,12 @@ final class FakeUnitContext implements UnitContext {
   }
 
   @Override
-  public boolean hasAbility(int abilityMask) {
-    return (abilities | abilityMask) == abilities;
+  public boolean hasAbility(Ability ability) {
+    return abilities.contains(ability);
   }
 
-  public void setAbilities(int abilities) {
-    this.abilities = abilities;
-  }
-
-  public void addAbility(int abilityMask) {
-    this.abilities |= abilityMask;
+  public void addAbility(Ability ability) {
+    abilities.add(ability);
   }
 
   @Override

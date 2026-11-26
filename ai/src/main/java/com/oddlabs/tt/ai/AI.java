@@ -1,9 +1,13 @@
 package com.oddlabs.tt.ai;
 
+import static com.oddlabs.tt.simulation.model.Ability.ATTACK;
+import static com.oddlabs.tt.simulation.model.Ability.BUILD;
+import static com.oddlabs.tt.simulation.model.Ability.MAGIC;
+import static com.oddlabs.tt.simulation.model.Ability.THROW;
+
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.SimulationConfig;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.BuildProductionContainer;
 import com.oddlabs.tt.simulation.model.Building;
@@ -113,22 +117,22 @@ public abstract class AI {
           if (b.getBuildStage() != Building.BuildStage.BUILT) {
             constructionSites.add(b);
           } else if (b.isOperating()) {
-            if (b.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+            if (b.hasWeaponsWorkshop()) {
               armories.add(b);
-            } else if (b.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
+            } else if (b.canReproduce()) {
               quarters.add(b);
-            } else if (b.getAbilities().hasAbilities(Abilities.ATTACK)) {
+            } else if (b.hasAbility(ATTACK)) {
               towers.add(b);
             }
           }
         }
         case Unit u -> {
           if (u.isIdle()) {
-            if (u.getAbilities().hasAbilities(Abilities.BUILD)) {
+            if (u.hasAbility(BUILD)) {
               idlePeons.add(u);
-            } else if (u.getAbilities().hasAbilities(Abilities.MAGIC)) {
+            } else if (u.hasAbility(MAGIC)) {
               idleChieftains.add(u);
-            } else if (u.getAbilities().hasAbilities(Abilities.ATTACK)) {
+            } else if (u.hasAbility(ATTACK)) {
               idleWarriors.add(u);
             }
           } else if (u.getGatheringSupplyType() != null) {
@@ -279,7 +283,7 @@ public abstract class AI {
     int ordered = 0;
     PlayerInterface playerInterface = owner.getPlayerInterface();
     for (Selectable<?> s : owner.getUnits().getSet()) {
-      if (s instanceof Unit unit && unit.getAbilities().hasAbilities(Abilities.THROW)) {
+      if (s instanceof Unit unit && unit.hasAbility(THROW)) {
         if (!unit.isAggressiveWalking()) {
           playerInterface.setLandscapeTarget(unit, target.getGridX(), target.getGridY(), Action.ATTACK, true);
           ordered++;
@@ -294,7 +298,7 @@ public abstract class AI {
 
   public static @Nullable Unit getWarrior(Player owner) {
     for (Selectable<?> s : owner.getUnits().getSet()) {
-      if (s instanceof Unit unit && unit.getAbilities().hasAbilities(Abilities.THROW)) {
+      if (s instanceof Unit unit && unit.hasAbility(THROW)) {
         return unit;
       }
     }

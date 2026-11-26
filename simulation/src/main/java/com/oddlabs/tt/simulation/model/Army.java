@@ -14,13 +14,13 @@ public class Army implements Iterable<Selectable<?>> {
 
   private final Set<Selectable<?>> selection = new LinkedHashSet<>();
 
-  public final List<Selectable<?>> filter(int ability_filter) {
+  public final List<Selectable<?>> filter(Ability ability) {
     if (selection.isEmpty()) {
       return List.of();
     }
     List<Selectable<?>> result = new ArrayList<>();
     for (Selectable<?> s : selection) {
-      if (s.getAbilities().hasAbilities(ability_filter)) {
+      if (s.hasAbility(ability)) {
         result.add(s);
       }
     }
@@ -30,9 +30,9 @@ public class Army implements Iterable<Selectable<?>> {
     return Collections.unmodifiableList(result);
   }
 
-  public final boolean containsAbility(int ability_filter) {
+  public final boolean containsAbility(Ability ability) {
     for (Selectable<?> s : selection) {
-      if (s.getAbilities().hasAbilities(ability_filter)) {
+      if (s.hasAbility(ability)) {
         return true;
       }
     }

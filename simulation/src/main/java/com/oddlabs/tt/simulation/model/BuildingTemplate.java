@@ -1,6 +1,7 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.base.geom.BoundingBox;
+import java.util.Set;
 import org.joml.Vector3fc;
 
 /// Template defining the static properties, costs, and visual representations of a building type.
@@ -43,7 +44,7 @@ public final class BuildingTemplate extends Template {
       float start_selection_height,
       int max_hit_points,
       BuildingRoleFactory roleFactory,
-      Abilities abilities,
+      Set<Ability> abilities,
       float[] hit_offset_z,
       float mount_offset,
       float defense_chance,

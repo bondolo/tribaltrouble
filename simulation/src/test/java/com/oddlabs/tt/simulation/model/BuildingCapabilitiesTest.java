@@ -20,6 +20,7 @@ import com.oddlabs.util.Color;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
@@ -109,6 +110,10 @@ final class BuildingCapabilitiesTest {
     assertEquals(AttackScanFilter.Priority.QUARTERS, armory.getAttackPriority());
     assertEquals(0, armory.getStatusValue());
     assertNull(armory.getRawUnitContainer());
+    assertFalse(armory.hasSupplyStorage());
+    assertFalse(armory.hasWeaponsWorkshop());
+    assertFalse(armory.canReproduce());
+    assertFalse(armory.canAcceptRally());
     assertFalse(armory.canDeployUnits(DeployType.PEON));
     assertFalse(armory.canBuildWeapons(WeaponTier.ROCK));
     assertFalse(armory.canSetRallyPoint());
@@ -126,6 +131,10 @@ final class BuildingCapabilitiesTest {
     assertTrue(armoryRole.getSupplyStorage().isPresent());
     assertTrue(armoryRole.getWeaponsWorkshop().isPresent());
     assertTrue(armoryRole.getChieftainContainer().isEmpty());
+    assertTrue(armory.hasSupplyStorage());
+    assertTrue(armory.hasWeaponsWorkshop());
+    assertFalse(armory.canReproduce());
+    assertTrue(armory.canAcceptRally());
     assertEquals(AttackScanFilter.Priority.ARMORY, armory.getAttackPriority());
     for (DeployType deployType : DeployType.values()) {
       assertTrue(armory.canDeployUnits(deployType));
@@ -142,6 +151,11 @@ final class BuildingCapabilitiesTest {
     assertTrue(quartersRole.getChieftainContainer().isPresent());
     assertTrue(quartersRole.getSupplyStorage().isEmpty());
     assertTrue(quartersRole.getWeaponsWorkshop().isEmpty());
+    assertFalse(quarters.hasSupplyStorage());
+    assertFalse(quarters.hasWeaponsWorkshop());
+    assertTrue(quarters.canReproduce());
+    assertTrue(quarters.canAcceptRally());
+    assertTrue(quarters.isValidRallyPoint(armory));
     assertEquals(AttackScanFilter.Priority.QUARTERS, quarters.getAttackPriority());
     assertTrue(quarters.canDeployUnits(DeployType.PEON));
     assertFalse(quarters.canDeployUnits(DeployType.ROCK_WARRIOR));
@@ -166,6 +180,11 @@ final class BuildingCapabilitiesTest {
     assertTrue(towerRole.getSupplyStorage().isEmpty());
     assertTrue(towerRole.getWeaponsWorkshop().isEmpty());
     assertTrue(towerRole.getChieftainContainer().isEmpty());
+    assertFalse(tower.hasSupplyStorage());
+    assertFalse(tower.hasWeaponsWorkshop());
+    assertFalse(tower.canReproduce());
+    assertTrue(tower.canAcceptRally());
+    assertTrue(quarters.isValidRallyPoint(tower));
     assertEquals(AttackScanFilter.Priority.TOWER, tower.getAttackPriority());
     assertFalse(tower.canExitTower());
 
@@ -207,7 +226,7 @@ final class BuildingCapabilitiesTest {
             base.getStartSelectionHeight(),
             base.getMaxHitPoints(),
             ShipStyleRole::new,
-            new Abilities(Abilities.SUPPLY_CONTAINER | Abilities.RALLY_TO | Abilities.TARGET),
+            Set.of(Ability.TARGET),
             new float[] {0f, 1f, 3f},
             base.getMountOffset(),
             base.getDefenseChance(),
@@ -220,6 +239,10 @@ final class BuildingCapabilitiesTest {
     customBuilding.repair(customTemplate.getMaxHitPoints());
 
     assertInstanceOf(ShipStyleRole.class, customBuilding.getRole());
+    assertTrue(customBuilding.hasSupplyStorage());
+    assertFalse(customBuilding.hasWeaponsWorkshop());
+    assertFalse(customBuilding.canReproduce());
+    assertTrue(customBuilding.canAcceptRally());
     assertTrue(customBuilding.getSupplyContainer(SupplyType.WOOD).isPresent());
     assertTrue(customBuilding.canDeployUnits(DeployType.PEON));
     assertTrue(customBuilding.canDeployUnits(DeployType.PEON_TRANSPORT_TREE));

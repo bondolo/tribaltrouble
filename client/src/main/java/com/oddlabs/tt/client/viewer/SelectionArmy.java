@@ -1,6 +1,8 @@
 package com.oddlabs.tt.client.viewer;
 
-import com.oddlabs.tt.simulation.model.Abilities;
+import static com.oddlabs.tt.simulation.model.Ability.BUILD;
+import static com.oddlabs.tt.simulation.model.Ability.MAGIC;
+
 import com.oddlabs.tt.simulation.model.Army;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Selectable;
@@ -10,6 +12,7 @@ import java.util.Collection;
 import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
+/// Tracks the local player's currently selected units, builders, chieftain, and building.
 public final class SelectionArmy extends Army {
 
   private final Player local_player;
@@ -45,9 +48,8 @@ public final class SelectionArmy extends Army {
     building = null;
     for (Selectable<?> s : getSet()) {
       if (s.getOwner() != local_player) continue;
-      Abilities abilities = s.getAbilities();
-      if (abilities.hasAbilities(Abilities.BUILD)) num_builders++;
-      else if (abilities.hasAbilities(Abilities.MAGIC)) chieftain = (Unit) s;
+      if (s.hasAbility(BUILD)) num_builders++;
+      else if (s.hasAbility(MAGIC)) chieftain = (Unit) s;
       if (s instanceof Building building1) {
         building = building1;
       } else {

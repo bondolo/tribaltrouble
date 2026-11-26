@@ -38,6 +38,11 @@ public final class QuartersRole implements BuildingRole {
   }
 
   @Override
+  public boolean canReproduce() {
+    return true;
+  }
+
+  @Override
   public boolean canBuildChieftain() {
     return !building.isDead()
         && building.getOwner().canBuildChieftains()

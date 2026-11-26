@@ -7,7 +7,6 @@ import com.oddlabs.tt.effects.particle.LinearEmitter;
 import com.oddlabs.tt.effects.particle.RandomAccelerationEmitter;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.*;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.util.Color;
@@ -107,8 +106,7 @@ final class BuildingProductionAccessory implements EmitterAccessory {
 
   @Override
   public void animate(float dt) {
-    boolean isProducing =
-        building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES) && building.isAlive() && building.isProducing();
+    boolean isProducing = building.hasWeaponsWorkshop() && building.isAlive() && building.isProducing();
 
     if (isProducing) {
       if (productionPlayer == null) {
@@ -126,7 +124,7 @@ final class BuildingProductionAccessory implements EmitterAccessory {
       }
     }
 
-    if (!building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+    if (!building.hasWeaponsWorkshop()) {
       state = State.IDLE;
       productionTimer = 0f;
       emitter.stop();
@@ -176,7 +174,7 @@ final class BuildingProductionAccessory implements EmitterAccessory {
   @Override
   public boolean isVisible(Model parent, CameraState camera) {
     if (parent instanceof Building b) {
-      return b.getAbilities().hasAbilities(Abilities.BUILD_ARMIES) && (state != State.IDLE || !emitter.isFinished());
+      return b.hasWeaponsWorkshop() && (state != State.IDLE || !emitter.isFinished());
     }
     return false;
   }

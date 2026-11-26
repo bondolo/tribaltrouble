@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.state;
 
+import com.oddlabs.tt.simulation.model.Ability;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Supply;
@@ -20,7 +21,7 @@ public interface UnitContext {
 
   boolean isDead();
 
-  boolean hasAbility(int abilityMask);
+  boolean hasAbility(Ability ability);
 
   /// Returns whether the entity is within `maxDist` (or adjacent when `maxDist == 0`) of `target`.
   boolean isCloseEnough(float maxDist, Target target);

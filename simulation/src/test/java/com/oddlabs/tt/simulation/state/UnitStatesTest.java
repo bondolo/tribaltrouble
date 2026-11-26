@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.state;
 
+import static com.oddlabs.tt.simulation.model.Ability.ATTACK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -15,7 +16,6 @@ import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.AttackScanFilter;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
@@ -332,7 +332,7 @@ final class UnitStatesTest {
     Unit enemy = spawnUnit(nativePlayer, 20, 20, UnitType.WARRIOR_ROCK);
     try {
       FakeUnitContext warriorContext = new FakeUnitContext();
-      warriorContext.addAbility(Abilities.ATTACK);
+      warriorContext.addAbility(ATTACK);
       warriorContext.setGridPosition(10, 10);
       warriorContext.setScannedEnemy(enemy);
 
@@ -367,7 +367,7 @@ final class UnitStatesTest {
     Unit towerEnemy = spawnUnit(nativePlayer, 11, 10, UnitType.WARRIOR_ROCK);
     try {
       FakeUnitContext towerContext = new FakeUnitContext();
-      towerContext.addAbility(Abilities.ATTACK);
+      towerContext.addAbility(ATTACK);
       towerContext.setGridPosition(10, 10);
       towerContext.setAttackRange(3f);
       towerContext.setScannedEnemy(towerEnemy);
