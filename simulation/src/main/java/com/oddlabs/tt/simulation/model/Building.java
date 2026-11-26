@@ -206,37 +206,12 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     role.getDeployment().ifPresent(d -> d.deploy(type, num_units));
   }
 
-  public boolean canCreateHarvesters(long totalRequested) {
-    return !isDead() && isBuilt() && role.canCreateHarvesters(totalRequested);
-  }
-
-  public void createHarvesters(int num_tree, int num_rock, int num_iron, int num_rubber) {
-    assert !isDead();
-    if (num_tree < 0 || num_rock < 0 || num_iron < 0 || num_rubber < 0) {
-      return;
-    }
-    long total = (long) num_tree + num_rock + num_iron + num_rubber;
-    if (!canCreateHarvesters(total)) {
-      return;
-    }
-    if (num_tree > 0) createHarvesters(SupplyType.WOOD, num_tree, false);
-    if (num_rock > 0) createHarvesters(SupplyType.ROCK, num_rock, false);
-    if (num_iron > 0) createHarvesters(SupplyType.IRON, num_iron, false);
-    if (num_rubber > 0) createHarvesters(SupplyType.RUBBER, num_rubber, false);
-  }
-
   void createHarvesters(SupplyType supplyType, int amount) {
-    createHarvesters(supplyType, amount, true);
-  }
-
-  private void createHarvesters(SupplyType supplyType, int amount, boolean prepared) {
     RaceInfo raceInfo = getOwner().getRaceInfo();
     UnitContainer unitContainer = getRawUnitContainer();
     for (int i = 0; i < amount; i++) {
       if (unitContainer != null) {
-        if (prepared) {
-          unitContainer.prepareDeploy(-1);
-        }
+        unitContainer.prepareDeploy(-1);
         unitContainer.exit();
       }
       Unit unit = spawnUnit(null, raceInfo.getUnitTemplate(UnitType.PEON));
@@ -285,14 +260,6 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
   void createPeons(int amount) {
     assert !isDead();
     createArmy(amount, UnitType.PEON);
-  }
-
-  void createArmy(int num_peon, int num_rock, int num_iron, int num_rubber) {
-    assert !isDead();
-    if (num_peon > 0) createPeons(num_peon);
-    if (num_rock > 0) createWarriors(WeaponTier.ROCK, num_rock);
-    if (num_iron > 0) createWarriors(WeaponTier.IRON, num_iron);
-    if (num_rubber > 0) createWarriors(WeaponTier.RUBBER, num_rubber);
   }
 
   private void createArmy(int amount, UnitType template) {

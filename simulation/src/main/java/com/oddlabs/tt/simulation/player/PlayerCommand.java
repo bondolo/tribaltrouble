@@ -11,7 +11,6 @@ import org.jspecify.annotations.Nullable;
 /// Sealed hierarchy of stateless simulation commands submitted by human or automated player controllers.
 public sealed interface PlayerCommand
     permits PlayerCommand.DeployUnits,
-        PlayerCommand.CreateHarvesters,
         PlayerCommand.BuildWeapons,
         PlayerCommand.DoMagic,
         PlayerCommand.ExitTower,
@@ -25,9 +24,6 @@ public sealed interface PlayerCommand
         PlayerCommand.ChangePreferredGamespeed {
 
   record DeployUnits(int buildingId, DeployType deployType, int numUnits) implements PlayerCommand {}
-
-  record CreateHarvesters(int buildingId, int numTree, int numRock, int numIron, int numRubber)
-      implements PlayerCommand {}
 
   record BuildWeapons(int buildingId, WeaponTier tier, int numWeapons, boolean infinite) implements PlayerCommand {}
 

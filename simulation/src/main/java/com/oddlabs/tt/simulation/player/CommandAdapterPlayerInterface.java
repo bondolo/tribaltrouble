@@ -33,11 +33,6 @@ public final class CommandAdapterPlayerInterface implements PlayerInterface {
   }
 
   @Override
-  public void createHarvesters(Building building, int numTree, int numRock, int numIron, int numRubber) {
-    sink.accept(new PlayerCommand.CreateHarvesters(building.getId(), numTree, numRock, numIron, numRubber));
-  }
-
-  @Override
   public void buildWeapons(Building building, WeaponTier tier, int numWeapons, boolean infinite) {
     sink.accept(new PlayerCommand.BuildWeapons(building.getId(), tier, numWeapons, infinite));
   }

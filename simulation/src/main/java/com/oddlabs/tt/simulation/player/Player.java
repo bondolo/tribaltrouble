@@ -605,33 +605,6 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
   }
 
   @Override
-  public void createHarvesters(@Nullable Building building, int num_tree, int num_rock, int num_iron, int num_rubber) {
-    applyCreateHarvesters(building, num_tree, num_rock, num_iron, num_rubber);
-  }
-
-  private void applyCreateHarvesters(
-      @Nullable Building building, int num_tree, int num_rock, int num_iron, int num_rubber) {
-    if (building == null) {
-      notifyRejected("createHarvesters", Distributable.NO_ID, "ENTITY_NOT_FOUND");
-      return;
-    }
-    if (!isValid(building)) {
-      notifyRejected("createHarvesters", building.getId(), "NOT_OWNED");
-      return;
-    }
-    if (num_tree < 0 || num_rock < 0 || num_iron < 0 || num_rubber < 0) {
-      notifyRejected("createHarvesters", building.getId(), "INVALID_AMOUNT");
-      return;
-    }
-    long total = (long) num_tree + num_rock + num_iron + num_rubber;
-    if (!building.canCreateHarvesters(total)) {
-      notifyRejected("createHarvesters", building.getId(), "INSUFFICIENT_SUPPLY");
-      return;
-    }
-    building.createHarvesters(num_tree, num_rock, num_iron, num_rubber);
-  }
-
-  @Override
   public void buildWeapons(@Nullable Building building, WeaponTier tier, int num_weapons, boolean infinite) {
     applyBuildWeapons(building, tier, num_weapons, infinite);
   }
@@ -1069,8 +1042,6 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
   public void execute(PlayerCommand command) {
     switch (command) {
       case PlayerCommand.DeployUnits cmd -> deployUnits(cmd.buildingId(), cmd.deployType(), cmd.numUnits());
-      case PlayerCommand.CreateHarvesters cmd ->
-          createHarvesters(cmd.buildingId(), cmd.numTree(), cmd.numRock(), cmd.numIron(), cmd.numRubber());
       case PlayerCommand.BuildWeapons cmd ->
           buildWeapons(cmd.buildingId(), cmd.tier(), cmd.numWeapons(), cmd.infinite());
       case PlayerCommand.DoMagic cmd -> doMagic(cmd.chieftainId(), cmd.magic(), cmd.clearStack());
@@ -1100,19 +1071,6 @@ public final class Player implements PlayerInterface, PlayerCommandExecutor {
       return;
     }
     applyDeployUnits(building, deployType, numUnits);
-  }
-
-  private void createHarvesters(int buildingId, int numTree, int numRock, int numIron, int numRubber) {
-    var distributable = world.getDistributableTable().getDistributable(buildingId);
-    if (!(distributable instanceof Building building) || building.isDead()) {
-      notifyRejected("createHarvesters", buildingId, "ENTITY_NOT_FOUND");
-      return;
-    }
-    if (!isValid(building)) {
-      notifyRejected("createHarvesters", buildingId, "NOT_OWNED");
-      return;
-    }
-    applyCreateHarvesters(building, numTree, numRock, numIron, numRubber);
   }
 
   private void buildWeapons(int buildingId, WeaponTier tier, int numWeapons, boolean infinite) {

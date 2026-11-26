@@ -158,9 +158,6 @@ final class GameArgumentSerializationTest {
     public void deployUnits(Building building, DeployType type, int num_units) {}
 
     @Override
-    public void createHarvesters(Building building, int num_tree, int num_rock, int num_iron, int num_rubber) {}
-
-    @Override
     public void buildWeapons(Building building, WeaponTier tier, int num_weapons, boolean infinite) {}
 
     @Override

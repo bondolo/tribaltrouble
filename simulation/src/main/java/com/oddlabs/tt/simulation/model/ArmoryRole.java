@@ -84,14 +84,6 @@ public final class ArmoryRole implements BuildingRole, SupplyStorage {
   }
 
   @Override
-  public boolean canCreateHarvesters(long totalRequested) {
-    return !building.isDead()
-        && building.isBuilt()
-        && totalRequested >= 0
-        && totalRequested <= workerContainer.getNumSupplies();
-  }
-
-  @Override
   public boolean isProducing() {
     return weaponsWorkshop.isProducing();
   }

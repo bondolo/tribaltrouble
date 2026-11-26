@@ -32,11 +32,6 @@ public final class DelegatingPlayerInterface implements PlayerInterface {
   }
 
   @Override
-  public void createHarvesters(Building building, int num_tree, int num_rock, int num_iron, int num_rubber) {
-    delegate().createHarvesters(building, num_tree, num_rock, num_iron, num_rubber);
-  }
-
-  @Override
   public void buildWeapons(Building building, WeaponTier tier, int num_weapons, boolean infinite) {
     delegate().buildWeapons(building, tier, num_weapons, infinite);
   }

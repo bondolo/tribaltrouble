@@ -72,20 +72,6 @@ class CommandAdapterPlayerInterfaceTest {
   }
 
   @Test
-  void testCreateHarvesters() {
-    adapter.createHarvesters(quarters, 1, 2, 3, 4);
-
-    assertEquals(1, emittedCommands.size());
-    PlayerCommand.CreateHarvesters cmd =
-        assertInstanceOf(PlayerCommand.CreateHarvesters.class, emittedCommands.getFirst());
-    assertEquals(quarters.getId(), cmd.buildingId());
-    assertEquals(1, cmd.numTree());
-    assertEquals(2, cmd.numRock());
-    assertEquals(3, cmd.numIron());
-    assertEquals(4, cmd.numRubber());
-  }
-
-  @Test
   void testBuildWeapons() {
     adapter.buildWeapons(quarters, WeaponTier.ROCK, 3, true);
     adapter.buildWeapons(quarters, WeaponTier.IRON, 2, false);

@@ -140,9 +140,6 @@ final class BuildingCapabilitiesTest {
       assertTrue(armory.canDeployUnits(deployType));
       assertNotNull(armory.getDeployContainer(deployType));
     }
-    armory.getUnitContainer().orElseThrow().increaseSupply(1);
-    assertTrue(armory.canCreateHarvesters(1));
-    assertFalse(armory.canCreateHarvesters(2));
 
     Building quarters = buildComplete(viking, BuildingType.QUARTERS, 32, 16);
     QuartersRole quartersRole = assertInstanceOf(QuartersRole.class, quarters.getRole());

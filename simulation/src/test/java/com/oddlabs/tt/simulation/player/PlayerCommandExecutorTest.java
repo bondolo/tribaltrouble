@@ -328,10 +328,6 @@ class PlayerCommandExecutorTest {
     assertEquals(List.of("deployUnits:NOT_OWNED"), rejections);
     rejections.clear();
 
-    player0.createHarvesters(enemyQuarters, 1, 0, 0, 0);
-    assertEquals(List.of("createHarvesters:NOT_OWNED"), rejections);
-    rejections.clear();
-
     player0.buildWeapons(enemyQuarters, WeaponTier.ROCK, 1, false);
     assertEquals(List.of("buildWeapons:NOT_OWNED"), rejections);
     rejections.clear();
@@ -427,50 +423,6 @@ class PlayerCommandExecutorTest {
     player0.execute(new PlayerCommand.SetLandscapeTarget(new int[] {enemyPeonId}, 10, 10, Action.MOVE, false));
     assertEquals(List.of("setLandscapeTarget:NOT_OWNED"), rejections);
     rejections.clear();
-  }
-
-  @Test
-  void testCreateHarvestersValidation() {
-    Building armory =
-        player0.getUnits().getSet().stream()
-            .filter(s -> s instanceof Building b && b.getTemplate().getBuildingType() == BuildingType.ARMORY)
-            .map(s -> (Building) s)
-            .findFirst()
-            .orElseThrow();
-    Building tower =
-        player0.getUnits().getSet().stream()
-            .filter(s -> s instanceof Building b && b.getTemplate().getBuildingType() == BuildingType.TOWER)
-            .map(s -> (Building) s)
-            .findFirst()
-            .orElseThrow();
-    int armoryId = table.findName(armory).orElseThrow();
-    int towerId = table.findName(tower).orElseThrow();
-
-    // Negative counts must be rejected
-    player0.execute(new PlayerCommand.CreateHarvesters(armoryId, -1, 0, 0, 0));
-    assertEquals(List.of("createHarvesters:INVALID_AMOUNT"), rejections);
-    rejections.clear();
-
-    // Exceeding available peon supply in armory must be rejected
-    int available = armory.getUnitContainer().orElseThrow().getNumSupplies();
-    player0.execute(new PlayerCommand.CreateHarvesters(armoryId, available + 1, 0, 0, 0));
-    assertEquals(List.of("createHarvesters:INSUFFICIENT_SUPPLY"), rejections);
-    rejections.clear();
-
-    // Integer overflow sum must also be rejected
-    player0.execute(new PlayerCommand.CreateHarvesters(armoryId, Integer.MAX_VALUE, 1, 0, 0));
-    assertEquals(List.of("createHarvesters:INSUFFICIENT_SUPPLY"), rejections);
-    rejections.clear();
-
-    // Non-worker building (tower) must be rejected
-    player0.execute(new PlayerCommand.CreateHarvesters(towerId, 1, 0, 0, 0));
-    assertEquals(List.of("createHarvesters:INSUFFICIENT_SUPPLY"), rejections);
-    rejections.clear();
-
-    // Valid conversion when peon supply is present
-    armory.getUnitContainer().orElseThrow().increaseSupply(2);
-    player0.execute(new PlayerCommand.CreateHarvesters(armoryId, 1, 1, 0, 0));
-    assertTrue(rejections.isEmpty());
   }
 
   @Test

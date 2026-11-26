@@ -46,10 +46,6 @@ public interface BuildingRole {
     return getRawUnitContainer() != null;
   }
 
-  default boolean canCreateHarvesters(long totalRequested) {
-    return false;
-  }
-
   default boolean isProducing() {
     return false;
   }

@@ -46,11 +46,6 @@ class AIDecouplingTest {
     }
 
     @Override
-    public void createHarvesters(Building building, int num_tree, int num_rock, int num_iron, int num_rubber) {
-      calls.add("createHarvesters");
-    }
-
-    @Override
     public void buildWeapons(Building building, WeaponTier tier, int num_weapons, boolean infinite) {
       calls.add("buildWeapons:" + tier + ":" + infinite);
     }
